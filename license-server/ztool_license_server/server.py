@@ -19,7 +19,12 @@ from .crypto import aes_security_center as aes
 from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
 from .protocol.dispatcher import Sendtype, Status, Result, status_to_result
-from .license_blob import generate_license_blob, getver_today, recover_raw_machine
+from .license_blob import (
+    generate_license_blob,
+    getver_today,
+    recover_raw_machine,
+    build_confirm_transport,
+)
 from .machineid import is_valid_machine_code
 from .db import LicenseDB
 
@@ -212,25 +217,47 @@ class LicenseServer:
         Handle register confirm (Sendtype 131): final activation step.
 
         After the client saves the blob from the apply_register (13) response it
-        sends SR.get_rginfo() — the four registry branch ciphertexts (un-hexed)
-        followed by three RSA-encrypted timestamps. We reconstruct the transport
-        payload from those four branches and return it with result code 12, which
-        the client re-saves (SR.rg) and validates with IsReg2 -> "Регистрация
-        выполнена". IsReg2 reads the registry already populated at step 13, so
-        this response simply has to be a well-formed transport blob.
+        sends SR.get_rginfo():
+
+            line0..3 : the four registry branch strings (b0,b1,b2,b3) un-hexed
+            line4    : RSA_enc(creation_time(HKLM\\...\\HTwk2RCBDL))  [b2's key]
+            line5    : RSA_enc(creation_time(HKLM\\...\\98CqyvBZcg))  [b3's key]
+            line6    : RSA_enc(DateTime.Now.ToString())
+
+        The confirm response is consumed by the SAME SR.rg() but validated by
+        IsReg2, which decrypts b0/b1 with GD51(creation_time) rather than the
+        embedded seed/wrap-passphrase used by IsReg1. So we must rebuild b0/b1
+        keyed by those two registry-key creation-time hashes (b2/b3 are reused
+        verbatim) — echoing back the apply_register branches makes IsReg2 fail
+        and the client shows "Регистрация не удалась".
         """
         lines = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
-        branches = [ln for ln in lines if ln][:4]
+        fields = [ln for ln in lines if ln]
+        branches = fields[:4]
 
-        if len(branches) != 4:
+        if len(branches) != 4 or len(fields) < 6:
             self.db.log_action("register", result="error",
-                               details=f"register confirm: expected 4 branches, got {len(branches)}")
+                               details=f"register confirm: expected 4 branches + 2 times, got {len(fields)} fields")
             return self._make_result(Result.INFO_ERROR)
 
-        transport = aes.encrypt(
-            "\t".join(branches),
-            getver_today(self.config.client_version),
-        )
+        try:
+            # The two registry-key creation times the client RSA-encrypted with
+            # our public key; recover them with the private key.
+            creation_time_b2 = decrypt_string(fields[4], self._private_key).strip()
+            creation_time_b3 = decrypt_string(fields[5], self._private_key).strip()
+            transport = build_confirm_transport(
+                branches,
+                creation_time_b2,
+                creation_time_b3,
+                public_key=self._public_key,
+                private_key=self._private_key,
+                client_version=self.config.client_version,
+            )
+        except Exception as e:
+            self.db.log_action("register", result="error",
+                               details=f"register confirm: blob rebuild failed: {e}")
+            return self._make_result(Result.INFO_ERROR)
+
         self.db.log_action("register", result="success", details="register confirm")
         return self._make_result(Result.REGISTER_OK, transport)
 

@@ -213,3 +213,158 @@ def _make_pp(first_len: int) -> str:
     """Deterministic passphrase of the required length (first_len + 10)."""
     base = "PassPhrase0123456789ABCDEFGHIJ"
     return base[: first_len + SUFFIX_LEN]
+
+
+# ---------------------------------------------------------------------------
+# Register-confirm (result 12) — IsReg2 validation.
+# ---------------------------------------------------------------------------
+
+from ztool_license_server.crypto.rsa_ztool import encrypt_string
+from ztool_license_server.license_blob import (
+    build_confirm_transport,
+    parse_apply_branches,
+)
+
+# Two registry-key creation-time strings (DateTime.ToString() form). IsReg2
+# keys b0/b1 by GD51 of these, read live from the registry on the client.
+CTIME_B2 = "2026/5/30 13:12:58"
+CTIME_B3 = "2026/5/30 13:12:59"
+
+
+def emulate_isreg2(branches, pub_key, creation_time_b2, creation_time_b3):
+    """Faithful re-implementation of SR.IsReg2.
+
+    Differs from IsReg1 only in the OUTER AES key of b0/b1: b0 is decrypted with
+    GD51(creation_time(HTwk2RCBDL)) and b1 with GD51(creation_time(98CqyvBZcg)),
+    and b1 is consumed un-wrapped (direct AES, no Right/Left passphrase).
+    """
+    b0_raw, b1_raw, b2_raw, b3_raw = (x.replace("\x00", "") for x in branches)
+    txt = gd51(creation_time_b2)
+    txt2 = gd51(creation_time_b3)
+
+    # b2 / b3 — identical handling to IsReg1 (wrapped + RSA)
+    pp = _right(b2_raw, SUFFIX_LEN) + _left(b2_raw, FIRST_LEN_B2)
+    ct = b2_raw[FIRST_LEN_B2: len(b2_raw) - SUFFIX_LEN]
+    b2 = decrypt_string(aes.decrypt(ct, pp), pub_key).strip()
+    pp = _right(b3_raw, SUFFIX_LEN) + _left(b3_raw, FIRST_LEN_B3)
+    ct = b3_raw[FIRST_LEN_B3: len(b3_raw) - SUFFIX_LEN]
+    b3 = decrypt_string(aes.decrypt(ct, pp), pub_key).strip()
+
+    # b1 — direct AES with txt2 (NOT wrapped), split into 2 "\n" parts
+    b1 = aes.decrypt(b1_raw, txt2)
+    a5 = b1.strip().split("\n")
+    assert len(a5) == 2, f"b1 must split into 2 parts, got {len(a5)}"
+    key2 = decrypt_string(a5[0], pub_key).strip()
+    text7 = aes.decrypt(a5[1], key2)
+
+    # b0 — direct AES with txt, split into 3 "\n" parts
+    b0 = aes.decrypt(b0_raw, txt)
+    a6 = b0.strip().split("\n")
+    assert len(a6) == 3, f"b0 must split into 3 parts, got {len(a6)}"
+    code = decrypt_string(a6[0], text7).strip()
+    use_date = decrypt_string(a6[2], text7).strip()
+    left = decrypt_string(a6[1], text7).strip()
+    left = aes.decrypt(left, key2).strip()
+
+    assert len(code) == 36, f"uuid len must be 36, got {len(code)}"
+    assert left != "" and b2 != "" and b3 != ""
+    assert left == b2 + b3, "Concat(b2,b3) must equal loc_c"
+    assert float(use_date) == 0.0, "ToDouble(reg_time) must be zero"
+    return True, code, use_date, left
+
+
+def _apply_branches(pub, priv):
+    return build_registry_branches(
+        machine_code=MACHINE_CODE,
+        pub_key=pub,
+        priv_key=priv,
+        reg_time=default_reg_time(),
+        seed_f="seedF-0123456789",
+        passphrase_b1=_make_pp(FIRST_LEN_B1),
+        passphrase_b2=_make_pp(FIRST_LEN_B2),
+        passphrase_b3=_make_pp(FIRST_LEN_B3),
+    )
+
+
+class TestConfirmBlob:
+    def test_parse_apply_branches_recovers_fields(self, keypair):
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        branches = _apply_branches(pub, priv)
+        parsed = parse_apply_branches(branches, pub)
+        assert parsed["uuid36"] == MACHINE_CODE.split("|")[0]
+        assert parsed["machine_hash"] == MACHINE_HASH
+        assert float(parsed["reg_time"]) == 0.0
+
+    def test_confirm_blob_passes_isreg2(self, keypair):
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        branches = _apply_branches(pub, priv)
+        # apply branches must still pass IsReg1
+        ok1, *_ = emulate_isreg1(branches, pub)
+        assert ok1
+
+        transport = build_confirm_transport(
+            branches, CTIME_B2, CTIME_B3,
+            public_key=pub, private_key=priv, client_version=CLIENT_VERSION,
+        )
+        # Client rg(): AES_decrypt(transport, getver) then split('\t')
+        gv = getver_today(CLIENT_VERSION, is_64bit=True)
+        confirm_branches = aes.decrypt(transport, gv).split("\t")
+        assert len(confirm_branches) == 4
+        ok2, code, use_date, left = emulate_isreg2(
+            confirm_branches, pub, CTIME_B2, CTIME_B3)
+        assert ok2
+        assert code == MACHINE_CODE.split("|")[0]
+        assert left == MACHINE_HASH
+
+    def test_confirm_blob_b2_b3_reused(self, keypair):
+        """b2/b3 are echoed verbatim so their registry creation time (and thus
+        the IsReg2 key derivation) stays stable across the confirm rewrite."""
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        branches = _apply_branches(pub, priv)
+        transport = build_confirm_transport(
+            branches, CTIME_B2, CTIME_B3,
+            public_key=pub, private_key=priv, client_version=CLIENT_VERSION,
+        )
+        gv = getver_today(CLIENT_VERSION, is_64bit=True)
+        confirm_branches = aes.decrypt(transport, gv).split("\t")
+        assert confirm_branches[2] == branches[2]
+        assert confirm_branches[3] == branches[3]
+
+    def test_confirm_blob_wrong_ctime_fails_isreg2(self, keypair):
+        """If the server keyed b0/b1 by the wrong creation time, IsReg2 (which
+        reads the real creation time) can no longer decrypt b0/b1."""
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        branches = _apply_branches(pub, priv)
+        transport = build_confirm_transport(
+            branches, CTIME_B2, CTIME_B3,
+            public_key=pub, private_key=priv, client_version=CLIENT_VERSION,
+        )
+        gv = getver_today(CLIENT_VERSION, is_64bit=True)
+        confirm_branches = aes.decrypt(transport, gv).split("\t")
+        with pytest.raises(Exception):
+            emulate_isreg2(confirm_branches, pub, "1999/1/1 0:0:0", CTIME_B3)
+
+    def test_rsa_roundtrip_of_creation_times(self, keypair):
+        """The client RSA-encrypts the creation times with our public key; the
+        server recovers them with the private key (cp936, exact string)."""
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        enc = encrypt_string(CTIME_B2, pub)
+        assert decrypt_string(enc, priv).strip() == CTIME_B2
+
+    def test_echoing_apply_branches_fails_isreg2(self, keypair):
+        """Regression guard for the original bug: returning the apply_register
+        branches unchanged (keyed by getver) must NOT satisfy IsReg2."""
+        pub = keypair["public_component_key"]
+        priv = keypair["private_component_key"]
+        branches = _apply_branches(pub, priv)
+        # old behaviour: echo branches, transport-encrypt with getver
+        gv = getver_today(CLIENT_VERSION, is_64bit=True)
+        bad_transport = aes.encrypt("\t".join(branches), gv)
+        bad_branches = aes.decrypt(bad_transport, gv).split("\t")
+        with pytest.raises(Exception):
+            emulate_isreg2(bad_branches, pub, CTIME_B2, CTIME_B3)

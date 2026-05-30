@@ -57,7 +57,7 @@ import string
 from datetime import datetime
 from typing import List, Optional, Sequence, Tuple
 
-from .crypto.rsa_ztool import sign_string
+from .crypto.rsa_ztool import sign_string, decrypt_string
 from .crypto import aes_security_center as aes
 from .crypto import des_offline
 
@@ -347,3 +347,121 @@ def generate_offline_activation(
         is_64bit=is_64bit,
     )
     return des_offline.encrypt_offline(transport)
+
+
+# ---------------------------------------------------------------------------
+# Register-confirm (Sendtype 131 -> result 12) blob.
+#
+# After the apply_register (13) response the client writes the four branches to
+# the registry, validates them with IsReg1 and sends back SR.get_rginfo():
+#
+#     line0..3 : the four branch strings (b0,b1,b2,b3) it just stored
+#     line4    : RSA_enc(creation_time(HKLM\...\HTwk2RCBDL))   [b2's key]
+#     line5    : RSA_enc(creation_time(HKLM\...\98CqyvBZcg))   [b3's key]
+#     line6    : RSA_enc(DateTime.Now.ToString())
+#
+# The confirm response is consumed by the SAME rg() but validated by IsReg2,
+# whose only structural difference from IsReg1 is the OUTER AES key of b0 and
+# b1: instead of the embedded seed F / wrap-passphrase, IsReg2 decrypts
+#     b0  with  GD51(creation_time(HTwk2RCBDL))
+#     b1  with  GD51(creation_time(98CqyvBZcg))     (b1 is NOT wrapped here)
+# and reads b2/b3 exactly as IsReg1 does. So the confirm blob reuses the
+# client's own b2/b3, re-derives uuid36 + machine_hash from the apply branches,
+# and rebuilds b0/b1 keyed by the two registry-key creation-time hashes.
+# ---------------------------------------------------------------------------
+
+
+def _unwrap_branch(branch: str, first_len: int) -> Tuple[str, str]:
+    """Inverse of :func:`_wrap_branch`: recover (ciphertext, passphrase).
+
+    IsReg1/IsReg2 reconstruct the passphrase as ``Right(b,10)+Left(b,first_len)``
+    and the ciphertext as ``b.Substring(first_len, Len(b)-first_len-10)``.
+    """
+    passphrase = branch[-SUFFIX_LEN:] + branch[:first_len]
+    ciphertext = branch[first_len: len(branch) - SUFFIX_LEN]
+    return ciphertext, passphrase
+
+
+def parse_apply_branches(branches: Sequence[str], pub_key: str) -> dict:
+    """Recover ``uuid36``, ``machine_hash`` and ``reg_time`` from the four
+    apply_register branch strings (the IsReg1 layout), mirroring the client's
+    IsReg1 decryption exactly. ``pub_key`` is the ComponentKey whose private
+    half signed the blob (so RSA "decrypt" == public-exponent verify)."""
+    b0, b1, b2, b3 = branches[0], branches[1], branches[2], branches[3]
+
+    # b2 / b3 -> the two halves of GD51(raw machine)
+    ct2, pp2 = _unwrap_branch(b2, FIRST_LEN_B2)
+    mc_half1 = decrypt_string(aes.decrypt(ct2, pp2), pub_key).strip()
+    ct3, pp3 = _unwrap_branch(b3, FIRST_LEN_B3)
+    mc_half2 = decrypt_string(aes.decrypt(ct3, pp3), pub_key).strip()
+    machine_hash = mc_half1 + mc_half2
+
+    # b1 -> seed F (RSA-signed) + dynamic ComponentKey (AES-wrapped with F)
+    ct1, pp1 = _unwrap_branch(b1, FIRST_LEN_B1)
+    b1_plain = aes.decrypt(ct1, pp1)
+    a5 = b1_plain.split("\n")
+    seed_f = decrypt_string(a5[0], pub_key).strip()
+    dyn_key = aes.decrypt(a5[1], seed_f)
+
+    # b0 -> uuid36, AES(machine_hash,F), reg_time (each RSA-signed, dyn_key)
+    b0_plain = aes.decrypt(b0, seed_f)
+    a6 = b0_plain.split("\n")
+    uuid36 = decrypt_string(a6[0], dyn_key).strip()
+    reg_time = decrypt_string(a6[2], dyn_key).strip()
+
+    return {
+        "uuid36": uuid36,
+        "machine_hash": machine_hash,
+        "reg_time": reg_time,
+        "dyn_key": dyn_key,
+    }
+
+
+def build_confirm_transport(
+    branches: Sequence[str],
+    creation_time_b2: str,
+    creation_time_b3: str,
+    public_key: str,
+    private_key: str,
+    *,
+    client_version: str,
+    is_64bit: bool = True,
+    seed_f: Optional[str] = None,
+    dyn_key: Optional[str] = None,
+) -> str:
+    """Build the register-confirm transport blob validated by IsReg2.
+
+    ``branches`` are the four apply_register branch strings the client returned
+    in ``get_rginfo``; ``creation_time_b2``/``creation_time_b3`` are the
+    (already RSA-decrypted) registry-key creation-time strings for the
+    ``HTwk2RCBDL`` and ``98CqyvBZcg`` keys. b2/b3 are reused verbatim; b0/b1 are
+    rebuilt keyed by ``GD51(creation_time)``.
+    """
+    parsed = parse_apply_branches(branches, public_key)
+    uuid36 = parsed["uuid36"]
+    machine_hash = parsed["machine_hash"]
+    reg_time = parsed["reg_time"]
+
+    if dyn_key is None:
+        dyn_key = public_key
+    seed = seed_f or _rand_str(16)
+
+    txt = gd51(creation_time_b2)   # outer AES key for b0
+    txt2 = gd51(creation_time_b3)  # outer AES key for b1
+
+    # b1 : seed F (RSA-signed) + dyn ComponentKey (AES-wrapped with F), keyed txt2
+    b1_plain = sign_string(seed, private_key) + "\n" + aes.encrypt(dyn_key, seed)
+    b1 = aes.encrypt(b1_plain, txt2)
+
+    # b0 : uuid36, AES(machine_hash,F), reg_time — each RSA-signed; keyed txt
+    b0_plain = (
+        sign_string(uuid36, private_key)
+        + "\n"
+        + sign_string(aes.encrypt(machine_hash, seed), private_key)
+        + "\n"
+        + sign_string(reg_time, private_key)
+    )
+    b0 = aes.encrypt(b0_plain, txt)
+
+    joined = "\t".join([b0, b1, branches[2], branches[3]])
+    return aes.encrypt(joined, getver_today(client_version, is_64bit))
