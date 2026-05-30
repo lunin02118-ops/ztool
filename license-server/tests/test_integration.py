@@ -35,7 +35,8 @@ from ztool_license_server.crypto.aes_security_center import (
 )
 from ztool_license_server.crypto import aes_security_center as aes
 from ztool_license_server.license_blob import (
-    getver_today, FIRST_LEN_B2, FIRST_LEN_B3, SUFFIX_LEN,
+    getver_today, gd51, machine_version_suffix,
+    FIRST_LEN_B2, FIRST_LEN_B3, SUFFIX_LEN,
 )
 from ztool_license_server.protocol.framing import build_frame, FrameParser
 from ztool_license_server.protocol.dispatcher import Sendtype, Result
@@ -74,10 +75,17 @@ class ZToolClientEmulator:
             writer.write(build_frame(sendtype, aes_body.encode("utf-8")))
             await writer.drain()
 
+            # Read until a full frame parses. Over a real network the response
+            # (result code + license blob) can span several TCP segments, so a
+            # single read() may only return the header/first chunk.
             parser = FrameParser()
-            data = await asyncio.wait_for(reader.read(65536), timeout=5)
-            parser.feed(data)
-            frame = parser.try_parse()
+            frame = None
+            while frame is None:
+                data = await asyncio.wait_for(reader.read(65536), timeout=5)
+                if not data:
+                    break
+                parser.feed(data)
+                frame = parser.try_parse()
             assert frame is not None, "no response frame received"
             result_code, body = frame
             return result_code, body.decode("utf-8")
@@ -85,10 +93,17 @@ class ZToolClientEmulator:
             writer.close()
             await writer.wait_closed()
 
+    def _machine_field(self, machine, client_version=ServerConfig.client_version):
+        """Model GetMNum(_, True, True): the client builds
+        ``Concat(raw, "\\n", getver(...))``, takes ``Mid(.,1,117)`` and
+        RSA-encrypts it. (verified from SR.GetMNum IL: separator is a newline.)"""
+        transport = machine + "\n" + machine_version_suffix(client_version)
+        return self._rsa(transport[:117])
+
     async def apply_register(self, code, machine, password=DUMMY_PW):
         """Sendtype 128. createinfo(true, false) field order:
-        RSA(code), RSA(machine), RSA(password), RSA(MachineName\\user)."""
-        lines = [self._rsa(code), self._rsa(machine), self._rsa(password),
+        RSA(code), RSA(GetMNum), RSA(password), RSA(MachineName\\user)."""
+        lines = [self._rsa(code), self._machine_field(machine), self._rsa(password),
                  self._rsa("HOST\\user")]
         return await self._send(Sendtype.APPLY_REGISTER, lines)
 
@@ -102,7 +117,7 @@ class ZToolClientEmulator:
         return await self._send(Sendtype.REGISTER_CONFIRM, lines)
 
     async def apply_remove(self, code, machine, password=DUMMY_PW):
-        lines = [self._rsa(code), self._rsa(machine), self._rsa(password),
+        lines = [self._rsa(code), self._machine_field(machine), self._rsa(password),
                  self._rsa("HOST\\user")]
         return await self._send(Sendtype.APPLY_REMOVE, lines)
 
@@ -111,7 +126,7 @@ class ZToolClientEmulator:
 
     def unwrap_license_blob(self, blob: str, client_version=ServerConfig.client_version) -> str:
         """Reverse the transport payload the way FrmRg.rg()+IsReg1 do, returning
-        the bound machine code (loc_c == Concat(b2, b3))."""
+        the bound machine value (loc_c == Concat(b2, b3) == GD51(raw machine))."""
         gv = getver_today(client_version, is_64bit=True)
         joined = aes.decrypt(blob, gv)
         b0_raw, b1_raw, b2_raw, b3_raw = (
@@ -155,13 +170,33 @@ async def test_full_online_activation_flow(tmp_path):
         assert code == Result.APPLY_OK
         assert blob, "expected a license blob in the apply_register response"
 
-        # 2. The blob must decrypt + verify and rebuild our exact machine code.
-        assert client.unwrap_license_blob(blob) == MACHINE_A
+        # 2. The blob must decrypt + verify and rebuild GD51(machine) -- the
+        #    value IsReg1 compares against GetMNum(_, False, False).
+        assert client.unwrap_license_blob(blob) == gd51(MACHINE_A)
 
         # 3. Register confirm (SR.get_rginfo) -> result 12 + transport blob.
         code2, transport = await client.register_confirm(blob)
         assert code2 == Result.REGISTER_OK
-        assert client.unwrap_license_blob(transport) == MACHINE_A
+        assert client.unwrap_license_blob(transport) == gd51(MACHINE_A)
+
+
+@pytest.mark.asyncio
+async def test_activation_without_password(tmp_path):
+    """Real GUI regression: FrmRg.createinfo(false, false) with the license
+    protection password left blank emits only [RSA(code), RSA(GetMNum)] because
+    RSAHelper.EncryptString("") == "" and the trailing AppendLine/Trim collapses
+    the empty password line away. The server must still accept this 2-line,
+    password-less apply (result 13 + blob), not reject it as INFO_ERROR(6)."""
+    server, aio_server, client = await _make_server(tmp_path)
+    async with aio_server:
+        lines = [client._rsa(CODE), client._machine_field(MACHINE_A)]  # no pw, no optional
+        code, blob = await client._send(Sendtype.APPLY_REGISTER, lines)
+        assert code == Result.APPLY_OK, f"expected 13, got {code}"
+        assert blob, "expected a license blob"
+        assert client.unwrap_license_blob(blob) == gd51(MACHINE_A)
+
+        code2, transport = await client.register_confirm(blob)
+        assert code2 == Result.REGISTER_OK
 
 
 @pytest.mark.asyncio

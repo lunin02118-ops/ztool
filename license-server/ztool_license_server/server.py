@@ -19,7 +19,7 @@ from .crypto import aes_security_center as aes
 from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
 from .protocol.dispatcher import Sendtype, Status, Result, status_to_result
-from .license_blob import generate_license_blob, getver_today
+from .license_blob import generate_license_blob, getver_today, recover_raw_machine
 from .db import LicenseDB
 
 
@@ -153,7 +153,12 @@ class LicenseServer:
 
         reg_code = parts[0] if len(parts) > 0 else ""
         password = parts[1] if len(parts) > 1 else ""
-        machine_code = parts[2] if len(parts) > 2 else ""
+        # The client transmits GetMNum(_, True, True) == RSA(raw + getver); after
+        # RSA-decryption we strip the trailing version suffix to recover the raw
+        # "UUID|disk|board" string that IsReg1's GetMNum(_, False, False)==GD51(raw)
+        # is computed over. An empty machine (hosts with no hardware IDs) stays "".
+        machine_field = parts[2] if len(parts) > 2 else ""
+        machine_code = recover_raw_machine(machine_field, self.config.client_version)
 
         # Validate the registration code
         is_valid, error = self.db.validate_code(reg_code)
@@ -224,7 +229,10 @@ class LicenseServer:
 
         reg_code = parts[0] if len(parts) > 0 else ""
         password = parts[1] if len(parts) > 1 else ""
-        machine_code = parts[2] if len(parts) > 2 else ""
+        # Same GetMNum(_, True, True) transport as apply_register: strip the
+        # version suffix so the machine matches the raw value bound at activation.
+        machine_field = parts[2] if len(parts) > 2 else ""
+        machine_code = recover_raw_machine(machine_field, self.config.client_version)
 
         # Check password
         if not self.db.check_password(reg_code, password):
@@ -286,12 +294,20 @@ class LicenseServer:
         while lines and not lines[-1].strip():
             lines.pop()
 
-        if len(lines) >= 3 and lines[0].strip() and lines[2].strip():
+        # The multi-line (createinfo) format always carries at least the code
+        # line followed by the machine line. The password line (index 2) is an
+        # EMPTY string when the user leaves the "license protection password"
+        # field blank — a fully legitimate, password-less activation — and the
+        # trailing-blank strip above then collapses the body to just 2 lines
+        # ([code, machine]). Any plaintext that contains a newline is therefore
+        # the createinfo format; a single RSA blob (legacy emulator/tests) has
+        # none and falls through to the backslash fallback below.
+        if len(lines) >= 2 and lines[0].strip():
             code = _maybe_decrypt(lines[0])
             # Machine code (SR.GetMNum) is itself RSA-encrypted when present;
             # it is an empty line on hosts whose hardware IDs are unavailable.
             machine = _maybe_decrypt(lines[1])
-            password = _maybe_decrypt(lines[2])
+            password = _maybe_decrypt(lines[2]) if len(lines) > 2 else ""
             extra = [_maybe_decrypt(ln) for ln in lines[3:]]
             return [code, password, machine] + extra
 

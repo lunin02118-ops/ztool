@@ -23,6 +23,7 @@ from ztool_license_server.license_blob import (
     build_transport_payload,
     generate_license_blob,
     getver_today,
+    gd51,
     default_reg_time,
     REGISTRY_PATHS,
     FIRST_LEN_B1,
@@ -33,6 +34,9 @@ from ztool_license_server.license_blob import (
 
 # A realistic machine code: "<36-char GUID>|<disk>|<board>"
 MACHINE_CODE = "12345678-90AB-CDEF-1234-567890ABCDEF|WD-DISKSERIAL01|BOARDID-XYZ"
+# IsReg1 compares the blob machine value against GetMNum(_, False, False) ==
+# GD51(raw) (a 32-char uppercase MD5), not the raw machine string.
+MACHINE_HASH = gd51(MACHINE_CODE)
 CLIENT_VERSION = "5.0.0.0"
 
 
@@ -89,9 +93,13 @@ def emulate_isreg1(branches, pub_key):
 
     # IsReg1 predicates
     assert len(out_uuid) == 36, f"uuid len must be 36, got {len(out_uuid)}"
+    # IsReg1's empty-machine guard: an empty machine (loc_c) is rejected before
+    # the GetMNum comparison (verified from IL, SR.IsReg1 ~855-886).
     assert loc_c != "" and b2 != "" and b3 != ""
     assert b2 + b3 == loc_c, "Concat(b2,b3) must equal loc_c"
-    assert float(out_reg_time) != 0.0, "ToDouble(reg_time) must be non-zero"
+    # Verified from IsReg1 IL (~905-909): ``ToDouble(reg_time) == 0`` selects the
+    # valid branch (``beq`` against 0.0). A perpetual license stores "0".
+    assert float(out_reg_time) == 0.0, "ToDouble(reg_time) must be zero (perpetual)"
 
     return True, out_uuid, out_reg_time, loc_c
 
@@ -126,7 +134,7 @@ class TestLicenseBlob:
         ok, uuid, reg_time, loc_c = emulate_isreg1(branches, pub)
         assert ok
         assert uuid == MACHINE_CODE.split("|")[0]
-        assert loc_c == MACHINE_CODE
+        assert loc_c == MACHINE_HASH
 
     def test_transport_roundtrip_passes_isreg1(self, keypair):
         pub = keypair["public_component_key"]
@@ -147,7 +155,7 @@ class TestLicenseBlob:
         joined = aes.decrypt(transport, gv)
         branches = joined.split("\t")
         ok, uuid, reg_time, loc_c = emulate_isreg1(branches, pub)
-        assert ok and loc_c == MACHINE_CODE
+        assert ok and loc_c == MACHINE_HASH
 
     def test_high_level_generate_passes_isreg1(self, keypair):
         pub = keypair["public_component_key"]
@@ -161,7 +169,7 @@ class TestLicenseBlob:
         gv = getver_today(CLIENT_VERSION, is_64bit=True)
         branches = aes.decrypt(transport, gv).split("\t")
         ok, uuid, reg_time, loc_c = emulate_isreg1(branches, pub)
-        assert ok and loc_c == MACHINE_CODE
+        assert ok and loc_c == MACHINE_HASH
 
     def test_wrong_machine_code_rejected(self, keypair):
         """A blob bound to a different machine must fail the GetMNum comparison."""
@@ -176,9 +184,9 @@ class TestLicenseBlob:
         gv = getver_today(CLIENT_VERSION, is_64bit=True)
         branches = aes.decrypt(transport, gv).split("\t")
         ok, uuid, reg_time, loc_c = emulate_isreg1(branches, pub)
-        # loc_c is the bound machine code; a different current machine would not match.
-        assert loc_c == MACHINE_CODE
-        assert loc_c != "SOME-OTHER-MACHINE"
+        # loc_c is GD51(bound machine); a different current machine hashes differently.
+        assert loc_c == MACHINE_HASH
+        assert loc_c != gd51("SOME-OTHER-MACHINE|D|B")
 
     def test_offline_des_roundtrip_passes_isreg1(self, keypair):
         """Phase 7: offline activation file = DES(transport)."""
@@ -198,7 +206,7 @@ class TestLicenseBlob:
         gv = getver_today(CLIENT_VERSION, is_64bit=True)
         branches = aes.decrypt(recovered, gv).split("\t")
         ok, uuid, reg_time, loc_c = emulate_isreg1(branches, pub)
-        assert ok and loc_c == MACHINE_CODE
+        assert ok and loc_c == MACHINE_HASH
 
 
 def _make_pp(first_len: int) -> str:

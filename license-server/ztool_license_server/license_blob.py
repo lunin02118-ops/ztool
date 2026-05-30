@@ -40,8 +40,14 @@ IsReg1 checks (all must hold):
     * F           = RSA_decrypt(b1[0], pub)
     * dyn_key D   = AES_decrypt(b1[1], F)            (a ComponentKey; we use pub)
     * uuid36      = RSA_decrypt(b0[0], D)   and len == 36
-    * reg_time    = RSA_decrypt(b0[2], D)   and ToDouble(reg_time) != 0
+    * reg_time    = RSA_decrypt(b0[2], D)   and ToDouble(reg_time) == 0
+                    (verified from IsReg1 IL: ``beq`` against 0.0 -> valid; a
+                    perpetual license stores "0". The on-screen "Action until"
+                    is derived separately from the registry key creation time in
+                    SR.get_rgtime, NOT from this field.)
     * loc_c       = AES_decrypt(RSA_decrypt(b0[1], D), F) == GetMNum() == machine_code
+    * machine_code (and thus loc_c / b2+b3) MUST be non-empty: IsReg1 rejects an
+      empty machine via an explicit guard before the GetMNum comparison.
     * mc_half1+mc_half2 (b2,b3 decrypted) == loc_c
 """
 
@@ -63,19 +69,23 @@ def _rand_str(n: int) -> str:
     return "".join(secrets.choice(_PP_ALPHABET) for _ in range(n))
 
 
-def default_reg_time(when: Optional[datetime] = None) -> str:
-    """
-    Registration time as an OLE-Automation-Date numeric string.
+# A perpetual license stores reg_time = "0": IsReg1 validates the field with
+# ``Conversions.ToDouble(reg_time) == 0`` (verified from the de-obfuscated IL,
+# SR.IsReg1 lines ~905-909: ``beq`` against the literal 0.0 selects the valid
+# branch). The visible perpetual expiry is computed elsewhere
+# (SR.get_rgtime, from the registry key creation time), not from this value.
+PERPETUAL_REG_TIME = "0"
 
-    IsReg1 only requires ``Conversions.ToDouble(reg_time) != 0``, so we store a
-    numeric (OADate) string which parses to a non-zero double. (The exact
-    on-screen format used by the original server is not verifiable from static
-    analysis; this satisfies the validation predicate.)
+
+def default_reg_time(when: Optional[datetime] = None) -> str:
+    """Registration-time field for a perpetual license.
+
+    IsReg1 requires ``Conversions.ToDouble(reg_time) == 0``, so a perpetual
+    license stores ``"0"``. (Earlier revisions stored a non-zero OADate, which
+    made IsReg1 reject the blob -- the client saved it but reported a
+    "failed to save registration info" error.)
     """
-    when = when or datetime.now()
-    oa_epoch = datetime(1899, 12, 30)
-    delta = when - oa_epoch
-    return f"{delta.days + delta.seconds / 86400.0:.6f}"
+    return PERPETUAL_REG_TIME
 
 
 # Registry branches in the order FrmRg.rg() writes them (== "\t" split order).
@@ -115,16 +125,56 @@ def _wrap_branch(ciphertext: str, passphrase: str, first_len: int) -> str:
     return prefix + ciphertext + suffix
 
 
-def _split_machine_code(machine_code: str) -> (str, str):
-    """Split the machine code into two halves whose concatenation is the original."""
-    mid = len(machine_code) // 2
-    return machine_code[:mid], machine_code[mid:]
+def gd51(s: str) -> str:
+    """Reproduce ``code.GD51(s)`` from the client IL: the uppercase hex MD5 of
+    ``UTF8(s)`` (each byte ``ToString("X2")``), i.e. a 32-char hash string."""
+    return hashlib.md5(s.encode("utf-8")).hexdigest().upper()
+
+
+def machine_version_suffix(client_version: str, is_64bit: bool = True) -> str:
+    """The suffix ``GetMNum(_, True, True)`` appends to the raw machine string
+    before RSA-encrypting it for transport: ``code.getver("", False)`` returns
+    ``Application.ProductVersion + " (x64)"/" (x86)"`` (verified from IL)."""
+    return f"{client_version}{' (x64)' if is_64bit else ' (x86)'}"
+
+
+def recover_raw_machine(machine_field: str, client_version: str, is_64bit: bool = True) -> str:
+    """Recover the raw ``UUID|disk|board`` string the client's GetMNum produced.
+
+    ``createinfo`` transmits the machine field as
+    ``RSA( Mid(raw + "\\n" + getver, 1, 117) )`` (``GetMNum(_, True, True)``):
+    verified from SR.GetMNum IL, which does ``Concat(raw, "\\n", getver(...))``
+    before ``Mid(.,1,117)`` and RSA. The server has already RSA-decrypted the
+    field (``machine_field``). IsReg1 compares the blob's machine value against
+    ``GetMNum(_, False, False) == GD51(raw)``, so we must recover the exact
+    ``raw`` (no version tail). Since ``raw`` (UUID|disk|board) never contains a
+    newline, the raw string is everything before the first ``"\\n"``. A
+    no-newline legacy form (``raw + getver``) is handled by stripping the
+    version suffix as a fallback. (``raw + "\\n" + getver`` is well under the
+    117-char Mid cap for real hardware IDs, so no truncation occurs.)
+    """
+    s = machine_field.strip()
+    if "\n" in s:
+        return s.split("\n", 1)[0].strip()
+    suffix = machine_version_suffix(client_version, is_64bit)
+    if suffix and s.endswith(suffix):
+        s = s[: -len(suffix)]
+    return s.strip()
+
+
+def _split_hash(machine_hash: str) -> Tuple[str, str]:
+    """Split the 32-char machine hash into two halves (16 + 16) whose
+    concatenation is the original (IsReg1 checks ``b2 + b3 == GD51(raw)``)."""
+    mid = len(machine_hash) // 2
+    return machine_hash[:mid], machine_hash[mid:]
 
 
 def _uuid36(machine_code: str) -> str:
     """
-    The first field of the machine code is the hardware UUID. IsReg1 requires
-    RSA_decrypt(b0[0]) to be exactly 36 characters (a GUID with dashes).
+    The first field of the (raw) machine code is the hardware UUID. IsReg1
+    requires ``RSA_decrypt(b0[0])`` to be exactly 36 characters (a GUID with
+    dashes); the version suffix is appended after the last ``|`` so the first
+    ``|``-field is unaffected.
     """
     uuid = machine_code.split("|", 1)[0].strip()
     return uuid
@@ -151,10 +201,15 @@ def build_registry_branches(
     if dyn_key is None:
         dyn_key = pub_key
 
-    mc_half1, mc_half2 = _split_machine_code(machine_code)
+    # ``machine_code`` is the RAW "UUID|disk|board" GetMNum string. IsReg1
+    # compares the blob's machine value (V_12) and b2+b3 against
+    # ``GetMNum(_, False, False) == GD51(raw)`` (a 32-char uppercase MD5), while
+    # the 36-char uuid field (b0[0]) is the raw first "|"-segment.
+    machine_hash = gd51(machine_code)
+    mc_half1, mc_half2 = _split_hash(machine_hash)
     uuid36 = _uuid36(machine_code)
 
-    # --- b2 / b3 : the two machine-code halves, RSA-signed then AES-wrapped ---
+    # --- b2 / b3 : the two machine-HASH halves, RSA-signed then AES-wrapped ---
     b2_inner = sign_string(mc_half1, priv_key)
     b2_ct = aes.encrypt(b2_inner, passphrase_b2)
     b2 = _wrap_branch(b2_ct, passphrase_b2, FIRST_LEN_B2)
@@ -170,9 +225,9 @@ def build_registry_branches(
     b1_ct = aes.encrypt(b1_plain, passphrase_b1)
     b1 = _wrap_branch(b1_ct, passphrase_b1, FIRST_LEN_B1)
 
-    # --- b0 : uuid36, AES(machine_code,F), reg_time — each RSA-signed (dyn_key) --
+    # --- b0 : uuid36, AES(machine_hash,F), reg_time — each RSA-signed (dyn_key) --
     b0_part0 = sign_string(uuid36, priv_key)
-    b0_part1 = sign_string(aes.encrypt(machine_code, seed_f), priv_key)
+    b0_part1 = sign_string(aes.encrypt(machine_hash, seed_f), priv_key)
     b0_part2 = sign_string(reg_time, priv_key)
     b0_plain = b0_part0 + "\n" + b0_part1 + "\n" + b0_part2
     b0 = aes.encrypt(b0_plain, seed_f)
