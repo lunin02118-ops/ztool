@@ -88,7 +88,7 @@ class ZToolClientEmulator:
     async def verify_remove(self, code, machine):
         return await self._round_trip(Sendtype.VERIFY_REMOVE, [code, machine])
 
-    def unwrap_license_blob(self, blob: str, client_version="5.0.0.0") -> str:
+    def unwrap_license_blob(self, blob: str, client_version=ServerConfig.client_version) -> str:
         """Reverse the server's transport payload the way FrmRg.rg()+IsReg1 do.
 
         transport = AES_getver( "\\t".join([b0, b1, b2, b3]) )

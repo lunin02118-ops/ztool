@@ -45,6 +45,7 @@ IsReg1 checks (all must hold):
     * mc_half1+mc_half2 (b2,b3 decrypted) == loc_c
 """
 
+import hashlib
 import secrets
 import string
 from datetime import datetime
@@ -212,12 +213,18 @@ def build_transport_payload(
 
 def getver_today(client_version: str, is_64bit: bool = True) -> str:
     """
-    Reproduce SR.getver("今天。。。") on the client: the product version string
-    followed by an architecture suffix. This is the AES passphrase rg() uses to
-    decrypt the transport payload.
+    Reproduce ``SR.getver("今天。。。", True)`` on the client (verified from IL):
+
+        ver  = Application.ProductVersion + (" (x64)" | " (x86)")
+        return code.GD51(ver)
+
+    where ``code.GD51(s)`` is the uppercase hex MD5 of ``UTF8(s)`` (ToString("X2")
+    per byte). This 32-char hex string is the AES passphrase ``rg()`` feeds to
+    SecurityCenter.DecriptStr to decrypt the transport payload.
     """
     suffix = " (x64)" if is_64bit else " (x86)"
-    return f"{client_version}{suffix}"
+    ver = f"{client_version}{suffix}"
+    return hashlib.md5(ver.encode("utf-8")).hexdigest().upper()
 
 
 def generate_license_blob(

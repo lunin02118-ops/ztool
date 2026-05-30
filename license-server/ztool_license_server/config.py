@@ -29,7 +29,7 @@ class ServerConfig:
     # Client product version, used to derive the rg() transport passphrase
     # (SR.getver("今天。。。") = version + " (x64)"/" (x86)"). Must match the
     # version of the (re-keyed) client this server issues licenses for.
-    client_version: str = "5.0.0.0"
+    client_version: str = "3.8.4"
 
     # Logging
     log_level: str = "INFO"
