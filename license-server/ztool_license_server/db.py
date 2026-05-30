@@ -29,7 +29,7 @@ class LicenseDB:
             CREATE TABLE IF NOT EXISTS license_codes (
                 code TEXT PRIMARY KEY,
                 password TEXT,
-                device_limit INTEGER DEFAULT 3,
+                device_limit INTEGER DEFAULT 1,
                 expires_at TEXT,
                 created_at TEXT DEFAULT (datetime('now')),
                 is_active INTEGER DEFAULT 1,
@@ -59,7 +59,7 @@ class LicenseDB:
         self._conn.commit()
 
     def add_license_code(self, code: str, password: str = "",
-                         device_limit: int = 3,
+                         device_limit: int = 1,
                          expires_at: Optional[str] = None,
                          note: str = "") -> None:
         """Add a new license code to the database."""
@@ -153,11 +153,12 @@ class LicenseDB:
         if self.is_machine_activated(code, machine_code):
             return True, ""  # Already active — success
 
-        # Check device limit
-        count = self.get_activation_count(code)
-        limit = self.get_device_limit(code)
-        if count >= limit:
-            return False, "授权电脑数量已达上限"  # Device limit reached
+        # One code is bound to exactly ONE machine. If any other machine still
+        # holds this code, the user must transfer the license off it first
+        # (apply_remove). A different hardware fingerprint is therefore rejected
+        # until the existing seat is freed.
+        if self.get_activation_count(code) >= 1:
+            return False, "授权电脑数量已达上限"  # Device limit reached (1 per code)
 
         self._conn.execute(
             "INSERT OR REPLACE INTO activations (code, machine_code, is_active) VALUES (?, ?, 1)",

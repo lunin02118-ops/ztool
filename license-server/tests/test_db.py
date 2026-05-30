@@ -34,23 +34,32 @@ class TestLicenseDB:
         assert error == "无效注册码"
 
     def test_activate_and_check(self, db):
-        """Activate a license and check it."""
+        """One code binds to exactly ONE machine; a different machine is
+        rejected until the license is transferred off the first."""
         code = "ACTIV-ATION-TESTT-CODEE-12345"
-        db.add_license_code(code, device_limit=2)
+        db.add_license_code(code)
 
-        # First activation
+        # First machine activates.
         success, error = db.activate(code, "MACHINE_CODE_1")
         assert success
         assert db.is_machine_activated(code, "MACHINE_CODE_1")
 
-        # Second activation (different machine)
+        # Same machine again is idempotent (still success, no extra seat).
+        success, error = db.activate(code, "MACHINE_CODE_1")
+        assert success
+        assert db.get_activation_count(code) == 1
+
+        # A different machine is rejected — only one machine per code.
+        success, error = db.activate(code, "MACHINE_CODE_2")
+        assert not success
+        assert "上限" in error  # Device limit reached (1 per code)
+        assert db.get_activation_count(code) == 1
+
+        # After transferring the license off machine 1, machine 2 may bind.
+        db.deactivate(code, "MACHINE_CODE_1")
         success, error = db.activate(code, "MACHINE_CODE_2")
         assert success
-
-        # Third activation should fail (limit=2)
-        success, error = db.activate(code, "MACHINE_CODE_3")
-        assert not success
-        assert "上限" in error  # Device limit reached
+        assert db.get_activation_count(code) == 1
 
     def test_activate_rejects_empty_machine_code(self, db):
         """Defense-in-depth: the DB must never bind a seat to a blank

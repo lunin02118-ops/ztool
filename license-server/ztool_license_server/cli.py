@@ -3,7 +3,7 @@ Command-line interface for ZTool license server management.
 
 Usage:
     python -m ztool_license_server.cli keygen [--dir keys/]
-    python -m ztool_license_server.cli add-code <CODE> [--limit 3] [--expires 2027-01-01]
+    python -m ztool_license_server.cli add-code <CODE> [--limit 1] [--expires 2027-01-01]
     python -m ztool_license_server.cli list-codes
     python -m ztool_license_server.cli list-activations
     python -m ztool_license_server.cli offline-activate <MACHINE_CODE> [--out file.lic]
@@ -149,7 +149,7 @@ def main():
     p_add = sub.add_parser('add-code', help='Add a license code')
     p_add.add_argument('code', help='License code (format: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)')
     p_add.add_argument('--password', default='', help='Optional protection password')
-    p_add.add_argument('--limit', type=int, default=3, help='Device limit (default: 3)')
+    p_add.add_argument('--limit', type=int, default=1, help='Device limit (default: 1 — one machine per code)')
     p_add.add_argument('--expires', default=None, help='Expiry date (ISO format)')
     p_add.add_argument('--note', default='', help='Note')
 

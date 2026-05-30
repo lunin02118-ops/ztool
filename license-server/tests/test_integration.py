@@ -145,7 +145,7 @@ class ZToolClientEmulator:
         return b2 + b3
 
 
-async def _make_server(tmp_path, device_limit=2, password=""):
+async def _make_server(tmp_path, device_limit=1, password=""):
     kp = generate_keypair()
     keys_dir = tmp_path / "keys"
     save_keypair(kp, str(keys_dir))
@@ -211,21 +211,28 @@ async def test_invalid_code_rejected(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_device_limit_enforced(tmp_path):
-    server, aio_server, client = await _make_server(tmp_path, device_limit=2)
+async def test_one_machine_per_code(tmp_path):
+    """One code binds to exactly one machine: the first activates, a second
+    distinct machine is rejected (must transfer first), and re-activating the
+    same machine stays OK."""
+    server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
         c1, _ = await client.apply_register(CODE, MACHINE_A)
-        c2, _ = await client.apply_register(CODE, MACHINE_B)
-        assert c1 == Result.APPLY_OK and c2 == Result.APPLY_OK
+        assert c1 == Result.APPLY_OK
 
-        # third distinct device exceeds the limit
-        c3, _ = await client.apply_register(CODE, MACHINE_C)
-        assert c3 == Result.DEVICE_LIMIT
+        # a second distinct device is rejected — only one machine per code
+        c2, _ = await client.apply_register(CODE, MACHINE_B)
+        assert c2 == Result.DEVICE_LIMIT
+
+        # the already-bound machine can re-activate freely
+        c1b, _ = await client.apply_register(CODE, MACHINE_A)
+        assert c1b == Result.APPLY_OK
+        assert server.db.get_activation_count(CODE) == 1
 
 
 @pytest.mark.asyncio
 async def test_transfer_out_flow(tmp_path):
-    server, aio_server, client = await _make_server(tmp_path, device_limit=1)
+    server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
         c1, _ = await client.apply_register(CODE, MACHINE_A)
         assert c1 == Result.APPLY_OK
