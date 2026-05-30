@@ -179,7 +179,9 @@ class LicenseServer:
         parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
-        machine_code = parts[1] if len(parts) > 1 else ""
+        # Real client (createinfo) order is [code, password, machine]; legacy
+        # 2-field emulator order is [code, machine]. Prefer index 2, fall back to 1.
+        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
 
         # Validate
         is_valid, error = self.db.validate_code(reg_code)
@@ -215,7 +217,7 @@ class LicenseServer:
         parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
-        machine_code = parts[1] if len(parts) > 1 else ""
+        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
 
         if self.db.is_machine_activated(reg_code, machine_code):
             self.db.log_action("verify_register", code=reg_code, machine_code=machine_code,
@@ -256,7 +258,7 @@ class LicenseServer:
         parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
-        machine_code = parts[1] if len(parts) > 1 else ""
+        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
 
         if not self.db.is_machine_activated(reg_code, machine_code):
             self.db.log_action("verify_remove", code=reg_code, machine_code=machine_code,
@@ -268,15 +270,48 @@ class LicenseServer:
             return self._make_response(Sendtype.VERIFY_REMOVE, Status.TRANSFER_FAILED)
 
     def _decrypt_request(self, plaintext: str) -> list:
-        """Decrypt an RSA-encrypted request body and split it into fields.
+        """Parse a decrypted request body into ``[code, password, machine, *extra]``.
 
-        The client encrypts request fields with the server's PUBLIC key, so the
-        server reverses the operation with its PRIVATE key (c^d mod n). If RSA
-        decryption fails (e.g. an unencrypted/test payload), the body is parsed
-        as plaintext.
+        Ground truth is the real client's ``ZTool.FrmRg.createinfo`` (verified by
+        IL): it builds the payload with ``StringBuilder.AppendLine`` (so fields are
+        separated by a newline) in this order:
 
-        Fields are separated by a backslash ('\\') per the client's createinfo logic.
+            line 0: RSAHelper.EncryptString(reg_code, server_public_key)
+            line 1: SR.GetMNum(...)                     -- machine code, NOT encrypted
+            line 2: RSAHelper.EncryptString(password, server_public_key)
+            line 3: RSAHelper.EncryptString(MachineName\\UserName, pub)  -- optional
+            line 4: SR.get_rgtime()                                      -- optional
+
+        The code and password are individually RSA-encrypted with the server's
+        PUBLIC key, so we recover them with the PRIVATE key (c^d mod n). The
+        machine code is sent in clear. We normalise the result to the order the
+        handlers expect: ``[code, password, machine, *extra]``.
+
+        A legacy fallback (single RSA blob split on backslash) is kept so the
+        in-process emulator and existing integration tests keep working.
         """
+        def _maybe_decrypt(field: str) -> str:
+            field = field.strip()
+            if not field:
+                return field
+            try:
+                return decrypt_string(field, self._private_key, encoding='utf-8')
+            except Exception:
+                return field
+
+        lines = [ln for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
+        # Strip trailing blank lines produced by the final AppendLine/Trim.
+        while lines and not lines[-1].strip():
+            lines.pop()
+
+        if len(lines) >= 3 and lines[0].strip() and lines[2].strip():
+            code = _maybe_decrypt(lines[0])
+            machine = lines[1].strip()
+            password = _maybe_decrypt(lines[2])
+            extra = [_maybe_decrypt(ln) for ln in lines[3:]]
+            return [code, password, machine] + extra
+
+        # Legacy fallback: whole body RSA-encrypted, fields joined by backslash.
         try:
             decrypted = decrypt_string(plaintext, self._private_key, encoding='utf-8')
             return decrypted.split('\\')
