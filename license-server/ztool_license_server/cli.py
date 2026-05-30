@@ -6,6 +6,7 @@ Usage:
     python -m ztool_license_server.cli add-code <CODE> [--limit 3] [--expires 2027-01-01]
     python -m ztool_license_server.cli list-codes
     python -m ztool_license_server.cli list-activations
+    python -m ztool_license_server.cli offline-activate <MACHINE_CODE> [--out file.lic]
 """
 
 import argparse
@@ -13,6 +14,7 @@ import os
 import sys
 
 from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
+from .license_blob import generate_offline_activation
 from .db import LicenseDB
 from .config import ServerConfig
 
@@ -86,6 +88,37 @@ def cmd_list_activations(args):
     db.close()
 
 
+def cmd_offline_activate(args):
+    """Produce an offline activation file for a given machine code."""
+    config = ServerConfig()
+    if args.keys_dir:
+        config.keys_dir = args.keys_dir
+    pub_path = os.path.join(config.keys_dir, 'public_key.txt')
+    priv_path = os.path.join(config.keys_dir, 'private_key.txt')
+    if not (os.path.exists(pub_path) and os.path.exists(priv_path)):
+        print(f"ERROR: key pair not found in {config.keys_dir}. Run 'keygen' first.",
+              file=sys.stderr)
+        sys.exit(1)
+    with open(pub_path) as f:
+        public_key = f.read().strip()
+    with open(priv_path) as f:
+        private_key = f.read().strip()
+
+    payload = generate_offline_activation(
+        machine_code=args.machine_code,
+        public_key=public_key,
+        private_key=private_key,
+        client_version=args.client_version,
+        is_64bit=not args.x86,
+    )
+    if args.out:
+        with open(args.out, 'w', encoding='utf-8') as f:
+            f.write(payload)
+        print(f"Offline activation file written to: {args.out}")
+    else:
+        print(payload)
+
+
 def main():
     parser = argparse.ArgumentParser(description="ZTool License Server CLI")
     parser.add_argument('--db', default=None, help='Database path')
@@ -109,6 +142,16 @@ def main():
     # list-activations
     sub.add_parser('list-activations', help='List activations')
 
+    # offline-activate
+    p_off = sub.add_parser('offline-activate',
+                           help='Generate an offline activation file for a machine code')
+    p_off.add_argument('machine_code', help='Machine code reported by the client')
+    p_off.add_argument('--keys-dir', default=None, help='Directory with public/private keys')
+    p_off.add_argument('--client-version', default=ServerConfig.client_version,
+                       help='Client product version (default: %(default)s)')
+    p_off.add_argument('--x86', action='store_true', help='Target 32-bit client (default: x64)')
+    p_off.add_argument('--out', default=None, help='Output file (default: stdout)')
+
     args = parser.parse_args()
 
     if args.command == 'keygen':
@@ -119,6 +162,8 @@ def main():
         cmd_list_codes(args)
     elif args.command == 'list-activations':
         cmd_list_activations(args)
+    elif args.command == 'offline-activate':
+        cmd_offline_activate(args)
     else:
         parser.print_help()
 

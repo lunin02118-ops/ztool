@@ -195,12 +195,13 @@ class LicenseServer:
                               result="limit_reached", details=error)
             return self._make_response(Sendtype.REGISTER, error)
 
-        # Generate license blob
-        reg_info = f"code:{reg_code}"
+        # Generate the license transport payload (the string FrmRg.rg()
+        # consumes: AES_getver( "\t".join(4 registry branch blobs) )).
         blob = generate_license_blob(
             machine_code=machine_code,
+            public_key=self._public_key,
             private_key=self._private_key,
-            reg_info=reg_info,
+            client_version=self.config.client_version,
         )
 
         # Response: success status + license blob

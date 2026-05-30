@@ -26,6 +26,11 @@ class ServerConfig:
     default_device_limit: int = 3  # Max PCs per license code
     trial_duration_seconds: int = 1800  # 30 minutes trial
 
+    # Client product version, used to derive the rg() transport passphrase
+    # (SR.getver("今天。。。") = version + " (x64)"/" (x86)"). Must match the
+    # version of the (re-keyed) client this server issues licenses for.
+    client_version: str = "5.0.0.0"
+
     # Logging
     log_level: str = "INFO"
 
@@ -39,4 +44,5 @@ class ServerConfig:
             db_path=os.getenv('ZTOOL_DB_PATH', cls.db_path),
             default_device_limit=int(os.getenv('ZTOOL_DEVICE_LIMIT', '3')),
             log_level=os.getenv('ZTOOL_LOG_LEVEL', 'INFO'),
+            client_version=os.getenv('ZTOOL_CLIENT_VERSION', cls.client_version),
         )

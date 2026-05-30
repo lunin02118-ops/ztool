@@ -50,11 +50,9 @@ def encrypt(plaintext: str, passphrase: str) -> str:
     iv = key  # IV = key in SecurityCenter
 
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    # .NET uses UTF-16LE for the plaintext too in CryptoStream
-    # Actually looking at the code more carefully:
-    # The input to EncriptStr is a string, which gets written via StreamWriter
-    # default encoding for .NET StreamWriter is UTF-8
-    plaintext_bytes = plaintext.encode('utf-8')
+    # SecurityCenter.EncriptStr feeds Encoding.Unicode.GetBytes(text) to
+    # TransformFinalBlock, i.e. the plaintext is UTF-16LE encoded (NOT UTF-8).
+    plaintext_bytes = plaintext.encode('utf-16-le')
     padded = pad(plaintext_bytes, AES.block_size)
     ciphertext = cipher.encrypt(padded)
     return base64.b64encode(ciphertext).decode('ascii')
@@ -72,7 +70,8 @@ def decrypt(ciphertext_b64: str, passphrase: str) -> str:
     ciphertext = base64.b64decode(ciphertext_b64)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     decrypted = unpad(cipher.decrypt(ciphertext), AES.block_size)
-    return decrypted.decode('utf-8')
+    # DecriptStr returns Encoding.Unicode.GetString(...) → UTF-16LE.
+    return decrypted.decode('utf-16-le')
 
 
 def encrypt_message_body(plaintext: str, sendtype: int) -> str:

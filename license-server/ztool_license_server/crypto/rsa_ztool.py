@@ -50,18 +50,21 @@ def encrypt_string(plaintext: str, component_key: str, encoding: str = 'cp936') 
 
     Process:
     1. Encode plaintext to bytes using specified encoding (default: cp936/GBK for Chinese)
-    2. Split into blocks of 128 bytes
+    2. Split into blocks of 128 characters (encoded with Encoding.Default)
     3. For each block: convert to big integer, compute m^e mod n
     4. Convert result to uppercase hex string
     5. Join blocks with '@'
     """
     exponent, modulus = resolve_key(component_key)
-    text_bytes = plaintext.encode(encoding)
 
     blocks = []
+    # RSAHelper.EncryptString splits the *string* into 128-CHARACTER blocks
+    # (Substring(i*128, 128)) and encodes each block with Encoding.Default
+    # (cp936). It is NOT a 128-byte split.
     block_size = 128
-    for i in range(0, len(text_bytes), block_size):
-        block = text_bytes[i:i + block_size]
+    for i in range(0, len(plaintext), block_size):
+        chunk = plaintext[i:i + block_size]
+        block = chunk.encode(encoding)
         m = int.from_bytes(block, byteorder='big')
         c = pow(m, exponent, modulus)
         hex_str = format(c, 'X')
@@ -86,21 +89,23 @@ def decrypt_string(ciphertext: str, component_key: str, encoding: str = 'cp936')
     exponent, modulus = resolve_key(component_key)
 
     blocks = ciphertext.split('@')
-    result_bytes = b''
+    result = []
 
+    # RSAHelper.DecryptString decodes each block separately with
+    # Encoding.Default and appends the resulting string, so we mirror that
+    # (BigInteger.getBytes() emits big-endian minimal bytes).
     for hex_block in blocks:
         if not hex_block:
             continue
         c = int(hex_block, 16)
         m = pow(c, exponent, modulus)
-        # Convert to bytes - determine byte length from modulus size
         byte_len = (m.bit_length() + 7) // 8
         if byte_len == 0:
             byte_len = 1
         m_bytes = m.to_bytes(byte_len, byteorder='big')
-        result_bytes += m_bytes
+        result.append(m_bytes.decode(encoding))
 
-    return result_bytes.decode(encoding)
+    return ''.join(result)
 
 
 def sign_string(plaintext: str, private_component_key: str, encoding: str = 'cp936') -> str:
@@ -117,5 +122,5 @@ def sign_string(plaintext: str, private_component_key: str, encoding: str = 'cp9
 ORIGINAL_PUBLIC_KEY = (
     "AwEAAZ5qj1uplH7vvTuWxvXhT/eJcVyJYSl0KehsVQDCTG6IPI+Sb4kOyay4Gq4opHz4NflA6Lvo"
     "mma3wV9WcgzsINJg6hCHuaJ6yONm/zDfZwVPxWWVWJJOxcQcfWkcawp65kGOy31cCH1mL6VDHDgc"
-    "W5QzwtlgvyYRLU6C7xHWyshiR"
+    "W5QzwtlgvyYRLU6C7xHWyshir"
 )

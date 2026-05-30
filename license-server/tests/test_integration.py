@@ -28,6 +28,9 @@ from ztool_license_server.crypto.aes_security_center import (
     PASSPHRASE_BINGYU,
 )
 from ztool_license_server.crypto import aes_security_center as aes
+from ztool_license_server.license_blob import (
+    getver_today, FIRST_LEN_B2, FIRST_LEN_B3, SUFFIX_LEN,
+)
 from ztool_license_server.protocol.framing import build_response_frame, FrameParser
 from ztool_license_server.protocol.dispatcher import Sendtype, Status
 
@@ -85,15 +88,28 @@ class ZToolClientEmulator:
     async def verify_remove(self, code, machine):
         return await self._round_trip(Sendtype.VERIFY_REMOVE, [code, machine])
 
-    def unwrap_license_blob(self, blob: str, private_key=None) -> str:
-        """Reverse the server's blob layers the way the client validates them.
+    def unwrap_license_blob(self, blob: str, client_version="5.0.0.0") -> str:
+        """Reverse the server's transport payload the way FrmRg.rg()+IsReg1 do.
 
-        blob = AES_encrypt( RSA_sign(fields, private), passphrase )
-        The client AES-decrypts, then RSA-decrypts with the PUBLIC key to verify
-        the server's signature.
+        transport = AES_getver( "\\t".join([b0, b1, b2, b3]) )
+        We undo the rg() AES layer, split the four branches, and reconstruct the
+        bound machine code (loc_c == Concat(b2, b3)). Returns that machine code.
         """
-        signed = aes.decrypt(blob, PASSPHRASE_BINGYU)
-        return decrypt_string(signed, self.public_key, encoding="utf-8")
+        gv = getver_today(client_version, is_64bit=True)
+        joined = aes.decrypt(blob, gv)
+        b0_raw, b1_raw, b2_raw, b3_raw = (
+            x.replace("\x00", "") for x in joined.split("\t")
+        )
+
+        def right(s, n):
+            return s[len(s) - n:] if n <= len(s) else s
+
+        # b2 / b3: pp = Right(b,10)+Left(b,first_len); ct = b[first_len: len-10]
+        pp = right(b2_raw, SUFFIX_LEN) + b2_raw[:FIRST_LEN_B2]
+        b2 = decrypt_string(aes.decrypt(b2_raw[FIRST_LEN_B2: len(b2_raw) - SUFFIX_LEN], pp), self.public_key).strip()
+        pp = right(b3_raw, SUFFIX_LEN) + b3_raw[:FIRST_LEN_B3]
+        b3 = decrypt_string(aes.decrypt(b3_raw[FIRST_LEN_B3: len(b3_raw) - SUFFIX_LEN], pp), self.public_key).strip()
+        return b2 + b3
 
 
 async def _make_server(tmp_path, device_limit=2, password=""):
@@ -126,10 +142,10 @@ async def test_full_online_activation_flow(tmp_path):
         assert status == Status.SUCCESS
         assert blob, "expected a license blob in the register response"
 
-        # 3. The blob must decrypt + verify and embed our machine code
-        inner = client.unwrap_license_blob(blob)
-        assert MACHINE_A in inner
-        assert CODE in inner  # reg_info = code:<CODE>
+        # 3. The blob must decrypt + verify and rebuild our exact machine code
+        #    (loc_c == Concat(b2, b3) == the bound machine code).
+        bound_machine = client.unwrap_license_blob(blob)
+        assert bound_machine == MACHINE_A
 
         # 4. Verify the activation is recognised
         assert await client.verify_register(CODE, MACHINE_A) == Status.SUCCESS
