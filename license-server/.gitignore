@@ -1,0 +1,15 @@
+# Private keys — NEVER commit
+keys/private_key.txt
+keys/keypair_info.json
+
+# Database
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
