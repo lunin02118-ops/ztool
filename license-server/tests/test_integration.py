@@ -1,17 +1,25 @@
 """
 End-to-end integration tests for the license server.
 
-An in-process client emulator exercises the full online activation protocol
-over a real asyncio TCP socket against a freshly generated key pair:
+An in-process client emulator exercises the *real* ZTool activation protocol
+over a real asyncio TCP socket against a freshly generated key pair, matching
+the de-obfuscated client (FrmRg.createinfo / TCPClient.SocketRecive / SR.rg /
+SR.get_rginfo):
 
-    apply_register (128) -> register (130) -> verify_register (131)
-                         -> apply_remove (129) -> verify_remove (132)
+    apply_register (128) -> server replies result 13 + license blob
+    register confirm (131, SR.get_rginfo) -> server replies result 12
+    apply_remove (129) -> result 11 -> remove confirm (132) -> result 7
 
-These tests validate the *internal* end-to-end consistency of the server
-(framing + AES body layer + RSA request layer + signed license blob + device
-bookkeeping). They do NOT prove byte-compatibility with the real ZTool client,
-which requires reference vectors captured on a test bench (see migration plan
-Phase 1/10).
+Wire facts these tests pin down:
+  * Requests are newline-joined fields, each RSA-encrypted with the server's
+    PUBLIC key, then AES-wrapped with passphrase = str(sendtype). The header's
+    first 10-byte field is the SENDTYPE.
+  * Responses put the numeric RESULT code in the first 10-byte header field
+    (NOT the sendtype). The body is RAW (no str(sendtype) AES layer): for
+    success it is the transport blob SR.rg() consumes; for errors it is empty.
+
+These tests validate the internal end-to-end consistency of the server. They do
+NOT by themselves prove byte-compatibility with the real client on a bench.
 """
 
 import asyncio
@@ -24,40 +32,46 @@ from ztool_license_server.crypto.keygen import generate_keypair, save_keypair
 from ztool_license_server.crypto.rsa_ztool import encrypt_string, decrypt_string
 from ztool_license_server.crypto.aes_security_center import (
     encrypt_message_body,
-    decrypt_message_body,
-    PASSPHRASE_BINGYU,
 )
 from ztool_license_server.crypto import aes_security_center as aes
 from ztool_license_server.license_blob import (
     getver_today, FIRST_LEN_B2, FIRST_LEN_B3, SUFFIX_LEN,
 )
-from ztool_license_server.protocol.framing import build_response_frame, FrameParser
-from ztool_license_server.protocol.dispatcher import Sendtype, Status
+from ztool_license_server.protocol.framing import build_frame, FrameParser
+from ztool_license_server.protocol.dispatcher import Sendtype, Result
 
 
 CODE = "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
 MACHINE_A = "UUID-AAAA-1111|DISK-AAAA|BOARD-AAAA"
 MACHINE_B = "UUID-BBBB-2222|DISK-BBBB|BOARD-BBBB"
 MACHINE_C = "UUID-CCCC-3333|DISK-CCCC|BOARD-CCCC"
+# The real client always sends a password field (validated 8-20 chars); for
+# codes with no server-side password the value is irrelevant.
+DUMMY_PW = "Testpass123"
 
 
 class ZToolClientEmulator:
-    """Minimal emulation of the client transport (TCPClient.sendstring)."""
+    """Emulation of the real client transport (TCPClient.sendstring +
+    FrmRg.createinfo + TCPClient.getreceive + SR.rg/get_rginfo)."""
 
     def __init__(self, host, port, public_key):
         self.host = host
         self.port = port
         self.public_key = public_key
 
-    async def _round_trip(self, sendtype: int, fields: list) -> str:
+    def _rsa(self, value: str) -> str:
+        if not value:
+            return ""
+        return encrypt_string(value, self.public_key, encoding="utf-8")
+
+    async def _send(self, sendtype: int, lines: list) -> tuple:
+        """Send one request frame, return (result_code:int, raw_body:str)."""
         reader, writer = await asyncio.open_connection(self.host, self.port)
         try:
-            # Inner request: fields joined with '\' then RSA-encrypted with the
-            # server's PUBLIC key, then AES-wrapped with key=str(sendtype).
-            inner = "\\".join(fields)
-            rsa_ct = encrypt_string(inner, self.public_key, encoding="utf-8")
-            aes_body = encrypt_message_body(rsa_ct, sendtype)
-            writer.write(build_response_frame(sendtype, aes_body))
+            # createinfo: AppendLine-joined fields -> AES(str(sendtype)).
+            inner = "\n".join(lines)
+            aes_body = encrypt_message_body(inner, sendtype)
+            writer.write(build_frame(sendtype, aes_body.encode("utf-8")))
             await writer.drain()
 
             parser = FrameParser()
@@ -65,36 +79,39 @@ class ZToolClientEmulator:
             parser.feed(data)
             frame = parser.try_parse()
             assert frame is not None, "no response frame received"
-            resp_type, body = frame
-            return decrypt_message_body(body.decode("utf-8"), resp_type)
+            result_code, body = frame
+            return result_code, body.decode("utf-8")
         finally:
             writer.close()
             await writer.wait_closed()
 
-    async def apply_register(self, code, machine, password=""):
-        return await self._round_trip(Sendtype.APPLY_REGISTER, [code, password, machine])
+    async def apply_register(self, code, machine, password=DUMMY_PW):
+        """Sendtype 128. createinfo(true, false) field order:
+        RSA(code), RSA(machine), RSA(password), RSA(MachineName\\user)."""
+        lines = [self._rsa(code), self._rsa(machine), self._rsa(password),
+                 self._rsa("HOST\\user")]
+        return await self._send(Sendtype.APPLY_REGISTER, lines)
 
-    async def register(self, code, machine):
-        payload = await self._round_trip(Sendtype.REGISTER, [code, machine])
-        status, _, blob = payload.partition("\n")
-        return status, blob
+    async def register_confirm(self, blob, client_version=ServerConfig.client_version):
+        """Sendtype 131. SR.get_rginfo(): the four registry branch ciphertexts
+        (un-hexed) plus three RSA-encrypted timestamps."""
+        gv = getver_today(client_version, is_64bit=True)
+        branches = aes.decrypt(blob, gv).split("\t")
+        ts = self._rsa("1.0")
+        lines = list(branches) + [ts, ts, ts]
+        return await self._send(Sendtype.REGISTER_CONFIRM, lines)
 
-    async def verify_register(self, code, machine):
-        return await self._round_trip(Sendtype.VERIFY_REGISTER, [code, machine])
+    async def apply_remove(self, code, machine, password=DUMMY_PW):
+        lines = [self._rsa(code), self._rsa(machine), self._rsa(password),
+                 self._rsa("HOST\\user")]
+        return await self._send(Sendtype.APPLY_REMOVE, lines)
 
-    async def apply_remove(self, code, machine, password=""):
-        return await self._round_trip(Sendtype.APPLY_REMOVE, [code, password, machine])
-
-    async def verify_remove(self, code, machine):
-        return await self._round_trip(Sendtype.VERIFY_REMOVE, [code, machine])
+    async def remove_confirm(self):
+        return await self._send(Sendtype.REMOVE_CONFIRM, [self._rsa("x")])
 
     def unwrap_license_blob(self, blob: str, client_version=ServerConfig.client_version) -> str:
-        """Reverse the server's transport payload the way FrmRg.rg()+IsReg1 do.
-
-        transport = AES_getver( "\\t".join([b0, b1, b2, b3]) )
-        We undo the rg() AES layer, split the four branches, and reconstruct the
-        bound machine code (loc_c == Concat(b2, b3)). Returns that machine code.
-        """
+        """Reverse the transport payload the way FrmRg.rg()+IsReg1 do, returning
+        the bound machine code (loc_c == Concat(b2, b3))."""
         gv = getver_today(client_version, is_64bit=True)
         joined = aes.decrypt(blob, gv)
         b0_raw, b1_raw, b2_raw, b3_raw = (
@@ -104,7 +121,6 @@ class ZToolClientEmulator:
         def right(s, n):
             return s[len(s) - n:] if n <= len(s) else s
 
-        # b2 / b3: pp = Right(b,10)+Left(b,first_len); ct = b[first_len: len-10]
         pp = right(b2_raw, SUFFIX_LEN) + b2_raw[:FIRST_LEN_B2]
         b2 = decrypt_string(aes.decrypt(b2_raw[FIRST_LEN_B2: len(b2_raw) - SUFFIX_LEN], pp), self.public_key).strip()
         pp = right(b3_raw, SUFFIX_LEN) + b3_raw[:FIRST_LEN_B3]
@@ -134,67 +150,69 @@ async def _make_server(tmp_path, device_limit=2, password=""):
 async def test_full_online_activation_flow(tmp_path):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        # 1. Apply for registration
-        assert await client.apply_register(CODE, MACHINE_A) == Status.SUCCESS
+        # 1. Apply for registration -> result 13 + license blob.
+        code, blob = await client.apply_register(CODE, MACHINE_A)
+        assert code == Result.APPLY_OK
+        assert blob, "expected a license blob in the apply_register response"
 
-        # 2. Register -> receive a signed license blob
-        status, blob = await client.register(CODE, MACHINE_A)
-        assert status == Status.SUCCESS
-        assert blob, "expected a license blob in the register response"
+        # 2. The blob must decrypt + verify and rebuild our exact machine code.
+        assert client.unwrap_license_blob(blob) == MACHINE_A
 
-        # 3. The blob must decrypt + verify and rebuild our exact machine code
-        #    (loc_c == Concat(b2, b3) == the bound machine code).
-        bound_machine = client.unwrap_license_blob(blob)
-        assert bound_machine == MACHINE_A
-
-        # 4. Verify the activation is recognised
-        assert await client.verify_register(CODE, MACHINE_A) == Status.SUCCESS
+        # 3. Register confirm (SR.get_rginfo) -> result 12 + transport blob.
+        code2, transport = await client.register_confirm(blob)
+        assert code2 == Result.REGISTER_OK
+        assert client.unwrap_license_blob(transport) == MACHINE_A
 
 
 @pytest.mark.asyncio
 async def test_invalid_code_rejected(tmp_path):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        status = await client.apply_register("ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ", MACHINE_A)
-        assert status == Status.INVALID_CODE
+        code, body = await client.apply_register("ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ", MACHINE_A)
+        assert code == Result.INVALID_CODE
+        assert body == ""
 
 
 @pytest.mark.asyncio
 async def test_device_limit_enforced(tmp_path):
     server, aio_server, client = await _make_server(tmp_path, device_limit=2)
     async with aio_server:
-        s1, _ = await client.register(CODE, MACHINE_A)
-        s2, _ = await client.register(CODE, MACHINE_B)
-        assert s1 == Status.SUCCESS and s2 == Status.SUCCESS
+        c1, _ = await client.apply_register(CODE, MACHINE_A)
+        c2, _ = await client.apply_register(CODE, MACHINE_B)
+        assert c1 == Result.APPLY_OK and c2 == Result.APPLY_OK
 
         # third distinct device exceeds the limit
-        s3, _ = await client.register(CODE, MACHINE_C)
-        assert s3 == Status.DEVICE_LIMIT
+        c3, _ = await client.apply_register(CODE, MACHINE_C)
+        assert c3 == Result.DEVICE_LIMIT
 
 
 @pytest.mark.asyncio
 async def test_transfer_out_flow(tmp_path):
     server, aio_server, client = await _make_server(tmp_path, device_limit=1)
     async with aio_server:
-        s1, _ = await client.register(CODE, MACHINE_A)
-        assert s1 == Status.SUCCESS
+        c1, _ = await client.apply_register(CODE, MACHINE_A)
+        assert c1 == Result.APPLY_OK
 
         # limit reached for a different machine
-        s2, _ = await client.register(CODE, MACHINE_B)
-        assert s2 == Status.DEVICE_LIMIT
+        c2, _ = await client.apply_register(CODE, MACHINE_B)
+        assert c2 == Result.DEVICE_LIMIT
 
-        # transfer the license off MACHINE_A
-        assert await client.apply_remove(CODE, MACHINE_A) == Status.TRANSFER_SUCCESS
-        assert await client.verify_remove(CODE, MACHINE_A) == Status.TRANSFER_SUCCESS
+        # transfer the license off MACHINE_A: 129 -> 11, then 132 -> 7
+        cr, _ = await client.apply_remove(CODE, MACHINE_A)
+        assert cr == Result.TRANSFER_OUT_OK
+        cc, _ = await client.remove_confirm()
+        assert cc == Result.TRANSFER_DONE
 
         # the freed slot now allows MACHINE_B
-        s3, _ = await client.register(CODE, MACHINE_B)
-        assert s3 == Status.SUCCESS
+        c3, _ = await client.apply_register(CODE, MACHINE_B)
+        assert c3 == Result.APPLY_OK
 
 
 @pytest.mark.asyncio
 async def test_wrong_password_rejected(tmp_path):
     server, aio_server, client = await _make_server(tmp_path, password="secret123")
     async with aio_server:
-        assert await client.apply_register(CODE, MACHINE_A, password="wrong") == Status.WRONG_PASSWORD
-        assert await client.apply_register(CODE, MACHINE_A, password="secret123") == Status.SUCCESS
+        cw, _ = await client.apply_register(CODE, MACHINE_A, password="wrong")
+        assert cw == Result.WRONG_PASSWORD
+        cok, _ = await client.apply_register(CODE, MACHINE_A, password="secret123")
+        assert cok == Result.APPLY_OK

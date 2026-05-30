@@ -15,10 +15,11 @@ from datetime import datetime
 
 from .config import ServerConfig
 from .crypto.rsa_ztool import decrypt_string
-from .crypto.aes_security_center import encrypt_message_body, decrypt_message_body
-from .protocol.framing import FrameParser, build_response_frame
-from .protocol.dispatcher import Sendtype, Status
-from .license_blob import generate_license_blob
+from .crypto import aes_security_center as aes
+from .crypto.aes_security_center import decrypt_message_body
+from .protocol.framing import FrameParser, build_frame
+from .protocol.dispatcher import Sendtype, Status, Result, status_to_result
+from .license_blob import generate_license_blob, getver_today
 from .db import LicenseDB
 
 
@@ -104,28 +105,31 @@ class LicenseServer:
             Response frame bytes
         """
         try:
-            # Decrypt body
+            # Decrypt body. Requests are AES-encrypted by the client's
+            # sendstring() with passphrase = str(sendtype).
             body_b64 = body_bytes.decode('utf-8').strip()
             plaintext = decrypt_message_body(body_b64, sendtype)
             logger.debug("Received type=%d, body=%s", sendtype, plaintext[:100])
         except Exception as e:
             logger.error("Failed to decrypt message type=%d: %s", sendtype, e)
-            return self._make_error_response(sendtype, Status.INFO_ERROR)
+            return self._make_result(Result.INFO_ERROR)
 
-        # Dispatch
-        if sendtype == Sendtype.APPLY_REGISTER:
+        # Dispatch. The real client flow is:
+        #   128 apply_register  -> server replies 13 + license blob
+        #   131 register confirm -> server replies 12 (final success)
+        #   129 apply_remove     -> server replies 11 (then client sends 132)
+        #   132 remove confirm   -> server replies 7  (transfer done)
+        if sendtype == Sendtype.APPLY_REGISTER:          # 128
             return await self._handle_apply_register(plaintext)
-        elif sendtype == Sendtype.REGISTER:
-            return await self._handle_register(plaintext)
-        elif sendtype == Sendtype.VERIFY_REGISTER:
-            return await self._handle_verify_register(plaintext)
-        elif sendtype == Sendtype.APPLY_REMOVE:
+        elif sendtype in (Sendtype.REGISTER_CONFIRM, Sendtype.REGISTER):  # 131 / 130
+            return await self._handle_register_confirm(plaintext)
+        elif sendtype == Sendtype.APPLY_REMOVE:          # 129
             return await self._handle_apply_remove(plaintext)
-        elif sendtype == Sendtype.VERIFY_REMOVE:
-            return await self._handle_verify_remove(plaintext)
+        elif sendtype == Sendtype.REMOVE_CONFIRM:        # 132
+            return await self._handle_remove_confirm(plaintext)
         else:
             logger.warning("Unknown sendtype: %d", sendtype)
-            return self._make_error_response(sendtype, Status.FAILED)
+            return self._make_result(Result.REGISTER_FAILED)
 
     async def _handle_apply_register(self, plaintext: str) -> bytes:
         """
@@ -145,7 +149,7 @@ class LicenseServer:
 
         if len(parts) < 2:
             self.db.log_action("apply_register", result="error", details="Invalid payload format")
-            return self._make_response(Sendtype.APPLY_REGISTER, Status.INFO_ERROR)
+            return self._make_result(Result.INFO_ERROR)
 
         reg_code = parts[0] if len(parts) > 0 else ""
         password = parts[1] if len(parts) > 1 else ""
@@ -156,49 +160,26 @@ class LicenseServer:
         if not is_valid:
             self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                               result="rejected", details=error)
-            return self._make_response(Sendtype.APPLY_REGISTER, error)
+            return self._make_result(status_to_result(error, Result.INVALID_CODE))
 
         # Check password if set
         if password and not self.db.check_password(reg_code, password):
             self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                               result="wrong_password")
-            return self._make_response(Sendtype.APPLY_REGISTER, Status.WRONG_PASSWORD)
+            return self._make_result(Result.WRONG_PASSWORD)
 
-        # Application accepted — client should follow up with REGISTER (130)
-        self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                          result="accepted")
-        return self._make_response(Sendtype.APPLY_REGISTER, Status.SUCCESS)
-
-    async def _handle_register(self, plaintext: str) -> bytes:
-        """
-        Handle register (130): License issuance.
-
-        After successful Apply_register, client sends register request.
-        Server issues a signed license blob.
-        """
-        parts = self._decrypt_request(plaintext)
-
-        reg_code = parts[0] if len(parts) > 0 else ""
-        # Real client (createinfo) order is [code, password, machine]; legacy
-        # 2-field emulator order is [code, machine]. Prefer index 2, fall back to 1.
-        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
-
-        # Validate
-        is_valid, error = self.db.validate_code(reg_code)
-        if not is_valid:
-            self.db.log_action("register", code=reg_code, machine_code=machine_code,
-                              result="rejected", details=error)
-            return self._make_response(Sendtype.REGISTER, error)
-
-        # Activate
+        # Bind the seat to this machine (idempotent for repeats).
         success, error = self.db.activate(reg_code, machine_code)
         if not success:
-            self.db.log_action("register", code=reg_code, machine_code=machine_code,
+            self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                               result="limit_reached", details=error)
-            return self._make_response(Sendtype.REGISTER, error)
+            return self._make_result(status_to_result(error, Result.DEVICE_LIMIT))
 
         # Generate the license transport payload (the string FrmRg.rg()
-        # consumes: AES_getver( "\t".join(4 registry branch blobs) )).
+        # consumes: AES_getver( "\t".join(4 registry branch blobs) )). The real
+        # client delivers the blob in THIS (apply_register) response with result
+        # code 13, then saves it (SR.rg), validates IsReg1, and follows up with
+        # a 131 (register confirm) carrying SR.get_rginfo().
         blob = generate_license_blob(
             machine_code=machine_code,
             public_key=self._public_key,
@@ -206,27 +187,36 @@ class LicenseServer:
             client_version=self.config.client_version,
         )
 
-        # Response: success status + license blob
-        response_payload = f"{Status.SUCCESS}\n{blob}"
+        self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                          result="accepted")
+        return self._make_result(Result.APPLY_OK, blob)
 
-        self.db.log_action("register", code=reg_code, machine_code=machine_code, result="success")
-        return self._make_response(Sendtype.REGISTER, response_payload)
+    async def _handle_register_confirm(self, plaintext: str) -> bytes:
+        """
+        Handle register confirm (Sendtype 131): final activation step.
 
-    async def _handle_verify_register(self, plaintext: str) -> bytes:
-        """Handle verify_register (131): Check registration status."""
-        parts = self._decrypt_request(plaintext)
+        After the client saves the blob from the apply_register (13) response it
+        sends SR.get_rginfo() — the four registry branch ciphertexts (un-hexed)
+        followed by three RSA-encrypted timestamps. We reconstruct the transport
+        payload from those four branches and return it with result code 12, which
+        the client re-saves (SR.rg) and validates with IsReg2 -> "Регистрация
+        выполнена". IsReg2 reads the registry already populated at step 13, so
+        this response simply has to be a well-formed transport blob.
+        """
+        lines = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
+        branches = [ln for ln in lines if ln][:4]
 
-        reg_code = parts[0] if len(parts) > 0 else ""
-        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
+        if len(branches) != 4:
+            self.db.log_action("register", result="error",
+                               details=f"register confirm: expected 4 branches, got {len(branches)}")
+            return self._make_result(Result.INFO_ERROR)
 
-        if self.db.is_machine_activated(reg_code, machine_code):
-            self.db.log_action("verify_register", code=reg_code, machine_code=machine_code,
-                              result="active")
-            return self._make_response(Sendtype.VERIFY_REGISTER, Status.SUCCESS)
-        else:
-            self.db.log_action("verify_register", code=reg_code, machine_code=machine_code,
-                              result="not_active")
-            return self._make_response(Sendtype.VERIFY_REGISTER, Status.FAILED)
+        transport = aes.encrypt(
+            "\t".join(branches),
+            getver_today(self.config.client_version),
+        )
+        self.db.log_action("register", result="success", details="register confirm")
+        return self._make_result(Result.REGISTER_OK, transport)
 
     async def _handle_apply_remove(self, plaintext: str) -> bytes:
         """Handle Apply_Remove (129): License transfer/removal request."""
@@ -240,34 +230,24 @@ class LicenseServer:
         if not self.db.check_password(reg_code, password):
             self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                               result="wrong_password")
-            return self._make_response(Sendtype.APPLY_REMOVE, Status.WRONG_PASSWORD)
+            return self._make_result(Result.WRONG_PASSWORD)
 
-        # Deactivate
+        # Deactivate. On success reply 11 -> the client runs SR.outrg() and then
+        # sends a 132 (remove confirm), which we answer with 7 (transfer done).
         success, error = self.db.deactivate(reg_code, machine_code)
         if success:
             self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                               result="success")
-            return self._make_response(Sendtype.APPLY_REMOVE, Status.TRANSFER_SUCCESS)
+            return self._make_result(Result.TRANSFER_OUT_OK)
         else:
             self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                               result="failed", details=error)
-            return self._make_response(Sendtype.APPLY_REMOVE, error)
+            return self._make_result(status_to_result(error, Result.REGISTER_FAILED))
 
-    async def _handle_verify_remove(self, plaintext: str) -> bytes:
-        """Handle verify_Remove (132): Verify transfer/removal."""
-        parts = self._decrypt_request(plaintext)
-
-        reg_code = parts[0] if len(parts) > 0 else ""
-        machine_code = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
-
-        if not self.db.is_machine_activated(reg_code, machine_code):
-            self.db.log_action("verify_remove", code=reg_code, machine_code=machine_code,
-                              result="confirmed")
-            return self._make_response(Sendtype.VERIFY_REMOVE, Status.TRANSFER_SUCCESS)
-        else:
-            self.db.log_action("verify_remove", code=reg_code, machine_code=machine_code,
-                              result="still_active")
-            return self._make_response(Sendtype.VERIFY_REMOVE, Status.TRANSFER_FAILED)
+    async def _handle_remove_confirm(self, plaintext: str) -> bytes:
+        """Handle remove confirm (Sendtype 132): finalise a transfer/removal."""
+        self.db.log_action("remove_confirm", result="confirmed")
+        return self._make_result(Result.TRANSFER_DONE)
 
     def _decrypt_request(self, plaintext: str) -> list:
         """Parse a decrypted request body into ``[code, password, machine, *extra]``.
@@ -277,15 +257,17 @@ class LicenseServer:
         separated by a newline) in this order:
 
             line 0: RSAHelper.EncryptString(reg_code, server_public_key)
-            line 1: SR.GetMNum(...)                     -- machine code, NOT encrypted
+            line 1: SR.GetMNum(...)  -- machine fingerprint, RSA-encrypted when
+                                        present; an EMPTY line on hosts whose
+                                        hardware IDs (UUID/disk/board) are absent
             line 2: RSAHelper.EncryptString(password, server_public_key)
             line 3: RSAHelper.EncryptString(MachineName\\UserName, pub)  -- optional
             line 4: SR.get_rgtime()                                      -- optional
 
-        The code and password are individually RSA-encrypted with the server's
-        PUBLIC key, so we recover them with the PRIVATE key (c^d mod n). The
-        machine code is sent in clear. We normalise the result to the order the
-        handlers expect: ``[code, password, machine, *extra]``.
+        Every populated field is individually RSA-encrypted with the server's
+        PUBLIC key, so we recover each with the PRIVATE key (c^d mod n). We
+        normalise the result to the order the handlers expect:
+        ``[code, password, machine, *extra]``.
 
         A legacy fallback (single RSA blob split on backslash) is kept so the
         in-process emulator and existing integration tests keep working.
@@ -306,7 +288,9 @@ class LicenseServer:
 
         if len(lines) >= 3 and lines[0].strip() and lines[2].strip():
             code = _maybe_decrypt(lines[0])
-            machine = lines[1].strip()
+            # Machine code (SR.GetMNum) is itself RSA-encrypted when present;
+            # it is an empty line on hosts whose hardware IDs are unavailable.
+            machine = _maybe_decrypt(lines[1])
             password = _maybe_decrypt(lines[2])
             extra = [_maybe_decrypt(ln) for ln in lines[3:]]
             return [code, password, machine] + extra
@@ -318,14 +302,16 @@ class LicenseServer:
         except Exception:
             return plaintext.split('\\')
 
-    def _make_response(self, sendtype: int, body_text: str) -> bytes:
-        """Create an encrypted response frame."""
-        encrypted = encrypt_message_body(body_text, sendtype)
-        return build_response_frame(sendtype, encrypted)
+    def _make_result(self, result_code: int, body: str = "") -> bytes:
+        """Build a response frame the client understands.
 
-    def _make_error_response(self, sendtype: int, error_msg: str) -> bytes:
-        """Create an error response frame."""
-        return self._make_response(sendtype, error_msg)
+        The client's ``getreceive`` reads the FIRST 10-byte header field as the
+        numeric RESULT code (not the sendtype) and reads the body RAW (it does
+        not transport-decrypt the response — SR.rg AES-decrypts it later with the
+        getver passphrase). So success responses carry the already-encrypted
+        transport blob as the body; error responses carry an empty body.
+        """
+        return build_frame(int(result_code), body.strip().encode('utf-8'))
 
 
 async def main():
