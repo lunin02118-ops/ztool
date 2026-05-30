@@ -142,6 +142,13 @@ class LicenseDB:
         Returns:
             (success, error_message)
         """
+        # Defense-in-depth: never bind a seat to an empty/blank fingerprint.
+        # The protocol layer already rejects non-hardware machine codes, but a
+        # blank binding here would defeat hardware-locking entirely and let any
+        # machine reuse the seat.
+        if not machine_code or not machine_code.strip():
+            return False, "注册信息错误"  # Registration info error
+
         # Check if already activated on this machine
         if self.is_machine_activated(code, machine_code):
             return True, ""  # Already active — success
@@ -175,6 +182,28 @@ class LicenseDB:
         )
         self._conn.commit()
         return True, ""
+
+    def purge_invalid_activations(self) -> int:
+        """Deactivate every active binding whose machine_code is not a genuine
+        hardware fingerprint (empty or non-GUID).
+
+        Such rows could only exist from before hardware-binding validation was
+        added; they wrongly occupy a license seat. Returns the number purged.
+        """
+        from .machineid import is_valid_machine_code
+
+        rows = self._conn.execute(
+            "SELECT id, machine_code FROM activations WHERE is_active = 1"
+        ).fetchall()
+        bad_ids = [row['id'] for row in rows
+                   if not is_valid_machine_code(row['machine_code'])]
+        for bad_id in bad_ids:
+            self._conn.execute(
+                "UPDATE activations SET is_active = 0 WHERE id = ?", (bad_id,)
+            )
+        if bad_ids:
+            self._conn.commit()
+        return len(bad_ids)
 
     def log_action(self, action: str, code: str = "", machine_code: str = "",
                    result: str = "", details: str = "") -> None:

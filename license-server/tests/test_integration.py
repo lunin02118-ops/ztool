@@ -43,9 +43,11 @@ from ztool_license_server.protocol.dispatcher import Sendtype, Result
 
 
 CODE = "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
-MACHINE_A = "UUID-AAAA-1111|DISK-AAAA|BOARD-AAAA"
-MACHINE_B = "UUID-BBBB-2222|DISK-BBBB|BOARD-BBBB"
-MACHINE_C = "UUID-CCCC-3333|DISK-CCCC|BOARD-CCCC"
+# Real fingerprints always lead with a 36-char hardware GUID (SR.GetUUID /
+# IsReg1 require it); the server now rejects anything else.
+MACHINE_A = "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA|DISK-AAAA|BOARD-AAAA"
+MACHINE_B = "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB|DISK-BBBB|BOARD-BBBB"
+MACHINE_C = "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC|DISK-CCCC|BOARD-CCCC"
 # The real client always sends a password field (validated 8-20 chars); for
 # codes with no server-side password the value is irrelevant.
 DUMMY_PW = "Testpass123"
@@ -249,5 +251,46 @@ async def test_wrong_password_rejected(tmp_path):
     async with aio_server:
         cw, _ = await client.apply_register(CODE, MACHINE_A, password="wrong")
         assert cw == Result.WRONG_PASSWORD
-        cok, _ = await client.apply_register(CODE, MACHINE_A, password="secret123")
-        assert cok == Result.APPLY_OK
+
+
+@pytest.mark.asyncio
+async def test_empty_machine_code_rejected(tmp_path):
+    """Regression: a fingerprint that recovers to an empty string (host with no
+    hardware UUID) must NOT activate. Previously it bound a seat with
+    machine_code='' (defeating hardware-locking) and was issued a blob the
+    client could never validate."""
+    server, aio_server, client = await _make_server(tmp_path, device_limit=2)
+    async with aio_server:
+        code, body = await client.apply_register(CODE, "")
+        assert code == Result.INFO_ERROR
+        assert body == ""
+        # No seat may be consumed.
+        assert server.db.get_activation_count(CODE) == 0
+
+
+@pytest.mark.asyncio
+async def test_junk_machine_code_rejected(tmp_path):
+    """Regression: a non-GUID fingerprint ('x', not <36-char GUID>|...) must be
+    rejected, so the server only ever binds/issues licenses a real client can
+    validate (IsReg1 requires a 36-char GUID UUID)."""
+    server, aio_server, client = await _make_server(tmp_path, device_limit=2)
+    async with aio_server:
+        code, body = await client.apply_register(CODE, "x")
+        assert code == Result.INFO_ERROR
+        assert body == ""
+        assert server.db.get_activation_count(CODE) == 0
+
+
+@pytest.mark.asyncio
+async def test_invalid_machine_does_not_consume_seat(tmp_path):
+    """Junk activation attempts must not eat into the device limit: after two
+    rejected junk fingerprints, a real device can still activate."""
+    server, aio_server, client = await _make_server(tmp_path, device_limit=1)
+    async with aio_server:
+        assert (await client.apply_register(CODE, ""))[0] == Result.INFO_ERROR
+        assert (await client.apply_register(CODE, "x"))[0] == Result.INFO_ERROR
+        # The single real seat is still available.
+        code, blob = await client.apply_register(CODE, MACHINE_A)
+        assert code == Result.APPLY_OK
+        assert client.unwrap_license_blob(blob) == gd51(MACHINE_A)
+        assert server.db.get_activation_count(CODE) == 1

@@ -15,6 +15,7 @@ import sys
 
 from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
 from .license_blob import generate_offline_activation
+from .machineid import is_valid_machine_code
 from .db import LicenseDB
 from .config import ServerConfig
 
@@ -88,9 +89,25 @@ def cmd_list_activations(args):
     db.close()
 
 
+def cmd_purge_invalid(args):
+    """Deactivate license seats wrongly bound to empty/non-hardware machine codes."""
+    config = ServerConfig()
+    if args.db:
+        config.db_path = args.db
+    db = LicenseDB(config.db_path)
+    purged = db.purge_invalid_activations()
+    print(f"Purged {purged} invalid activation(s).")
+    db.close()
+
+
 def cmd_offline_activate(args):
     """Produce an offline activation file for a given machine code."""
     config = ServerConfig()
+    if not is_valid_machine_code(args.machine_code):
+        print("ERROR: machine code is not a valid hardware fingerprint "
+              "(expected '<36-char GUID>|<disk>|<board>'). Refusing to issue "
+              "a license the client cannot validate.", file=sys.stderr)
+        sys.exit(1)
     if args.keys_dir:
         config.keys_dir = args.keys_dir
     pub_path = os.path.join(config.keys_dir, 'public_key.txt')
@@ -142,6 +159,10 @@ def main():
     # list-activations
     sub.add_parser('list-activations', help='List activations')
 
+    # purge-invalid
+    sub.add_parser('purge-invalid',
+                   help='Deactivate seats bound to empty/non-hardware machine codes')
+
     # offline-activate
     p_off = sub.add_parser('offline-activate',
                            help='Generate an offline activation file for a machine code')
@@ -162,6 +183,8 @@ def main():
         cmd_list_codes(args)
     elif args.command == 'list-activations':
         cmd_list_activations(args)
+    elif args.command == 'purge-invalid':
+        cmd_purge_invalid(args)
     elif args.command == 'offline-activate':
         cmd_offline_activate(args)
     else:

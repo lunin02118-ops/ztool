@@ -19,6 +19,7 @@ binding identifier used for device-limit bookkeeping.
 Reference: LICENSING_migration_plan_ru.md, Phase 6 / Appendix A.
 """
 
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -26,6 +27,13 @@ from typing import Optional
 MAX_MACHINE_CODE_LEN = 117  # client uses Mid(s, 1, 117)
 FIELD_SEPARATOR = "|"
 VERSION_SEPARATOR = "\r\n"
+
+# The client's SR.GetUUID validates the hardware UUID against
+# ^[A-F0-9]{8}(-[A-F0-9]{4}){3}-[A-F0-9]{12}$ (a 36-char GUID) and IsReg1 later
+# requires RSA_decrypt(b0[0]) to be exactly 36 chars. We accept the same shape
+# (case-insensitive — WMI normally returns upper-case) so the server only ever
+# binds/issues licenses for fingerprints the client can actually validate.
+UUID_RE = re.compile(r"^[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}$")
 
 
 @dataclass
@@ -89,3 +97,22 @@ def parse_machine_code(machine_code: str) -> MachineInfo:
 def binding_id(machine_code: str) -> str:
     """Convenience helper returning the version-independent binding id."""
     return parse_machine_code(machine_code).binding_id
+
+
+def is_valid_machine_code(machine_code: Optional[str]) -> bool:
+    """Return True only for a genuine hardware fingerprint.
+
+    A real ZTool client always sends ``<36-char GUID>|<disk>|<board>`` (the disk
+    and board fields may be empty on some hosts, but the leading UUID is always a
+    valid GUID — SR.GetUUID enforces it and IsReg1 requires its length to be 36).
+    An empty, malformed, or non-GUID fingerprint (e.g. ``""`` or ``"x"``) must be
+    rejected so it can neither consume a license seat nor receive a blob that the
+    client would refuse anyway.
+    """
+    if not machine_code or not machine_code.strip():
+        return False
+    try:
+        info = parse_machine_code(machine_code)
+    except ValueError:
+        return False
+    return bool(UUID_RE.match(info.uuid.strip()))

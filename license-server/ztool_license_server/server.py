@@ -20,6 +20,7 @@ from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
 from .protocol.dispatcher import Sendtype, Status, Result, status_to_result
 from .license_blob import generate_license_blob, getver_today, recover_raw_machine
+from .machineid import is_valid_machine_code
 from .db import LicenseDB
 
 
@@ -173,6 +174,16 @@ class LicenseServer:
                               result="wrong_password")
             return self._make_result(Result.WRONG_PASSWORD)
 
+        # Reject anything that is not a genuine hardware fingerprint. Without
+        # this an empty/garbage machine code would consume a license seat and be
+        # handed a blob the client can never validate (IsReg1 needs a 36-char
+        # GUID UUID), so the seat would be silently lost. This is the
+        # hardware-binding check the activation flow was missing.
+        if not is_valid_machine_code(machine_code):
+            self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                              result="rejected", details="invalid machine code")
+            return self._make_result(Result.INFO_ERROR)
+
         # Bind the seat to this machine (idempotent for repeats).
         success, error = self.db.activate(reg_code, machine_code)
         if not success:
@@ -233,6 +244,12 @@ class LicenseServer:
         # version suffix so the machine matches the raw value bound at activation.
         machine_field = parts[2] if len(parts) > 2 else ""
         machine_code = recover_raw_machine(machine_field, self.config.client_version)
+
+        # A transfer can only target a genuine, previously-bound fingerprint.
+        if not is_valid_machine_code(machine_code):
+            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                              result="rejected", details="invalid machine code")
+            return self._make_result(Result.INFO_ERROR)
 
         # Check password
         if not self.db.check_password(reg_code, password):

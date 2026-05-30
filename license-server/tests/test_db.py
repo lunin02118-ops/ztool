@@ -52,6 +52,19 @@ class TestLicenseDB:
         assert not success
         assert "上限" in error  # Device limit reached
 
+    def test_activate_rejects_empty_machine_code(self, db):
+        """Defense-in-depth: the DB must never bind a seat to a blank
+        fingerprint (would defeat hardware-locking)."""
+        code = "EMPTY-MACHN-TESTS-CODE0-00001"
+        db.add_license_code(code, device_limit=2)
+
+        for bad in ("", "   ", None):
+            success, error = db.activate(code, bad)
+            assert not success
+            assert error == "注册信息错误"
+        # No seat consumed by the rejected attempts.
+        assert db.get_activation_count(code) == 0
+
     def test_duplicate_activation(self, db):
         """Activating same machine twice should succeed (idempotent)."""
         code = "DUPLI-CATE0-TESTS-CODE0-00001"
@@ -100,6 +113,29 @@ class TestLicenseDB:
 
         assert db.check_password(code, "")
         assert db.check_password(code, "anything")
+
+    def test_purge_invalid_activations(self, db):
+        """Legacy bad rows (empty/non-GUID machine_code) must be purgeable so a
+        polluted production DB can be cleaned, while valid rows are untouched."""
+        code = "PURGE-INVAL-TESTS-CODE0-00001"
+        db.add_license_code(code, device_limit=5)
+        good = "12345678-90AB-CDEF-1234-567890ABCDEF|DISK|BOARD"
+        db.activate(code, good)
+        # Insert legacy bad rows directly (pre-validation could create these).
+        db._conn.execute(
+            "INSERT INTO activations (code, machine_code, is_active) VALUES (?, '', 1)",
+            (code,))
+        db._conn.execute(
+            "INSERT INTO activations (code, machine_code, is_active) VALUES (?, 'x', 1)",
+            (code,))
+        db._conn.commit()
+        assert db.get_activation_count(code) == 3
+
+        purged = db.purge_invalid_activations()
+        assert purged == 2
+        # Only the genuine fingerprint remains active.
+        assert db.get_activation_count(code) == 1
+        assert db.is_machine_activated(code, good)
 
     def test_audit_log(self, db):
         """Test audit logging."""

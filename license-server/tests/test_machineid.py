@@ -5,8 +5,12 @@ import pytest
 from ztool_license_server.machineid import (
     parse_machine_code,
     binding_id,
+    is_valid_machine_code,
     MAX_MACHINE_CODE_LEN,
 )
+
+
+GUID = "12345678-90AB-CDEF-1234-567890ABCDEF"
 
 
 def test_parse_full():
@@ -56,3 +60,26 @@ def test_empty_raises():
         parse_machine_code("|||")
     with pytest.raises(ValueError):
         parse_machine_code(None)
+
+
+def test_is_valid_machine_code_accepts_real_fingerprints():
+    # Full GUID|disk|board, and GUID-only / missing trailing fields, are valid.
+    assert is_valid_machine_code(f"{GUID}|WD-DISK01|BOARD-XYZ")
+    assert is_valid_machine_code(GUID)
+    assert is_valid_machine_code(f"{GUID}||")
+    # Version suffix must not affect validity.
+    assert is_valid_machine_code(f"{GUID}|D|B\r\n5.0.0.0")
+    # GUID is matched case-insensitively (WMI usually returns upper-case).
+    assert is_valid_machine_code(GUID.lower())
+
+
+@pytest.mark.parametrize("bad", [
+    "", "   ", None,
+    "x",                       # junk
+    "|||",                     # only separators
+    "DISK-ONLY|BOARD",         # first field is not a GUID
+    "12345678-90AB-CDEF-1234", # GUID too short
+    "ZZZZZZZZ-90AB-CDEF-1234-567890ABCDEF",  # non-hex
+])
+def test_is_valid_machine_code_rejects_junk(bad):
+    assert not is_valid_machine_code(bad)
