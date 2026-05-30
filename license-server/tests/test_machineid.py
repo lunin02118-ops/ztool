@@ -68,7 +68,7 @@ def test_is_valid_machine_code_accepts_real_fingerprints():
     assert is_valid_machine_code(GUID)
     assert is_valid_machine_code(f"{GUID}||")
     # Version suffix must not affect validity.
-    assert is_valid_machine_code(f"{GUID}|D|B\r\n5.0.0.0")
+    assert is_valid_machine_code(f"{GUID}|D|B\r\n1.0")
     # GUID is matched case-insensitively (WMI usually returns upper-case).
     assert is_valid_machine_code(GUID.lower())
 

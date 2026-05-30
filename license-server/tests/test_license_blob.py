@@ -37,7 +37,7 @@ MACHINE_CODE = "12345678-90AB-CDEF-1234-567890ABCDEF|WD-DISKSERIAL01|BOARDID-XYZ
 # IsReg1 compares the blob machine value against GetMNum(_, False, False) ==
 # GD51(raw) (a 32-char uppercase MD5), not the raw machine string.
 MACHINE_HASH = gd51(MACHINE_CODE)
-CLIENT_VERSION = "5.0.0.0"
+CLIENT_VERSION = "1.0"
 
 
 def _right(s: str, n: int) -> str:
