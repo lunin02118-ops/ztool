@@ -14,7 +14,7 @@ import sys
 from datetime import datetime
 
 from .config import ServerConfig
-from .crypto.rsa_ztool import decrypt_string, resolve_key
+from .crypto.rsa_ztool import decrypt_string
 from .crypto.aes_security_center import encrypt_message_body, decrypt_message_body
 from .protocol.framing import FrameParser, build_response_frame
 from .protocol.dispatcher import Sendtype, Status
@@ -141,13 +141,7 @@ class LicenseServer:
 
         Separated by backslash '\\' based on IL analysis.
         """
-        try:
-            # Try to decrypt RSA layer (client encrypted with our public key)
-            decrypted = decrypt_string(plaintext, self._public_key, encoding='utf-8')
-            parts = decrypted.split('\\')
-        except Exception:
-            # If RSA fails, try plaintext parsing
-            parts = plaintext.split('\\')
+        parts = self._decrypt_request(plaintext)
 
         if len(parts) < 2:
             self.db.log_action("apply_register", result="error", details="Invalid payload format")
@@ -182,11 +176,7 @@ class LicenseServer:
         After successful Apply_register, client sends register request.
         Server issues a signed license blob.
         """
-        try:
-            decrypted = decrypt_string(plaintext, self._public_key, encoding='utf-8')
-            parts = decrypted.split('\\')
-        except Exception:
-            parts = plaintext.split('\\')
+        parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
         machine_code = parts[1] if len(parts) > 1 else ""
@@ -221,11 +211,7 @@ class LicenseServer:
 
     async def _handle_verify_register(self, plaintext: str) -> bytes:
         """Handle verify_register (131): Check registration status."""
-        try:
-            decrypted = decrypt_string(plaintext, self._public_key, encoding='utf-8')
-            parts = decrypted.split('\\')
-        except Exception:
-            parts = plaintext.split('\\')
+        parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
         machine_code = parts[1] if len(parts) > 1 else ""
@@ -241,11 +227,7 @@ class LicenseServer:
 
     async def _handle_apply_remove(self, plaintext: str) -> bytes:
         """Handle Apply_Remove (129): License transfer/removal request."""
-        try:
-            decrypted = decrypt_string(plaintext, self._public_key, encoding='utf-8')
-            parts = decrypted.split('\\')
-        except Exception:
-            parts = plaintext.split('\\')
+        parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
         password = parts[1] if len(parts) > 1 else ""
@@ -270,11 +252,7 @@ class LicenseServer:
 
     async def _handle_verify_remove(self, plaintext: str) -> bytes:
         """Handle verify_Remove (132): Verify transfer/removal."""
-        try:
-            decrypted = decrypt_string(plaintext, self._public_key, encoding='utf-8')
-            parts = decrypted.split('\\')
-        except Exception:
-            parts = plaintext.split('\\')
+        parts = self._decrypt_request(plaintext)
 
         reg_code = parts[0] if len(parts) > 0 else ""
         machine_code = parts[1] if len(parts) > 1 else ""
@@ -287,6 +265,22 @@ class LicenseServer:
             self.db.log_action("verify_remove", code=reg_code, machine_code=machine_code,
                               result="still_active")
             return self._make_response(Sendtype.VERIFY_REMOVE, Status.TRANSFER_FAILED)
+
+    def _decrypt_request(self, plaintext: str) -> list:
+        """Decrypt an RSA-encrypted request body and split it into fields.
+
+        The client encrypts request fields with the server's PUBLIC key, so the
+        server reverses the operation with its PRIVATE key (c^d mod n). If RSA
+        decryption fails (e.g. an unencrypted/test payload), the body is parsed
+        as plaintext.
+
+        Fields are separated by a backslash ('\\') per the client's createinfo logic.
+        """
+        try:
+            decrypted = decrypt_string(plaintext, self._private_key, encoding='utf-8')
+            return decrypted.split('\\')
+        except Exception:
+            return plaintext.split('\\')
 
     def _make_response(self, sendtype: int, body_text: str) -> bytes:
         """Create an encrypted response frame."""
