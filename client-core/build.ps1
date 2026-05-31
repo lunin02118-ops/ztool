@@ -62,8 +62,9 @@ Invoke-Checked 'reinject'
 
 Write-Host '== [4/5] localize user-visible Chinese strings (forms) -> Russian ==' -ForegroundColor Cyan
 $locTmp = "$OutExe.loc.tmp"
+$locTable = Join-Path $core 'tools\Localizer\translations.tsv'
 dotnet run -c Release --project (Join-Path $core 'tools\Localizer') -- `
-    $OutExe $locTmp
+    $OutExe $locTmp $locTable
 Invoke-Checked 'localize'
 Move-Item -Force $locTmp $OutExe
 
