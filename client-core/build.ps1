@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   Pipeline:
-    1. (optional) Publicize the base ZTool.exe  -> ref/ZTool.public.dll  (compile-time reference)
+    1. (optional) Publicize the base ZTool.base.exe -> ref/ZTool.public.dll  (compile-time reference)
     2. Compile src/*.cs                          -> bin/Release/net48/ZTool.Core.dll
     3. Reinject Core.dll method bodies into a fresh copy of ZTool.exe -> <OutExe>
     4. Localize remaining user-visible Chinese strings (forms) -> Russian
@@ -19,10 +19,10 @@
   ./build.ps1 -Publicize
 
 .EXAMPLE
-  ./build.ps1 -BaseExe 'C:\path\ZTool.exe' -OutExe 'C:\path\out\ZTool.exe'
+  ./build.ps1 -BaseExe 'C:\path\ZTool.base.exe' -OutExe 'C:\path\out\ZTool.exe'
 #>
 param(
-    [string]$BaseExe = (Join-Path $PSScriptRoot '..\ZTool.exe'),
+    [string]$BaseExe = (Join-Path $PSScriptRoot '..\ZTool.base.exe'),
     [string]$OutExe  = (Join-Path $PSScriptRoot 'out\ZTool.exe'),
     [switch]$Publicize
 )
