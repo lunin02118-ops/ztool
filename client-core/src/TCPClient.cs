@@ -305,6 +305,10 @@ public class TCPClient
 		for (num2 = code.byte_to_Int(array2); i < num2; i = checked(i + num))
 		{
 			num = s.Receive(array3, i, s.ReceiveBufferSize, SocketFlags.None);
+			if (num == 0)
+			{
+				return "";
+			}
 		}
 		text = Encoding.UTF8.GetString(array3, 0, num2);
 		return text.Trim();

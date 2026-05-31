@@ -142,7 +142,7 @@ internal static class Program
                 if (n == "ZTool.public" || n == "ZTool.Core") { Console.WriteLine("  ! " + tr.FullName + "  <- " + n); bad++; }
             }
             Console.WriteLine($"dangling typerefs = {bad}");
-            return 0;
+            return bad > 0 ? 1 : 0;
         }
         if (args.Length >= 4 && args[0] == "--rawhex")
         {
@@ -243,6 +243,12 @@ internal static class Program
                 CopyBody(sm, tm, importer, mapper, noOpt);
                 replaced++;
             }
+        }
+
+        if (listOnly)
+        {
+            Console.WriteLine($"listed: candidate methods only (no write)");
+            return 0;
         }
 
         var opts = new dnlib.DotNet.Writer.ModuleWriterOptions(target);
