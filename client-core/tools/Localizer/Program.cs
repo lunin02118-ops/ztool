@@ -731,7 +731,59 @@ internal static class Program
         if (frmmain != null)
             changes += Stub(frmmain.FindMethod("haveupdate"), Instruction.Create(OpCodes.Ldc_I4_0));
 
-        Console.WriteLine($"  CheckUpdate/Frmmain: disabled vendor online update (edits={changes})");
+        // The window must never appear at all. It is opened everywhere with the
+        // VB pattern `MyForms.get_CheckUpdate().Show()`. Neutralize every such
+        // launch by replacing the `Show()` call with `pop` (the form instance
+        // returned by get_CheckUpdate is discarded, stack stays balanced, and no
+        // window is created/shown). This covers the Frmmain ribbon menu item(s)
+        // and the StartType==120 branch in MyapplicationContext.
+        //
+        // MyapplicationContext is special: StartType==120 is a dedicated process
+        // whose ONLY job is the update window. With the window suppressed,
+        // Application.Run(context) would spin a message loop with no form and
+        // hang invisibly. So for that one site we also terminate the process via
+        // Environment.Exit(0) (reusing the ref already present in Program.Main).
+        IMethod envExit = mod.GetTypes()
+            .SelectMany(x => x.Methods).Where(x => x.HasBody)
+            .SelectMany(x => x.Body.Instructions)
+            .Select(x => x.Operand as IMethod)
+            .FirstOrDefault(x => x != null && x.Name == "Exit"
+                && x.DeclaringType != null && x.DeclaringType.Name == "Environment");
+
+        int shows = 0;
+        foreach (var type in mod.GetTypes())
+        foreach (var m in type.Methods)
+        {
+            if (m.Body == null) continue;
+            bool isCtx = type.Name == "MyapplicationContext";
+            var ins = m.Body.Instructions;
+            for (int i = 0; i < ins.Count; i++)
+            {
+                if (!(ins[i].Operand is IMethod gm) || gm.Name != "get_CheckUpdate") continue;
+                // find the Show() call that consumes this instance (next few ins).
+                for (int j = i + 1; j < ins.Count && j <= i + 4; j++)
+                {
+                    if ((ins[j].OpCode.Code == Code.Callvirt || ins[j].OpCode.Code == Code.Call)
+                        && ins[j].Operand is IMethod sm && sm.Name == "Show")
+                    {
+                        ins[j].OpCode = OpCodes.Pop;       // discard the form instance
+                        ins[j].Operand = null;
+                        shows++;
+                        if (isCtx && envExit != null)
+                        {
+                            // ...; pop; ldc.i4.0; call Environment.Exit(int32)
+                            ins.Insert(j + 1, Instruction.Create(OpCodes.Ldc_I4_0));
+                            ins.Insert(j + 2, Instruction.Create(OpCodes.Call, envExit));
+                            changes++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        changes += shows;
+
+        Console.WriteLine($"  CheckUpdate/Frmmain: disabled vendor online update (edits={changes}, Show() sites neutralized={shows})");
         return changes;
     }
 
