@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SWver>0</SWver>
+  <materialpath />
+  <rowcolor>66</rowcolor>
+  <colorselrow>false</colorselrow>
+  <propname>
+    <string>Разработал</string>
+    <string>Имя детали</string>
+    <string>Номер чертежа</string>
+    <string>Материал</string>
+    <string>Тип</string>
+    <string>Версия</string>
+    <string>Количество</string>
+    <string>Обработка поверхности</string>
+    <string>Дата разработки</string>
+    <string>Масса</string>
+  </propname>
+  <rowheight>25</rowheight>
+  <proptype>
+    <string>Текст</string>
+    <string>Текст</string>
+    <string>Текст</string>
+    <string>Текст</string>
+    <string>Текст</string>
+    <string>Текст</string>
+    <string>Число</string>
+    <string>Текст</string>
+    <string>Дата</string>
+    <string>Текст</string>
+  </proptype>
+  <Preview_Hotkey>
+    <string>18</string>
+    <string>90</string>
+  </Preview_Hotkey>
+  <bompath />
+  <image_size>
+    <Width>64</Width>
+    <Height>64</Height>
+  </image_size>
+  <image_lockratio>true</image_lockratio>
+  <insertimagebool>0</insertimagebool>
+  <GetAllconfigsbool>0</GetAllconfigsbool>
+  <ExcludePropbool>0</ExcludePropbool>
+  <FrmPreviewLocation>
+    <X>0</X>
+    <Y>0</Y>
+  </FrmPreviewLocation>
+  <DClick_OpenInSw>false</DClick_OpenInSw>
+  <RowFollowdisplay>true</RowFollowdisplay>
+  <DefaultDrw>false</DefaultDrw>
+  <ReNameRule />
+  <Excludevirtual>false</Excludevirtual>
+  <togetherConfig>false</togetherConfig>
+  <GetDataOption>0</GetDataOption>
+  <propshow>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+    <string>1</string>
+  </propshow>
+  <bomsubfolder>false</bomsubfolder>
+  <BomByVal>true</BomByVal>
+  <ReNameByFilter>false</ReNameByFilter>
+  <ReNameByRule>false</ReNameByRule>
+  <ReNameByCheck>false</ReNameByCheck>
+  <ReadOnlyFolderbool>0</ReadOnlyFolderbool>
+  <ReConnectClearFilter>0</ReConnectClearFilter>
+  <MenuStyle>2</MenuStyle>
+  <MenuColor>2</MenuColor>
+  <MenuColor2>2</MenuColor2>
+  <ExpandMaterialList>false</ExpandMaterialList>
+  <HideSw1>false</HideSw1>
+  <ExcludeLight>false</ExcludeLight>
+  <FrozenCol>0</FrozenCol>
+  <ExportToBom_ByFilter1>true</ExportToBom_ByFilter1>
+  <ExportToBom_ByFilter2>false</ExportToBom_ByFilter2>
+  <Marknodrw>false</Marknodrw>
+  <Excludebyruler>true</Excludebyruler>
+  <Previewfortool>true</Previewfortool>
+  <needfillcolumns>
+    <string>Номер чертежа
+0</string>
+    <string>Имя детали
+1</string>
+    <string>Версия
+2</string>
+  </needfillcolumns>
+  <RealTimeFilter>true</RealTimeFilter>
+  <PreviewMode>0</PreviewMode>
+  <ptp>0</ptp>
+  <ipt>8080</ipt>
+  <Thumbnail_Savetolocal>false</Thumbnail_Savetolocal>
+  <Thumbnail_position>0</Thumbnail_position>
+  <bomsettings>
+    <bomsetting>
+      <name>Экспорт сводной спецификации</name>
+      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Экспорт иерархической спецификации</name>
+      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>1</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Экспорт спецификации верхнего уровня</name>
+      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>2</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Экспорт сводной спецификации деталей</name>
+      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>3</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+  </bomsettings>
+  <checkupdata>true</checkupdata>
+  <IsCollpased>false</IsCollpased>
+  <Splitwidth>300</Splitwidth>
+  <usenpoi>true</usenpoi>
+  <filterindex>0</filterindex>
+  <viewtype>0</viewtype>
+  <mainformsize>
+    <Width>873</Width>
+    <Height>621</Height>
+  </mainformsize>
+  <mainformLocation>
+    <X>0</X>
+    <Y>0</Y>
+  </mainformLocation>
+  <mainformWindowState>0</mainformWindowState>
+  <usematerialcolor>false</usematerialcolor>
+  <markrepeat>-1</markrepeat>
+</CConfigDO>

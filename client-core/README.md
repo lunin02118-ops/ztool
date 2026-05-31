@@ -114,6 +114,31 @@ Reinjector flags: `--types A,B,C` (limit types), `--methods m1,m2` (limit method
 `--exclude m1,m2`, `--list` (list candidate methods, no write), `--verify <exe>`,
 `--dumpil <asm> <Type> <Method>`, `--rawhex <asm> <Type> <Method>`.
 
+## Default runtime profile (`dist/ZTool.settings`) — SolidWorks version targeting
+
+The client picks which SolidWorks it connects to from `<SWver>` in `ZTool.settings`. The
+standalone licensing UI does **not** need SolidWorks, but the "Проба"/connect path builds a COM
+ProgID from this value, so a wrong default makes the client report
+*"Указана неверная версия SolidWorks, задайте её заново"* on a machine whose SolidWorks does not
+match.
+
+Mapping (from `FrmOptions` + `RunSW` in the exe — `num = 19 + SWver`, ProgID
+`SldWorks.Application.<num>`):
+
+| `<SWver>` | dropdown label | ProgID | SolidWorks |
+|-----------|----------------|--------|------------|
+| `0`  | «Настройки по умолчанию» | `SldWorks.Application` (version-independent) | **whatever is installed (latest)** |
+| `12` | 2023 | `SldWorks.Application.31` | SW 2023 |
+| `13` | 2024 | `SldWorks.Application.32` | SW 2024 |
+| `14` | 2025 | `SldWorks.Application.33` | SW 2025 |
+
+**Ship `dist/ZTool.settings` (which carries `<SWver>0</SWver>`) in the runtime folder / demo zip.**
+`SWver=0` uses the version-independent `SldWorks.Application` ProgID, so the client connects to
+whatever SolidWorks is installed — it works out of the box on SW 2025 **and** on any other version,
+which is what a redistributable demo needs. (The old vendor profile shipped `SWver=12` = SW 2023,
+hence the connection error on SW 2025. Pinning a single year — e.g. `14` for SW 2025 — also works
+but breaks on machines running a different release, so `0` is preferred for distribution.)
+
 ## Scope / limitations
 
 - **GUI stays in the binary.** Only the four licensing classes are source-editable; forms and
