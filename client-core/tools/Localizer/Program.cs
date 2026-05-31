@@ -239,6 +239,50 @@ internal static class Program
         return changes;
     }
 
+    // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
+    // instead of the vendor's leftover 3.8.4.0. Both edits are length-preserving (the numeric
+    // DWORDs are fixed size; UTF-16 "3.8.4" and "1.0.0" are both 5 chars), so the PE section
+    // layout is untouched and no length fields need recomputing.
+    private static int NormalizeWin32Version(string exePath)
+    {
+        byte[] b = System.IO.File.ReadAllBytes(exePath);
+        int edits = 0;
+
+        // 1) VS_FIXEDFILEINFO (signature 0xFEEF04BD): patch only the block whose file+product
+        //    version is exactly 3.8.4.0 (MS=0x00030008, LS=0x00040000) -> 1.0.0.0.
+        for (int i = 0; i <= b.Length - 24; i++)
+        {
+            if (b[i] == 0xBD && b[i + 1] == 0x04 && b[i + 2] == 0xEF && b[i + 3] == 0xFE)
+            {
+                uint fileMS = BitConverter.ToUInt32(b, i + 8);
+                uint fileLS = BitConverter.ToUInt32(b, i + 12);
+                uint prodMS = BitConverter.ToUInt32(b, i + 16);
+                uint prodLS = BitConverter.ToUInt32(b, i + 20);
+                if (fileMS == 0x00030008 && fileLS == 0x00040000 && prodMS == 0x00030008 && prodLS == 0x00040000)
+                {
+                    BitConverter.GetBytes((uint)0x00010000).CopyTo(b, i + 8);   // fileMS = 1.0
+                    BitConverter.GetBytes((uint)0x00000000).CopyTo(b, i + 12);  // fileLS = 0.0
+                    BitConverter.GetBytes((uint)0x00010000).CopyTo(b, i + 16);  // prodMS = 1.0
+                    BitConverter.GetBytes((uint)0x00000000).CopyTo(b, i + 20);  // prodLS = 0.0
+                    edits++;
+                }
+            }
+        }
+
+        // 2) StringFileInfo "FileVersion"/"ProductVersion" values: "3.8.4" -> "1.0.0" (same length).
+        byte[] from = Encoding.Unicode.GetBytes("3.8.4");
+        byte[] to = Encoding.Unicode.GetBytes("1.0.0");
+        for (int i = 0; i <= b.Length - from.Length; i++)
+        {
+            bool m = true;
+            for (int j = 0; j < from.Length; j++) if (b[i + j] != from[j]) { m = false; break; }
+            if (m) { Array.Copy(to, 0, b, i, to.Length); edits++; i += from.Length - 1; }
+        }
+
+        if (edits > 0) System.IO.File.WriteAllBytes(exePath, b);
+        return edits;
+    }
+
     private static int Main(string[] args)
     {
         try { Console.OutputEncoding = new UTF8Encoding(false); } catch { /* redirected console may reject */ }
@@ -247,6 +291,25 @@ internal static class Program
             Console.WriteLine("usage: localize --scan <exe>");
             Console.WriteLine("       localize <inExe> <outExe>   (apply localization map)");
             return 2;
+        }
+
+        if (args[0] == "--asmver" && args.Length >= 2)
+        {
+            var mod = ModuleDefMD.Load(args[1]);
+            Console.WriteLine($"AssemblyName.Version = {mod.Assembly.Version}");
+            var pk = mod.Assembly.PublicKey;
+            Console.WriteLine($"StrongNamed = {(pk != null && !pk.IsNullOrEmpty)}; PublicKeyToken = {(pk != null ? pk.Token?.ToString() : "<none>")}");
+            foreach (var ca in mod.Assembly.CustomAttributes)
+            {
+                var n = ca.AttributeType?.Name ?? "";
+                if (n == "AssemblyFileVersionAttribute" || n == "AssemblyInformationalVersionAttribute"
+                    || n == "AssemblyVersionAttribute" || n == "AssemblyProductAttribute")
+                {
+                    var val = ca.ConstructorArguments.Count > 0 ? ca.ConstructorArguments[0].Value?.ToString() : "";
+                    Console.WriteLine($"{n} = \"{val}\"");
+                }
+            }
+            return 0;
         }
 
         if (args[0] == "--dumpform" && args.Length >= 2)
@@ -447,7 +510,12 @@ internal static class Program
             int updateChanges = DisableUpdateCheck(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             mod.Write(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges} -> {outExe}");
+            // dnlib preserves the vendor's Win32 VS_VERSIONINFO (FileVersion/ProductVersion = 3.8.4.0,
+            // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
+            // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
+            // normalize it to 1.0.0 so the file's reported version matches.
+            int win32Ver = NormalizeWin32Version(outExe);
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges}, win32-ver edits={win32Ver} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
