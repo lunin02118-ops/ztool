@@ -438,14 +438,16 @@ internal static class Program
             int blanked = BlankVendorContacts(mod);
             var blankKeys = new HashSet<string>(StringComparer.Ordinal) { "qq", "email", "website", "DOGURL" };
             int resReplaced = RewriteResources(mod, map, blankKeys);
-            int formChanges = RemoveVendorQrPanel(mod);
-            int aboutChanges = RemoveAboutQrPanel(mod);
+            // The vendor QR panels are no longer hidden; instead InjectMaxQr swaps
+            // the QR bitmap for the user's MAX contact code and shows them again.
+            string qrPng = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(tablePath)), "max_qr.png");
+            int maxQrChanges = InjectMaxQr(mod, qrPng);
             int frmRgChanges = TuneFrmRg(mod);
             int aboutTitleChanges = FixAboutTitle(mod);
             int updateChanges = DisableUpdateCheck(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             mod.Write(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, form edits={formChanges}, about edits={aboutChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -670,6 +672,138 @@ internal static class Program
             else if (s == "--{0}") { i.Operand = " — {0}"; changes++; }
         }
         Console.WriteLine($"  FrmAbout: polished window-caption separators (edits={changes})");
+        return changes;
+    }
+
+    // The user's own MAX-messenger contact link, encoded in tools/Localizer/max_qr.png
+    // and opened by the clickable "Max" hyperlink in the About box.
+    private const string MaxUrl =
+        "https://max.ru/u/f9LHodD0cOLc5SX8zsbZvz3TMwMzyunwK6GAYYw79SkF1lZ0YUlZknFImsU";
+    // The QR bitmap's resource key / accessor in ZTool.My.Resources (二维码).
+    private const string QrResKey = "\u4E8C\u7EF4\u7801";
+
+    // Replaces the original vendor QR (PictureBox image "二维码", which had baked-in
+    // 淘宝/公众号/QQ群/抖音 captions pointing at the vendor's Chinese channels) with the
+    // user's own MAX contact QR, and turns the About-box hyperlink into a clickable
+    // "Max" that opens the user's MAX profile.
+    //
+    // The image swap is done WITHOUT touching the serialized .resources bitmap (which
+    // would need BinaryFormatter, unavailable on net10): the PNG is embedded as a
+    // plain manifest resource and the existing static accessor `get_二维码()` is
+    // rewritten to decode it. Both PictureBoxes (FrmRverify.PictureBox1 and
+    // FrmAbout.PictureBox2) call that one accessor, so both windows update at once.
+    // Because the new image is Russian-only, the QR panels no longer need hiding —
+    // RemoveVendorQrPanel / RemoveAboutQrPanel are dropped from the pipeline so the
+    // PictureBoxes show again at their original (SizeMode=Zoom) layout.
+    private static int InjectMaxQr(ModuleDefMD mod, string pngPath)
+    {
+        if (!System.IO.File.Exists(pngPath))
+        {
+            Console.WriteLine($"  MaxQr: PNG not found: {pngPath}");
+            return 0;
+        }
+        int changes = 0;
+
+        // locate the static QR accessor by the literal it loads from the resource set.
+        MethodDef qrGetter = null;
+        foreach (var t in mod.GetTypes())
+        {
+            foreach (var m in t.Methods)
+            {
+                if (m.Body == null) continue;
+                foreach (var ins in m.Body.Instructions)
+                    if (ins.OpCode.Code == Code.Ldstr && (ins.Operand as string) == QrResKey)
+                    { qrGetter = m; break; }
+                if (qrGetter != null) break;
+            }
+            if (qrGetter != null) break;
+        }
+        if (qrGetter == null) { Console.WriteLine("  MaxQr: get_二维码 accessor not found"); return 0; }
+
+        // embed the PNG bytes as a plain manifest resource.
+        const string resName = "MaxQr.png";
+        if (!mod.Resources.Any(r => r.Name == resName))
+            mod.Resources.Add(new EmbeddedResource(resName,
+                System.IO.File.ReadAllBytes(pngPath), ManifestResourceAttributes.Public));
+
+        // build the framework method/type refs needed by the new accessor body.
+        var corlib = mod.CorLibTypes.AssemblyRef;
+        var drawingAsm = mod.GetAssemblyRefs().FirstOrDefault(a => a.Name == "System.Drawing");
+        ITypeDefOrRef bitmapType =
+            mod.GetTypeRefs().FirstOrDefault(tr => tr.Namespace == "System.Drawing" && tr.Name == "Bitmap")
+            ?? (ITypeDefOrRef)new TypeRefUser(mod, "System.Drawing", "Bitmap", drawingAsm);
+
+        var typeRef = new TypeRefUser(mod, "System", "Type", corlib);
+        var rthRef = new TypeRefUser(mod, "System", "RuntimeTypeHandle", corlib);
+        var asmRef = new TypeRefUser(mod, "System.Reflection", "Assembly", corlib);
+        var streamRef = new TypeRefUser(mod, "System.IO", "Stream", corlib);
+
+        var typeSig = new ClassSig(typeRef);
+        var streamSig = new ClassSig(streamRef);
+
+        var mGetTypeFromHandle = new MemberRefUser(mod, "GetTypeFromHandle",
+            MethodSig.CreateStatic(typeSig, new ValueTypeSig(rthRef)), typeRef);
+        var mGetAssembly = new MemberRefUser(mod, "get_Assembly",
+            MethodSig.CreateInstance(new ClassSig(asmRef)), typeRef);
+        var mGetStream = new MemberRefUser(mod, "GetManifestResourceStream",
+            MethodSig.CreateInstance(streamSig, mod.CorLibTypes.String), asmRef);
+        var mBitmapCtor = new MemberRefUser(mod, ".ctor",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), bitmapType);
+
+        // get_二维码() => new Bitmap(typeof(<declaring>).Assembly.GetManifestResourceStream("MaxQr.png"))
+        var b = qrGetter.Body;
+        b.Instructions.Clear();
+        b.ExceptionHandlers.Clear();
+        b.Variables.Clear();
+        b.Instructions.Add(Instruction.Create(OpCodes.Ldtoken, qrGetter.DeclaringType));
+        b.Instructions.Add(Instruction.Create(OpCodes.Call, mGetTypeFromHandle));
+        b.Instructions.Add(Instruction.Create(OpCodes.Callvirt, mGetAssembly));
+        b.Instructions.Add(Instruction.Create(OpCodes.Ldstr, resName));
+        b.Instructions.Add(Instruction.Create(OpCodes.Callvirt, mGetStream));
+        b.Instructions.Add(Instruction.Create(OpCodes.Newobj, mBitmapCtor));
+        b.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        changes++;
+
+        // About box: make LinkLabel1 a clickable "Max" that opens the MAX profile.
+        var about = mod.Find("ZTool.FrmAbout", false);
+        var load = about?.FindMethod("AboutBox1_Load");
+        if (load?.Body != null)
+        {
+            // the link text comes from `call get_website()` feeding LinkLabel1.set_Text;
+            // show literal "Max" instead.
+            foreach (var ins in load.Body.Instructions)
+                if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Callvirt)
+                    && ins.Operand is IMethod gw && gw.Name == "get_website")
+                {
+                    ins.OpCode = OpCodes.Ldstr;
+                    ins.Operand = "Max";
+                    changes++;
+                    break;
+                }
+        }
+        var click = about?.FindMethod("LinkLabel1_LinkClicked");
+        if (click?.Body != null)
+        {
+            // reuse the existing Process.Start(string) ref from the original body.
+            IMethod procStart = click.Body.Instructions
+                .Select(x => x.Operand as IMethod)
+                .FirstOrDefault(x => x != null && x.Name == "Start"
+                    && x.DeclaringType != null && x.DeclaringType.Name == "Process");
+            if (procStart != null)
+            {
+                var cb = click.Body;
+                cb.Instructions.Clear();
+                cb.ExceptionHandlers.Clear();
+                cb.Variables.Clear();
+                cb.Instructions.Add(Instruction.Create(OpCodes.Ldstr, MaxUrl));
+                cb.Instructions.Add(Instruction.Create(OpCodes.Call, procStart));
+                cb.Instructions.Add(Instruction.Create(OpCodes.Pop));
+                cb.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                changes++;
+            }
+        }
+
+        Console.WriteLine($"  MaxQr: embedded contact QR + clickable 'Max' link (edits={changes})");
         return changes;
     }
 
