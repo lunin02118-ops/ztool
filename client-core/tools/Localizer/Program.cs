@@ -239,6 +239,20 @@ internal static class Program
         return changes;
     }
 
+    // Remove the assembly's strong name. After reinjection the original signature is invalid
+    // (we changed IL without the vendor's private key), so machines that enforce strong-name
+    // verification refuse to load it. Clearing the public key makes the writer emit an
+    // unsigned assembly that loads everywhere. Nothing references this exe by strong name.
+    private static int StripStrongName(ModuleDefMD mod)
+    {
+        var asm = mod.Assembly;
+        if (asm == null) return 0;
+        bool had = asm.PublicKey != null && !asm.PublicKey.IsNullOrEmpty;
+        asm.PublicKey = null;                                          // flips HasPublicKey off
+        asm.Attributes &= ~dnlib.DotNet.AssemblyAttributes.PublicKey;  // belt-and-suspenders
+        return had ? 1 : 0;
+    }
+
     // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
     // instead of the vendor's leftover 3.8.4.0. Both edits are length-preserving (the numeric
     // DWORDs are fixed size; UTF-16 "3.8.4" and "1.0.0" are both 5 chars), so the PE section
@@ -509,13 +523,25 @@ internal static class Program
             int aboutTitleChanges = FixAboutTitle(mod);
             int updateChanges = DisableUpdateCheck(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
-            mod.Write(outExe);
+            // Strip the (now-invalid) strong name so the reinjected exe loads even on machines
+            // where strong-name verification bypass is disabled. We modify IL without the vendor's
+            // private key, so the original signature can never be valid again; removing the strong
+            // name entirely is the only way to make it load everywhere.
+            int snStripped = StripStrongName(mod);
+            // Clearing the public key is not enough: dnlib's writer otherwise preserves the COR20
+            // "StrongNameSigned" header bit, so a verifying loader still tries (and fails) to check
+            // a signature that no longer exists. Explicitly drop that bit while keeping the rest of
+            // the original COR20 flags (e.g. ILOnly / bitness) intact.
+            var wopts = new dnlib.DotNet.Writer.ModuleWriterOptions(mod);
+            var curFlags = mod.Metadata.ImageCor20Header.Flags;
+            wopts.Cor20HeaderOptions.Flags = curFlags & ~dnlib.DotNet.MD.ComImageFlags.StrongNameSigned;
+            mod.Write(outExe, wopts);
             // dnlib preserves the vendor's Win32 VS_VERSIONINFO (FileVersion/ProductVersion = 3.8.4.0,
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
             // normalize it to 1.0.0 so the file's reported version matches.
             int win32Ver = NormalizeWin32Version(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges}, win32-ver edits={win32Ver} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
