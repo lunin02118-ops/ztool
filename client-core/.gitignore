@@ -1,0 +1,8 @@
+# build outputs
+bin/
+obj/
+out/
+*.log
+
+# reinjected exes produced during experiments
+out_*.exe
