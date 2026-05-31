@@ -442,9 +442,10 @@ internal static class Program
             int aboutChanges = RemoveAboutQrPanel(mod);
             int frmRgChanges = TuneFrmRg(mod);
             int aboutTitleChanges = FixAboutTitle(mod);
+            int updateChanges = DisableUpdateCheck(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             mod.Write(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, form edits={formChanges}, about edits={aboutChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, attr strings={attrChanges} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, form edits={formChanges}, about edits={aboutChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -669,6 +670,68 @@ internal static class Program
             else if (s == "--{0}") { i.Operand = " — {0}"; changes++; }
         }
         Console.WriteLine($"  FrmAbout: polished window-caption separators (edits={changes})");
+        return changes;
+    }
+
+    // Fully disables the vendor's online update mechanism (user request). The
+    // update window (CheckUpdate) is itself Russian, but its changelog body is
+    // fetched at runtime from the vendor site (z-tool.cn, in Chinese) and its
+    // "download" button pulls the ORIGINAL vendor exe, which would overwrite our
+    // re-keyed/localized client. There are two network entry points that hit
+    // <decrypted base>/AutoUpdate1.xml: CheckUpdate.getinfo (the window) and
+    // Frmmain.haveupdate (the startup "update available" probe). We:
+    //   * gut CheckUpdate.getinfo  -> body becomes `ret` (no fetch, no changelog;
+    //     `findnew` stays false so Button2_Click can never download/install),
+    //   * gut Frmmain.haveupdate   -> body becomes `return false` (no startup
+    //     probe, no "new version" notification lambda),
+    //   * neutralize LinkLabel1_LinkClicked -> `ret` (the download-site link can
+    //     no longer launch a browser to the vendor URL), and
+    //   * relabel the window's status line and blank the vendor site link text
+    //     + its Tag (the URL) so no z-tool.cn reference remains on screen.
+    // The window, if still opened from the ribbon, is now an inert Russian
+    // dialog reading "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0439 \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0430.".
+    private static int DisableUpdateCheck(ModuleDefMD mod)
+    {
+        var t = mod.Find("ZTool.CheckUpdate", false);
+        var frmmain = mod.Find("ZTool.Frmmain", false);
+        int changes = 0;
+
+        // helper: replace a method body with a minimal stub.
+        static int Stub(MethodDef m, params Instruction[] body)
+        {
+            if (m?.Body == null) return 0;
+            var b = m.Body;
+            b.Instructions.Clear();
+            b.ExceptionHandlers.Clear();
+            b.Variables.Clear();
+            foreach (var ins in body) b.Instructions.Add(ins);
+            b.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            return 1;
+        }
+
+        if (t != null)
+        {
+            changes += Stub(t.FindMethod("getinfo"));               // -> ret
+            changes += Stub(t.FindMethod("LinkLabel1_LinkClicked")); // -> ret
+
+            // relabel the window status line (the vendor site link is already
+            // blanked by BlankVendorContacts, scoped to CheckUpdate above).
+            var ul = t.FindMethod("Updata_Load");
+            if (ul?.Body != null)
+                foreach (var ins in ul.Body.Instructions)
+                    if (ins.OpCode.Code == Code.Ldstr && ins.Operand is string s
+                        && s == "Подключение к серверу...")
+                    {
+                        ins.Operand = "Обновления отключены";
+                        changes++;
+                    }
+        }
+
+        // startup "update available" probe in Frmmain -> always report "no update"
+        if (frmmain != null)
+            changes += Stub(frmmain.FindMethod("haveupdate"), Instruction.Create(OpCodes.Ldc_I4_0));
+
+        Console.WriteLine($"  CheckUpdate/Frmmain: disabled vendor online update (edits={changes})");
         return changes;
     }
 
