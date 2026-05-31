@@ -25,8 +25,12 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Management" />
-    <!-- Original assembly: resolves every type we DON'T edit (code, RSAHelper host, CConfigMng, forms, ...) -->
-    <Reference Include="ZTool">
+    <!-- Publicized base assembly (identity "ZTool.public"): resolves every type
+         we DON'T edit (code, RSAHelper host, CConfigMng, forms, ...).
+         The Include name MUST match the assembly identity, otherwise MSBuild
+         ignores the HintPath and resolves "ZTool" to out\ZTool.exe (the
+         reinjected app, whose types are internal -> CS0122). -->
+    <Reference Include="ZTool.public">
       <HintPath>$(MSBuildThisFileDirectory)ref\ZTool.public.dll</HintPath>
     </Reference>
     <Reference Include="ZTool_rsa">

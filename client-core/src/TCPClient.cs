@@ -160,42 +160,42 @@ public class TCPClient
 				string left = m_head;
 				if (Operators.CompareString(left, Conversions.ToString(1), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Недопустимый регистрационный код", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Недопустимый регистрационный код", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(4), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Регистрация не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Регистрация не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(2), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Регистрационный код уже используется на другом компьютере", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Регистрационный код уже используется на другом компьютере", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(3), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Срок действия регистрационного кода истёк", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Срок действия регистрационного кода истёк", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(6), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Ошибка в сведениях о регистрации", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Ошибка в сведениях о регистрации", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(16), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Заявка на регистрацию не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Заявка на регистрацию не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(17), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Достигнут предел числа лицензированных компьютеров", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Достигнут предел числа лицензированных компьютеров", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(18), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Неверный пароль", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Неверный пароль", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				SR sR;
@@ -214,7 +214,7 @@ public class TCPClient
 					}
 					if (0 == 0)
 					{
-						MessageBox.Show("Ошибка сохранения сведений о регистрации", "提示", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						MessageBox.Show("Ошибка сохранения сведений о регистрации", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 						break;
 					}
 					goto IL_0240;
@@ -227,11 +227,11 @@ public class TCPClient
 					string text = "";
 					if (sR2.IsReg2("来生缘。。。", ref use_date, ref text))
 					{
-						MessageBox.Show("Регистрация выполнена", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show("Регистрация выполнена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					}
 					else
 					{
-						MessageBox.Show("Регистрация не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show("Регистрация не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					}
 					break;
 				}
@@ -243,28 +243,28 @@ public class TCPClient
 						sendstring(Sendtype.verify_Remove, sR3.get_rginfo());
 						continue;
 					}
-					MessageBox.Show("Не удалось перенести лицензию", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Не удалось перенести лицензию", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(7), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Лицензия успешно перенесена", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Лицензия успешно перенесена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(8), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Не удалось перенести лицензию", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Не удалось перенести лицензию", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(9), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Перенос не требуется", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Перенос не требуется", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(10), TextCompare: false) == 0)
 				{
-					MessageBox.Show("У этого компьютера нет прав на перенос", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("У этого компьютера нет прав на перенос", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(14), TextCompare: false) == 0)
 				{
-					MessageBox.Show("У этого кода нет прав на перенос", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("У этого кода нет прав на перенос", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				break;
 				IL_0240:
