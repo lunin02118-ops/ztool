@@ -139,6 +139,32 @@ which is what a redistributable demo needs. (The old vendor profile shipped `SWv
 hence the connection error on SW 2025. Pinning a single year — e.g. `14` for SW 2025 — also works
 but breaks on machines running a different release, so `0` is preferred for distribution.)
 
+## Profile completeness (`dist/ZTool.settings`) — property saving
+
+`ZTool.CConfigDO` is XML-serialized, and a profile that **omits** a `List<>` member deserializes
+that member as an **empty** list. For the Save-options dialog (`FrmSaveOption`) that means it falls
+back to its WinForms *designer* defaults — and the designer default `CheckBox6 = True`
+(= `code.Updatereferencebool`) makes the dialog auto-fill its "reference update" folder (`TextBox1`)
+from the **currently opened model's directory** and then persist that absolute path on save. On a
+machine that opened a model under e.g. `D:\…\测试模型`, that stale path is what later drove the
+*"Сохранить в папку"* column, so re-saving went to a foreign/non-existent directory instead of the
+user's chosen one.
+
+The shipped profile therefore declares **all five** sections explicitly so the distribution never
+depends on volatile designer defaults:
+
+| section | shipped value | why |
+|---------|---------------|-----|
+| `savetoswcfg`    | vendor designer defaults **except** `CheckBox6=False` and `TextBox1` empty | ref-update off + no stale/foreign save path |
+| `Dropdownlist`   | empty | a fresh install carries no foreign dropdown data |
+| `namemappinglist`| empty | no foreign column→property mappings |
+| `fillsettings`   | empty | no foreign auto-fill rules |
+| `fillcolumncfg`  | empty | drops the vendor `datasource` xls path |
+
+Regenerate reproducibly (idempotent) with `tools/gen_dist_profile.ps1`, which serializes via the
+intact (non-publicized) `CConfigDO` type — the publicized DLL must not be used, as its public
+backing fields (`_SWver`, …) would duplicate every element.
+
 ## Scope / limitations
 
 - **GUI stays in the binary.** Only the four licensing classes are source-editable; forms and
