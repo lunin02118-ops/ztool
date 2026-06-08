@@ -5,17 +5,22 @@
 .DESCRIPTION
   The runtime config (ZTool.CConfigDO) is XML-serialized. A profile that omits a
   List<> member deserializes that member as an EMPTY list, so the Save-options
-  dialog (FrmSaveOption) then falls back to its WinForms designer defaults. One
-  of those defaults is CheckBox6 (= code.Updatereferencebool) = True, which makes
-  the dialog auto-fill the "reference update" folder (TextBox1) from the currently
-  opened model's directory and persist it on save. That stale absolute path then
-  drives the "Сохранить в папку" column on subsequent saves.
+  dialog (FrmSaveOption) then falls back to its WinForms designer defaults.
+
+  CheckBox6 (= code.Updatereferencebool, label "Обновлять ссылки") is the
+  MASTER SWITCH for "save/relocate to a new folder": the per-row "Сохранить в
+  папку" target (Col_NewFolder / NewPathName) is only honored by the SW
+  add-in when this flag is True. With it False the add-in saves in place and the
+  target folder stays empty. Its companion folder field TextBox1 is irrelevant to
+  persist because FrmSaveOption_Load ALWAYS recomputes it to the currently opened
+  model's directory (Path.GetDirectoryName(DGV1.Tag)) right after Loadcfg().
 
   This script ships all five previously-missing sections explicitly:
     savetoswcfg, Dropdownlist, namemappinglist, fillsettings, fillcolumncfg
   so the distribution never relies on volatile designer defaults:
-    * savetoswcfg  -> vendor designer defaults EXCEPT CheckBox6=False (ref-update
-                      off) and TextBox1 empty (no foreign/stale save path).
+    * savetoswcfg  -> vendor designer defaults: CheckBox6=True (ref-update ON, the
+                      vendor default, so save-to-new-folder works out of the box)
+                      and TextBox1 empty (recomputed on load; carries no path).
     * the other 4  -> present but empty (a fresh install carries no foreign data).
 
   SWver=0 (version-independent ProgID) and the localized Russian column set are
@@ -51,7 +56,7 @@ $sts = [Activator]::CreateInstance($listStr)
 $pairs = @(
     'ComboBox1|0','ComboBox2|0','ComboBox3|0','ComboBox4|0',
     'CheckBox1|False','CheckBox2|False','CheckBox3|True','CheckBox4|False',
-    'CheckBox6|False','CheckBox7|True','CheckBox8|True','CheckBox9|False','CheckBox10|False',
+    'CheckBox6|True','CheckBox7|True','CheckBox8|True','CheckBox9|False','CheckBox10|False',
     'RadioButton1|False','RadioButton2|True','RadioButton3|False',
     'TextBox1|'
 )
