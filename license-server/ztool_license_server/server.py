@@ -173,8 +173,11 @@ class LicenseServer:
                               result="rejected", details=error)
             return self._make_result(status_to_result(error, Result.INVALID_CODE))
 
-        # Check password if set
-        if password and not self.db.check_password(reg_code, password):
+        # Check password if set. check_password() returns True for codes that
+        # have no password configured, so this also accepts password-less codes
+        # while rejecting an empty/wrong password on a protected code (matching
+        # _handle_apply_remove).
+        if not self.db.check_password(reg_code, password):
             self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                               result="wrong_password")
             return self._make_result(Result.WRONG_PASSWORD)

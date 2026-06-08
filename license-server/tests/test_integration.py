@@ -202,6 +202,28 @@ async def test_activation_without_password(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_protected_code_rejects_empty_password(tmp_path):
+    """A password-protected code must NOT activate when the apply carries an
+    empty (or wrong) password. Regression for the bypass where the guard
+    ``if password and not check_password(...)`` skipped the check on an empty
+    password, letting a protected code be activated without credentials."""
+    server, aio_server, client = await _make_server(tmp_path, password="MySecret123")
+    async with aio_server:
+        code, body = await client.apply_register(CODE, MACHINE_A, password="")
+        assert code == Result.WRONG_PASSWORD, f"expected WRONG_PASSWORD, got {code}"
+        assert body == ""
+        assert server.db.get_activation_count(CODE) == 0
+
+        code_wrong, _ = await client.apply_register(CODE, MACHINE_A, password="nope")
+        assert code_wrong == Result.WRONG_PASSWORD
+        assert server.db.get_activation_count(CODE) == 0
+
+        code_ok, blob = await client.apply_register(CODE, MACHINE_A, password="MySecret123")
+        assert code_ok == Result.APPLY_OK
+        assert blob
+
+
+@pytest.mark.asyncio
 async def test_invalid_code_rejected(tmp_path):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
