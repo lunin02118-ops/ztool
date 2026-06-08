@@ -12,3 +12,14 @@ dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
 ]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# Only the server package is importable. Without this, setuptools flat-layout
+# auto-discovery also picks up the generated ``keys/`` directory as a top-level
+# package and aborts the (editable) install with a "multiple top-level packages"
+# error.
+[tool.setuptools.packages.find]
+include = ["ztool_license_server*"]

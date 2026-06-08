@@ -394,10 +394,13 @@ async def main():
         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
     )
 
-    config = ServerConfig(
-        host=args.host,
-        port=args.port,
-    )
+    # Start from environment (ZTOOL_HOST/PORT/KEYS_DIR/DB_PATH/...) so env-only
+    # launches work, then let explicit CLI flags take precedence.
+    config = ServerConfig.from_env()
+    if args.host != parser.get_default('host'):
+        config.host = args.host
+    if args.port != parser.get_default('port'):
+        config.port = args.port
     if args.keys_dir:
         config.keys_dir = args.keys_dir
     if args.db:
