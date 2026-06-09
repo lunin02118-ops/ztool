@@ -372,3 +372,10 @@ SolidWorks高效辅助工具	вспомогательный инструмент
 适用于Solidworks2012及以上版本	Подходит для SolidWorks 2012 и выше
 （x64）	(x64)
 （x86）	(x86)
+# exception dialog text (added: complete exe russification)
+异常类型：{0}\r\n异常消息：{1}\r\n异常信息：{2}\r\n	Тип исключения: {0}\r\nСообщение: {1}\r\nИнформация: {2}\r\n
+Application UnhandledException:{0};\n\r堆栈信息:{1}	Application UnhandledException:{0};\n\rСтек:{1}
+异常类型：{0}\r\n异常消息：{1}\r\n异常信息：{2}	Тип исключения: {0}\r\nСообщение: {1}\r\nИнформация: {2}
+异常类型：	Тип исключения: 
+\r\n异常消息：	\r\nСообщение: 
+\r\n异常信息：	\r\nИнформация: 
