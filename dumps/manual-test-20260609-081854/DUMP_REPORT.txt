@@ -1,0 +1,12 @@
+ZTool live SolidWorks dump report
+Date: 2026-06-09
+SolidWorks: SLDWORKS.exe PID 1344, SOLIDWORKS Premium 2025 SP3.0, model 0614-A00.SLDASM
+Source DLL loaded in process: D:\Development\ztool\manual-test-current\ZTool.dll
+dnSpy attach: success; detached cleanly; SLDWORKS remained alive/responding.
+ESYGdDVneyZGaacscwWoIlKTWklM: not found in loaded process modules.
+Note: raw module extraction had anti-dump-damaged PE/CLR metadata; final ZTool_dumped.dll is the live module dump with restored PE/CLI/metadata headers from the same on-disk ZTool.dll.
+
+SHA256:
+3EA2418A58426B7DA093E241BBBBE9864B79A203E7B1D22196FD3D4291D665A9  D:\ztool-dump\manual-test-20260609-081854\final_for_upload\ZTool_dumped.dll
+1E2BEFFBB9441485BB4C14A5FAA05E44B903CDBB10C71119B3BD0E10735F3595  D:\ztool-dump\manual-test-20260609-081854\SLDWORKS_1344_full.dmp
+55EDDDA3B580ABFF9A9FDC18F00807207DE9BB609CB007633BCD1F82BB957B6C  D:\Development\ztool\manual-test-current\ZTool.dll
