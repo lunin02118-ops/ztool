@@ -239,18 +239,25 @@ internal static class Program
         return changes;
     }
 
-    // Remove the assembly's strong name. After reinjection the original signature is invalid
-    // (we changed IL without the vendor's private key), so machines that enforce strong-name
-    // verification refuse to load it. Clearing the public key makes the writer emit an
-    // unsigned assembly that loads everywhere. Nothing references this exe by strong name.
+    // Neutralize the (now-invalid) strong-name SIGNATURE without touching the public key.
+    //
+    // IMPORTANT: we must KEEP the assembly's public key. The licensing IPC handshake derives a
+    // per-request token from GetEntryAssembly().GetName().GetPublicKeyToken() (see code::Getpkt),
+    // and the SolidWorks add-in (PMPHandler::DefWndProc) validates each "ZToolRequest@001" request
+    // against the token of the *original* exe (f08fc7047657204e, hardcoded vendor-side). If we
+    // null the public key, GetPublicKeyToken() returns empty, Getpkt() yields the wrong token, the
+    // add-in rejects the request, and "read from SW" returns 0 positions.
+    //
+    // After reinjection the original signature can never be valid again (no vendor private key), so
+    // we only clear the COR20 StrongNameSigned bit (done by the caller) to present the file as a
+    // delay-signed assembly. A locally launched, full-trust exe skips strong-name verification, so
+    // it still loads everywhere while keeping the public key token intact.
     private static int StripStrongName(ModuleDefMD mod)
     {
         var asm = mod.Assembly;
         if (asm == null) return 0;
-        bool had = asm.PublicKey != null && !asm.PublicKey.IsNullOrEmpty;
-        asm.PublicKey = null;                                          // flips HasPublicKey off
-        asm.Attributes &= ~dnlib.DotNet.AssemblyAttributes.PublicKey;  // belt-and-suspenders
-        return had ? 1 : 0;
+        // Preserve PublicKey / PublicKey attribute on purpose; no edits here.
+        return 0;
     }
 
     // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
