@@ -239,19 +239,14 @@ internal static class Program
         return changes;
     }
 
-    // Neutralize the (now-invalid) strong-name SIGNATURE without touching the public key.
-    //
-    // IMPORTANT: we must KEEP the assembly's public key. The licensing IPC handshake derives a
-    // per-request token from GetEntryAssembly().GetName().GetPublicKeyToken() (see code::Getpkt),
-    // and the SolidWorks add-in (PMPHandler::DefWndProc) validates each "ZToolRequest@001" request
-    // against the token of the *original* exe (f08fc7047657204e, hardcoded vendor-side). If we
-    // null the public key, GetPublicKeyToken() returns empty, Getpkt() yields the wrong token, the
-    // add-in rejects the request, and "read from SW" returns 0 positions.
-    //
-    // After reinjection the original signature can never be valid again (no vendor private key), so
-    // we only clear the COR20 StrongNameSigned bit (done by the caller) to present the file as a
-    // delay-signed assembly. A locally launched, full-trust exe skips strong-name verification, so
-    // it still loads everywhere while keeping the public key token intact.
+    // Intentionally a no-op: we must KEEP the assembly's public key. The licensing IPC handshake
+    // derives a per-request token from GetEntryAssembly().GetName().GetPublicKeyToken() (see
+    // code::Getpkt), and the SolidWorks add-in (PMPHandler::DefWndProc) validates each
+    // "ZToolRequest@001" request against the original exe's token (f08fc7047657204e). Nulling the
+    // public key makes GetPublicKeyToken() empty, Getpkt() yields the wrong token, and the add-in
+    // rejects the request -> "read from SW" returns 0 positions. The caller also keeps the COR20
+    // StrongNameSigned bit set (the full-trust loader skips signature verification), so the file
+    // loads while preserving the public key token. Hence: preserve everything, do nothing here.
     private static int StripStrongName(ModuleDefMD mod)
     {
         var asm = mod.Assembly;
@@ -530,18 +525,21 @@ internal static class Program
             int aboutTitleChanges = FixAboutTitle(mod);
             int updateChanges = DisableUpdateCheck(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
-            // Strip the (now-invalid) strong name so the reinjected exe loads even on machines
-            // where strong-name verification bypass is disabled. We modify IL without the vendor's
-            // private key, so the original signature can never be valid again; removing the strong
-            // name entirely is the only way to make it load everywhere.
+            // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
+            // header bit. The licensing IPC handshake derives a token from
+            // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
+            // validates; nulling the key broke that (0-positions read). The original signature can
+            // never be valid again (no vendor private key), but a locally launched, full-trust exe
+            // skips strong-name *signature verification* (the .NET full-trust bypass, on by default),
+            // so the file still loads as long as the StrongNameSigned bit stays set and the public
+            // key is present. CLEARING the bit (delay-signed presentation) makes the loader reject
+            // the assembly with a strong-name failure (verified: Assembly.LoadFrom -> 0x8013141A,
+            // and the add-in launcher then opens no window). This mirrors the working vendor base.exe
+            // (StrongNameSigned set + public key f08fc7047657204e).
             int snStripped = StripStrongName(mod);
-            // Clearing the public key is not enough: dnlib's writer otherwise preserves the COR20
-            // "StrongNameSigned" header bit, so a verifying loader still tries (and fails) to check
-            // a signature that no longer exists. Explicitly drop that bit while keeping the rest of
-            // the original COR20 flags (e.g. ILOnly / bitness) intact.
             var wopts = new dnlib.DotNet.Writer.ModuleWriterOptions(mod);
             var curFlags = mod.Metadata.ImageCor20Header.Flags;
-            wopts.Cor20HeaderOptions.Flags = curFlags & ~dnlib.DotNet.MD.ComImageFlags.StrongNameSigned;
+            wopts.Cor20HeaderOptions.Flags = curFlags | dnlib.DotNet.MD.ComImageFlags.StrongNameSigned;
             mod.Write(outExe, wopts);
             // dnlib preserves the vendor's Win32 VS_VERSIONINFO (FileVersion/ProductVersion = 3.8.4.0,
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*

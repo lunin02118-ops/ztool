@@ -30,7 +30,7 @@
   ./gen_dist_profile.ps1
 #>
 param(
-    [string]$BaseExe  = (Join-Path $PSScriptRoot '..\..\ZTool.base.exe'),
+    [string]$BaseExe  = (Join-Path $PSScriptRoot '..\..\ZTool-base.exe'),
     [string]$InProfile  = (Join-Path $PSScriptRoot '..\dist\ZTool.settings'),
     [string]$OutProfile = (Join-Path $PSScriptRoot '..\dist\ZTool.settings')
 )

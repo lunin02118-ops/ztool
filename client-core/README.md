@@ -70,8 +70,8 @@ From this directory:
 
 ```powershell
 ./build.ps1                 # compile core + reinject -> out/ZTool.exe
-./build.ps1 -Publicize      # also regenerate ref/ZTool.public.dll from ../ZTool.base.exe first
-./build.ps1 -BaseExe 'C:\path\ZTool.base.exe' -OutExe 'C:\path\out\ZTool.exe'
+./build.ps1 -Publicize      # also regenerate ref/ZTool.public.dll from ../ZTool-base.exe first
+./build.ps1 -BaseExe 'C:\path\ZTool-base.exe' -OutExe 'C:\path\out\ZTool.exe'
 ```
 
 The script runs all four steps and finishes with a verification that the output exe has
@@ -95,18 +95,18 @@ edit was reverted before commit.
 
 ```powershell
 # 1. publicize (only when ZTool.exe changes)
-dotnet run -c Release --project tools/Publicizer -- ..\ZTool.base.exe ref\ZTool.public.dll
+dotnet run -c Release --project tools/Publicizer -- ..\ZTool-base.exe ref\ZTool.public.dll
 
 # 2. compile the core
 dotnet build -c Release ZTool.Core.csproj
 
 # 3. reinject (default types: SR,SecurityCenter,TCPClient,GetRegistrycreatedtime)
 dotnet run -c Release --project tools/Reinjector -- \
-    ..\ZTool.base.exe bin\Release\net48\ZTool.Core.dll out\ZTool.exe
+    ..\ZTool-base.exe bin\Release\net48\ZTool.Core.dll out\ZTool.exe
 
 # verify / inspect
 dotnet run -c Release --project tools/Reinjector -- --verify out\ZTool.exe
-dotnet run -c Release --project tools/Reinjector -- --list   ..\ZTool.base.exe bin\Release\net48\ZTool.Core.dll out\ZTool.exe
+dotnet run -c Release --project tools/Reinjector -- --list   ..\ZTool-base.exe bin\Release\net48\ZTool.Core.dll out\ZTool.exe
 dotnet run -c Release --project tools/Reinjector -- --dumpil bin\Release\net48\ZTool.Core.dll SR GetMNum
 ```
 
@@ -170,7 +170,7 @@ backing fields (`_SWver`, …) would duplicate every element.
 - **GUI stays in the binary.** Only the four licensing classes are source-editable; forms and
   resources are left untouched in the exe.
 - The exe reports version **1.0** and talks to **185.112.102.122:58000** with our server key
-  (these come from the already-rekeyed base `ZTool.base.exe`).
+  (these come from the already-rekeyed base `ZTool-base.exe`).
 
 ### Base vs. deliverable (repo layout)
 
@@ -179,11 +179,11 @@ are separate files at the repo root:
 
 | file | what it is | version / signing |
 |------|------------|-------------------|
-| `../ZTool.base.exe` | pristine rekeyed **build input** (publicize + reinject target) | Win32 `3.8.4`, strong-named (vendor PKT) |
+| `../ZTool-base.exe` | pristine rekeyed **build input** (publicize + reinject target) | Win32 `3.8.4`, strong-named (vendor PKT) |
 | `../ZTool.exe`      | **final deliverable** produced by `build.ps1` (= `out/ZTool.exe`) | Win32 `1.0.0`, RU-localized, MAX QR, auto-update off, **strong-name stripped** |
 
 Run / redistribute `../ZTool.exe` together with `dist/ZTool.settings` (`<SWver>0</SWver>`) and the
-runtime DLLs. Never run `ZTool.base.exe` directly — it is only the un-localized 3.8.4 input.
+runtime DLLs. Never run `ZTool-base.exe` directly — it is only the un-localized 3.8.4 input.
 - Activation binds **one key to one machine**; moving a key needs the in-client "перенос лицензии".
 - A cloud VM with a zeroed hardware UUID will show *"это устройство не соответствует условиям
   регистрации"* — that is the genuine hardware-binding check, not a build problem.
