@@ -44,6 +44,51 @@ After adding `ZToolARM.dll` from the same sparse clone:
 - Evidence: `evidence_fresh_github_launch_ok.png`
 - Status: PASS.
 
+## License Dialog Forensics
+
+The license window is not the update popup and not evidence of a wrong executable.
+The active process is still the GitHub `ZTool.exe` from the runtime folder:
+
+- Path: `D:\Development\ztool\manual-test-github-sparse-ce3cfd3\ZTool.exe`
+- SHA256: `8EAF413F4C5DF5A6D307DBDA98F2C2C1D4A7BDE93621A38FCEA85519526F37C8`
+- Window: `ZTool 1.0(x64)`
+
+IL trace:
+
+- `Program.Main` verifies `ZToolARM.dll`, calls `SR.writeini()`, then starts `Application.Run(new MyapplicationContext())`.
+- `MyapplicationContext::.ctor` with `StartType=0` opens `Frmmain`.
+- `Frmmain_Load` starts `g_monitor()`.
+- `g_monitor()` starts a 10 ms timer and routes to `Frmmain::tmr_Elapsed`.
+- `tmr_Elapsed` calls `SR.IsReg2("来生缘。。。", ...)`.
+- When `IsReg2=False` and `code.TMode=False`, it invokes `Frmmain::_Lambda$__100`.
+- `_Lambda$__100` calls `lockbutton()`, enables the trial button, then opens `MyProject.Forms.FrmRverify.ShowDialog()`.
+
+Runtime reflection results under Windows PowerShell 5.1 / .NET Framework:
+
+- `SR.IsReg1("来生缘。。。") = True`
+- `SR.IsReg2("来生缘。。。") = False`
+- `code = 03000200-0400-0500-0006-000700080009`
+- `use_date = 0`
+- `SR.get_rgtime().Length = 0`
+- `SR.get_rginfo().Length = 5791`
+
+Registry state:
+
+- `HKLM\Software\SolURxxCfNU\C4eHN4fjikBan`: present, `information` length 4144 bytes
+- `HKLM\Software\SolURxxCfNU\HTwk2RCBDL`: present, `information` length 1406 bytes
+- `HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ\Jlj4aG8uZBvW`: present, `F2S6qCdziIAm` length 4050 bytes
+- `HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ\98CqyvBZcg`: present, `information` length 1446 bytes
+- `HKCU\SOFTWARE\ZTool`: present, `AppDataPath` and `sn` present
+
+Conclusion: the dialog comes from the normal `FrmRverify` licensing path.
+The registry blobs still exist and the first license check passes, but the second check fails.
+`IsReg2` derives two decryption keys from the registry-key timestamps of
+`HKLM\Software\SolURxxCfNU\HTwk2RCBDL` and
+`HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ\98CqyvBZcg`.
+If those keys are deleted/recreated during cleanup, the stored blob bytes may remain present while
+their timestamp-derived decrypt keys no longer match, so `IsReg2` returns `False` and the UI opens
+`FrmRverify`.
+
 ## Read From SW
 
 SolidWorks 2025 opened `0614-A00.SLDASM` through file association.
@@ -67,3 +112,4 @@ SolidWorks 2025 opened `0614-A00.SLDASM` through file association.
 - PASS: launcher does not pick `ZTool-base.exe`.
 - PASS: update popup `3.8.5` does not appear.
 - PASS: read from SW is no longer `0` positions.
+- INFO: license dialog source identified as `Frmmain::tmr_Elapsed -> SR.IsReg2(False) -> FrmRverify.ShowDialog()`.
