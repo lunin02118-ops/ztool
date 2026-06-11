@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>ZTool.Core</AssemblyName>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <!-- Our editable copies of SR/TCPClient/SecurityCenter/GetRegistrycreatedtime
+         intentionally duplicate the types in the referenced ZTool.exe.
+         CS0436 = "source type wins" — exactly what we want. Silence it. -->
+    <NoWarn>$(NoWarn);CS0436;CS0414;CS0168;CS0219;CS0162;CS0649</NoWarn>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src\SR.cs" />
+    <Compile Include="src\SecurityCenter.cs" />
+    <Compile Include="src\TCPClient.cs" />
+    <Compile Include="src\GetRegistrycreatedtime.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Management" />
+    <!-- Publicized base assembly (identity "ZTool.public"): resolves every type
+         we DON'T edit (code, RSAHelper host, CConfigMng, forms, ...).
+         The Include name MUST match the assembly identity, otherwise MSBuild
+         ignores the HintPath and resolves "ZTool" to out\ZTool.exe (the
+         reinjected app, whose types are internal -> CS0122). -->
+    <Reference Include="ZTool.public">
+      <HintPath>$(MSBuildThisFileDirectory)ref\ZTool.public.dll</HintPath>
+    </Reference>
+    <Reference Include="ZTool_rsa">
+      <HintPath>$(MSBuildThisFileDirectory)ref\ZTool_rsa.dll</HintPath>
+    </Reference>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+[project]
+name = "ztool-license-server"
+version = "0.1.0"
+description = "ZTool license activation server (Scenario B migration)"
+requires-python = ">=3.10"
+dependencies = [
+    "pycryptodome>=3.19",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# Only the server package is importable. Without this, setuptools flat-layout
+# auto-discovery also picks up the generated ``keys/`` directory as a top-level
+# package and aborts the (editable) install with a "multiple top-level packages"
+# error.
+[tool.setuptools.packages.find]
+include = ["ztool_license_server*"]
