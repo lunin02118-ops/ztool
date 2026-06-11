@@ -524,6 +524,8 @@ internal static class Program
             int frmRgChanges = TuneFrmRg(mod);
             int aboutTitleChanges = FixAboutTitle(mod);
             int updateChanges = DisableUpdateCheck(mod);
+            int pktChanges = PatchHandshakePkt(mod);
+            int nameForced = ForceAssemblyName(mod, "ZTool");
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
@@ -546,7 +548,7 @@ internal static class Program
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
             // normalize it to 1.0.0 so the file's reported version matches.
             int win32Ver = NormalizeWin32Version(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, attr strings={attrChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -1018,6 +1020,67 @@ internal static class Program
 
         Console.WriteLine($"  CheckUpdate/Frmmain: disabled vendor online update (edits={changes}, Show() sites neutralized={shows})");
         return changes;
+    }
+
+    // The IPC handshake token expected by the SolidWorks add-in. Reading the model
+    // ("Подключить SW") sends, over WM_COPYDATA, the line
+    //     "ZToolRequest@001" + code::Getpkt()
+    // where Getpkt() == St2(MD5(uppercaseHex(GetEntryAssembly().GetPublicKeyToken()))).
+    // The add-in (PMPHandler::DefWndProc) compares that line against
+    //     "ZToolRequest@001" + obf2(obf1())
+    // and silently drops the request on mismatch -> read returns 0 positions with
+    // "затрачено 0,0 сек." (rejected BEFORE any BOM traversal).
+    //
+    // The expected value is a fixed, vendor-baked constant. It was recovered by
+    // executing the add-in's own (protector-decrypted) helpers obf1()=0x06000134
+    // and obf2()=0x0600005B straight out of the shipped DLL (verified byte-identical
+    // between the raw SLDWORKS memory dump and the russified candidate2 build):
+    //     obf1()            = "E91FBC0FCBAF9D1F81AE0368B381478"
+    //     obf2(obf1())      = "9EF1CBF0BCFAD9F118EA30863B1874"   <- this is it
+    // The original vendor exe was strong-named with the key that produces this value;
+    // the build-input base.exe was re-keyed (token f08fc7047657204e) and so produces a
+    // DIFFERENT value -> rejected. We do not have the vendor private key, so instead of
+    // re-signing we hard-set Getpkt() to return the value the add-in expects. This makes
+    // the handshake (and every IPC command that prefixes it) authenticate exactly as the
+    // genuine exe did. To re-derive for a different DLL build, run obf2(obf1()) on it.
+    private const string HandshakePkt = "9EF1CBF0BCFAD9F118EA30863B1874";
+
+    private static int PatchHandshakePkt(ModuleDefMD mod)
+    {
+        var code = mod.Find("ZTool.code", false);
+        var getpkt = code?.FindMethod("Getpkt");
+        if (getpkt?.Body == null)
+        {
+            Console.WriteLine("  handshake: ZTool.code::Getpkt NOT found - SKIPPED");
+            return 0;
+        }
+        var b = getpkt.Body;
+        b.Instructions.Clear();
+        b.ExceptionHandlers.Clear();
+        b.Variables.Clear();
+        b.Instructions.Add(Instruction.Create(OpCodes.Ldstr, HandshakePkt));
+        b.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        Console.WriteLine($"  handshake: Getpkt() pinned to add-in-expected token \"{HandshakePkt}\"");
+        return 1;
+    }
+
+    // The add-in launcher (SwAddin::openZtool) does NOT pick the exe by file name.
+    // It enumerates every *.exe next to the loaded ZTool.dll, reads each file's
+    // INTERNAL assembly identity via AssemblyName.GetAssemblyName(path).Name, and
+    // launches the one whose Name equals "ZTool" (OrdinalIgnoreCase). The vendor
+    // build-input (ZTool-base.exe) carries the same internal Name="ZTool", so a
+    // mere file rename never stopped it from being matched (and, sorting first, it
+    // won). We solve this from both sides: the build-input's internal name is set
+    // to "ZToolBuildInput" (see scripts/rename-base-assembly), and here we force the
+    // SHIPPED output back to exactly "ZTool" so the launcher matches our build and
+    // nothing else. Returns 1 if the name had to be changed.
+    private static int ForceAssemblyName(ModuleDefMD mod, string name)
+    {
+        if (mod.Assembly == null) return 0;
+        if (string.Equals(mod.Assembly.Name, name, StringComparison.Ordinal)) return 0;
+        Console.WriteLine($"  launcher: assembly internal Name \"{mod.Assembly.Name}\" -> \"{name}\"");
+        mod.Assembly.Name = name;
+        return 1;
     }
 
     // Some user-visible strings (the About box title and description) come from
