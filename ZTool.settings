@@ -236,43 +236,43 @@ False</string>
       <name>PropVal_1</name>
       <name2>PropResolvedVal_1</name2>
       <text>Имя детали</text>
-      <mappingname>零名</mappingname>
+      <mappingname>零件名称</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_2</name>
       <name2>PropResolvedVal_2</name2>
       <text>Номер чертежа</text>
-      <mappingname>图</mappingname>
+      <mappingname>图号</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_3</name>
       <name2>PropResolvedVal_3</name2>
       <text>Материал</text>
-      <mappingname>材</mappingname>
+      <mappingname>材质</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_4</name>
       <name2>PropResolvedVal_4</name2>
       <text>Тип</text>
-      <mappingname>类</mappingname>
+      <mappingname>类型</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_5</name>
       <name2>PropResolvedVal_5</name2>
       <text>Версия</text>
-      <mappingname>版</mappingname>
+      <mappingname>版本</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_6</name>
       <name2>PropResolvedVal_6</name2>
       <text>Количество</text>
-      <mappingname>统数</mappingname>
+      <mappingname>统计数量</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_7</name>
       <name2>PropResolvedVal_7</name2>
       <text>Обработка поверхности</text>
-      <mappingname>表处</mappingname>
+      <mappingname>表面处理</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_8</name>
@@ -284,7 +284,7 @@ False</string>
       <name>PropVal_9</name>
       <name2>PropResolvedVal_9</name2>
       <text>Масса</text>
-      <mappingname>重</mappingname>
+      <mappingname>重量</mappingname>
     </columnnamemapping>
   </namemappinglist>
   <usenpoi>true</usenpoi>
