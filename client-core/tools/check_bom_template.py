@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Offline pre-flight check for ZTool BOM export configuration.
+
+Validates, WITHOUT SolidWorks, that ZTool.settings and the BOM template are
+mutually consistent so that a real export inside SolidWorks can succeed:
+
+  1. Every BOM preset points at an ABSOLUTE template path (relative paths are
+     resolved against the process CWD = ...\\Documents under SolidWorks and fail).
+  2. Every non-empty <mappingname> in <namemappinglist> exists as a defined name
+     (named range) in the template workbook - otherwise that column is silently
+     left unfilled on export.
+  3. Reports the column -> header(propname) -> template-anchor wiring and the
+     preset table (name / type / thumbnails / filters) for a human cross-check.
+
+This does NOT verify data population - that requires SolidWorks + a model whose
+custom-property names match the <text> (propname) values. See the methodology.
+
+Usage:
+  python check_bom_template.py [path\\to\\ZTool.settings]
+Exit code 0 = all checks passed, 1 = at least one problem found.
+"""
+import os
+import re
+import sys
+
+try:
+    import openpyxl
+except ImportError:
+    sys.exit("openpyxl is required: pip install openpyxl")
+
+
+def parse_settings(path):
+    xml = open(path, encoding="utf-8").read()
+
+    def tag(block, t):
+        m = re.search(r"<%s>(.*?)</%s>" % (t, t), block, re.S)
+        if m:
+            return m.group(1).strip()
+        # self-closing / empty element
+        if re.search(r"<%s\s*/>" % t, block):
+            return ""
+        return None
+
+    presets = []
+    for m in re.finditer(r"<bomsetting>(.*?)</bomsetting>", xml, re.S):
+        b = m.group(1)
+        presets.append({
+            "name": tag(b, "name"),
+            "type": tag(b, "type"),
+            "img": tag(b, "insertimagebool"),
+            "byruler": tag(b, "ByRuler"),
+            "byfilter": tag(b, "ByFilter"),
+            "bomname": tag(b, "bomname"),
+        })
+
+    mappings = []
+    mm = re.search(r"<namemappinglist>(.*?)</namemappinglist>", xml, re.S)
+    if mm:
+        for c in re.finditer(r"<columnnamemapping>(.*?)</columnnamemapping>",
+                             mm.group(1), re.S):
+            cb = c.group(1)
+            mappings.append({
+                "col": tag(cb, "name"),
+                "header": tag(cb, "text"),
+                "anchor": tag(cb, "mappingname") or "",
+            })
+    return presets, mappings
+
+
+def template_defined_names(path):
+    wb = openpyxl.load_workbook(path, data_only=False)
+    names = set()
+    dn = wb.defined_names
+    # openpyxl 3.x: defined_names is a dict-like of DefinedName
+    try:
+        keys = list(dn.keys())
+    except AttributeError:
+        keys = [d.name for d in dn.definedName]
+    for k in keys:
+        names.add(k)
+    return names, wb.sheetnames
+
+
+def main():
+    settings = sys.argv[1] if len(sys.argv) > 1 else "ZTool.settings"
+    presets, mappings = parse_settings(settings)
+
+    problems = 0
+    print("=" * 70)
+    print("BOM export pre-flight check")
+    print("settings:", os.path.abspath(settings))
+    print("=" * 70)
+
+    # --- 1. presets + absolute path ---
+    print("\n[1] Presets (report types):")
+    tmpl_path = None
+    for p in presets:
+        abs_ok = bool(p["bomname"]) and (
+            re.match(r"^[A-Za-z]:[\\/]", p["bomname"]) or
+            p["bomname"].startswith("\\\\"))
+        flag = "OK " if abs_ok else "REL!"
+        if not abs_ok:
+            problems += 1
+        print("  - type=%s img=%-5s ByRuler=%-5s ByFilter=%-5s [%s] %s"
+              % (p["type"], p["img"], p["byruler"], p["byfilter"], flag,
+                 p["name"]))
+        tmpl_path = p["bomname"] or tmpl_path
+    print("  template path:", tmpl_path)
+
+    # --- 2. resolve template for anchor check ---
+    local_tmpl = None
+    if tmpl_path:
+        base = os.path.basename(tmpl_path.replace("\\", "/"))
+        for cand in [
+            os.path.join("Шаблоны спецификации", base),
+            os.path.join(os.path.dirname(os.path.abspath(settings)),
+                         "Шаблоны спецификации", base),
+        ]:
+            if os.path.exists(cand):
+                local_tmpl = cand
+                break
+    if not local_tmpl:
+        print("\n[!] Template workbook not found locally for anchor check "
+              "(looked for basename of bomname under 'Шаблоны спецификации').")
+        problems += 1
+        return finish(problems)
+
+    names, sheets = template_defined_names(local_tmpl)
+    print("\n[2] Template:", local_tmpl)
+    print("    sheets:", sheets)
+    print("    defined names (%d): %s" % (len(names), sorted(names)))
+
+    # --- 3. mapping wiring + anchor existence ---
+    print("\n[3] Column -> header(propname) -> template anchor:")
+    for mp in mappings:
+        anc = mp["anchor"]
+        if anc == "":
+            status = "(no anchor - column header only)"
+        elif anc in names:
+            status = "anchor OK"
+        else:
+            status = "ANCHOR MISSING IN TEMPLATE!"
+            problems += 1
+        print("  %-14s | %-22s | anchor=%-6s %s"
+              % (mp["col"], mp["header"] or "", anc, status))
+
+    return finish(problems)
+
+
+def finish(problems):
+    print("\n" + "=" * 70)
+    if problems == 0:
+        print("RESULT: PASS - settings/template are consistent for export.")
+        print("Note: data population still must be verified in SolidWorks on a")
+        print("model whose custom-property names match the headers above.")
+        return 0
+    print("RESULT: FAIL - %d problem(s) found (see above)." % problems)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
