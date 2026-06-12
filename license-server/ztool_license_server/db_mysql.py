@@ -289,13 +289,20 @@ class MySQLLicenseDB:
         mapped = self._ACTION_MAP.get(action)
         if mapped is None:
             return
+        # The admin panel's activation_log is keyed by license_key. Some protocol
+        # events carry no code (e.g. register_confirm sends only registry
+        # branches), so skip those rather than writing a noisy NULL-key row — the
+        # meaningful activate/deactivate rows are written at apply_register /
+        # apply_remove, which do carry the code.
+        if not code:
+            return
         success = 1 if result in ("accepted", "success", "confirmed", "") else 0
         msg = (details or result)[:255]
         mid = machine_hash(machine_code) if machine_code else None
         try:
             lic = self._fetchone(
                 "SELECT id FROM license_keys WHERE license_key = %s", (code,)
-            ) if code else None
+            )
             self._execute(
                 "INSERT INTO activation_log "
                 "(license_id, license_key, machine_id, action, success, error_message) "
