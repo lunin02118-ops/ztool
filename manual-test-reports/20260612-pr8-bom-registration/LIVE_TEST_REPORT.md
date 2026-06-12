@@ -70,6 +70,12 @@ Final local validation after workaround:
 
 Finding: licensing is usable after manual confirm injection, but the normal online-confirm path is still broken in the client/server flow for this build.
 
+UI note after activation:
+
+- The registration dialog correctly shows `Действует до: бессрочно`.
+- If the user presses `Активация онлайн` while the form contains the already-issued local registration SN (`03000200-...`), the client shows `Недопустимый код, обратитесь к автору для покупки кода`.
+- This message is misleading after successful registration: the local SN is not the original purchase/activation code expected by the online server. The form should either disable online activation when already registered, clear the activation-code fields, or show a clearer message.
+
 ## BOM Export
 
 After registration workaround, BOM export was retested with:
