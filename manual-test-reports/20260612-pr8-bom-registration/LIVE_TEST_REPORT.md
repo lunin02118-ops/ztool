@@ -127,6 +127,35 @@ Observed result:
 
 Finding: license transfer through the UI is still failed, but the failure mode changed after using the correct real-process UI path. The server accepts and deactivates the binding on `apply_remove`, while the client fails the local removal/confirm step, shows `Не удалось перенести лицензию`, and leaves local `IsReg2=True`. This creates an inconsistent state: server slot freed, local client still thinks it is registered.
 
+### Retest After Server Transfer-Blob Fix
+
+The production license server was updated so `apply_remove` returns result `11` with the 4-branch transfer-out blob expected by `SR.outrg(...)`.
+
+Retest setup:
+
+- No client code was changed.
+- Local license branches were cleared only to force the real `ZTool.exe` UI to show the in-app registration panel.
+- Precondition after local clear: `ZTool.SR.IsReg2(...) = False`.
+- ZTool was started from `D:\ztool-pr8-test\ZTool.exe`, hash `8EAF413F4C5DF5A6D307DBDA98F2C2C1D4A7BDE93621A38FCEA85519526F37C8`.
+- Registration form was opened from the real `ZTool.exe` process through the in-app `Регистрация` button.
+
+UI activation before transfer:
+
+- Button clicked: `Активация онлайн`.
+- ZTool message: `Регистрация выполнена`.
+- Production `audit_log`: `apply_register` accepted, then `register` success.
+- Local validation: `ZTool.SR.IsReg2(...) = True`.
+
+UI transfer after server fix:
+
+- Button clicked: `Перенести лицензию`.
+- ZTool message: `Лицензия успешно перенесена`.
+- Production `audit_log`: `apply_remove` success, then `remove_confirm` confirmed.
+- Production `activations.is_active = 0`.
+- Local validation after transfer: `ZTool.SR.IsReg2(...) = False`.
+
+Finding update: license transfer through the real ZTool UI now passes after the server-side transfer-blob fix. The earlier inconsistent state is superseded by this retest.
+
 Additional UI defect:
 
 - In `FrmRg`, the five registration-code text boxes are 80 px wide.
