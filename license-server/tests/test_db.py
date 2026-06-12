@@ -146,6 +146,22 @@ class TestLicenseDB:
         assert db.get_activation_count(code) == 1
         assert db.is_machine_activated(code, good)
 
+    def test_bare_relative_db_path(self, tmp_path, monkeypatch):
+        """A bare relative path (no directory component) must not crash.
+
+        ``os.path.dirname("licenses.db") == ""`` and ``os.makedirs("")`` raises
+        FileNotFoundError, which previously broke ``cli.py --db licenses.db``.
+        """
+        monkeypatch.chdir(tmp_path)
+        database = LicenseDB("licenses.db")
+        try:
+            database.add_license_code("BARE1-BARE2-BARE3-BARE4-BARE5")
+            is_valid, _ = database.validate_code("BARE1-BARE2-BARE3-BARE4-BARE5")
+            assert is_valid
+            assert os.path.exists(tmp_path / "licenses.db")
+        finally:
+            database.close()
+
     def test_audit_log(self, db):
         """Test audit logging."""
         db.log_action("test_action", code="CODE1", machine_code="MC1",

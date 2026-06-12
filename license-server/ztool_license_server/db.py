@@ -18,7 +18,12 @@ class LicenseDB:
 
     def __init__(self, db_path: str):
         self.db_path = db_path
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        # ``os.path.dirname`` is "" for a bare relative path (e.g. "licenses.db"),
+        # and ``os.makedirs("")`` raises FileNotFoundError. Only create the parent
+        # directory when the path actually has one.
+        parent = os.path.dirname(db_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
         self._conn = sqlite3.connect(db_path)
         self._conn.row_factory = sqlite3.Row
         self._create_tables()
