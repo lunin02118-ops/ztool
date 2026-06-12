@@ -145,7 +145,58 @@ def main():
         print("  %-14s | %-22s | anchor=%-6s %s"
               % (mp["col"], mp["header"] or "", anc, status))
 
+    # --- 4. service columns (NOT in namemappinglist) ---
+    # ZTool's export (ExportBom_xls4/_xls2) resolves SERVICE columns (the auto
+    # number, the computed quantity, path, sketch, disk file name) by the
+    # column's runtime HeaderText: it calls workbook.GetName(HeaderText) and
+    # writes that column ONLY IF a defined name with exactly that name exists.
+    # These headers come from the localized ZTool.exe resources (Frmmain.resx),
+    # NOT from ZTool.settings, so they cannot be remapped via the config.
+    # An Excel defined name cannot contain spaces (or '-', '/', a leading digit,
+    # '#'/'№' ...), so a header like "Подсчитанное количество" can never be
+    # bound by ANY template anchor - the column stays empty by construction.
+    problems += check_service_columns(names)
+
     return finish(problems)
+
+
+# DataGridView service columns and their localized HeaderText in the shipped
+# Russian ZTool.exe (read from ZTool.Frmmain.resources). The export binds each
+# to a defined name == this exact string.
+SERVICE_HEADERS = [
+    ("Col_Number",   "Номер",                "auto row number"),
+    ("Col_Quantity", "Подсчитанное количество", "computed quantity"),
+    ("Col_Path",     "Путь",                 "document path"),
+    ("Col_Preview",  "Эскиз",                "thumbnail image"),
+    ("Col_FileName", "Имя файла на диске",   "disk file name"),
+]
+
+
+def valid_excel_name(s):
+    """True if s can be an Excel/OOXML defined name (so an anchor CAN exist)."""
+    if not s or any(ch.isspace() for ch in s):
+        return False
+    # first char: letter (incl. Cyrillic) or underscore/backslash; rest: word
+    # chars or '.'; reject anything else (-, /, №, etc.)
+    return re.match(r"^[^\W\d][\w.]*$", s, re.UNICODE) is not None
+
+
+def check_service_columns(names):
+    print("\n[4] Service columns (auto, bound by HeaderText -> defined name):")
+    problems = 0
+    for col, header, desc in SERVICE_HEADERS:
+        if not valid_excel_name(header):
+            status = ("UNBINDABLE - header is not a valid Excel name; rename "
+                      "the column header in ZTool.exe to one word (binary fix)")
+            problems += 1
+        elif header in names:
+            status = "anchor OK"
+        else:
+            status = "ANCHOR MISSING - add a defined name '%s' to the template" % header
+            problems += 1
+        print("  %-14s | header=%-24r %-18s | %s"
+              % (col, header, "(%s)" % desc, status))
+    return problems
 
 
 def finish(problems):
