@@ -24,7 +24,7 @@
    ```
    Старые константы (вендорский `120.78.215.80:58000`) заменены на новые,
    зашифрованные **нашим приватным ключом** под значения
-   `185.112.102.122` и `58000`. Проверено: расшифровка нашим публичным
+   `<LICENSE_SERVER_IP>` и `58000`. Проверено: расшифровка нашим публичным
    ключом (то, что делает клиент) возвращает ровно этот IP и порт.
 
 3. **Версия.** Клиент берёт `Application.ProductVersion` (+ `" (x64)"`) для
@@ -48,9 +48,9 @@
 from ztool_license_server.crypto.rsa_ztool import sign_string, decrypt_string
 priv = open("keys/private_key.txt").read().strip()
 pub  = open("keys/public_key.txt").read().strip()
-ip   = sign_string("185.112.102.122", priv)
+ip   = sign_string("<LICENSE_SERVER_IP>", priv)
 port = sign_string("58000", priv)
-assert decrypt_string(ip, pub)  == "185.112.102.122"
+assert decrypt_string(ip, pub)  == "<LICENSE_SERVER_IP>"
 assert decrypt_string(port, pub) == "58000"
 ```
 
@@ -72,7 +72,7 @@ dotnet bin/patcher.dll <вход ZTool.exe> <выход ZTool.exe> .
 - Статически: в перевыпущенной сборке нет вендорского ключа/адреса; наш ключ
   ×18, новый ip/port ×2; версия `1.0`.
 - Криптографически: `new_ip`/`new_port` расшифровываются нашим публичным
-  ключом в `185.112.102.122` / `58000` (тем же алгоритмом, что проходит
+  ключом в `<LICENSE_SERVER_IP>` / `58000` (тем же алгоритмом, что проходит
   живые тесты сервера).
 - **Остаётся проверить на машине с SolidWorks** (фаза 10): что перевыпущенная
   сборка корректно грузится надстройкой и проходит полный цикл активации.
