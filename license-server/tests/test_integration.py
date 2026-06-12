@@ -297,7 +297,7 @@ async def test_one_machine_per_code(tmp_path):
 async def test_transfer_out_flow(tmp_path):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        c1, _ = await client.apply_register(CODE, MACHINE_A)
+        c1, apply_body = await client.apply_register(CODE, MACHINE_A)
         assert c1 == Result.APPLY_OK
 
         # limit reached for a different machine
@@ -305,8 +305,22 @@ async def test_transfer_out_flow(tmp_path):
         assert c2 == Result.DEVICE_LIMIT
 
         # transfer the license off MACHINE_A: 129 -> 11, then 132 -> 7
-        cr, _ = await client.apply_remove(CODE, MACHINE_A)
+        cr, remove_body = await client.apply_remove(CODE, MACHINE_A)
         assert cr == Result.TRANSFER_OUT_OK
+
+        # The 129 reply MUST carry a transport blob: SR.outrg() AES-decrypts it
+        # with getver_today, splits on "\t" and returns false unless it sees
+        # exactly four fields. A bare body is what made the real client report
+        # "Не удалось перенести лицензию" and skip the 132 confirm.
+        assert remove_body, "apply_remove must return a transfer-out blob"
+        gv = getver_today(ServerConfig.client_version, is_64bit=True)
+        assert len(aes.decrypt(remove_body, gv).split("\t")) == 4
+
+        # The transfer-out blob is built for the reserved sentinel fingerprint,
+        # not MACHINE_A, so rewriting it de-licenses the source machine: its
+        # bound value differs from the activation blob's.
+        assert client.unwrap_license_blob(remove_body) != client.unwrap_license_blob(apply_body)
+
         cc, _ = await client.remove_confirm()
         assert cc == Result.TRANSFER_DONE
 

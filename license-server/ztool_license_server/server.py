@@ -24,6 +24,7 @@ from .license_blob import (
     getver_today,
     recover_raw_machine,
     build_confirm_transport,
+    build_transfer_out_blob,
 )
 from .machineid import is_valid_machine_code
 from .db import LicenseDB
@@ -309,17 +310,29 @@ class LicenseServer:
                               result="wrong_password")
             return self._make_result(Result.WRONG_PASSWORD)
 
-        # Deactivate. On success reply 11 -> the client runs SR.outrg() and then
-        # sends a 132 (remove confirm), which we answer with 7 (transfer done).
+        # Release the seat (the floating "return to server" effect) and reply 11
+        # WITH a transport blob. The real client runs SR.outrg(receive) on this
+        # body: it AES-decrypts with getver_today, splits on "\t" and REQUIRES
+        # exactly four fields (the registry branches SR.rg() writes at
+        # activation; outrg() is byte-identical to rg()). A bare result with no
+        # body makes outrg() return false -> the client shows "Не удалось
+        # перенести лицензию" and never sends the 132 confirm. Building the blob
+        # for the reserved sentinel fingerprint also de-licenses the source
+        # machine once it rewrites the branches.
         success, error = self.db.deactivate(reg_code, machine_code)
-        if success:
-            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                              result="success")
-            return self._make_result(Result.TRANSFER_OUT_OK)
-        else:
+        if not success:
             self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                               result="failed", details=error)
             return self._make_result(status_to_result(error, Result.REGISTER_FAILED))
+
+        blob = build_transfer_out_blob(
+            self._public_key,
+            self._private_key,
+            client_version=self.config.client_version,
+        )
+        self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                          result="success")
+        return self._make_result(Result.TRANSFER_OUT_OK, blob)
 
     async def _handle_remove_confirm(self, plaintext: str) -> bytes:
         """Handle remove confirm (Sendtype 132): finalise a transfer/removal."""

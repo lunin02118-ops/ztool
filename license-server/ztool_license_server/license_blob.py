@@ -324,6 +324,44 @@ def generate_license_blob(
     )
 
 
+# A reserved fingerprint that cannot match any real machine. The Apply_Remove
+# (129) response is a four-branch blob the client writes to the registry with
+# SR.outrg() exactly like an activation (outrg() is byte-identical to rg()).
+# Building it for this sentinel means the source machine's next IsReg1/IsReg2
+# fails (its b2+b3 == GD51(sentinel) no longer matches GD51(real machine)), so
+# the floating licence is genuinely released locally — matching the documented
+# transfer semantics ("возврат лицензии на сервер для активации на другом ПК").
+TRANSFER_OUT_SENTINEL_MACHINE = (
+    "00000000-0000-0000-0000-000000000000|TRANSFERRED-OUT|TRANSFERRED-OUT"
+)
+
+
+def build_transfer_out_blob(
+    public_key: str,
+    private_key: str,
+    *,
+    client_version: str,
+    is_64bit: bool = True,
+) -> str:
+    """Build the transport blob returned with Apply_Remove (129, result 11).
+
+    Ground truth is ``SR.outrg(Receive)`` (verified by IL): it
+    ``AES_decrypt(Receive, getver_today)``, splits on ``"\\t"`` and **requires
+    exactly four fields** before it writes the four registry branches and lets
+    the client send the 132 (verify_Remove) confirm. A bare result with no body
+    makes ``outrg()`` return ``false`` -> the client shows "Не удалось перенести
+    лицензию" and never confirms. We therefore return a real four-branch blob,
+    built for :data:`TRANSFER_OUT_SENTINEL_MACHINE` so that rewriting it also
+    de-licenses the source machine."""
+    return generate_license_blob(
+        machine_code=TRANSFER_OUT_SENTINEL_MACHINE,
+        public_key=public_key,
+        private_key=private_key,
+        client_version=client_version,
+        is_64bit=is_64bit,
+    )
+
+
 def generate_offline_activation(
     machine_code: str,
     public_key: str,

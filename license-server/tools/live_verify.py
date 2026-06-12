@@ -93,10 +93,14 @@ async def run(args):
     print(f"[131 register_confirm] result={res2} (expect {Result.REGISTER_OK})  blob={len(transport)}B  [empty ctimes]")
     assert res2 == Result.REGISTER_OK and transport, "register_confirm failed"
 
-    res3, _ = await c.send(Sendtype.APPLY_REMOVE,
+    res3, remove_blob = await c.send(Sendtype.APPLY_REMOVE,
                            [c._rsa(args.code), c._mfield(machine), c._rsa(args.password), c._rsa("HOST\\user")])
-    print(f"[129 apply_remove]     result={res3} (expect {Result.TRANSFER_OUT_OK})")
-    assert res3 == Result.TRANSFER_OUT_OK, "apply_remove failed"
+    # The 129 reply MUST carry a four-field blob: SR.outrg() AES-decrypts it with
+    # getver_today and returns false (-> "Не удалось перенести лицензию") unless
+    # it splits into exactly four registry branches.
+    n_fields = len(aes.decrypt(remove_blob.decode("utf-8"), gv).split("\t")) if remove_blob else 0
+    print(f"[129 apply_remove]     result={res3} (expect {Result.TRANSFER_OUT_OK})  blob={len(remove_blob)}B  fields={n_fields} (expect 4)")
+    assert res3 == Result.TRANSFER_OUT_OK and n_fields == 4, "apply_remove failed (need result 11 + 4-field outrg blob)"
 
     res4, _ = await c.send(Sendtype.REMOVE_CONFIRM, [c._rsa("x")])
     print(f"[132 remove_confirm]   result={res4} (expect {Result.TRANSFER_DONE})")
