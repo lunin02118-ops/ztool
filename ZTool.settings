@@ -37,7 +37,7 @@
     <string>18</string>
     <string>90</string>
   </Preview_Hotkey>
-  <bompath />
+  <bompath>D:\ZTool\Шаблоны спецификации</bompath>
   <image_size>
     <Width>64</Width>
     <Height>64</Height>
@@ -155,8 +155,8 @@ False</string>
   <Thumbnail_position>0</Thumbnail_position>
   <bomsettings>
     <bomsetting>
-      <name>Экспорт сводной спецификации</name>
-      <bomname>Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <name>Сводная спецификация</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -171,8 +171,24 @@ False</string>
       <includetop>true</includetop>
     </bomsetting>
     <bomsetting>
-      <name>Экспорт иерархической спецификации</name>
-      <bomname>Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <name>Сводная спецификация (с эскизами)</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>true</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Иерархическая спецификация</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -187,10 +203,10 @@ False</string>
       <includetop>true</includetop>
     </bomsetting>
     <bomsetting>
-      <name>Экспорт спецификации верхнего уровня</name>
-      <bomname>Шаблоны спецификации\bom_шаблон.xlsx</bomname>
-      <type>2</type>
-      <insertimagebool>false</insertimagebool>
+      <name>Иерархическая спецификация (с эскизами)</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>1</type>
+      <insertimagebool>true</insertimagebool>
       <lockratio>true</lockratio>
       <image_width>64</image_width>
       <image_height>48</image_height>
@@ -203,9 +219,9 @@ False</string>
       <includetop>true</includetop>
     </bomsetting>
     <bomsetting>
-      <name>Экспорт сводной спецификации деталей</name>
-      <bomname>Шаблоны спецификации\bom_шаблон.xlsx</bomname>
-      <type>3</type>
+      <name>Покупные детали</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
       <image_width>64</image_width>
@@ -213,8 +229,44 @@ False</string>
       <Propertyvalue>true</Propertyvalue>
       <marknodrw>false</marknodrw>
       <autocolumnwidth>false</autocolumnwidth>
-      <ByRuler>false</ByRuler>
-      <ByFilter>true</ByFilter>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Покупные</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Внешние детали</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Внешние</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Спецификация верхнего уровня</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>2</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
       <RulesList />
       <includetop>true</includetop>
     </bomsetting>
