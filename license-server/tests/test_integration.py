@@ -118,6 +118,18 @@ class ZToolClientEmulator:
         lines = list(branches) + [ts, ts, ts]
         return await self._send(Sendtype.REGISTER_CONFIRM, lines)
 
+    async def register_confirm_empty_ctimes(self, blob, client_version=ServerConfig.client_version):
+        """Reproduce a real client build whose GetRegistrycreatedtime.getregistry
+        Keytime() throws ("Method not found: RegCloseKey(UIntPtr)") and returns
+        "": RSAHelper.EncryptString("") == "", so AppendLine emits two BLANK
+        creation-time lines between the four branches and RSA(now). The server
+        must keep those positional blanks (not filter them) and rebuild b0/b1
+        keyed by GD51("")."""
+        gv = getver_today(client_version, is_64bit=True)
+        branches = aes.decrypt(blob, gv).split("\t")
+        lines = list(branches) + ["", "", self._rsa("6/12/2026 6:00:00")]
+        return await self._send(Sendtype.REGISTER_CONFIRM, lines)
+
     async def apply_remove(self, code, machine, password=DUMMY_PW):
         lines = [self._rsa(code), self._machine_field(machine), self._rsa(password),
                  self._rsa("HOST\\user")]
@@ -180,6 +192,35 @@ async def test_full_online_activation_flow(tmp_path):
         code2, transport = await client.register_confirm(blob)
         assert code2 == Result.REGISTER_OK
         assert client.unwrap_license_blob(transport) == gd51(MACHINE_A)
+
+
+@pytest.mark.asyncio
+async def test_register_confirm_with_empty_creation_times(tmp_path):
+    """Production regression (real client on machine 03000200-...): the client
+    build's GetRegistrycreatedtime.getregistryKeytime() throws and returns "",
+    so get_rginfo() sends two BLANK creation-time lines. The server previously
+    filtered empty lines, miscounted the fields ("expected 4 branches + 2 times,
+    got 5 fields") and returned INFO_ERROR — blocking online confirm. It must now
+    accept the blanks and rebuild the IsReg2 blob keyed by GD51("")."""
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    from test_license_blob import emulate_isreg2  # noqa: PLC0415
+
+    server, aio_server, client = await _make_server(tmp_path)
+    async with aio_server:
+        code, blob = await client.apply_register(CODE, MACHINE_A)
+        assert code == Result.APPLY_OK and blob
+
+        code2, transport = await client.register_confirm_empty_ctimes(blob)
+        assert code2 == Result.REGISTER_OK, f"expected 12, got {code2}"
+
+        gv = getver_today(ServerConfig.client_version, is_64bit=True)
+        confirm_branches = aes.decrypt(transport, gv).split("\t")
+        ok, uuid, use_date, left = emulate_isreg2(confirm_branches, client.public_key, "", "")
+        assert ok
+        assert left == gd51(MACHINE_A)
+        assert uuid == MACHINE_A.split("|")[0]
 
 
 @pytest.mark.asyncio

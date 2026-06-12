@@ -96,7 +96,14 @@ class LicenseServer:
             logger.error("Error handling client %s: %s", addr, e, exc_info=True)
         finally:
             writer.close()
-            await writer.wait_closed()
+            try:
+                await writer.wait_closed()
+            except (ConnectionResetError, BrokenPipeError):
+                # The real client aborts the socket (RST) right after reading the
+                # response instead of a clean FIN; wait_closed() then raises. The
+                # response was already sent, so this is harmless — swallow it so it
+                # is not logged as an "Unhandled exception in client_connected_cb".
+                pass
             logger.info("Connection closed: %s", addr)
 
     async def _process_message(self, sendtype: int, body_bytes: bytes) -> bytes:
@@ -234,20 +241,35 @@ class LicenseServer:
         verbatim) — echoing back the apply_register branches makes IsReg2 fail
         and the client shows "Регистрация не удалась".
         """
+        # Parse POSITIONALLY and keep interior empty lines. get_rginfo() builds
+        # the payload with StringBuilder.AppendLine for all seven items, so the
+        # field at each index is fixed. Crucially the two creation-time fields
+        # can be empty: on some client builds GetRegistrycreatedtime.getregistry
+        # Keytime() throws (e.g. "Method not found: RegCloseKey(UIntPtr)") and
+        # returns "", and RSAHelper.EncryptString("") == "" — leaving line4/line5
+        # blank. AppendLine still emits those blank lines, so they must NOT be
+        # filtered out (doing so shifts RSA(now) into the time slot and breaks
+        # the mapping). We only trim a trailing-newline artifact.
         lines = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
-        fields = [ln for ln in lines if ln]
-        branches = fields[:4]
+        while lines and lines[-1] == "":
+            lines.pop()
+        branches = lines[:4]
 
-        if len(branches) != 4 or len(fields) < 6:
+        if len(branches) != 4 or any(b == "" for b in branches):
             self.db.log_action("register", result="error",
-                               details=f"register confirm: expected 4 branches + 2 times, got {len(fields)} fields")
+                               details=f"register confirm: expected 4 non-empty branches, got {len(lines)} lines")
             return self._make_result(Result.INFO_ERROR)
 
         try:
             # The two registry-key creation times the client RSA-encrypted with
-            # our public key; recover them with the private key.
-            creation_time_b2 = decrypt_string(fields[4], self._private_key).strip()
-            creation_time_b3 = decrypt_string(fields[5], self._private_key).strip()
+            # our public key; recover them with the private key. Empty (or
+            # missing) fields mean the client read no creation time, so b0/b1 are
+            # keyed by GD51("") — IsReg2 on that same client re-reads "" and
+            # matches. This keeps online confirm working without a client fix.
+            ct_b2_field = lines[4] if len(lines) > 4 else ""
+            ct_b3_field = lines[5] if len(lines) > 5 else ""
+            creation_time_b2 = decrypt_string(ct_b2_field, self._private_key).strip() if ct_b2_field else ""
+            creation_time_b3 = decrypt_string(ct_b3_field, self._private_key).strip() if ct_b3_field else ""
             transport = build_confirm_transport(
                 branches,
                 creation_time_b2,
