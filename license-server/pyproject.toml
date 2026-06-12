@@ -12,6 +12,12 @@ dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
 ]
+# MySQL backend (shares the web admin panel's ztool_license database). Only
+# needed in production when ZTOOL_DB_BACKEND=mysql; imported lazily so the
+# SQLite default and the test suite do not require it.
+mysql = [
+    "PyMySQL>=1.0",
+]
 
 [build-system]
 requires = ["setuptools>=61"]

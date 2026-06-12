@@ -22,6 +22,17 @@ class ServerConfig:
     # Database
     db_path: str = os.path.join(os.path.dirname(__file__), '..', 'licenses.db')
 
+    # Storage backend: "sqlite" (default, used by tests/local) or "mysql".
+    # The "mysql" backend shares the web admin panel's database so TCP
+    # activations are reflected in the panel.
+    db_backend: str = "sqlite"
+    mysql_host: str = "localhost"
+    mysql_port: int = 3306
+    mysql_db: str = "ztool_license"
+    mysql_user: str = "ztool_license_user"
+    mysql_password: str = ""
+    mysql_charset: str = "utf8mb4"
+
     # License defaults
     default_device_limit: int = 1  # One machine per license code (transfer to move it)
     trial_duration_seconds: int = 1800  # 30 minutes trial
@@ -45,4 +56,11 @@ class ServerConfig:
             default_device_limit=int(os.getenv('ZTOOL_DEVICE_LIMIT', '1')),
             log_level=os.getenv('ZTOOL_LOG_LEVEL', 'INFO'),
             client_version=os.getenv('ZTOOL_CLIENT_VERSION', cls.client_version),
+            db_backend=os.getenv('ZTOOL_DB_BACKEND', cls.db_backend),
+            mysql_host=os.getenv('ZTOOL_MYSQL_HOST', cls.mysql_host),
+            mysql_port=int(os.getenv('ZTOOL_MYSQL_PORT', str(cls.mysql_port))),
+            mysql_db=os.getenv('ZTOOL_MYSQL_DB', cls.mysql_db),
+            mysql_user=os.getenv('ZTOOL_MYSQL_USER', cls.mysql_user),
+            mysql_password=os.getenv('ZTOOL_MYSQL_PASSWORD', cls.mysql_password),
+            mysql_charset=os.getenv('ZTOOL_MYSQL_CHARSET', cls.mysql_charset),
         )

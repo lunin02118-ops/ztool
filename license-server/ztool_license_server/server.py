@@ -38,10 +38,32 @@ class LicenseServer:
 
     def __init__(self, config: ServerConfig):
         self.config = config
-        self.db = LicenseDB(config.db_path)
+        self.db = self._make_db(config)
         self._private_key = self._load_private_key()
         self._public_key = self._load_public_key()
         logger.info("License server initialized (port=%d)", config.port)
+
+    @staticmethod
+    def _make_db(config: ServerConfig):
+        """Build the configured storage backend.
+
+        SQLite (default) keeps tests and local runs self-contained. The MySQL
+        backend shares the web admin panel's ``ztool_license`` database so TCP
+        activations/transfers are reflected in the panel.
+        """
+        if (config.db_backend or "sqlite").lower() == "mysql":
+            from .db_mysql import MySQLLicenseDB
+            logger.info("Using MySQL license backend (db=%s host=%s)",
+                        config.mysql_db, config.mysql_host)
+            return MySQLLicenseDB(
+                host=config.mysql_host,
+                port=config.mysql_port,
+                database=config.mysql_db,
+                user=config.mysql_user,
+                password=config.mysql_password,
+                charset=config.mysql_charset,
+            )
+        return LicenseDB(config.db_path)
 
     def _load_private_key(self) -> str:
         """Load private key from keys directory."""
