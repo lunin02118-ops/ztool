@@ -246,3 +246,95 @@ D:\ztool-pr8-test\manual-artifacts\ztool-demo-cn-table-evidence-20260612.zip
 
 4. **P2: SolidWorks нельзя запускать прямым `SLDWORKS.exe` из PowerShell в этой сессии.**  
    Такой запуск даёт `Не удалось загрузить Microsoft .NET Framework`. Через desktop shell / ярлык SolidWorks стартует и работает.
+
+## Повторный прогон с `ZTool.demo-cn-fixed.settings` от 2026-06-13
+
+Цель: проверить конфиг, где `propname` совпадают с реальными полными
+именами свойств demo-модели (`设计`, `零件名称`, `图号`, `材料`, `类型`,
+`版本`, `表面处理`, `设计日期`, `重量`), а не с сокращёнными
+`设/零名/图/材/...`.
+
+Подготовка:
+
+```text
+runtime: D:\ztool-pr8-test
+repo branch: devin/1781201882-bom-templates
+repo commit before local report update: 5b33fd2
+ZTool.exe: 8EAF413F4C5DF5A6D307DBDA98F2C2C1D4A7BDE93621A38FCEA85519526F37C8
+ZTool.dll: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
+ZTool.settings after path rewrite: BCA7AB581871943E72FC88B03C9588D8F38FA2E2C4A9652EE4563630D7710B79
+template path: D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx
+```
+
+Pre-flight:
+
+- первый запуск в обычной Windows-консоли упал на выводе китайских символов:
+  `UnicodeEncodeError: 'charmap' codec can't encode characters`;
+- повторный запуск с `PYTHONIOENCODING=utf-8` прошёл успешно:
+  `RESULT: PASS - settings/template are consistent for export`.
+
+Live-прогон:
+
+- SolidWorks 2025 открыт через desktop shortcut;
+- через COM открыт файл `D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`;
+- запущен именно `D:\ztool-pr8-test\ZTool.exe`, SHA256 совпадает с ожидаемым;
+- после `Подключить SW` таблица ZTool заполнилась данными, включая
+  целевые китайские prop-колонки (`零件名称`, `图号`, `材料`, `类型`,
+  `版本`, `表面处理`, `重量`).
+
+Экспорт:
+
+| Файл | Размер | Проверка |
+| --- | ---: | --- |
+| `D:\ztool-pr8-test\bom-exports\0614-A00-20260613-0019.xlsx` | 13685 | данные записаны |
+
+Проверка через `openpyxl`:
+
+```text
+sheet: 图纸明细1
+max_row: 107
+max_col: 19
+nonempty data rows in checked range: 32
+data rows: 7..38
+```
+
+Заполненные колонки:
+
+| Колонка | Заголовок | Пример значения |
+| --- | --- | --- |
+| C | `Наименование` | `支架`, `连杆`, `夹爪平台` |
+| D | `Обозначение` | `0614-P001`, `0614-A00` |
+| E | `Версия` | `A` |
+| H | `Тип обработки` | `机加`, `组件`, `外购` |
+| I | `Обработка поверхности` | `本色阳极` там, где свойство заполнено |
+| J | `Масса` | `0.1619`, `0.9898` |
+| N | `Материал` | `6061`, `SUS304` там, где свойство заполнено |
+
+Остаточные проблемы:
+
+1. **P1/P2: служебные колонки `№ п/п` и `Кол-во` пустые.**  
+   В экспортированном файле `A7:A38` и `G7:G38` пустые, хотя строки данных
+   вставлены и пользовательские свойства записаны.
+
+2. **P2: при работе после подключения один раз появился диалог ZTool:**
+
+```text
+Не удается выполнить исходящий вызов, так как приложение обрабатывает входящий синхронный вызов.
+(Исключение из HRESULT: 0x8001010D)
+(RPC_E_CANTCALLOUT_ININPUTSYNCCALL)
+```
+
+После закрытия диалога и паузы экспорт всё же выполнился.
+
+Вывод: дефект "Excel содержит только пустой шаблон" для demo-cn-fixed профиля
+исправлен. Экспорт строк и custom-свойств работает. BOM пока нельзя закрывать
+полностью из-за пустых служебных колонок `№ п/п`/`Кол-во` и RPC-диалога.
+
+Локальные артефакты:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-demo-cn-fixed-after-connect.png
+D:\ztool-pr8-test\manual-artifacts\ztool-demo-cn-fixed-spec-tab-after-wait.png
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0019.xlsx
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0019-analysis.json
+```
