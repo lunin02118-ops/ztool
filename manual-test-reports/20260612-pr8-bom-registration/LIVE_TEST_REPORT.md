@@ -62,6 +62,12 @@ Result:
 - Because those two fields are empty, the current client cannot build the confirm payload expected by the production server.
 - Workaround used only to unblock BOM testing: generated a confirm blob on the production VPS with the same empty creation-time fields and wrote the final HKLM confirm branches locally.
 
+Correction after review:
+
+- The manual confirm/HKLM write above is **not** a valid UI registration test.
+- Treat it only as a temporary workaround used to continue BOM export testing.
+- The real registration/transfer UI flow remains failed until it passes through the ZTool form and server without direct registry writes.
+
 Final local validation after workaround:
 
 - `ZTool.SR.IsReg2(...) = True`
@@ -75,6 +81,38 @@ UI note after activation:
 - The registration dialog correctly shows `Действует до: бессрочно`.
 - If the user presses `Активация онлайн` while the form contains the already-issued local registration SN (`03000200-...`), the client shows `Недопустимый код, обратитесь к автору для покупки кода`.
 - This message is misleading after successful registration: the local SN is not the original purchase/activation code expected by the online server. The form should either disable online activation when already registered, clear the activation-code fields, or show a clearer message.
+
+## License Transfer UI Retest
+
+No code changes were made for this retest. The already-open ZTool registration dialog was used.
+
+Initial state:
+
+- ZTool process path: `D:\ztool-pr8-test\ZTool.exe`
+- ZTool process hash: `8EAF413F4C5DF5A6D307DBDA98F2C2C1D4A7BDE93621A38FCEA85519526F37C8`
+- Local `ZTool.SR.IsReg2(...) = True`
+- Production VPS `activations.is_active = 1` for the tested website-generated code.
+
+UI input:
+
+- Registration-code fields were populated with the original website-generated activation code, not the local generated SN.
+- Password field was populated with the activation password.
+- Button clicked: `Перенести лицензию`.
+
+Observed result:
+
+- ZTool showed message: `Недопустимый код, обратитесь к автору для покупки кода`.
+- Local registration stayed active: `ZTool.SR.IsReg2(...) = True`.
+- Production VPS binding stayed active: `activations.is_active = 1`.
+- Production `audit_log` showed no new `apply_remove` entry for this click; the transfer request did not reach the server as a successful transfer request.
+
+Finding: license transfer through the UI is failed. The client rejects the transfer path with the generic invalid-code message before the server-side transfer/deactivation flow completes.
+
+Additional UI defect:
+
+- In `FrmRg`, the five registration-code text boxes are 80 px wide.
+- The fifth field clips long code groups: the local SN last group `000700080009` does not fit visually.
+- This is a UI layout defect independent of server activation logic.
 
 ## BOM Export
 
