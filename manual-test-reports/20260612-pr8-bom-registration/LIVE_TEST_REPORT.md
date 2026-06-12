@@ -53,7 +53,7 @@ Confirmed/used:
 - SSH audit found the active production VPS key: `C:\Users\VladimirWorkPC\.ssh\rheolab_deploy`
 - VPS service status: `ztool-tcp-server.service` active, port `58000` listening.
 
-Result:
+Initial result before the server-side parser fix:
 
 - Production `Apply_register`: server accepted the website-generated activation code/password and returned result `13`.
 - Stock client-side online confirm failed: `verify_register` returned result `6`.
@@ -68,13 +68,31 @@ Correction after review:
 - Treat it only as a temporary workaround used to continue BOM export testing.
 - The real registration/transfer UI flow remains failed until it passes through the ZTool form and server without direct registry writes.
 
+Retest after the production server fix:
+
+- Local ZTool license branches were cleared before the UI retest.
+- Precondition verified with the client assembly: `ZTool.SR.IsReg2(...) = False`.
+- ZTool was started from `D:\ztool-pr8-test\ZTool.exe`, hash `8EAF413F4C5DF5A6D307DBDA98F2C2C1D4A7BDE93621A38FCEA85519526F37C8`.
+- The registration form was opened from the real `ZTool.exe` process via the in-app `Регистрация` command.
+- The original website-generated activation code and password were entered into the form.
+- Button clicked: `Активация онлайн`.
+
+Observed result:
+
+- ZTool showed message: `Регистрация выполнена`.
+- Local validation after the UI flow: `ZTool.SR.IsReg2(...) = True`.
+- Production `audit_log`: `apply_register` accepted, then `register` succeeded.
+- Production `activations.is_active = 1` for this machine.
+
+Finding: online activation through the real ZTool UI now passes against the production license server. The previous manual registry injection is superseded by this UI retest and must not be treated as the success criterion.
+
 Final local validation after workaround:
 
 - `ZTool.SR.IsReg2(...) = True`
 - `HKCU\SOFTWARE\ZTool\sn = 03000200-0400-0500-0006-000700080009`
 - ZTool title after restart: `ZTool 1.0(x64)`; no trial countdown.
 
-Finding: licensing is usable after manual confirm injection, but the normal online-confirm path is still broken in the client/server flow for this build.
+Finding retained for history: licensing was usable after manual confirm injection, but that workaround was not a valid UI registration test.
 
 UI note after activation:
 
@@ -84,7 +102,7 @@ UI note after activation:
 
 ## License Transfer UI Retest
 
-No code changes were made for this retest. The already-open ZTool registration dialog was used.
+No code changes were made for this retest. The same real `ZTool.exe` registration dialog was used after successful online activation.
 
 Initial state:
 
@@ -101,12 +119,13 @@ UI input:
 
 Observed result:
 
-- ZTool showed message: `Недопустимый код, обратитесь к автору для покупки кода`.
+- ZTool showed message: `Не удалось перенести лицензию`.
 - Local registration stayed active: `ZTool.SR.IsReg2(...) = True`.
-- Production VPS binding stayed active: `activations.is_active = 1`.
-- Production `audit_log` showed no new `apply_remove` entry for this click; the transfer request did not reach the server as a successful transfer request.
+- Production VPS binding was deactivated: `activations.is_active = 0`.
+- Production `audit_log`: `apply_remove` result `success` for this machine.
+- No matching `remove_confirm` was logged after that successful `apply_remove`.
 
-Finding: license transfer through the UI is failed. The client rejects the transfer path with the generic invalid-code message before the server-side transfer/deactivation flow completes.
+Finding: license transfer through the UI is still failed, but the failure mode changed after using the correct real-process UI path. The server accepts and deactivates the binding on `apply_remove`, while the client fails the local removal/confirm step, shows `Не удалось перенести лицензию`, and leaves local `IsReg2=True`. This creates an inconsistent state: server slot freed, local client still thinks it is registered.
 
 Additional UI defect:
 
