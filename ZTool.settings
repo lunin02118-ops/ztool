@@ -119,7 +119,49 @@ False</string>
   <MenuStyle>2</MenuStyle>
   <MenuColor>2</MenuColor>
   <MenuColor2>2</MenuColor2>
-  <FilterRulesList />
+  <FilterRulesList>
+    <CustomRule>
+      <name>Обрабатываемые детали</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Покупные изделия</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$     |@#$%|包含      |@#$%|Покупное;Стандартное</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>С обработкой поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$ |@#$%|不等于   |@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Без обработки поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$ |@#$%|等于      |@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Недостающие обязательные свойства</name>
+      <type>true</type>
+      <RuleList>
+        <string>$Тип$     |@#$%|等于      |@#$%|</string>
+        <string>$Номер чертежа$ |@#$%|等于      |@#$%|</string>
+        <string>$Материал$ |@#$%|等于      |@#$%|</string>
+        <string>$Масса$   |@#$%|等于      |@#$%|</string>
+        <string>$Имя детали$ |@#$%|等于      |@#$%|</string>
+      </RuleList>
+    </CustomRule>
+  </FilterRulesList>
   <ReNameFilterRule />
   <ExpandMaterialList>false</ExpandMaterialList>
   <HideSw1>false</HideSw1>
@@ -245,6 +287,42 @@ False</string>
       <ByRuler>false</ByRuler>
       <ByFilter>true</ByFilter>
       <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Обрабатываемые детали</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Обрабатываемые детали</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Покупные изделия</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Покупные изделия</string>
+      </RulesList>
       <includetop>true</includetop>
     </bomsetting>
   </bomsettings>

@@ -42,6 +42,13 @@ def parse_settings(path):
             return ""
         return None
 
+    def tag_list(block, t):
+        """Extract list of <string>...</string> values from a parent tag."""
+        m = re.search(r"<%s>(.*?)</%s>" % (t, t), block, re.S)
+        if not m:
+            return []
+        return re.findall(r"<string>(.*?)</string>", m.group(1), re.S)
+
     presets = []
     for m in re.finditer(r"<bomsetting>(.*?)</bomsetting>", xml, re.S):
         b = m.group(1)
@@ -52,6 +59,7 @@ def parse_settings(path):
             "byruler": tag(b, "ByRuler"),
             "byfilter": tag(b, "ByFilter"),
             "bomname": tag(b, "bomname"),
+            "ruleslist": tag_list(b, "RulesList"),
         })
 
     mappings = []
@@ -65,7 +73,18 @@ def parse_settings(path):
                 "header": tag(cb, "text"),
                 "anchor": tag(cb, "mappingname") or "",
             })
-    return presets, mappings
+
+    # Parse FilterRulesList
+    filter_rules = {}
+    frm = re.search(r"<FilterRulesList>(.*?)</FilterRulesList>", xml, re.S)
+    if frm:
+        for cr in re.finditer(r"<CustomRule>(.*?)</CustomRule>",
+                              frm.group(1), re.S):
+            rule_name = tag(cr.group(1), "name")
+            if rule_name:
+                filter_rules[rule_name] = True
+
+    return presets, mappings, filter_rules
 
 
 def template_defined_names(path):
@@ -84,7 +103,7 @@ def template_defined_names(path):
 
 def main():
     settings = sys.argv[1] if len(sys.argv) > 1 else "ZTool.settings"
-    presets, mappings = parse_settings(settings)
+    presets, mappings, filter_rules = parse_settings(settings)
 
     problems = 0
     print("=" * 70)
@@ -93,7 +112,7 @@ def main():
     print("=" * 70)
 
     # --- 1. presets + absolute path ---
-    print("\n[1] Presets (report types):")
+    print("\n[1] Presets (report types): %d mode(s)" % len(presets))
     tmpl_path = None
     for p in presets:
         abs_ok = bool(p["bomname"]) and (
@@ -102,11 +121,27 @@ def main():
         flag = "OK " if abs_ok else "REL!"
         if not abs_ok:
             problems += 1
-        print("  - type=%s img=%-5s ByRuler=%-5s ByFilter=%-5s [%s] %s"
+        ruler_info = ""
+        if p["byruler"] and p["byruler"].lower() == "true" and p["ruleslist"]:
+            ruler_info = " rules=%s" % p["ruleslist"]
+        print("  - type=%s img=%-5s ByRuler=%-5s ByFilter=%-5s [%s] %s%s"
               % (p["type"], p["img"], p["byruler"], p["byfilter"], flag,
-                 p["name"]))
+                 p["name"], ruler_info))
         tmpl_path = p["bomname"] or tmpl_path
     print("  template path:", tmpl_path)
+
+    # --- 1b. validate FilterRulesList references ---
+    if filter_rules:
+        print("\n[1b] FilterRulesList: %d rule(s) defined" % len(filter_rules))
+        for name in sorted(filter_rules):
+            print("    - %s" % name)
+    for p in presets:
+        if p["byruler"] and p["byruler"].lower() == "true":
+            for rule_ref in p["ruleslist"]:
+                if rule_ref not in filter_rules:
+                    print("  ** ERROR: preset '%s' references rule '%s' "
+                          "not found in FilterRulesList!" % (p["name"], rule_ref))
+                    problems += 1
 
     # --- 2. resolve template for anchor check ---
     local_tmpl = None

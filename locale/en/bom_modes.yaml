@@ -1,0 +1,97 @@
+# English BOM export modes (future localization)
+# This is the reference file for the English version.
+# To activate: replace names in ZTool.settings with these English equivalents.
+
+modes:
+  - id: summary
+    name: "Summary BOM Export"
+    type: 0
+    image: false
+    filter: null
+    description: "All components in a flat list with aggregated quantities"
+
+  - id: summary_thumb
+    name: "Summary BOM Export (with Thumbnails)"
+    type: 0
+    image: true
+    filter: null
+    description: "Summary + part thumbnails"
+
+  - id: indented
+    name: "Indented BOM Export"
+    type: 1
+    image: false
+    filter: null
+    description: "Hierarchical with nesting levels"
+
+  - id: indented_thumb
+    name: "Indented BOM Export (with Thumbnails)"
+    type: 1
+    image: true
+    filter: null
+    description: "Indented + thumbnails"
+
+  - id: machined
+    name: "Machined Parts"
+    type: 0
+    image: false
+    filter: "Machined Parts"
+    description: "Only parts with Type: Machining, Sheet Metal, Casting, Welding"
+
+  - id: purchased
+    name: "Purchased Parts"
+    type: 0
+    image: false
+    filter: "Purchased Parts"
+    description: "Only parts with Type: Purchased, Standard"
+
+  - id: top_level
+    name: "Top-Level BOM Export"
+    type: 2
+    image: false
+    filter: null
+    description: "Direct children only (Level 1)"
+
+  - id: parts_only
+    name: "Parts-Only BOM Export"
+    type: 3
+    image: false
+    filter: null
+    description: "Parts only (.SLDPRT), no sub-assemblies"
+
+filter_rules:
+  - id: machined_parts
+    name: "Machined Parts"
+    highlight: false
+    conditions:
+      - property: "Type"
+        operator: "contains"
+        value: "Machining;Sheet Metal;Casting;Welding"
+
+  - id: purchased_parts
+    name: "Purchased Parts"
+    highlight: false
+    conditions:
+      - property: "Type"
+        operator: "contains"
+        value: "Purchased;Standard"
+
+  - id: missing_required
+    name: "Missing Required Properties"
+    highlight: true
+    conditions:
+      - property: "Type"
+        operator: "equals"
+        value: ""
+      - property: "Drawing Number"
+        operator: "equals"
+        value: ""
+      - property: "Material"
+        operator: "equals"
+        value: ""
+      - property: "Weight"
+        operator: "equals"
+        value: ""
+      - property: "Part Name"
+        operator: "equals"
+        value: ""

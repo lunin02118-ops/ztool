@@ -1,0 +1,124 @@
+# Русские режимы экспорта спецификаций (BOM)
+# Это эталонный файл — содержит все режимы и их параметры.
+# Редактировать значения фильтров: ZTool.settings → <FilterRulesList>
+
+modes:
+  - id: summary
+    name: "Экспорт сводной спецификации"
+    type: 0
+    image: false
+    filter: null
+    description: "Все компоненты в одном списке, количество суммировано"
+
+  - id: summary_thumb
+    name: "Экспорт сводной спецификации (с эскизами)"
+    type: 0
+    image: true
+    filter: null
+    description: "Сводка + миниатюры деталей"
+
+  - id: indented
+    name: "Экспорт иерархической спецификации"
+    type: 1
+    image: false
+    filter: null
+    description: "С вложенностью (уровни сборки)"
+
+  - id: indented_thumb
+    name: "Экспорт иерархической спецификации (с эскизами)"
+    type: 1
+    image: true
+    filter: null
+    description: "Иерархия + миниатюры"
+
+  - id: machined
+    name: "Обрабатываемые детали"
+    type: 0
+    image: false
+    filter: "Обрабатываемые детали"
+    description: "Только детали с типом: Мех.обработка, Листовая, Литьё, Сварка"
+
+  - id: purchased
+    name: "Покупные изделия"
+    type: 0
+    image: false
+    filter: "Покупные изделия"
+    description: "Только детали с типом: Покупное, Стандартное"
+
+  - id: top_level
+    name: "Экспорт спецификации верхнего уровня"
+    type: 2
+    image: false
+    filter: null
+    description: "Только прямые дочерние компоненты (Level 1)"
+
+  - id: parts_only
+    name: "Экспорт сводной спецификации деталей"
+    type: 3
+    image: false
+    filter: null
+    description: "Только детали (.SLDPRT), без подсборок"
+
+filter_rules:
+  - id: machined_parts
+    name: "Обрабатываемые детали"
+    highlight: false
+    conditions:
+      - property: "Тип"
+        operator: "contains"  # 包含
+        value: "Мех.обработка;Листовая;Литьё;Сварка"
+
+  - id: purchased_parts
+    name: "Покупные изделия"
+    highlight: false
+    conditions:
+      - property: "Тип"
+        operator: "contains"  # 包含
+        value: "Покупное;Стандартное"
+
+  - id: with_surface_treatment
+    name: "С обработкой поверхности"
+    highlight: false
+    conditions:
+      - property: "Тип"
+        operator: "contains"  # 包含
+        value: "Мех.обработка;Листовая;Литьё;Сварка"
+      - property: "Обработка поверхности"
+        operator: "not_equals"  # 不等于
+        value: ""
+
+  - id: without_surface_treatment
+    name: "Без обработки поверхности"
+    highlight: false
+    conditions:
+      - property: "Тип"
+        operator: "contains"  # 包含
+        value: "Мех.обработка;Листовая;Литьё;Сварка"
+      - property: "Обработка поверхности"
+        operator: "equals"  # 等于
+        value: ""
+
+  - id: missing_required
+    name: "Недостающие обязательные свойства"
+    highlight: true
+    conditions:
+      - property: "Тип"
+        operator: "equals"
+        value: ""
+      - property: "Номер чертежа"
+        operator: "equals"
+        value: ""
+      - property: "Материал"
+        operator: "equals"
+        value: ""
+      - property: "Масса"
+        operator: "equals"
+        value: ""
+      - property: "Имя детали"
+        operator: "equals"
+        value: ""
+
+# Справочник операторов (внутренние коды ZTool):
+#   包含    = contains (значение содержит одну из подстрок через ;)
+#   等于    = equals (точное совпадение; пустое значение = свойство не заполнено)
+#   不等于  = not_equals (не совпадает)
