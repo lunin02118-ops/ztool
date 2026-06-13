@@ -5,12 +5,8 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>PmpGuardPatch</AssemblyName>
-    <RestoreSources></RestoreSources>
-    <CodePage>65001</CodePage>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>C:\Users\Administrator\.dotnet\tools\.store\ilspycmd\8.2.0.7535\ilspycmd\8.2.0.7535\tools\net6.0\any\Mono.Cecil.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Mono.Cecil" Version="0.11.5" />
   </ItemGroup>
 </Project>
