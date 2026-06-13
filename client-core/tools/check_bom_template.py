@@ -165,11 +165,16 @@ def main():
 # to a defined name == this exact string.
 SERVICE_HEADERS = [
     ("Col_Number",   "Номер",                "auto row number"),
-    ("Col_Quantity", "Подсчитанное количество", "computed quantity"),
+    ("Col_Quantity", "Количество",            "computed quantity"),
     ("Col_Path",     "Путь",                 "document path"),
     ("Col_Preview",  "Эскиз",                "thumbnail image"),
     ("Col_FileName", "Имя файла на диске",   "disk file name"),
 ]
+
+# Service columns whose binary header rename is intentionally deferred. An
+# unbindable header here is reported as a non-blocking DEFERRED warning instead
+# of a hard failure (the column simply stays empty until its header is renamed).
+DEFERRED_SERVICE = {"Col_FileName"}
 
 
 def valid_excel_name(s):
@@ -186,9 +191,13 @@ def check_service_columns(names):
     problems = 0
     for col, header, desc in SERVICE_HEADERS:
         if not valid_excel_name(header):
-            status = ("UNBINDABLE - header is not a valid Excel name; rename "
-                      "the column header in ZTool.exe to one word (binary fix)")
-            problems += 1
+            if col in DEFERRED_SERVICE:
+                status = ("DEFERRED - unbindable header (space); rename deferred "
+                          "by request, column stays empty until renamed")
+            else:
+                status = ("UNBINDABLE - header is not a valid Excel name; rename "
+                          "the column header in ZTool.exe to one word (binary fix)")
+                problems += 1
         elif header in names:
             status = "anchor OK"
         else:

@@ -11,7 +11,6 @@
     <string>Материал</string>
     <string>Тип</string>
     <string>Версия</string>
-    <string>Количество</string>
     <string>Обработка поверхности</string>
     <string>Дата разработки</string>
     <string>Масса</string>
@@ -24,7 +23,6 @@
     <string>Текст</string>
     <string>Текст</string>
     <string>Текст</string>
-    <string>Число</string>
     <string>Текст</string>
     <string>Дата</string>
     <string>Текст</string>
@@ -59,7 +57,6 @@
   <togetherConfig>false</togetherConfig>
   <GetDataOption>0</GetDataOption>
   <propshow>
-    <string>1</string>
     <string>1</string>
     <string>1</string>
     <string>1</string>
@@ -297,24 +294,18 @@ False</string>
     <columnnamemapping>
       <name>PropVal_6</name>
       <name2>PropResolvedVal_6</name2>
-      <text>Количество</text>
-      <mappingname>统计数量</mappingname>
-    </columnnamemapping>
-    <columnnamemapping>
-      <name>PropVal_7</name>
-      <name2>PropResolvedVal_7</name2>
       <text>Обработка поверхности</text>
       <mappingname>表面处理</mappingname>
     </columnnamemapping>
     <columnnamemapping>
-      <name>PropVal_8</name>
-      <name2>PropResolvedVal_8</name2>
+      <name>PropVal_7</name>
+      <name2>PropResolvedVal_7</name2>
       <text>Дата разработки</text>
       <mappingname />
     </columnnamemapping>
     <columnnamemapping>
-      <name>PropVal_9</name>
-      <name2>PropResolvedVal_9</name2>
+      <name>PropVal_8</name>
+      <name2>PropResolvedVal_8</name2>
       <text>Масса</text>
       <mappingname>重量</mappingname>
     </columnnamemapping>
