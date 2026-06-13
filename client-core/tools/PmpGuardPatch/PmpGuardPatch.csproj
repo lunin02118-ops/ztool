@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>PmpGuardPatch</AssemblyName>
+    <RestoreSources></RestoreSources>
+    <CodePage>65001</CodePage>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil">
+      <HintPath>C:\Users\Administrator\.dotnet\tools\.store\ilspycmd\8.2.0.7535\ilspycmd\8.2.0.7535\tools\net6.0\any\Mono.Cecil.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -4,6 +4,16 @@
 АКТУАЛЬНЫЙ ФАЙЛ (с иконками): ZTool_ru_candidate2.dll
 SHA256: eea7c9ae89edb139ed029f2b4fbb0c1d27459ccb31d1b8d60d0560cf15ba0961
 
+ЗАЩИЩЁННЫЙ ВАРИАНТ (defensive): ZTool_ru_candidate2_pmpguard.dll
+SHA256: 7ca18a535871d8c9f10c6c9bdde8bd931f8be2118b7b6590d12deb8313036fd0
+  Идентичен candidate2, но тело ZTool.PMPHandler.DefWndProc обёрнуто в
+  try/catch(System.Exception) (патчер: client-core/tools/PmpGuardPatch).
+  Цель: init-race на этапе IPC-рукопожатия WM_COPYDATA («Подключить SW»)
+  больше не валит аддин NullReferenceException — ранний/неполный пакет
+  просто игнорируется. Поведение во всём остальном без изменений.
+  ВНИМАНИЕ: preflight-проверка хеша ждёт eea7c9...ba0961 — для этого варианта
+  ожидаемый хеш 7ca18a...036fd0 (это нормально, не ошибка).
+
 Предыдущий (без иконок):      ZTool_ru_candidate1.dll
 SHA256: bc04c6994469ba717ace5ab1ff541a6da1fc96b32d83266e04f9d40d85c31647
 
