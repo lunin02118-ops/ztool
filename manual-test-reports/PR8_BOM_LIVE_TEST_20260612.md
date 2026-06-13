@@ -1055,3 +1055,109 @@ CJK-шрифтов/`charset="134"` в выходных файлах нет.
 shell-команды воспроизводил диалог `Не удалось загрузить Microsoft .NET
 Framework`; рабочий запуск для теста был через Explorer/ShellExecute по ярлыку
 `C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk`.
+
+### Ретест защитного `PMPHandler.DefWndProc` guard commit `b193ee4`
+
+Проверен новый кандидат DLL:
+
+```text
+repo commit: b193ee4
+runtime DLL: D:\ztool-pr8-test\ZTool.dll
+source DLL: dumps\candidate-ru-20260609\ZTool_ru_candidate2_pmpguard.dll
+SHA256: 7CA18A535871D8C9F10C6C9BDDE8BD931F8BE2118B7B6590D12DEB8313036FD0
+backup: D:\ztool-pr8-test\ZTool.dll.bak-before-pmpguard-20260613-225012
+RegAsm: Types registered successfully
+```
+
+Проверка воспроизводимого патчера:
+
+```text
+D:\Development\ztool\.dotnet\dotnet.exe run --project client-core\tools\PmpGuardPatch\PmpGuardPatch.csproj -- verify ...
+```
+
+Результат: **FAIL воспроизводимости инструмента**. `PmpGuardPatch.csproj`
+ссылается на локальный путь автора:
+
+```text
+C:\Users\Administrator\.dotnet\tools\.store\ilspycmd\8.2.0.7535\...\Mono.Cecil.dll
+```
+
+В чистом тестовом окружении `Mono.Cecil.dll` по этому пути отсутствует, сборка
+падает с `CS0246: The type or namespace name "Mono" could not be found`.
+Сам live-тест DLL продолжен, но `PmpGuardPatch verify` локально не
+воспроизводится.
+
+SolidWorks/add-in:
+
+```text
+SolidWorks launch: через Explorer/ShellExecute по C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk
+OpenDoc6(D:\ztool-pr8-test\TestModel\0614-A00.SLDASM): True, errors=0
+LoadAddIn(D:\ztool-pr8-test\ZTool.dll): 0 после Unload/Load
+GetAddInObject('ZTool.SwAddin'): True
+ActiveDoc: 0614-A00.SLDASM
+```
+
+Целевой init-race/`Подключить SW` тест:
+
+1. Первый ранний клик `Подключить SW` не уронил процесс SolidWorks и не показал
+   полный .NET stack trace, но показал пользовательский диалог ZTool/SW:
+
+```text
+Ошибка
+Ссылка на объект не указывает на экземпляр объекта.
+```
+
+2. После чистого `UnloadAddIn`/`LoadAddIn` и повторного запуска `ZTool.exe`
+   чтение прошло:
+
+```text
+Подключение завершено, затрачено 0,3 сек, всего 29 поз.
+```
+
+   Но одновременно снова появился модальный диалог процесса `SLDWORKS`:
+
+```text
+Ошибка
+Ссылка на объект не указывает на экземпляр объекта.
+```
+
+3. Во время последующего экспорта этот же SW-owned диалог приходилось закрывать
+   перед следующими режимами. То есть guard не устранил user-visible
+   `NullReference` полностью: данные читаются и экспортируются, но ошибка
+   остаётся видимой пользователю.
+
+BOM regression test на pmpguard DLL:
+
+```text
+export folder: D:\ztool-pr8-test\bom-exports\full-test-b193ee4-pmpguard
+validate_bom_exports.py: PASS
+```
+
+| # | Режим | Файл | Строк | № п/п | Кол-во | Путь | Эскизы | Типы | CJK/charset134 | Итог |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
+| 1 | Экспорт сводной спецификации | `01_summary_0614-A00-20260613-2303.xlsx` | 29 | 29/29 | 29/29 | 29/29 | 0 | `组件:5, 外购:9, 机加:15` | 0/0 | PASS |
+| 2 | Экспорт иерархической спецификации | `02_hierarchy_0614-A00-20260613-2304.xlsx` | 32 | 32/32 | 32/32 | 32/32 | 0 | `组件:5, 外购:12, 机加:15` | 0/0 | PASS |
+| 3 | Экспорт спецификации верхнего уровня | `03_top_level_0614-A00-20260613-2304.xlsx` | 6 | 6/6 | 6/6 | 6/6 | 0 | `组件:5, 机加:1` | 0/0 | PASS |
+| 4 | Экспорт сводной спецификации деталей | `04_parts_only_0614-A00-20260613-2306.xlsx` | 25 | 25/25 | 25/25 | 25/25 | 0 | `组件:1, 外购:9, 机加:15` | 0/0 | PASS |
+| 5 | Экспорт сводной спецификации (с эскизами) | `05_summary_images_0614-A00-20260613-2307.xlsx` | 29 | 29/29 | 29/29 | 29/29 | 29 | `组件:5, 外购:9, 机加:15` | 0/0 | PASS |
+| 6 | Экспорт иерархической спецификации (с эскизами) | `06_hierarchy_images_0614-A00-20260613-2308.xlsx` | 32 | 32/32 | 32/32 | 32/32 | 32 | `组件:5, 外购:12, 机加:15` | 0/0 | PASS |
+| 7 | Обрабатываемые детали | `07_processed_filter_0614-A00-20260613-2310.xlsx` | 15 | 15/15 | 15/15 | 15/15 | 0 | `机加:15` | 0/0 | PASS |
+| 8 | Покупные изделия | `08_purchased_filter_0614-A00-20260613-2311.xlsx` | 9 | 9/9 | 9/9 | 9/9 | 0 | `外购:9` | 0/0 | PASS |
+
+Итог `b193ee4`:
+
+- BOM/export regression: **PASS, 8/8**.
+- Add-in load: **PASS** после `UnloadAddIn`/`LoadAddIn`.
+- Целевой guard-дефект: **FAIL/PARTIAL**. Полного падения процесса нет, но
+  пользователь всё равно видит `Ошибка: Ссылка на объект не указывает на
+  экземпляр объекта.` из процесса SolidWorks.
+- `PmpGuardPatch verify`: **FAIL воспроизводимости** из-за hardcoded
+  `Mono.Cecil.dll` path.
+
+После ретеста тестовый runtime откатан на предыдущую стабильную DLL:
+
+```text
+D:\ztool-pr8-test\ZTool.dll
+SHA256: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
+RegAsm: Types registered successfully
+```
