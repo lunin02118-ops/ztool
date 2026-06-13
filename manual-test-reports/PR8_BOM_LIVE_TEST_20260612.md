@@ -612,3 +612,84 @@ C21 = 支架, D21 = 0614-P001, G21 = 1, H21 = 机加, I21 = 本色阳极, J21 = 
   отфильтрованного;
 - валидатор `validate_bom_exports.py`: **ложный FAIL**, требует исправления
   логики подсчёта строк данных.
+
+## Перепроверка фильтров commit `fc7d801` от 2026-06-13
+
+Цель: проверить фикс правил `FilterRulesList` для режимов 7-8.
+
+Подготовка:
+
+```text
+repo branch: devin/1781201882-bom-templates
+repo commit: fc7d801
+runtime: D:\ztool-pr8-test
+ZTool.exe: D41639A384DECCE9FF19D3C90E0B54AB96FA7F179631B2FD4471630D452A4833
+ZTool.dll: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
+ZTool.settings after path rewrite: FCBE356C6E7B594B9CCA797B8936C88F32D638523BD00C6A7AD9A3C7171790AF
+```
+
+Проверка формата правил в runtime `ZTool.settings`:
+
+```text
+Обрабатываемые детали:
+  $Тип$ <TAB>|@#$%| Содержит <TAB>|@#$%| 机加;Мех.обработка;Листовая;Литьё;Сварка
+
+Покупные изделия:
+  $Тип$ <TAB>|@#$%| Содержит <TAB>|@#$%| 外购;Покупное;Стандартное
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+[1c] Rule-string format (separator + operator): all rules OK
+```
+
+Live-прогон:
+
+- SolidWorks оставлен открытым на `D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`;
+- ZTool перезапущен после замены `ZTool.settings`;
+- `Подключить SW` прошёл успешно;
+- экспортированы только режимы 7 и 8.
+
+Файлы:
+
+```text
+D:\ztool-pr8-test\bom-exports\filter-retest-fc7d801
+```
+
+| # | Режим меню | Файл | Строки | Типы | Итог |
+| --- | --- | --- | ---: | --- | --- |
+| 7 | Обрабатываемые детали | `07_processed_filter_0614-A00-20260613-1545.xlsx` | 15 | `机加: 15` | PASS |
+| 8 | Покупные изделия | `08_purchased_filter_0614-A00-20260613-1545.xlsx` | 9 | `外购: 9` | PASS |
+
+Проверка через обновлённый `validate_bom_exports.py`:
+
+```text
+[PASS] 07_processed_filter_0614-A00-20260613-1545.xlsx
+  Строк данных: 15
+  № п/п: 15/15 | Кол-во: 15/15 | Путь: 15/15
+
+[PASS] 08_purchased_filter_0614-A00-20260613-1545.xlsx
+  Строк данных: 9
+  № п/п: 9/9 | Кол-во: 9/9 | Путь: 9/9
+
+ИТОГ: PASS
+```
+
+Примеры строк:
+
+```text
+mode 7:
+  0614-P003, qty=3, Тип=机加
+  0614-P004, qty=1, Тип=机加
+  0614-P015, qty=1, Тип=机加
+
+mode 8:
+  DBTS3-12-4, qty=6, Тип=外购
+  WSSS8-3-1, qty=6, Тип=外购
+  HNT1-SUS-M4, qty=12, Тип=外购
+```
+
+Итог по `fc7d801`: дефект режимов 7-8 закрыт. Фильтры реально применяются
+при BOM export, полный список 29 строк больше не выгружается.
