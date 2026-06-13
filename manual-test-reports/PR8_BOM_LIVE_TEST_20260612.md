@@ -338,3 +338,83 @@ D:\ztool-pr8-test\manual-artifacts\ztool-demo-cn-fixed-spec-tab-after-wait.png
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0019.xlsx
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0019-analysis.json
 ```
+
+## Повторный прогон commit `7983769` от 2026-06-13
+
+Цель: проверить патч для служебных колонок `Номер`/`Количество`.
+
+Подготовка:
+
+```text
+repo branch: devin/1781201882-bom-templates
+repo commit: 7983769
+runtime: D:\ztool-pr8-test
+ZTool.exe: D41639A384DECCE9FF19D3C90E0B54AB96FA7F179631B2FD4471630D452A4833
+replaced files:
+  D:\ztool-pr8-test\ZTool.exe
+  D:\ztool-pr8-test\ZTool.settings
+  D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+Col_Number   header='Номер'      anchor OK
+Col_Quantity header='Количество' anchor OK
+```
+
+Live-прогон:
+
+- SolidWorks 2025 открыт через desktop shortcut;
+- через COM открыт `D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`;
+- запущен именно `D:\ztool-pr8-test\ZTool.exe`, SHA256 совпадает с
+  `D41639A384DECCE9FF19D3C90E0B54AB96FA7F179631B2FD4471630D452A4833`;
+- после `Подключить SW` таблица ZTool показывает заполненные служебные
+  колонки `Номер` и `Колич...` / `Количество`:
+  видимые значения `1, 2, 3...` и количества `1, 6, 3, 12...`.
+
+Экспорт:
+
+| Файл | Размер | Результат |
+| --- | ---: | --- |
+| `D:\ztool-pr8-test\bom-exports\0614-A00-20260613-0020.xlsx` | 17698 | строки данных есть, но `№ п/п` и `Кол-во` пустые |
+
+Проверка через `openpyxl`:
+
+```text
+sheet: 图纸明细1
+max_row: 104
+max_col: 19
+nonempty data rows: 29
+headers:
+  A6 = №\nп/п
+  G6 = Кол-во
+```
+
+Фактические значения:
+
+```text
+A7:A35 = пусто
+G7:G35 = пусто
+```
+
+При этом остальные данные продолжают писаться, например:
+
+```text
+C7 = 夹爪平台, D7 = 0614-A00, E7 = A, H7 = 组件, J7 = 0.9898
+C21 = 支架, D21 = 0614-P001, E21 = A, H21 = 机加, I21 = 本色阳极, J21 = 0.1619, N21 = 6061
+```
+
+Вывод по commit `7983769`: патч довёл `Количество` до таблицы ZTool и
+pre-flight, но не довёл до записи в Excel. Дефект экспорта служебных колонок
+`№ п/п` и `Кол-во` остаётся открытым. В этом прогоне RPC-диалог не повторился.
+
+Локальные артефакты:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-7983769-after-connect.png
+D:\ztool-pr8-test\manual-artifacts\ztool-7983769-after-summary-export.png
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0020.xlsx
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0020-analysis.json
+```
