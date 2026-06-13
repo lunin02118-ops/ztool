@@ -9,6 +9,8 @@ Reformat bom_шаблон.xlsx for professional Russian appearance:
 7. Fix alignment and number formats
 """
 import os
+import re
+import zipfile
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.workbook.defined_name import DefinedName
@@ -79,13 +81,18 @@ def main():
     ws.title = NEW_SHEET
     print(f"[1] Sheet renamed: {OLD_SHEET} → {NEW_SHEET}")
 
-    # 1b. BULLETPROOF: purge the leftover CJK font (宋/SimSun) from EVERY cell in a
-    # generous range. ZTool's exporter clones the style of whatever template row
-    # sits at the data anchor when inserting data rows, so a single stray 宋 cell
-    # in that path makes exported data render in SimSun. We normalise the whole
-    # used range (plus margin) to Arial, preserving size/bold/italic/color.
+    # 1b. BULLETPROOF: purge the leftover CJK font (宋/SimSun) from EVERY cell in
+    # the existing used range. ZTool's exporter clones the style of whatever
+    # template row sits at the data anchor when inserting data rows, so a single
+    # stray 宋 cell in that path makes exported data render in SimSun. We
+    # normalise the whole used range to Arial, preserving size/bold/italic/color.
     # Bound the scan to the EXISTING used range so we don't materialise new
     # (empty, bordered) rows/cols and bloat the template.
+    #
+    # NOTE: this per-cell pass cannot touch the non-anchor cells of a merged
+    # range (they are MergedCell shadows; openpyxl silently ignores font
+    # assignment on them) nor leftover entries in the workbook font table.
+    # The absolute purge is done after save() in purge_cjk_fonts_in_styles_xml().
     max_row, max_col = ws.max_row, ws.max_column
     purged = 0
     for row in range(1, max_row + 1):
@@ -194,9 +201,63 @@ def main():
 
     # 10. Save
     wb.save(OUTPUT)
+
+    # 11. Absolute font purge at the XML level. The per-cell pass [1b] cannot
+    # reach merged-range shadow cells or stale entries left in the workbook
+    # font table, so a few CJK (宋/SimSun, 华行/...) <font> definitions survive
+    # and keep rendering in the wrong typeface. Rewrite xl/styles.xml so every
+    # font whose name contains a CJK codepoint becomes Arial, and drop the
+    # charset="134" (GB2312) hints that make Excel substitute a CJK fallback.
+    n_fonts, n_charset = purge_cjk_fonts_in_styles_xml(OUTPUT)
+    print(f"[11] styles.xml purge: {n_fonts} CJK font(s) -> Arial, "
+          f"removed {n_charset} GB2312 charset hint(s)")
+
     print(f"\n[DONE] Saved: {OUTPUT}")
     print(f"  Sheet: {NEW_SHEET}")
     print(f"  Defined names preserved and updated")
+
+
+def _has_cjk(s):
+    """True if the string contains any CJK / fullwidth codepoint."""
+    return any(ord(ch) >= 0x2E80 for ch in s)
+
+
+def purge_cjk_fonts_in_styles_xml(path):
+    """Rewrite xl/styles.xml in-place so no <font> uses a CJK typeface.
+
+    Returns (num_font_names_replaced, num_charset_hints_removed).
+    Only the <fonts> block is touched; cell references are untouched, so every
+    cell that pointed at a CJK font now renders in Arial.
+    """
+    with zipfile.ZipFile(path, "r") as zin:
+        items = {name: zin.read(name) for name in zin.namelist()}
+
+    xml = items["xl/styles.xml"].decode("utf-8")
+    fonts_match = re.search(r"(<fonts\b.*?</fonts>)", xml, re.S)
+    if not fonts_match:
+        return 0, 0
+    fonts = fonts_match.group(1)
+
+    replaced = 0
+
+    def _repl_name(m):
+        nonlocal replaced
+        if _has_cjk(m.group(1)):
+            replaced += 1
+            return '<name val="Arial" />'
+        return m.group(0)
+
+    new_fonts = re.sub(r'<name val="([^"]*)" />', _repl_name, fonts)
+    n_charset = new_fonts.count('charset val="134"')
+    new_fonts = new_fonts.replace('<charset val="134" />', "")
+
+    xml = xml[: fonts_match.start(1)] + new_fonts + xml[fonts_match.end(1):]
+    items["xl/styles.xml"] = xml.encode("utf-8")
+
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zout:
+        for name, data in items.items():
+            zout.writestr(name, data)
+    return replaced, n_charset
 
 
 if __name__ == "__main__":
