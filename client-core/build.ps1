@@ -60,7 +60,7 @@ dotnet run -c Release --project (Join-Path $core 'tools\Reinjector') -- `
     $BaseExe $dll $OutExe
 Invoke-Checked 'reinject'
 
-Write-Host '== [4/5] localize user-visible Chinese strings (forms) -> Russian ==' -ForegroundColor Cyan
+Write-Host '== [4/6] localize user-visible Chinese strings (forms) -> Russian ==' -ForegroundColor Cyan
 $locTmp = "$OutExe.loc.tmp"
 $locTable = Join-Path $core 'tools\Localizer\translations.tsv'
 dotnet run -c Release --project (Join-Path $core 'tools\Localizer') -- `
@@ -68,7 +68,24 @@ dotnet run -c Release --project (Join-Path $core 'tools\Localizer') -- `
 Invoke-Checked 'localize'
 Move-Item -Force $locTmp $OutExe
 
-Write-Host '== [5/5] verify output exe ==' -ForegroundColor Cyan
+Write-Host '== [5/6] inject version-tolerant deserialization binder (PublicKeyToken-safe) ==' -ForegroundColor Cyan
+# BinaryFormatter blobs embed each type's full assembly identity (Version+PublicKeyToken).
+# code.DeserializeBinary/DeserializeObject get a SerializationBinder that binds by short
+# assembly name against what is actually loaded, so stored config (Font/Color/DataTable)
+# survives a runtime/version change instead of throwing SerializationException.
+$donorDll = Join-Path $core 'tools\BinderInject\donor\bin\Release\net48\ZBinderDonor.dll'
+dotnet build -c Release (Join-Path $core 'tools\BinderInject\donor\Donor.csproj')
+Invoke-Checked 'binder donor compile'
+if (-not (Test-Path $donorDll)) { throw "binder donor produced no dll: $donorDll" }
+$binTmp = "$OutExe.binder.tmp"
+dotnet run -c Release --project (Join-Path $core 'tools\BinderInject') -- `
+    patch $OutExe $donorDll $binTmp
+Invoke-Checked 'binder inject'
+Move-Item -Force $binTmp $OutExe
+dotnet run -c Release --project (Join-Path $core 'tools\BinderInject') -- verify $OutExe
+Invoke-Checked 'binder verify'
+
+Write-Host '== [6/6] verify output exe ==' -ForegroundColor Cyan
 dotnet run -c Release --project (Join-Path $core 'tools\Reinjector') -- --verify $OutExe
 Invoke-Checked 'verify (dangling references found)'
 
