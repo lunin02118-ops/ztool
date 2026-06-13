@@ -1161,3 +1161,99 @@ D:\ztool-pr8-test\ZTool.dll
 SHA256: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
 RegAsm: Types registered successfully
 ```
+
+### Ретест `pmpguard2` / NullReference modal suppression commit `550216f`
+
+Проверен следующий кандидат:
+
+```text
+repo commit: 550216f
+runtime DLL during test: D:\ztool-pr8-test\ZTool.dll
+source DLL: dumps\candidate-ru-20260609\ZTool_ru_candidate2_pmpguard2.dll
+SHA256: D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9
+backup: D:\ztool-pr8-test\ZTool.dll.bak-before-pmpguard2-20260613-233953
+RegAsm: Types registered successfully
+```
+
+Проверка патчеров:
+
+```text
+D:\Development\ztool\.dotnet\dotnet.exe run --project client-core\tools\PmpGuardPatch\PmpGuardPatch.csproj -- dumps\candidate-ru-20260609\ZTool_ru_candidate2_pmpguard2.dll verify
+VERIFY: PASS
+
+D:\Development\ztool\.dotnet\dotnet.exe run --project client-core\tools\NullModalGuard\NullModalGuard.csproj -- dumps\candidate-ru-20260609\ZTool_ru_candidate2_pmpguard2.dll verify
+sites=5 guarded=5
+VERIFY: PASS
+```
+
+Ранее найденный дефект воспроизводимости `PmpGuardPatch` исправлен:
+`PmpGuardPatch.csproj` теперь использует `PackageReference Mono.Cecil
+0.11.5`, hardcoded `C:\Users\Administrator\...` path удалён. Важно по CLI:
+оба инструмента ожидают DLL первым аргументом, режим `verify` вторым.
+
+Live-сценарий 1: add-in загружен до открытия модели, затем открыт
+`0614-A00.SLDASM`:
+
+```text
+LoadAddIn before OpenDoc: 2
+OpenDoc6: True, errors=0, warnings=0
+GetAddInObject('ZTool.SwAddin'): True
+ActiveDoc: 0614-A00.SLDASM
+```
+
+Ранний и повторный `Подключить SW`:
+
+```text
+FIRST:  Подключение завершено, затрачено 0,1 сек, всего 0 поз.
+SECOND: Подключение завершено, затрачено 0,0 сек, всего 0 поз.
+modal dialogs: none
+table rows/sample: 0
+```
+
+Live-сценарий 2: полностью свежий старт SolidWorks, сначала открыта модель,
+затем загружен add-in:
+
+```text
+OpenDoc6: True, errors=0, warnings=0
+LoadAddIn after OpenDoc: 2
+GetAddInObject('ZTool.SwAddin'): True
+ActiveDoc: 0614-A00.SLDASM
+```
+
+Повторная проверка `Подключить SW`:
+
+```text
+CLEAN_1: Подключение завершено, затрачено 0,1 сек, всего 0 поз.
+CLEAN_2: Подключение завершено, затрачено 0,0 сек, всего 0 поз.
+modal dialogs: none
+table rows/sample: 0
+```
+
+Live-сценарий 3: явный `UnloadAddIn`/`LoadAddIn` при активной модели:
+
+```text
+UnloadAddIn: 0
+LoadAddIn: 0
+GetAddInObject('ZTool.SwAddin'): True
+ActiveDoc: 0614-A00.SLDASM
+
+RELOAD_CONTROL: Подключение завершено, затрачено 0,1 сек, всего 0 поз.
+modal dialogs: none
+table rows/sample: 0
+```
+
+Итог `550216f`:
+
+- `NullReference` модалка действительно подавлена: **PASS**.
+- Но чтение из SW регрессировало: **FAIL**, во всех проверенных порядках
+  загрузки результат `0 поз.` вместо ожидаемых `29 поз.`.
+- BOM regression 8 режимов на `pmpguard2` не подтверждался, потому что
+  блокер возникает раньше: таблица ZTool пустая после `Подключить SW`.
+
+После ретеста runtime откатан на предыдущую стабильную DLL:
+
+```text
+D:\ztool-pr8-test\ZTool.dll
+SHA256: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
+RegAsm: Types registered successfully
+```
