@@ -777,3 +777,104 @@ repeat_rows = $1:$6
 `宋体` отсутствует. Это не влияет на текущий экспорт, но противоречит
 утверждению "宋体 вычищен из всех ячеек"; при строгом требовании нулевого
 остатка нужно дополнительно очистить стили пустых merged/нижних ячеек.
+
+## Перепроверка полного вычищения CJK-шрифтов commit `82fe830` от 2026-06-13
+
+Цель: проверить утверждение, что остаточный `宋体` удалён из шаблона полностью,
+включая "теневые" merged-ячейки и `styles.xml`.
+
+Подготовка:
+
+```text
+repo branch: devin/1781201882-bom-templates
+repo commit: 82fe830
+runtime: D:\ztool-pr8-test
+runtime template: D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx
+template SHA256: 30D12D5E9C05CC06AE09099CA992AD0ABC8A7B3AACC099674F53E2E06F2858F9
+ZTool.exe SHA256: D41639A384DECCE9FF19D3C90E0B54AB96FA7F179631B2FD4471630D452A4833
+ZTool.dll SHA256: EEA7C9AE89EDB139ED029F2B4FBB0C1D27459CCB31D1B8D60D0560CF15BA0961
+```
+
+Проверка шаблона без SolidWorks:
+
+```text
+raw styles.xml CJK font names: 0
+raw styles.xml charset="134": 0
+raw font names: Arial, Times New Roman
+per-cell fonts: Arial = 1425
+per-cell CJK font cells: 0
+sheet: Спецификация
+merged ranges: 14
+defined names: 16
+print_area = 'Спецификация'!$A$1:$O$75
+orientation = landscape
+fitToWidth = 1
+fitToHeight = 0
+repeat_rows = $1:$6
+key cells B1/K3/C72/K75: Arial
+pre-flight: PASS
+```
+
+Артефакт проверки:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-82fe830-template-font-analysis.json
+```
+
+Итог по самому шаблону: **PASS**. Остаточного `宋体`/CJK charset в шаблоне
+не найдено.
+
+Live-проверка через SolidWorks:
+
+- SolidWorks запущен через `C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk`;
+- открыта реальная тестовая сборка
+  `D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`;
+- `OpenDoc6` вернул `True`, `errors=0`, `warnings=0`;
+- активный документ в COM: `0614-A00.SLDASM`, тип `2` (assembly);
+- `LoadAddIn(D:\ztool-pr8-test\ZTool.dll)` вернул `0`;
+- `GetAddInObject('ZTool.SwAddin') = True`;
+- запущенный процесс `ZTool.exe` идёт из `D:\ztool-pr8-test`.
+
+При нажатии `Подключить SW` на чистой связке появляется ошибка в процессе
+SolidWorks:
+
+```text
+Платформа Microsoft .NET Framework
+Необрабатываемое исключение в компоненте приложения.
+Ссылка на объект не указывает на экземпляр объекта.
+
+System.NullReferenceException: Ссылка на объект не указывает на экземпляр объекта.
+   в ZTool.PMPHandler.DefWndProc(Message& m)
+   в System.Windows.Forms.Control.WndProc(Message& m)
+   в System.Windows.Forms.Form.WndProc(Message& m)
+   в System.Windows.Forms.NativeWindow.Callback(IntPtr hWnd, Int32 msg, IntPtr wparam, ...
+```
+
+После нажатия `Продолжить`/`ОК` таблица ZTool остаётся пустой:
+
+```text
+rows in ZTool table: 0
+```
+
+Скрин ошибки:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-82fe830-connect-nullref.png
+```
+
+Отдельная проверка автозагрузки add-in:
+
+- `HKLM\SOFTWARE\SolidWorks\Addins\{59959dfa-3229-4b86-852e-52abf2bdb8c0}`
+  содержит `(Default)=1`;
+- `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{59959dfa-3229-4b86-852e-52abf2bdb8c0}`
+  содержит `(Default)=1`;
+- но ключ
+  `HKLM\SOFTWARE\SolidWorks\SOLIDWORKS 2025\Addins\{59959DFA-3229-4B86-852E-52ABF2BDB8C0}`
+  с `(Default)=1` воспроизводит стартовую ошибку SolidWorks
+  `Не удалось загрузить Microsoft .NET Framework`; значение возвращено в `0`.
+
+Итог live-проверки `82fe830`: **BLOCKED/FAIL до экспорта**.
+Шаблон действительно очищен, но новый live-export `.xlsx` на этом коммите
+не удалось получить: чтение из SolidWorks падает в `ZTool.PMPHandler.DefWndProc`
+до заполнения таблицы. Это отдельный блокер подключения/IPC, не проверка
+форматирования Excel.
