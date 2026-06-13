@@ -462,3 +462,49 @@ D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0927-analysis.json
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0928.xlsx
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0928-analysis.json
 ```
+
+## Проверка commit `c633622`: 8 русских режимов и FilterRulesList
+
+Цель: проверить новый `ZTool.settings` с 8 режимами экспорта и правилами
+фильтрации.
+
+Подготовка:
+
+```text
+repo branch: devin/1781201882-bom-templates
+repo commit: c633622
+runtime: D:\ztool-pr8-test
+copied: D:\Development\ztool\github-pr8-bom-templates\ZTool.settings -> D:\ztool-pr8-test\ZTool.settings
+ZTool.settings after path rewrite: A1E3F3826B278A54C95FA17D0C74687627B660608A27D39FA85FAD8F96909A58
+ZTool.exe: D41639A384DECCE9FF19D3C90E0B54AB96FA7F179631B2FD4471630D452A4833
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+Presets: 8 mode(s)
+FilterRulesList: 5 rule(s) defined
+RulesList -> FilterRulesList references: OK
+```
+
+Проверенные режимы в меню `Экспорт спецификации` после перезапуска ZTool:
+
+1. `Экспорт сводной спецификации`
+2. `Экспорт иерархической спецификации`
+3. `Экспорт спецификации верхнего уровня`
+4. `Экспорт сводной спецификации деталей`
+5. `Экспорт сводной спецификации (с эскизами)`
+6. `Экспорт иерархической спецификации (с эскизами)`
+7. `Обрабатываемые детали`
+8. `Покупные изделия`
+
+Итог: состав меню и целостность фильтр-правил по commit `c633622` — **PASS**.
+Функциональный прогон фильтр-режимов требует моделей с реальными значениями
+свойства `Тип`, потому что текущие значения фильтров являются заглушками.
+
+Локальный артефакт:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-c633622-export-menu.png
+```
