@@ -74,7 +74,7 @@ def parse_settings(path):
                 "anchor": tag(cb, "mappingname") or "",
             })
 
-    # Parse FilterRulesList
+    # Parse FilterRulesList (name -> list of rule-string bodies)
     filter_rules = {}
     frm = re.search(r"<FilterRulesList>(.*?)</FilterRulesList>", xml, re.S)
     if frm:
@@ -82,9 +82,24 @@ def parse_settings(path):
                               frm.group(1), re.S):
             rule_name = tag(cr.group(1), "name")
             if rule_name:
-                filter_rules[rule_name] = True
+                bodies = []
+                rl = re.search(r"<RuleList>(.*?)</RuleList>", cr.group(1), re.S)
+                if rl:
+                    bodies = re.findall(r"<string>(.*?)</string>",
+                                        rl.group(1), re.S)
+                filter_rules[rule_name] = bodies
 
     return presets, mappings, filter_rules
+
+
+# Field separator ZTool.exe (CustomFilter.FilterByRule) splits rule strings on.
+RULE_SEP = "\t|@#$%|"
+
+# Localized operator strings the russified ZTool.exe switch accepts (array[1]).
+VALID_OPERATORS = {
+    "Равно", "Не равно", "Содержит", "Не содержит",
+    "Начинается с", "Не начинается с", "Заканчивается на", "Не заканчивается на",
+}
 
 
 def template_defined_names(path):
@@ -142,6 +157,34 @@ def main():
                     print("  ** ERROR: preset '%s' references rule '%s' "
                           "not found in FilterRulesList!" % (p["name"], rule_ref))
                     problems += 1
+
+    # --- 1c. validate rule-string FORMAT (TAB separator + operator) ---
+    # ZTool.exe splits each rule string on RULE_SEP ("\t|@#$%|") and switches
+    # the operator (field 1) against VALID_OPERATORS. A rule string that uses
+    # spaces instead of the TAB separator, or a non-localized operator, is
+    # silently skipped -> FilterByRule returns true for every row -> the BOM
+    # exports UNFILTERED. This check catches that class of bug pre-export.
+    if filter_rules:
+        print("\n[1c] Rule-string format (separator + operator):")
+        for name in sorted(filter_rules):
+            for body in filter_rules[name]:
+                parts = body.split(RULE_SEP)
+                if len(parts) < 3:
+                    print("  ** ERROR: rule '%s': string does not use the TAB "
+                          "separator '\\t|@#$%%|' (got %d field(s)); filter "
+                          "would be ignored and BOM exported unfiltered."
+                          % (name, len(parts)))
+                    problems += 1
+                    continue
+                op = parts[1]
+                if op not in VALID_OPERATORS:
+                    print("  ** ERROR: rule '%s': operator %r not recognized by "
+                          "ZTool.exe (expected one of: %s)."
+                          % (name, op, ", ".join(sorted(VALID_OPERATORS))))
+                    problems += 1
+                else:
+                    print("    - %s: prop=%s op=%s OK"
+                          % (name, parts[0], op))
 
     # --- 2. resolve template for anchor check ---
     local_tmpl = None

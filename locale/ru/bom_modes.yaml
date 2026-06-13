@@ -65,26 +65,28 @@ filter_rules:
     highlight: false
     conditions:
       - property: "Тип"
-        operator: "contains"  # 包含
-        value: "Мех.обработка;Листовая;Литьё;Сварка"
+        operator: "contains"  # -> "Содержит"
+        # 机加 = текущее значение «Тип» в демо-модели; остальное — русские заглушки
+        value: "机加;Мех.обработка;Листовая;Литьё;Сварка"
 
   - id: purchased_parts
     name: "Покупные изделия"
     highlight: false
     conditions:
       - property: "Тип"
-        operator: "contains"  # 包含
-        value: "Покупное;Стандартное"
+        operator: "contains"  # -> "Содержит"
+        # 外购 = текущее значение «Тип» в демо-модели; остальное — русские заглушки
+        value: "外购;Покупное;Стандартное"
 
   - id: with_surface_treatment
     name: "С обработкой поверхности"
     highlight: false
     conditions:
       - property: "Тип"
-        operator: "contains"  # 包含
-        value: "Мех.обработка;Листовая;Литьё;Сварка"
+        operator: "contains"  # -> "Содержит"
+        value: "机加;Мех.обработка;Листовая;Литьё;Сварка"
       - property: "Обработка поверхности"
-        operator: "not_equals"  # 不等于
+        operator: "not_equals"  # -> "Не равно"
         value: ""
 
   - id: without_surface_treatment
@@ -92,10 +94,10 @@ filter_rules:
     highlight: false
     conditions:
       - property: "Тип"
-        operator: "contains"  # 包含
-        value: "Мех.обработка;Листовая;Литьё;Сварка"
+        operator: "contains"  # -> "Содержит"
+        value: "机加;Мех.обработка;Листовая;Литьё;Сварка"
       - property: "Обработка поверхности"
-        operator: "equals"  # 等于
+        operator: "equals"  # -> "Равно"
         value: ""
 
   - id: missing_required
@@ -118,7 +120,14 @@ filter_rules:
         operator: "equals"
         value: ""
 
-# Справочник операторов (внутренние коды ZTool):
-#   包含    = contains (значение содержит одну из подстрок через ;)
-#   等于    = equals (точное совпадение; пустое значение = свойство не заполнено)
-#   不等于  = not_equals (не совпадает)
+# Операторы: абстрактный код (выше) -> локализованная строка, которую ZTool.exe
+# ожидает в сериализованном правиле (поле array[1]). Русифицированная сборка:
+#   contains      -> "Содержит"            not_contains   -> "Не содержит"
+#   equals        -> "Равно"               not_equals     -> "Не равно"
+#   starts_with   -> "Начинается с"        not_starts     -> "Не начинается с"
+#   ends_with     -> "Заканчивается на"     not_ends       -> "Не заканчивается на"
+#
+# Сериализация в ZTool.settings (ровно три поля, разделитель = ТАБ + |@#$%|):
+#   $Тип$<TAB>|@#$%|Содержит<TAB>|@#$%|机加;Мех.обработка
+# Пробелы вместо табуляции → правило игнорируется, экспорт не фильтруется.
+# 外购/机加 — фактические значения «Тип» в демо-модели; замените на свои.

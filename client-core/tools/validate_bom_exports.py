@@ -86,8 +86,28 @@ def analyze_xlsx(filepath):
         results["issues"].append("No data rows (max_row < 7)")
         return results
 
-    data_rows = ws.max_row - DATA_START_ROW + 1
+    # Determine the ACTUAL last data row: scan from the bottom for the last row
+    # that has ANY meaningful content in service/property columns. This avoids
+    # counting formatted-but-empty rows (template pre-formats rows down to 75).
+    # A row counts as "data" if № (A), Кол-во (G), Путь (O), or any property
+    # column has a non-empty value.
+    significant_cols = [COL_NUM, COL_QTY, COL_PATH] + PROP_COLS
+    last_data_row = DATA_START_ROW - 1
+    for row in range(DATA_START_ROW, ws.max_row + 1):
+        for col in significant_cols:
+            v = ws.cell(row=row, column=col).value
+            if v is not None and str(v).strip():
+                last_data_row = row
+                break
+
+    if last_data_row < DATA_START_ROW:
+        results["total_rows"] = 0
+        results["issues"].append("No data rows (all empty below header)")
+        return results
+
+    data_rows = last_data_row - DATA_START_ROW + 1
     results["total_rows"] = data_rows
+    results["last_data_row"] = last_data_row
 
     num_count = 0
     qty_count = 0
@@ -95,7 +115,8 @@ def analyze_xlsx(filepath):
     prop_count = 0
     prop_total = 0
 
-    for row in range(DATA_START_ROW, ws.max_row + 1):
+    # Only iterate over the ACTUAL data range, not formatted empty rows.
+    for row in range(DATA_START_ROW, last_data_row + 1):
         # № п/п
         v = ws.cell(row=row, column=COL_NUM).value
         if v is not None and str(v).strip():
@@ -191,6 +212,39 @@ def print_report(all_results, mode_assignment=None):
         if r["issues"]:
             for issue in r["issues"]:
                 print("  ** %s" % issue)
+        print()
+
+    # --- cross-mode sanity checks (only when files map to modes in order) ---
+    if mode_assignment and len(all_results) == len(mode_assignment):
+        rows_by_id = {mode_assignment[i]["id"]: all_results[i]["total_rows"]
+                      for i in range(len(all_results))}
+        summary = rows_by_id.get(1)
+        print("ПРОВЕРКА СОГЛАСОВАННОСТИ РЕЖИМОВ:")
+        if summary:
+            # top-level (mode 3, type=2) must be fewer than summary
+            top = rows_by_id.get(3)
+            if top is not None and top >= summary:
+                print("  ** Режим 3 (верхний уровень): %d строк >= сводной %d "
+                      "— верхний уровень должен быть меньше." % (top, summary))
+                overall_pass = False
+            # filtered modes 7,8 must be a strict subset (filter applied)
+            for fid, fname in ((7, "Обрабатываемые детали"),
+                               (8, "Покупные изделия")):
+                fr = rows_by_id.get(fid)
+                if fr is None:
+                    continue
+                if fr == summary:
+                    print("  ** Режим %d (%s): %d строк = полной сводной %d — "
+                          "ФИЛЬТР НЕ ПРИМЕНЁН (полный список)."
+                          % (fid, fname, fr, summary))
+                    overall_pass = False
+                elif fr == 0:
+                    print("  ** Режим %d (%s): 0 строк — фильтр отсёк всё; "
+                          "проверьте значения свойства «Тип» в модели."
+                          % (fid, fname))
+                else:
+                    print("  - Режим %d (%s): %d из %d строк — фильтр применён."
+                          % (fid, fname, fr, summary))
         print()
 
     print("=" * 70)

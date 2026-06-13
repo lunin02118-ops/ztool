@@ -124,41 +124,41 @@ False</string>
       <name>Обрабатываемые детали</name>
       <type>false</type>
       <RuleList>
-        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
       </RuleList>
     </CustomRule>
     <CustomRule>
       <name>Покупные изделия</name>
       <type>false</type>
       <RuleList>
-        <string>$Тип$     |@#$%|包含      |@#$%|Покупное;Стандартное</string>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|外购;Покупное;Стандартное</string>
       </RuleList>
     </CustomRule>
     <CustomRule>
       <name>С обработкой поверхности</name>
       <type>false</type>
       <RuleList>
-        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
-        <string>$Обработка поверхности$ |@#$%|不等于   |@#$%|</string>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Не равно	|@#$%|</string>
       </RuleList>
     </CustomRule>
     <CustomRule>
       <name>Без обработки поверхности</name>
       <type>false</type>
       <RuleList>
-        <string>$Тип$     |@#$%|包含      |@#$%|Мех.обработка;Листовая;Литьё;Сварка</string>
-        <string>$Обработка поверхности$ |@#$%|等于      |@#$%|</string>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Равно	|@#$%|</string>
       </RuleList>
     </CustomRule>
     <CustomRule>
       <name>Недостающие обязательные свойства</name>
       <type>true</type>
       <RuleList>
-        <string>$Тип$     |@#$%|等于      |@#$%|</string>
-        <string>$Номер чертежа$ |@#$%|等于      |@#$%|</string>
-        <string>$Материал$ |@#$%|等于      |@#$%|</string>
-        <string>$Масса$   |@#$%|等于      |@#$%|</string>
-        <string>$Имя детали$ |@#$%|等于      |@#$%|</string>
+        <string>$Тип$	|@#$%|Равно	|@#$%|</string>
+        <string>$Номер чертежа$	|@#$%|Равно	|@#$%|</string>
+        <string>$Материал$	|@#$%|Равно	|@#$%|</string>
+        <string>$Масса$	|@#$%|Равно	|@#$%|</string>
+        <string>$Имя детали$	|@#$%|Равно	|@#$%|</string>
       </RuleList>
     </CustomRule>
   </FilterRulesList>
