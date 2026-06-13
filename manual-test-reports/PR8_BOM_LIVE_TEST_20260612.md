@@ -878,3 +878,89 @@ D:\ztool-pr8-test\manual-artifacts\ztool-82fe830-connect-nullref.png
 не удалось получить: чтение из SolidWorks падает в `ZTool.PMPHandler.DefWndProc`
 до заполнения таблицы. Это отдельный блокер подключения/IPC, не проверка
 форматирования Excel.
+
+### Повторная live-проверка `82fe830` после чистого запуска SolidWorks
+
+Повторный прогон показал, что предыдущий `NullReferenceException` был связан
+с загрязнённой сессией/автозагрузочными следами ZTool в SolidWorks, а не с
+шаблоном.
+
+Что изменено в окружении перед повтором:
+
+- SolidWorks запущен через Explorer/ShellExecute по ярлыку
+  `C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk`; запуск через `cmd start`
+  воспроизводил стартовый диалог `Не удалось загрузить Microsoft .NET Framework`;
+- временно отключён автозапуск ZTool:
+  `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{59959dfa-3229-4b86-852e-52abf2bdb8c0}=0`,
+  `HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\AddInsStartup\{59959DFA-3229-4B86-852E-52ABF2BDB8C0}=0`;
+- временно отключён общий SolidWorks add-in key:
+  `HKLM\SOFTWARE\SolidWorks\Addins\{59959dfa-3229-4b86-852e-52abf2bdb8c0}=0`;
+- удалены stale UI-следы ZTool в `HKCU\...\User Interface\CommandManager` и
+  `Custom API Toolbars/Flyouts`; backup сделан в
+  `D:\ztool-pr8-test\manual-artifacts\registry-backups\20260613-202348-*.reg`.
+
+После этого:
+
+```text
+SolidWorks: старт без .NET-диалога
+OpenDoc6(D:\ztool-pr8-test\TestModel\0614-A00.SLDASM): True, errors=0, warnings=0
+LoadAddIn(D:\ztool-pr8-test\ZTool.dll): 0
+GetAddInObject('ZTool.SwAddin'): True
+ZTool.exe: D:\ztool-pr8-test\ZTool.exe
+Подключить SW: Подключение завершено, затрачено 0,3 сек, всего 29 поз.
+```
+
+Скрин после успешного подключения:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-82fe830-retry-after-connect.png
+```
+
+Экспортирован режим `Экспорт сводной спецификации`.
+
+Файл результата:
+
+```text
+D:\ztool-pr8-test\bom-exports\format-retest-82fe830-retry\01_summary_82fe830_retry_0614-A00-20260613-2027.xlsx
+```
+
+Проверка результата:
+
+```text
+sheet: Спецификация
+data rows: 29 (A7:O35)
+№ п/п: 29/29
+Кол-во: 29/29
+Путь: 29/29
+raw styles.xml CJK font names: 0
+raw styles.xml charset="134": 0
+per-cell fonts: Arial = 1976
+per-cell CJK font cells: 0
+print_area = 'Спецификация'!$A$1:$O$104
+orientation = landscape
+fitToWidth = 1
+fitToHeight = 0
+repeat_rows = $1:$6
+sample: A7=1, C7=夹爪平台, D7=0614-A00, G7=1, O7=D:\ztool-pr8-test\TestModel\0614-A00.SLDASM
+```
+
+Артефакт анализа:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\ztool-82fe830-retry-export-analysis.json
+```
+
+Валидатор:
+
+```text
+[PASS] 01_summary_82fe830_retry_0614-A00-20260613-2027.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+ИТОГ: PASS
+```
+
+Итог повторной проверки `82fe830`: **PASS**.
+Шаблон после полного purge CJK-шрифтов работает в live-export. Остаточный
+риск относится к запуску/регистрации add-in: автозагрузочные ключи и stale
+CommandManager UI-следы могут снова вызвать стартовый `.NET Framework` диалог
+или `NullReferenceException` при `Подключить SW`.
