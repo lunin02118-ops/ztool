@@ -418,3 +418,47 @@ D:\ztool-pr8-test\manual-artifacts\ztool-7983769-after-summary-export.png
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0020.xlsx
 D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0020-analysis.json
 ```
+
+### Корректировка по свежим файлам `0927/0928`
+
+После предыдущей записи появились свежие экспорты из того же runtime:
+
+| Файл | Размер | Результат |
+| --- | ---: | --- |
+| `D:\ztool-pr8-test\bom-exports\0614-A00-20260613-0927.xlsx` | 12054 | `№ п/п`, `Кол-во`, `Путь` записаны |
+| `D:\ztool-pr8-test\bom-exports\0614-A00-20260613-0928.xlsx` | 12054 | `№ п/п`, `Кол-во`, `Путь` записаны |
+
+Проверка через `openpyxl` для обоих файлов:
+
+```text
+nonempty data rows: 29
+A7:A16 = 1,2,3,4,5,6,7,8,9,10
+G7:G16 = 1,1,6,6,1,1,3,1,1,1
+O7:O9 = D:\ztool-pr8-test\TestModel\0614-A00.SLDASM,
+        D:\ztool-pr8-test\TestModel\0614-A01.SLDASM,
+        D:\ztool-pr8-test\TestModel\DBTS3-12-4.SLDPRT
+```
+
+При этом custom-колонки (`Наименование`, `Обозначение`, `Версия`,
+`Тип обработки`, `Материал`) в `0927/0928` пустые. Это объясняется текущим
+runtime-профилем из commit `7983769`: в `D:\ztool-pr8-test\ZTool.settings`
+используются русские `propname` (`Имя детали`, `Номер чертежа`, `Материал`,
+`Тип`, `Версия`), а тестовая demo-модель `0614-A00` содержит китайские
+свойства (`零件名称`, `图号`, `材料`, `类型`, `版本`).
+
+Итоговая корректировка статуса commit `7983769`:
+
+- `№ п/п` / `Кол-во` / `Путь`: **PASS** на свежих файлах `0927/0928`;
+- custom-колонки на китайской demo-модели с русским production-профилем:
+  **ожидаемо пустые**;
+- для полного demo-green нужен отдельный прогон `7983769` + demo-cn-fixed
+  profile, где `propname` совпадают с китайскими свойствами модели.
+
+Локальные артефакты корректировки:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0927.xlsx
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0927-analysis.json
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0928.xlsx
+D:\ztool-pr8-test\manual-artifacts\0614-A00-20260613-0928-analysis.json
+```
