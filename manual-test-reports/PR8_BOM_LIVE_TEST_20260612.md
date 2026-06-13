@@ -1326,3 +1326,126 @@ validate_bom_exports.py: PASS
 - BOM/export regression: **PASS, 8/8**.
 - Важное условие методики: ZTool нужно запускать через кнопку add-in в
   SolidWorks (`Управление файлами`), а не прямым стартом `ZTool.exe`.
+
+### Ретест `350c8c5` / `ZTool_binderfix.exe`
+
+Проверен новый exe с version-tolerant `SerializationBinder`:
+
+```text
+repo commit: 350c8c5
+runtime EXE: D:\ztool-pr8-test\ZTool.exe
+source EXE: client-core\dist\ZTool_binderfix.exe
+SHA256: D5CAC49DC0A6A8D918DA63D310DB1A21E80572E6FAE4219D6F37ABB26F5614DB
+
+runtime DLL: D:\ztool-pr8-test\ZTool.dll
+SHA256: D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9
+```
+
+Проверка инъекции:
+
+```text
+BinderInject verify: PASS
+ZTool.VTBinder present
+ZTool.code::DeserializeBinary binder-wire sites=1
+ZTool.code::DeserializeObject binder-wire sites=1
+```
+
+Важная поправка к методике запуска: первая попытка была некорректной
+(`Start-Process` по `.lnk` + ранний COM/`LoadAddIn` во время splash). Она
+воспроизвела стартовую модалку SolidWorks:
+
+```text
+Не удалось загрузить Microsoft .NET Framework.
+```
+
+и завершилась падением `SLDWORKS.exe`:
+
+```text
+Application Error, SLDWORKS.exe, ntdll.dll, exception 0xc0000374
+```
+
+Дальнейший ретест выполнен корректно: запуск SolidWorks через
+`explorer.exe "C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk"`, ожидание полного
+окна SolidWorks, открыта сборка `D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`,
+ZTool запущен именно кнопкой `Управление файлами` на ленте SolidWorks.
+
+Подключение к SW:
+
+```text
+Get-Process ZTool:
+Path: D:\ztool-pr8-test\ZTool.exe
+SHA256: D5CAC49DC0A6A8D918DA63D310DB1A21E80572E6FAE4219D6F37ABB26F5614DB
+
+Подключить SW:
+Подключение завершено, затрачено 0,3 сек, всего 29 поз.
+```
+
+BOM export:
+
+```text
+export folder:
+D:\ztool-pr8-test\bom-exports\full-test-350c8c5-binderfix-swlaunch
+```
+
+Результат до блокера:
+
+| # | Режим | Файл | Строк | № п/п | Кол-во | Путь | Итог |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- |
+| 1 | Экспорт сводной спецификации | `01_summary_0614-A00-binderfix.xlsx` | 29 | 29/29 | 29/29 | 29/29 | PASS |
+| 2 | Экспорт иерархической спецификации | `02_hierarchy_0614-A00-binderfix.xlsx` | 32 | 32/32 | 32/32 | 32/32 | PASS |
+| 3 | Экспорт спецификации верхнего уровня | `03_top_level_0614-A00-binderfix.xlsx` | 6 | 6/6 | 6/6 | 6/6 | PASS |
+| 4 | Экспорт сводной спецификации деталей | файл не создан | - | - | - | - | **FAIL: crash** |
+
+Валидатор для созданных 3 файлов:
+
+```text
+Найдено файлов: 3
+Ожидаемо: 8 (по одному на режим)
+ВНИМАНИЕ: файлов меньше 8. Валидирую то, что есть.
+
+[PASS] 01_summary_0614-A00-binderfix.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+
+[PASS] 02_hierarchy_0614-A00-binderfix.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+
+[PASS] 03_top_level_0614-A00-binderfix.xlsx
+  Строк данных: 6
+  № п/п: 6/6 | Кол-во: 6/6 | Путь: 6/6
+```
+
+Блокер:
+
+При выборе `Экспорт сводной спецификации деталей` (`mode 4`) `ZTool.exe`
+падает до появления Save dialog:
+
+```text
+Application Error
+Faulting application: D:\ztool-pr8-test\ZTool.exe
+Faulting module: C:\Windows\System32\ucrtbase.dll
+Exception code: 0xc0000409
+Offset: 0x000000000007286e
+```
+
+До этого был ещё один аналогичный crash в той же сессии после экспортов:
+
+```text
+14.06.2026 02:02:30  ZTool.exe  ucrtbase.dll  0xc0000409
+14.06.2026 02:13:33  ZTool.exe  ucrtbase.dll  0xc0000409
+14.06.2026 02:21:05  ZTool.exe  ucrtbase.dll  0xc0000409
+```
+
+Для последнего падения включён WER LocalDumps и сохранён полный dump:
+
+```text
+Dump: D:\ztool-pr8-test\manual-artifacts\dumps\ZTool.exe.19004.dmp
+Size: 517791573 bytes
+SHA256: 97BFCCF04BB5F9F15A27A334EA3BDDAC730344A552976AE405F4042580A8067A
+```
+
+Итог `350c8c5`: **FAIL**. Binderfix exe грузится, запускается из SolidWorks,
+рукопожатие с add-in работает (`29 поз.`), первые 3 BOM-режима экспортируются
+валидно, но полный прогон 8 режимов заблокирован падением `ZTool.exe` в
+`ucrtbase.dll` на BOM-export (`0xc0000409`).
