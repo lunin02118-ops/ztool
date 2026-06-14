@@ -90,7 +90,17 @@ internal static class Program
             Console.WriteLine($"wired binder into {CodeType}::{name}");
         }
 
-        target.Write(outPath);
+        // ZTool.exe is obfuscated; its code depends on metadata token / heap offset
+        // identity (constant decryption, reference proxies). The default writer
+        // recompacts metadata and reassigns tokens, which silently breaks an
+        // obfuscation-dependent code path (observed: a native fail-fast 0xc0000409
+        // mid-run while most of the app still works). Preserve every existing
+        // token/heap offset and only append the new VTBinder rows. maxStack is left
+        // to be recomputed (the two edited methods need it); PreserveAll does not
+        // touch maxStack.
+        var writerOpts = new dnlib.DotNet.Writer.ModuleWriterOptions(target);
+        writerOpts.MetadataOptions.Flags |= dnlib.DotNet.Writer.MetadataFlags.PreserveAll;
+        target.Write(outPath, writerOpts);
         Console.WriteLine($"OK: injected 1 type, wired {wired} methods -> {outPath}");
         return 0;
     }

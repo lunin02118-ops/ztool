@@ -44,6 +44,13 @@ default binding — i.e. never worse than before.
 - `BinderInject` (dnlib) copies the compiled `VTBinder` type into `ZTool.exe`
   (cloning its method bodies, importing all framework refs) and inserts the three
   IL instructions that wire the binder into the two deserialization helpers.
+- The output is written with `MetadataFlags.PreserveAll`. `ZTool.exe` is
+  obfuscated and its code depends on metadata token / heap-offset identity. The
+  default dnlib writer recompacts metadata and reassigns tokens, which silently
+  broke an obfuscation-dependent path at runtime (BOM "сводная спецификация
+  деталей" export crashed with a native fail-fast `0xc0000409` while most of the
+  app still worked). Preserving all tokens/offsets and only appending the new
+  `VTBinder` rows keeps every existing path byte-identical.
 
 ## Usage
 
@@ -68,5 +75,8 @@ rebuild.
   `code.DeserializeObject` for Font, Color and DataTable. **PASS** (no regression)
 
 Artifact: `client-core/dist/ZTool_binderfix.exe`
-SHA256 `d5cac49dc0a6a8d918da63d310db1a21e80572e6fae4219d6f37abb26f5614db`
+SHA256 `7488a71f5c9353d44946816df5bd7dd8d94d414c09d552536b9ac5921b82e7f3`
 (base `ZTool.exe` = `d41639a3…2a4833`).
+
+> Earlier artifact `d5cac49d…5614db` was written without `PreserveAll` and crashed
+> the BOM parts-summary export (`0xc0000409`); superseded by the hash above.
