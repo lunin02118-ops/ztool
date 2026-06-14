@@ -1,7 +1,12 @@
-# BinderInject — version-tolerant BinaryFormatter binder for ZTool.exe
+# BinderInject — BinaryFormatter binders for ZTool.exe
 
-Makes `ZTool.exe`'s legacy `BinaryFormatter` deserialization survive a runtime /
-framework-version change, without changing the stored data format.
+Injects two `SerializationBinder`s into `ZTool.exe` in one pass:
+
+1. **`VTBinder`** (version-tolerant) — makes the legacy config `BinaryFormatter`
+   deserialization survive a runtime / framework-version change, without changing
+   the stored data format.
+2. **`SafeListBinder`** (allow-list) — hardens the clipboard copy/paste path so a
+   poisoned clipboard can't turn paste into a deserialization-gadget RCE.
 
 ## Problem
 
@@ -36,21 +41,43 @@ assemblies actually loaded in the AppDomain, ignoring Version / Culture /
 PublicKeyToken. On a miss it returns `null`, so the formatter falls back to its
 default binding — i.e. never worse than before.
 
+## Clipboard hardening (`SafeListBinder`)
+
+`pasteitem_Click` (in `FrmOutputlist`, `FrmPrintlist`, `FrmSetDrwlist`,
+`FrmSyncDrwName`) `BinaryFormatter`-deserializes data straight off the clipboard
+(the private "audio stream" channel) and casts it to `List<string>`. The
+clipboard is a shared, attacker-writable surface, so without a type guard a
+poisoned payload would let `BinaryFormatter` instantiate arbitrary gadget types
+(classic deserialization RCE on paste).
+
+`SafeListBinder` (compiled from `donor/SafeListBinder.cs`) is wired the same way
+(`bf.Binder = new SafeListBinder();` before `Deserialize`) at all four paste
+sites. It permits **only** the types that make up a `List<string>` graph
+(`System.Collections.Generic.List``1[[System.String,…]]`, `System.String`,
+`System.String[]`) and **throws** on anything else. It must throw rather than
+return `null`: a `null` return makes `BinaryFormatter` fall back to its default
+assembly-qualified binding, which would resolve the very type we mean to block.
+For allowed types it binds version-tolerantly (short assembly name), like
+`VTBinder`. Normal copy/paste is unaffected because the only writer of that
+clipboard channel is ZTool's own `copyitem_Click` (a `List<string>`).
+
 ## How it works
 
-- `donor/Donor.csproj` (net48) compiles `VTBinder.cs` to `ZBinderDonor.dll`. It
-  **must** target net48 so the binder's type references resolve to `mscorlib`,
-  matching the target exe.
-- `BinderInject` (dnlib) copies the compiled `VTBinder` type into `ZTool.exe`
-  (cloning its method bodies, importing all framework refs) and inserts the three
-  IL instructions that wire the binder into the two deserialization helpers.
+- `donor/Donor.csproj` (net48) compiles `VTBinder.cs` + `SafeListBinder.cs` to
+  `ZBinderDonor.dll`. It **must** target net48 so the binder type references
+  resolve to `mscorlib`, matching the target exe.
+- `BinderInject` (dnlib) copies the compiled `VTBinder` and `SafeListBinder`
+  types into `ZTool.exe` (cloning their method bodies, importing all framework
+  refs) and inserts the three IL instructions that wire each binder into its
+  target sites — `VTBinder` into the two config deserialization helpers,
+  `SafeListBinder` into the four `pasteitem_Click` handlers.
 - The output is written with `MetadataFlags.PreserveAll`. `ZTool.exe` is
   obfuscated and its code depends on metadata token / heap-offset identity. The
   default dnlib writer recompacts metadata and reassigns tokens, which silently
   broke an obfuscation-dependent path at runtime (BOM "сводная спецификация
   деталей" export crashed with a native fail-fast `0xc0000409` while most of the
   app still worked). Preserving all tokens/offsets and only appending the new
-  `VTBinder` rows keeps every existing path byte-identical.
+  binder rows keeps every existing path byte-identical.
 
 ## Usage
 
@@ -64,19 +91,28 @@ rebuild.
 
 ## Verification done
 
-- `binderinject verify` — VTBinder present, `BindToType` override, 1 wire site in
-  each of the two methods. **PASS**
-- Decompile round-trip — both methods show `formatter.Binder = new VTBinder();`
-  before `Deserialize`; `VTBinder` decompiles to the intended C#.
-- Behavioural probe under .NET Framework 4.8 — `BindToType` with deliberately
-  **wrong** `Version=2.0.0.0` / bogus `PublicKeyToken` resolves `System.Drawing.Font`
-  and `System.Data.DataTable` to the actually-loaded 4.0.0.0 assemblies. **PASS**
+- `binderinject verify` — VTBinder present + `BindToType` override + 1 wire site
+  in each config helper; SafeListBinder present + `BindToType` override + 4
+  `pasteitem_Click` wire sites. **PASS**
+- Decompile round-trip — config helpers show `formatter.Binder = new VTBinder();`
+  and all four `pasteitem_Click` show `binaryFormatter.Binder = new SafeListBinder();`
+  before `Deserialize`; both binders decompile to the intended C#.
+- Behavioural probe under .NET Framework 4.8 (VTBinder) — `BindToType` with
+  deliberately **wrong** `Version=2.0.0.0` / bogus `PublicKeyToken` resolves
+  `System.Drawing.Font` and `System.Data.DataTable` to the actually-loaded
+  4.0.0.0 assemblies. **PASS**
+- Behavioural probe under .NET Framework 4.8 (SafeListBinder) — an allowed
+  `List<string>` round-trips; disallowed `System.Data.DataTable` and
+  `System.Collections.Hashtable` payloads are **rejected** with
+  `SerializationException` (never materialized). **PASS**
 - End-to-end round-trip through the patched `code.DeserializeBinary` /
   `code.DeserializeObject` for Font, Color and DataTable. **PASS** (no regression)
 
 Artifact: `client-core/dist/ZTool_binderfix.exe`
-SHA256 `7488a71f5c9353d44946816df5bd7dd8d94d414c09d552536b9ac5921b82e7f3`
+SHA256 `4d8aa7ea82755d89df978bde29f8176143d0e9ff817f35789433e435a848cf56`
 (base `ZTool.exe` = `d41639a3…2a4833`).
 
-> Earlier artifact `d5cac49d…5614db` was written without `PreserveAll` and crashed
-> the BOM parts-summary export (`0xc0000409`); superseded by the hash above.
+> Earlier artifacts superseded by the hash above:
+> `d5cac49d…5614db` (no `PreserveAll`, crashed BOM parts-summary export with
+> `0xc0000409`) and `7488a71f…b82e7f3` (VTBinder only, before the clipboard
+> allow-list binder was added).

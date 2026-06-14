@@ -29,6 +29,8 @@ internal static class Program
 {
     private const string CodeType = "ZTool.code";
     private const string BinderType = "ZTool.VTBinder";
+    private const string SafeBinderType = "ZTool.SafeListBinder";
+    private const string PasteMethod = "pasteitem_Click";
     private const string BinaryFormatterFull =
         "System.Runtime.Serialization.Formatters.Binary.BinaryFormatter";
 
@@ -90,6 +92,34 @@ internal static class Program
             Console.WriteLine($"wired binder into {CodeType}::{name}");
         }
 
+        // 3) allow-list binder for the clipboard paste path. pasteitem_Click
+        //    BinaryFormatter-deserializes data straight off the clipboard and casts
+        //    it to List<string>; the clipboard is attacker-writable, so without a
+        //    type guard a poisoned payload is a deserialization-gadget RCE. The
+        //    allow-list binder permits only the List<string> graph and throws on
+        //    anything else.
+        var donorSafe = donor.Find(SafeBinderType, false);
+        if (donorSafe == null) { Console.Error.WriteLine($"! donor has no {SafeBinderType}"); return 1; }
+        var safeCtor = CopyType(donorSafe, target, importer);
+        Console.WriteLine($"injected type {SafeBinderType}");
+
+        int pasteWired = 0;
+        foreach (var t in target.GetTypes())
+        {
+            foreach (var pm in t.Methods)
+            {
+                if (pm.Name != PasteMethod || !pm.HasBody) continue;
+                if (!ConstructsBinaryFormatter(pm)) continue;
+                if (WireBinder(pm, safeCtor, setBinderIFormatter, setBinderBinaryFormatter))
+                {
+                    pasteWired++;
+                    Console.WriteLine($"wired clipboard allow-list binder into {t.FullName}::{pm.Name}");
+                }
+            }
+        }
+        if (pasteWired == 0) { Console.Error.WriteLine($"! no {PasteMethod} BinaryFormatter sites wired"); return 1; }
+        Console.WriteLine($"clipboard paste sites wired: {pasteWired}");
+
         // ZTool.exe is obfuscated; its code depends on metadata token / heap offset
         // identity (constant decryption, reference proxies). The default writer
         // recompacts metadata and reassigns tokens, which silently breaks an
@@ -101,7 +131,7 @@ internal static class Program
         var writerOpts = new dnlib.DotNet.Writer.ModuleWriterOptions(target);
         writerOpts.MetadataOptions.Flags |= dnlib.DotNet.Writer.MetadataFlags.PreserveAll;
         target.Write(outPath, writerOpts);
-        Console.WriteLine($"OK: injected 1 type, wired {wired} methods -> {outPath}");
+        Console.WriteLine($"OK: injected 2 binder types, wired {wired} config + {pasteWired} clipboard methods -> {outPath}");
         return 0;
     }
 
@@ -136,6 +166,17 @@ internal static class Program
             m.Body.OptimizeBranches();
             m.Body.OptimizeMacros();
             return true;
+        }
+        return false;
+    }
+
+    private static bool ConstructsBinaryFormatter(MethodDef m)
+    {
+        foreach (var ins in m.Body.Instructions)
+        {
+            if (ins.OpCode.Code == Code.Newobj && ins.Operand is IMethod ctor
+                && ctor.Name == ".ctor" && ctor.DeclaringType?.FullName == BinaryFormatterFull)
+                return true;
         }
         return false;
     }
@@ -275,6 +316,35 @@ internal static class Program
             Console.WriteLine($"{CodeType}::{name}: binder-wire sites={sites}");
             if (sites < 1) rc = 1;
         }
+
+        var safeBinder = m.Find(SafeBinderType, false);
+        if (safeBinder == null) { Console.WriteLine($"! missing type {SafeBinderType}"); rc = 1; }
+        else
+        {
+            bool overrides = safeBinder.Methods.Any(x => x.Name == "BindToType" && x.IsVirtual && x.HasBody);
+            Console.WriteLine($"type {SafeBinderType}: present, BindToType override={(overrides ? "yes" : "NO")}");
+            if (!overrides) rc = 1;
+        }
+
+        int pasteSites = 0;
+        foreach (var t in m.GetTypes())
+        {
+            foreach (var pm in t.Methods)
+            {
+                if (pm.Name != PasteMethod || !pm.HasBody) continue;
+                var ins2 = pm.Body.Instructions;
+                for (int i = 0; i < ins2.Count; i++)
+                {
+                    if (ins2[i].OpCode.Code == Code.Newobj && ins2[i].Operand is IMethod c2
+                        && c2.Name == ".ctor" && c2.DeclaringType?.FullName == SafeBinderType
+                        && i + 1 < ins2.Count && ins2[i + 1].Operand is IMethod sb3 && sb3.Name == "set_Binder")
+                        pasteSites++;
+                }
+            }
+        }
+        Console.WriteLine($"{PasteMethod} allow-list binder sites={pasteSites}");
+        if (pasteSites < 1) rc = 1;
+
         Console.WriteLine(rc == 0 ? "VERIFY: PASS" : "VERIFY: FAIL");
         return rc;
     }
