@@ -10,10 +10,23 @@ Frame format:
 """
 
 import struct
-from typing import Tuple, Optional
+from typing import Iterable, Optional, Tuple
 
 
 HEADER_FIELD_SIZE = 10  # Both type and length fields are 10 bytes
+DEFAULT_MAX_BODY_SIZE = 2 * 1024 * 1024
+
+
+class ProtocolError(Exception):
+    """Base class for malformed transport frames."""
+
+
+class FrameTooLarge(ProtocolError):
+    """Raised when a frame or parser buffer exceeds configured limits."""
+
+
+class InvalidFrame(ProtocolError):
+    """Raised when a frame header is invalid or unsupported."""
 
 
 def encode_int_field(value: int) -> bytes:
@@ -34,7 +47,8 @@ def decode_int_field(data: bytes) -> int:
 
     Only first 4 bytes are significant (little-endian int32).
     """
-    assert len(data) == HEADER_FIELD_SIZE, f"Expected {HEADER_FIELD_SIZE} bytes, got {len(data)}"
+    if len(data) != HEADER_FIELD_SIZE:
+        raise InvalidFrame(f"Expected {HEADER_FIELD_SIZE} bytes, got {len(data)}")
     return struct.unpack('<i', data[:4])[0]
 
 
@@ -76,12 +90,30 @@ class FrameParser:
     Handles fragmentation: accumulates data until a complete frame is available.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        max_body_size: int = DEFAULT_MAX_BODY_SIZE,
+        allowed_sendtypes: Optional[Iterable[int]] = None,
+    ):
+        if max_body_size < 0:
+            raise ValueError("max_body_size must be >= 0")
         self._buffer = bytearray()
+        self.max_body_size = max_body_size
+        self.allowed_sendtypes = (
+            None if allowed_sendtypes is None else frozenset(int(v) for v in allowed_sendtypes)
+        )
+
+    @property
+    def buffered_bytes(self) -> int:
+        return len(self._buffer)
 
     def feed(self, data: bytes) -> None:
         """Add received data to the internal buffer."""
         self._buffer.extend(data)
+        max_buffer = HEADER_FIELD_SIZE * 2 + self.max_body_size
+        if len(self._buffer) > max_buffer:
+            self._buffer.clear()
+            raise FrameTooLarge(f"Frame buffer exceeded {max_buffer} bytes")
 
     def try_parse(self) -> Optional[Tuple[int, bytes]]:
         """
@@ -97,6 +129,18 @@ class FrameParser:
 
         sendtype = decode_int_field(bytes(self._buffer[:HEADER_FIELD_SIZE]))
         body_len = decode_int_field(bytes(self._buffer[HEADER_FIELD_SIZE:header_total]))
+
+        if self.allowed_sendtypes is not None and sendtype not in self.allowed_sendtypes:
+            self._buffer.clear()
+            raise InvalidFrame(f"Unsupported sendtype: {sendtype}")
+        if body_len < 0:
+            self._buffer.clear()
+            raise InvalidFrame(f"Negative body length: {body_len}")
+        if body_len > self.max_body_size:
+            self._buffer.clear()
+            raise FrameTooLarge(
+                f"Body length {body_len} exceeds max_body_size {self.max_body_size}"
+            )
 
         total_frame_size = header_total + body_len
         if len(self._buffer) < total_frame_size:

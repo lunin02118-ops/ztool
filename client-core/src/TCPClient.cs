@@ -55,6 +55,10 @@ public class TCPClient
 
 	private const int L_length = 10;
 
+	private const int MAX_RESPONSE_BODY = 10485760;
+
+	private const int RESPONSE_READ_TIMEOUT_MS = 20000;
+
 	internal bool isok;
 
 	private readonly ManualResetEvent TimeoutObject;
@@ -286,32 +290,49 @@ public class TCPClient
 	public string getreceive(Socket s, ref string m_head)
 	{
 		s.ReceiveBufferSize = 1024;
-		string text = "";
-		byte[] array = new byte[10];
-		byte[] array2 = new byte[10];
-		byte[] array3 = new byte[10485760];
-		int num = 0;
-		int i = 0;
-		if (s.Receive(array, 10, SocketFlags.None) == 0)
-		{
-			return "";
-		}
+		byte[] array = ReadExact(s, H_length, RESPONSE_READ_TIMEOUT_MS);
 		m_head = Conversions.ToString(code.byte_to_Int(array));
-		if (s.Receive(array2, 10, SocketFlags.None) == 0)
+		byte[] array2 = ReadExact(s, L_length, RESPONSE_READ_TIMEOUT_MS);
+		int num2 = code.byte_to_Int(array2);
+		if (num2 < 0 || num2 > MAX_RESPONSE_BODY)
 		{
-			return "";
+			throw new InvalidOperationException("Некорректный размер ответа сервера");
 		}
-		int num2;
-		for (num2 = code.byte_to_Int(array2); i < num2; i = checked(i + num))
+		byte[] array3 = ReadExact(s, num2, RESPONSE_READ_TIMEOUT_MS);
+		return Encoding.UTF8.GetString(array3, 0, array3.Length).Trim();
+	}
+
+	private static byte[] ReadExact(Socket s, int len, int timeoutMs)
+	{
+		if (len < 0)
 		{
-			num = s.Receive(array3, i, s.ReceiveBufferSize, SocketFlags.None);
-			if (num == 0)
+			throw new InvalidOperationException("Некорректный размер ответа сервера");
+		}
+		byte[] array = new byte[len];
+		int offset = 0;
+		int receiveTimeout = s.ReceiveTimeout;
+		try
+		{
+			s.ReceiveTimeout = timeoutMs;
+			while (offset < len)
 			{
-				return "";
+				int num = s.Receive(array, offset, len - offset, SocketFlags.None);
+				if (num == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num);
 			}
 		}
-		text = Encoding.UTF8.GetString(array3, 0, num2);
-		return text.Trim();
+		catch (SocketException ex) when (ex.SocketErrorCode == SocketError.TimedOut)
+		{
+			throw new TimeoutException("Тайм-аут чтения ответа сервера", ex);
+		}
+		finally
+		{
+			s.ReceiveTimeout = receiveTimeout;
+		}
+		return array;
 	}
 
 	public byte[] getsendbuffer(int rgtype, string sendstring)
