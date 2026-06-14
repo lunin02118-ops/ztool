@@ -9,6 +9,8 @@ artifact boundary explicit before that testing starts.
 ## Changed files
 
 - `scripts/build_release_package.ps1`
+- `ZTool.exe`
+- `ZTool.dll`
 - `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`
 - `docs/release/PRODUCTION_READINESS_REPORT_RU.md`
 - `docs/INDEX.md`
@@ -33,6 +35,15 @@ The script fails closed when required runtime files are missing. For production
 it requires `SolidWorksTools.dll`; for dry-runs only it accepts
 `-AllowMissingSolidWorksTools`.
 
+Root runtime artifacts are aligned with the live-tested recommended pair:
+
+- `ZTool.exe` = `client-core/dist/ZTool_binderfix.exe`
+  (`0BF4CB0B...9955864B`);
+- `ZTool.dll` = `dumps/candidate-ru-20260609/ZTool_ru_candidate2_pmpguard2.dll`
+  (`D0535425...0E492EB9`).
+
+The packager now uses those root artifacts by default.
+
 ## Backward compatibility
 
 No runtime application behavior is changed. This phase only adds packaging and
@@ -44,8 +55,8 @@ Dry-run package command:
 
 ```powershell
 ./scripts/build_release_package.ps1 `
-  -Version 1.0.0-phase10-test3 `
-  -OutputRoot $env:TEMP\ztool-release-phase10c `
+  -Version 1.0.0-phase10-root-artifacts `
+  -OutputRoot $env:TEMP\ztool-release-phase10d `
   -AllowMissingSolidWorksTools
 ```
 
@@ -68,14 +79,14 @@ Additional manual PowerShell checks verified:
 Output package:
 
 ```text
-C:\Temp\ztool-release-phase10c\ZTool-1.0.0-phase10-test3-20260614-161859
+C:\Temp\ztool-release-phase10d\ZTool-1.0.0-phase10-root-artifacts-20260614-164044
 ```
 
 Key runtime hashes:
 
 | File | SHA256 |
 | --- | --- |
-| `runtime/ZTool.exe` | `235db669bb8189de1d060135923286550a25623025feb04d50410188f77cd18a` |
+| `runtime/ZTool.exe` | `0bf4cb0b4174d1ccdfee17373de7ea4965fc0a2e42f27393e0b2571d9955864b` |
 | `runtime/ZTool.dll` | `d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9` |
 
 Results:
@@ -142,7 +153,6 @@ For an installed runtime rollback:
   from a clean checkout after the release branch is fixed.
 - Final Go/No-Go still requires the manual checklist in
   `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`.
-- R-009 remains open until the root repository artifacts or release branch
-  policy stop relying on ambiguous top-level binaries. The Phase 10 package
-  script avoids that ambiguity by using explicit runtime inputs, but the final
-  package must still be accepted from its own manifest.
+- R-009 is mitigated by aligning root runtime artifacts and making the packager
+  use them by default. The final package must still be accepted from its own
+  manifest on the SolidWorks test machine.

@@ -10,8 +10,8 @@
 param(
     [string]$Version = "1.0.0",
     [string]$OutputRoot = (Join-Path $PSScriptRoot '..\release'),
-    [string]$ClientExe = (Join-Path $PSScriptRoot '..\client-core\out\ZTool.exe'),
-    [string]$AddinDll = (Join-Path $PSScriptRoot '..\dumps\candidate-ru-20260609\ZTool_ru_candidate2_pmpguard2.dll'),
+    [string]$ClientExe = (Join-Path $PSScriptRoot '..\ZTool.exe'),
+    [string]$AddinDll = (Join-Path $PSScriptRoot '..\ZTool.dll'),
     [string]$SolidWorksToolsDll = "",
     [switch]$AllowMissingSolidWorksTools
 )
