@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - "client-core/**"
+      - "localization/**"
+      - "docs/localization/**"
+      - "build_ru_bom_template.py"
+      - "BOM表模板/**"
       - "ZTool-base.exe"
       - "ZTool.exe"
       - ".github/workflows/client-core-windows.yml"
@@ -13,6 +17,10 @@ on:
       - "hardening/**"
     paths:
       - "client-core/**"
+      - "localization/**"
+      - "docs/localization/**"
+      - "build_ru_bom_template.py"
+      - "BOM表模板/**"
       - "ZTool-base.exe"
       - "ZTool.exe"
       - ".github/workflows/client-core-windows.yml"
@@ -32,6 +40,10 @@ jobs:
             8.0.x
             10.0.x
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Build client core and reinject
         run: |
           cd client-core
@@ -39,3 +51,15 @@ jobs:
 
       - name: Verify reinjected output
         run: dotnet run -c Release --project client-core/tools/Reinjector -- --verify client-core/out/ZTool.exe
+
+      - name: Localization scan
+        run: |
+          python client-core/tools/localization_scan.py `
+            --exe client-core/out/ZTool.exe `
+            --translations client-core/tools/Localizer/translations.tsv `
+            --whitelist-dir localization `
+            --report client-core/out/localization-report.json `
+            --fail-on-unclassified
+
+      - name: Build Russian BOM template smoke
+        run: python build_ru_bom_template.py --out "$env:TEMP\bom_шаблон_phase07_test.xlsx"

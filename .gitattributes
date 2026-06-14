@@ -1,3 +1,6 @@
 dumps/full-memory-20260609-081854/*.dmp filter=lfs diff=lfs merge=lfs -text
 dumps/full-memory-20260609-081854/*.dmp.part* filter=lfs diff=lfs merge=lfs -text
 *.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
