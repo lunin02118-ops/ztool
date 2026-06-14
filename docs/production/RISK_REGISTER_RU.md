@@ -11,8 +11,8 @@
 |----|----------|------|----------------|---------------|
 | R-001 | P1 | `apply_register` / `register_confirm` недостаточно связаны pending state, TTL и hash/nonce. | Open | Phase 04 |
 | R-002 | P1 | `apply_remove` / `remove_confirm` требуют stateful transfer model и idempotency policy. | Open | Phase 04 |
-| R-003 | P1 | Production logging может раскрывать plaintext/protocol payload при DEBUG. | Open | Phase 01 |
-| R-004 | P1 | RSA private key хранится через простые файлы без production key lifecycle/runbook. | Open | Phase 01, Phase 09 |
+| R-003 | P1 | Production logging может раскрывать plaintext/protocol payload при DEBUG. | Mitigated in Phase 01: production DEBUG fail-closed, protocol payload redacted to size/hash. | Phase 01 |
+| R-004 | P1 | RSA private key хранится через простые файлы без production key lifecycle/runbook. | Partially mitigated in Phase 01: explicit key files, no default `keypair_info.json`, Unix 0600 check. Lifecycle/runbook remains Phase 09. | Phase 01, Phase 09 |
 | R-005 | P1 | TCP protocol не имеет полного fail-closed parser/limits/timeout hardening. | Open | Phase 02 |
 | R-006 | P1 | SQLite schema не имеет полноценной migration/transaction/state модели. | Open | Phase 03 |
 | R-007 | P1 | `device_limit` в CLI/schema должен совпадать с фактической политикой лицензий. | Open | Phase 03 |

@@ -9,11 +9,10 @@ TCP server implementing the ZTool activation protocol:
 
 import asyncio
 import logging
-import os
-import sys
-from datetime import datetime
 
 from .config import ServerConfig
+from .key_provider import KeyProvider
+from .logging_utils import configure_logging, payload_summary, redact_path
 from .crypto.rsa_ztool import decrypt_string
 from .crypto import aes_security_center as aes
 from .crypto.aes_security_center import decrypt_message_body
@@ -38,27 +37,32 @@ class LicenseServer:
     def __init__(self, config: ServerConfig):
         self.config = config
         self.db = LicenseDB(config.db_path)
+        self._key_provider = KeyProvider.from_config(config)
         self._private_key = self._load_private_key()
         self._public_key = self._load_public_key()
         logger.info("License server initialized (port=%d)", config.port)
 
     def _load_private_key(self) -> str:
-        """Load private key from keys directory."""
-        path = os.path.join(self.config.keys_dir, 'private_key.txt')
-        if not os.path.exists(path):
-            logger.error("Private key not found at %s. Run keygen first.", path)
-            raise FileNotFoundError(f"Private key not found: {path}")
-        with open(path, 'r') as f:
-            return f.read().strip()
+        """Load private key through the configured key provider."""
+        try:
+            return self._key_provider.load_private_key()
+        except Exception:
+            logger.error(
+                "Private key load failed from %s",
+                redact_path(self._key_provider.private_key_path),
+            )
+            raise
 
     def _load_public_key(self) -> str:
-        """Load public key from keys directory."""
-        path = os.path.join(self.config.keys_dir, 'public_key.txt')
-        if not os.path.exists(path):
-            logger.error("Public key not found at %s. Run keygen first.", path)
-            raise FileNotFoundError(f"Public key not found: {path}")
-        with open(path, 'r') as f:
-            return f.read().strip()
+        """Load public key through the configured key provider."""
+        try:
+            return self._key_provider.load_public_key()
+        except Exception:
+            logger.error(
+                "Public key load failed from %s",
+                redact_path(self._key_provider.public_key_path),
+            )
+            raise
 
     async def start(self):
         """Start the TCP server."""
@@ -115,7 +119,13 @@ class LicenseServer:
             # sendstring() with passphrase = str(sendtype).
             body_b64 = body_bytes.decode('utf-8').strip()
             plaintext = decrypt_message_body(body_b64, sendtype)
-            logger.debug("Received type=%d, body=%s", sendtype, plaintext[:100])
+            payload_bytes, payload_sha256 = payload_summary(plaintext)
+            logger.debug(
+                "Received message type=%d payload_bytes=%d payload_sha256=%s",
+                sendtype,
+                payload_bytes,
+                payload_sha256,
+            )
         except Exception as e:
             logger.error("Failed to decrypt message type=%d: %s", sendtype, e)
             return self._make_result(Result.INFO_ERROR)
@@ -382,29 +392,49 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="ZTool License Activation Server")
-    parser.add_argument('--host', default='0.0.0.0', help='Bind address')
-    parser.add_argument('--port', type=int, default=58000, help='Port (default: 58000)')
+    parser.add_argument('--host', default=None, help='Bind address')
+    parser.add_argument('--port', type=int, default=None, help='Port (default: 58000)')
     parser.add_argument('--keys-dir', default=None, help='Keys directory')
+    parser.add_argument('--private-key-file', default=None, help='Private key file')
+    parser.add_argument('--public-key-file', default=None, help='Public key file')
     parser.add_argument('--db', default=None, help='Database path')
-    parser.add_argument('--log-level', default='INFO', help='Log level')
-    args = parser.parse_args()
-
-    logging.basicConfig(
-        level=getattr(logging, args.log_level.upper()),
-        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    parser.add_argument('--log-level', default=None, help='Log level')
+    parser.add_argument('--runtime-env', default=None, help='Runtime env: development/test/production')
+    parser.add_argument(
+        '--allow-debug-logging',
+        action='store_true',
+        default=None,
+        help='Allow DEBUG logging in production for a controlled emergency window',
     )
+    args = parser.parse_args()
 
     # Start from environment (ZTOOL_HOST/PORT/KEYS_DIR/DB_PATH/...) so env-only
     # launches work, then let explicit CLI flags take precedence.
     config = ServerConfig.from_env()
-    if args.host != parser.get_default('host'):
+    if args.host is not None:
         config.host = args.host
-    if args.port != parser.get_default('port'):
+    if args.port is not None:
         config.port = args.port
     if args.keys_dir:
         config.keys_dir = args.keys_dir
+    if args.private_key_file:
+        config.private_key_file = args.private_key_file
+    if args.public_key_file:
+        config.public_key_file = args.public_key_file
     if args.db:
         config.db_path = args.db
+    if args.log_level:
+        config.log_level = args.log_level
+    if args.runtime_env:
+        config.runtime_env = args.runtime_env
+    if args.allow_debug_logging is not None:
+        config.allow_debug_logging = args.allow_debug_logging
+
+    configure_logging(
+        config.log_level,
+        runtime_env=config.runtime_env,
+        allow_debug_logging=config.allow_debug_logging,
+    )
 
     server = LicenseServer(config)
     await server.start()
