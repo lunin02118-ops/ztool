@@ -183,5 +183,20 @@ TCP-сервер переведён на единую БД с админкой: 
   но внутри `ZTool.SafeListBinder::BindToType` вызов `IsAllowed()` остался со
   scope `ZBinderDonor`; в EXE также остался `AssemblyRef ZBinderDonor`. Итог
   `8be50ec`: `PARTIAL` - BOM `PASS`, clipboard allow-list `FAIL`.
+- Ретест `edd5d0d` / `ZTool_binderfix.exe` после remap фикса donor-ссылок
+  (`0BF4CB0B...9955864B`) выполнен корректным способом: SolidWorks через
+  Explorer/ShellExecute, сборка `0614-A00.SLDASM`, ZTool запущен кнопкой
+  `Управление файлами` из ленты SolidWorks. `BinderInject verify` = `PASS`;
+  в EXE `AssemblyRefs containing ZBinderDonor: 0`, `Instruction refs containing
+  ZBinderDonor: 0`, внутренний вызов `SafeListBinder::IsAllowed` имеет scope
+  `ZTool.exe`. `Подключить SW` дал `29 поз.`, pre-flight `PASS`, полный BOM
+  экспорт 8 режимов в
+  `D:\ztool-pr8-test\bom-exports\full-test-edd5d0d-safelistbinder-remap-swlaunch`
+  прошёл: валидатор `PASS, 8/8`; строки 29/32/6/25/29/32/15/9,
+  `№ п/п`/`Кол-во`/`Путь` заполнены, эскизы и фильтры работают. Live-тест
+  `FrmOutputlist` тоже прошёл: `copyitem_Click` показал
+  `Успешно скопировано 32 поз.`, затем после очистки списка `pasteitem_Click`
+  восстановил 32 файла без ошибки `ZBinderDonor`; новых crash/WER/dump нет.
+  Итог `edd5d0d`: `PASS`.
 
 > Конкретные адреса/хосты/ключи инфраструктуры в репозитории не публикуются.

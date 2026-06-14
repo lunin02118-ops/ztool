@@ -1768,3 +1768,158 @@ allow-list.
 Итог `8be50ec`: **PARTIAL**. BOM-регрессия не воспроизводится (`PASS, 8/8`),
 но новая защита clipboard paste не прошла live-тест: `copyitem_Click` работает,
 `pasteitem_Click` падает из-за утечки ссылки на `ZBinderDonor`.
+
+## Retest: commit `edd5d0d` / SafeListBinder donor remap fix
+
+Дата/время: `2026-06-14 12:22-12:50`.
+
+Цель: перепроверить фикс утечки ссылок на donor-сборку `ZBinderDonor` после
+провала `8be50ec`, не меняя метод запуска. ZTool запускался **только** из
+SolidWorks add-in кнопкой `Управление файлами`; прямой запуск `ZTool.exe` не
+использовался.
+
+Runtime:
+
+```text
+Repo branch: devin/1781201882-bom-templates
+Commit: edd5d0d
+
+ZTool.exe:
+  Path: D:\ztool-pr8-test\ZTool.exe
+  SHA256: 0BF4CB0B4174D1CCDFEF17373DE7EA4965FC0A2E42F27393E0B2571D9955864B
+
+ZTool.dll:
+  Path: D:\ztool-pr8-test\ZTool.dll
+  SHA256: D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9
+```
+
+BinderInject verify:
+
+```text
+type ZTool.VTBinder: present, BindToType override=yes
+ZTool.code::DeserializeBinary: binder-wire sites=1
+ZTool.code::DeserializeObject: binder-wire sites=1
+type ZTool.SafeListBinder: present, BindToType override=yes
+pasteitem_Click allow-list binder sites=4
+VERIFY: PASS
+```
+
+Проверка отсутствия ссылок на donor-сборку:
+
+```text
+AssemblyRefs containing ZBinderDonor: 0
+Instruction refs containing ZBinderDonor: 0
+SafeListBinder internal call scope: ZTool.exe
+```
+
+Запуск и подключение:
+
+```text
+SolidWorks:
+  C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe
+  SOLIDWORKS Premium 2025 SP3.0 - [0614-A00.SLDASM]
+  Responding=True
+
+ZTool:
+  D:\ztool-pr8-test\ZTool.exe
+  SHA256: 0BF4CB0B4174D1CCDFEF17373DE7EA4965FC0A2E42F27393E0B2571D9955864B
+  Запущен из ленты SolidWorks, не напрямую.
+
+Подключить SW:
+  PASS - "Подключение завершено, затрачено 0,2 сек", таблица содержит 29 поз.
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+```
+
+BOM export:
+
+```text
+export folder:
+D:\ztool-pr8-test\bom-exports\full-test-edd5d0d-safelistbinder-remap-swlaunch
+```
+
+Результат валидатора:
+
+```text
+[PASS] 01_summary_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+
+[PASS] 02_hierarchy_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+
+[PASS] 03_top_level_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 6
+  № п/п: 6/6 | Кол-во: 6/6 | Путь: 6/6
+
+[PASS] 04_parts_only_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 25
+  № п/п: 25/25 | Кол-во: 25/25 | Путь: 25/25
+
+[PASS] 05_summary_images_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+  Эскизы: ЕСТЬ
+
+[PASS] 06_hierarchy_images_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+  Эскизы: ЕСТЬ
+
+[PASS] 07_processed_filter_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 15
+  № п/п: 15/15 | Кол-во: 15/15 | Путь: 15/15
+
+[PASS] 08_purchased_filter_0614-A00-safelistbinder-remap.xlsx
+  Строк данных: 9
+  № п/п: 9/9 | Кол-во: 9/9 | Путь: 9/9
+
+ПРОВЕРКА СОГЛАСОВАННОСТИ РЕЖИМОВ:
+  - Режим 7 (Обрабатываемые детали): 15 из 29 строк - фильтр применён.
+  - Режим 8 (Покупные изделия): 9 из 29 строк - фильтр применён.
+
+ИТОГ: PASS - все файлы содержат данные в служебных колонках
+```
+
+Clipboard copy/paste live-тест:
+
+```text
+Форма: FrmOutputlist / "Пакетное преобразование формата"
+Открытие: ZTool -> Инструменты -> Пакетное преобразование форматов
+Заполнение списка: Добавить файл -> загрузка открытых файлов из SolidWorks
+Список до копирования: 32 файла
+
+copyitem_Click:
+  PASS - показано сообщение "Успешно скопировано 32 поз."
+
+pasteitem_Click:
+  PASS - ошибка ZBinderDonor больше не появляется.
+  Контрольный сценарий: очистка списка -> Вставить.
+  После вставки список снова содержит 32 файла.
+```
+
+Скрины:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\screen-after-connect-edd5d0d.png
+D:\ztool-pr8-test\manual-artifacts\screen-outputlist-after-copy-edd5d0d.png
+D:\ztool-pr8-test\manual-artifacts\screen-outputlist-after-clear-paste-edd5d0d.png
+```
+
+Проверка crash-регрессии:
+
+```text
+ZTool process after tests: Responding=True
+Application Error/.NET Runtime/WER по ZTool/ZBinderDonor за последний час: нет
+Новых WER dump-файлов: нет
+CrashDumps directory does not exist
+```
+
+Итог `edd5d0d`: **PASS**. BOM-регрессия не воспроизводится (`PASS, 8/8`),
+clipboard allow-list после remap фикса работает: `copyitem_Click` и
+`pasteitem_Click` проходят без ошибки `ZBinderDonor`.
