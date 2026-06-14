@@ -68,6 +68,7 @@ class Result(IntEnum):
     REGISTER_FAILED = 4   # "Регистрация не удалась"
     INFO_ERROR = 6        # "Ошибка в сведениях о регистрации"
     TRANSFER_DONE = 7     # "Лицензия успешно перенесена"
+    TRANSFER_FAILED = 8   # "Не удалось перенести лицензию"
     TRANSFER_OUT_OK = 11  # transfer apply accepted -> client sends 132
     REGISTER_OK = 12      # "Регистрация выполнена" (final success, after 131)
     APPLY_OK = 13         # apply accepted -> client saves blob, sends 131

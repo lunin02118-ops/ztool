@@ -8,6 +8,7 @@ TCP server implementing the ZTool activation protocol:
 """
 
 import asyncio
+import hashlib
 import logging
 
 from .config import ServerConfig
@@ -21,7 +22,9 @@ from .protocol.framing import ProtocolError
 from .protocol.dispatcher import REQUEST_SENDTYPES, Sendtype, Status, Result, status_to_result
 from .license_blob import (
     generate_license_blob,
+    gd51,
     getver_today,
+    parse_apply_branches,
     recover_raw_machine,
     build_confirm_transport,
 )
@@ -30,6 +33,7 @@ from .db import LicenseDB
 
 
 logger = logging.getLogger(__name__)
+TRANSFER_OUT_MACHINE_CODE = "00000000-0000-0000-0000-000000000000|TRANSFER|OUT"
 
 
 class LicenseServer:
@@ -107,7 +111,11 @@ class LicenseServer:
                             self.config.max_frames_per_connection,
                         )
                         return
-                    response = await self._process_message(sendtype, body_bytes)
+                    response = await self._process_message(
+                        sendtype,
+                        body_bytes,
+                        client_ip=addr[0] if addr else "",
+                    )
                     if response is not None:
                         writer.write(response)
                         await writer.drain()
@@ -125,7 +133,8 @@ class LicenseServer:
             await writer.wait_closed()
             logger.info("Connection closed: %s", addr)
 
-    async def _process_message(self, sendtype: int, body_bytes: bytes) -> bytes:
+    async def _process_message(self, sendtype: int, body_bytes: bytes,
+                               client_ip: str = "") -> bytes:
         """
         Process a received message and return the response frame.
 
@@ -158,18 +167,32 @@ class LicenseServer:
         #   129 apply_remove     -> server replies 11 (then client sends 132)
         #   132 remove confirm   -> server replies 7  (transfer done)
         if sendtype == Sendtype.APPLY_REGISTER:          # 128
-            return await self._handle_apply_register(plaintext)
+            return await self._handle_apply_register(plaintext, client_ip=client_ip)
         elif sendtype in (Sendtype.REGISTER_CONFIRM, Sendtype.REGISTER):  # 131 / 130
             return await self._handle_register_confirm(plaintext)
         elif sendtype == Sendtype.APPLY_REMOVE:          # 129
-            return await self._handle_apply_remove(plaintext)
+            return await self._handle_apply_remove(plaintext, client_ip=client_ip)
         elif sendtype == Sendtype.REMOVE_CONFIRM:        # 132
-            return await self._handle_remove_confirm(plaintext)
+            return await self._handle_remove_confirm(plaintext, client_ip=client_ip)
         else:
             logger.warning("Unknown sendtype: %d", sendtype)
             return self._make_result(Result.REGISTER_FAILED)
 
-    async def _handle_apply_register(self, plaintext: str) -> bytes:
+    @staticmethod
+    def _hash_branches(branches: list) -> str:
+        return hashlib.sha256("\t".join(branches).encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _hash_text(value: str) -> str:
+        return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+    def _transport_branches(self, transport: str) -> list:
+        return aes.decrypt(
+            transport,
+            getver_today(self.config.client_version, is_64bit=True),
+        ).split("\t")
+
+    async def _handle_apply_register(self, plaintext: str, client_ip: str = "") -> bytes:
         """
         Handle Apply_register (128): Registration application.
 
@@ -225,8 +248,24 @@ class LicenseServer:
                                   result="rejected", details="invalid machine code")
                 return self._make_result(Result.INFO_ERROR)
 
-            # Bind the seat to this machine (idempotent for repeats).
-            success, error = self.db.activate(reg_code, machine_code)
+            # Build the apply transport first, then reserve the pending seat by
+            # the exact branch hash the client must echo in register_confirm.
+            blob = generate_license_blob(
+                machine_code=machine_code,
+                public_key=self._public_key,
+                private_key=self._private_key,
+                client_version=self.config.client_version,
+            )
+            branches = self._transport_branches(blob)
+            success, error = self.db.reserve_pending_activation(
+                code=reg_code,
+                machine_code=machine_code,
+                machine_hash=gd51(machine_code),
+                apply_branches_hash=self._hash_branches(branches),
+                transport_hash=self._hash_text(blob),
+                ttl_seconds=self.config.pending_activation_ttl_seconds,
+                client_ip=client_ip,
+            )
             if not success:
                 self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                                   result="limit_reached", details=error)
@@ -237,15 +276,8 @@ class LicenseServer:
             # client delivers the blob in THIS (apply_register) response with result
             # code 13, then saves it (SR.rg), validates IsReg1, and follows up with
             # a 131 (register confirm) carrying SR.get_rginfo().
-            blob = generate_license_blob(
-                machine_code=machine_code,
-                public_key=self._public_key,
-                private_key=self._private_key,
-                client_version=self.config.client_version,
-            )
-
             self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                              result="accepted")
+                              result="pending")
             return self._make_result(Result.APPLY_OK, blob)
 
     async def _handle_register_confirm(self, plaintext: str) -> bytes:
@@ -267,20 +299,36 @@ class LicenseServer:
         verbatim) — echoing back the apply_register branches makes IsReg2 fail
         and the client shows "Регистрация не удалась".
         """
-        lines = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
-        fields = [ln for ln in lines if ln]
+        fields = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
+        while fields and not fields[-1]:
+            fields.pop()
         branches = fields[:4]
 
-        if len(branches) != 4 or len(fields) < 6:
+        if len(branches) != 4 or any(not branch for branch in branches) or len(fields) < 6:
             self.db.log_action("register", result="error",
                                details=f"register confirm: expected 4 branches + 2 times, got {len(fields)} fields")
             return self._make_result(Result.INFO_ERROR)
 
         try:
+            parsed = parse_apply_branches(branches, self._public_key)
+            branches_hash = self._hash_branches(branches)
+            machine_hash = parsed["machine_hash"]
+            pending = self.db.find_pending_activation(branches_hash, machine_hash)
+            if pending is None:
+                self.db.log_action("register", result="rejected",
+                                   details="register confirm: no pending activation")
+                return self._make_result(Result.INFO_ERROR)
+
             # The two registry-key creation times the client RSA-encrypted with
             # our public key; recover them with the private key.
-            creation_time_b2 = decrypt_string(fields[4], self._private_key).strip()
-            creation_time_b3 = decrypt_string(fields[5], self._private_key).strip()
+            creation_time_b2 = (
+                decrypt_string(fields[4], self._private_key).strip()
+                if fields[4] else ""
+            )
+            creation_time_b3 = (
+                decrypt_string(fields[5], self._private_key).strip()
+                if fields[5] else ""
+            )
             transport = build_confirm_transport(
                 branches,
                 creation_time_b2,
@@ -289,15 +337,25 @@ class LicenseServer:
                 private_key=self._private_key,
                 client_version=self.config.client_version,
             )
+            with self.db.transaction():
+                success, error = self.db.activate(pending["code"], pending["machine_code"])
+                if not success:
+                    self.db.log_action("register", code=pending["code"],
+                                       machine_code=pending["machine_code"],
+                                       result="failed", details=error)
+                    return self._make_result(status_to_result(error, Result.DEVICE_LIMIT))
+                self.db.confirm_pending_activation(pending["id"])
+                self.db.log_action("register", code=pending["code"],
+                                   machine_code=pending["machine_code"],
+                                   result="success", details="register confirm")
         except Exception as e:
             self.db.log_action("register", result="error",
                                details=f"register confirm: blob rebuild failed: {e}")
             return self._make_result(Result.INFO_ERROR)
 
-        self.db.log_action("register", result="success", details="register confirm")
         return self._make_result(Result.REGISTER_OK, transport)
 
-    async def _handle_apply_remove(self, plaintext: str) -> bytes:
+    async def _handle_apply_remove(self, plaintext: str, client_ip: str = "") -> bytes:
         """Handle Apply_Remove (129): License transfer/removal request."""
         parts = self._decrypt_request(plaintext)
 
@@ -321,22 +379,48 @@ class LicenseServer:
                                   result="wrong_password")
                 return self._make_result(Result.WRONG_PASSWORD)
 
-            # Deactivate. On success reply 11 -> the client runs SR.outrg() and then
-            # sends a 132 (remove confirm), which we answer with 7 (transfer done).
-            success, error = self.db.deactivate(reg_code, machine_code)
+            # Reserve transfer. Deactivation happens only after remove_confirm.
+            success, error = self.db.create_pending_transfer(
+                code=reg_code,
+                machine_code=machine_code,
+                machine_hash=gd51(machine_code),
+                ttl_seconds=self.config.pending_transfer_ttl_seconds,
+                client_ip=client_ip,
+            )
             if success:
+                transfer_blob = generate_license_blob(
+                    machine_code=TRANSFER_OUT_MACHINE_CODE,
+                    public_key=self._public_key,
+                    private_key=self._private_key,
+                    client_version=self.config.client_version,
+                )
                 self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                                  result="success")
-                return self._make_result(Result.TRANSFER_OUT_OK)
+                                  result="pending")
+                return self._make_result(Result.TRANSFER_OUT_OK, transfer_blob)
             else:
                 self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                                   result="failed", details=error)
                 return self._make_result(status_to_result(error, Result.REGISTER_FAILED))
 
-    async def _handle_remove_confirm(self, plaintext: str) -> bytes:
+    async def _handle_remove_confirm(self, plaintext: str, client_ip: str = "") -> bytes:
         """Handle remove confirm (Sendtype 132): finalise a transfer/removal."""
-        self.db.log_action("remove_confirm", result="confirmed")
-        return self._make_result(Result.TRANSFER_DONE)
+        with self.db.transaction():
+            pending = self.db.find_pending_transfer(client_ip)
+            if pending is None:
+                self.db.log_action("remove_confirm", result="rejected",
+                                   details="remove confirm: no pending transfer")
+                return self._make_result(Result.TRANSFER_FAILED)
+            success, error = self.db.deactivate(pending["code"], pending["machine_code"])
+            if not success:
+                self.db.log_action("remove_confirm", code=pending["code"],
+                                   machine_code=pending["machine_code"],
+                                   result="failed", details=error)
+                return self._make_result(status_to_result(error, Result.TRANSFER_FAILED))
+            self.db.confirm_pending_transfer(pending["id"])
+            self.db.log_action("remove_confirm", code=pending["code"],
+                               machine_code=pending["machine_code"],
+                               result="confirmed")
+            return self._make_result(Result.TRANSFER_DONE)
 
     def _decrypt_request(self, plaintext: str) -> list:
         """Parse a decrypted request body into ``[code, password, machine, *extra]``.
@@ -433,6 +517,10 @@ async def main():
     )
     parser.add_argument('--read-timeout-seconds', type=float, default=None, help='Partial-frame read timeout')
     parser.add_argument('--idle-timeout-seconds', type=float, default=None, help='Idle connection timeout')
+    parser.add_argument('--pending-activation-ttl-seconds', type=int, default=None,
+                        help='Pending activation TTL')
+    parser.add_argument('--pending-transfer-ttl-seconds', type=int, default=None,
+                        help='Pending transfer TTL')
     parser.add_argument(
         '--allow-debug-logging',
         action='store_true',
@@ -468,6 +556,10 @@ async def main():
         config.read_timeout_seconds = args.read_timeout_seconds
     if args.idle_timeout_seconds is not None:
         config.idle_timeout_seconds = args.idle_timeout_seconds
+    if args.pending_activation_ttl_seconds is not None:
+        config.pending_activation_ttl_seconds = args.pending_activation_ttl_seconds
+    if args.pending_transfer_ttl_seconds is not None:
+        config.pending_transfer_ttl_seconds = args.pending_transfer_ttl_seconds
     if args.allow_debug_logging is not None:
         config.allow_debug_logging = args.allow_debug_logging
 

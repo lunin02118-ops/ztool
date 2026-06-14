@@ -171,6 +171,8 @@ async def test_full_online_activation_flow(tmp_path):
         code, blob = await client.apply_register(CODE, MACHINE_A)
         assert code == Result.APPLY_OK
         assert blob, "expected a license blob in the apply_register response"
+        assert server.db.get_activation_count(CODE) == 0
+        assert server.db.get_reserved_activation_count(CODE) == 1
 
         # 2. The blob must decrypt + verify and rebuild GD51(machine) -- the
         #    value IsReg1 compares against GetMNum(_, False, False).
@@ -180,6 +182,7 @@ async def test_full_online_activation_flow(tmp_path):
         code2, transport = await client.register_confirm(blob)
         assert code2 == Result.REGISTER_OK
         assert client.unwrap_license_blob(transport) == gd51(MACHINE_A)
+        assert server.db.get_activation_count(CODE) == 1
 
 
 @pytest.mark.asyncio
@@ -199,6 +202,7 @@ async def test_activation_without_password(tmp_path):
 
         code2, transport = await client.register_confirm(blob)
         assert code2 == Result.REGISTER_OK
+        assert server.db.get_activation_count(CODE) == 1
 
 
 @pytest.mark.asyncio
@@ -239,16 +243,26 @@ async def test_one_machine_per_code(tmp_path):
     same machine stays OK."""
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        c1, _ = await client.apply_register(CODE, MACHINE_A)
+        c1, blob = await client.apply_register(CODE, MACHINE_A)
         assert c1 == Result.APPLY_OK
 
-        # a second distinct device is rejected — only one machine per code
+        # a second distinct device is rejected while MACHINE_A holds a pending seat
         c2, _ = await client.apply_register(CODE, MACHINE_B)
         assert c2 == Result.DEVICE_LIMIT
 
-        # the already-bound machine can re-activate freely
+        # the already-pending machine can re-apply freely
         c1b, _ = await client.apply_register(CODE, MACHINE_A)
         assert c1b == Result.APPLY_OK
+        assert server.db.get_activation_count(CODE) == 0
+        assert server.db.get_reserved_activation_count(CODE) == 1
+
+        code2, _ = await client.register_confirm(blob)
+        assert code2 == Result.INFO_ERROR  # superseded by c1b, old blob replay rejected
+
+        c1c, blob2 = await client.apply_register(CODE, MACHINE_A)
+        assert c1c == Result.APPLY_OK
+        code3, _ = await client.register_confirm(blob2)
+        assert code3 == Result.REGISTER_OK
         assert server.db.get_activation_count(CODE) == 1
 
 
@@ -256,22 +270,28 @@ async def test_one_machine_per_code(tmp_path):
 async def test_transfer_out_flow(tmp_path):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        c1, _ = await client.apply_register(CODE, MACHINE_A)
+        c1, blob = await client.apply_register(CODE, MACHINE_A)
         assert c1 == Result.APPLY_OK
+        assert (await client.register_confirm(blob))[0] == Result.REGISTER_OK
 
         # limit reached for a different machine
         c2, _ = await client.apply_register(CODE, MACHINE_B)
         assert c2 == Result.DEVICE_LIMIT
 
         # transfer the license off MACHINE_A: 129 -> 11, then 132 -> 7
-        cr, _ = await client.apply_remove(CODE, MACHINE_A)
+        cr, transfer_blob = await client.apply_remove(CODE, MACHINE_A)
         assert cr == Result.TRANSFER_OUT_OK
+        assert transfer_blob, "real client outrg() requires a transfer blob"
+        # seat is not freed before remove_confirm
+        assert (await client.apply_register(CODE, MACHINE_B))[0] == Result.DEVICE_LIMIT
+
         cc, _ = await client.remove_confirm()
         assert cc == Result.TRANSFER_DONE
 
         # the freed slot now allows MACHINE_B
-        c3, _ = await client.apply_register(CODE, MACHINE_B)
+        c3, blob_b = await client.apply_register(CODE, MACHINE_B)
         assert c3 == Result.APPLY_OK
+        assert (await client.register_confirm(blob_b))[0] == Result.REGISTER_OK
 
 
 @pytest.mark.asyncio
@@ -322,4 +342,5 @@ async def test_invalid_machine_does_not_consume_seat(tmp_path):
         code, blob = await client.apply_register(CODE, MACHINE_A)
         assert code == Result.APPLY_OK
         assert client.unwrap_license_blob(blob) == gd51(MACHINE_A)
+        assert (await client.register_confirm(blob))[0] == Result.REGISTER_OK
         assert server.db.get_activation_count(CODE) == 1
