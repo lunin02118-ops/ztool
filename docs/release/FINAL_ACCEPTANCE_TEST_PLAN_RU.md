@@ -3,6 +3,15 @@
 Тесты выполняются только на release package с точным `manifest.json` и
 `SHA256SUMS.txt`.
 
+## Package pre-flight
+
+- `scripts/verify_release_package.ps1 -PackageRoot <package> -RequireSolidWorksTools` PASS.
+- `manifest.git.dirty=false`.
+- `runtime/ZTool.exe` hash matches accepted release hash.
+- `runtime/ZTool.dll` hash matches accepted release hash.
+- `runtime/SolidWorksTools.dll` is present.
+- Package contains no private keys, DB files, dumps or local logs.
+
 ## Server
 
 - Fresh install на staging VPS.
@@ -67,6 +76,5 @@
 Go only if:
 
 - all P0/P1 risks are closed or explicitly accepted;
-- release package contains no private keys, DB, dumps, local logs;
-- artifacts match manifest hashes;
+- release package verifier PASS;
 - rollback package/instructions are ready.

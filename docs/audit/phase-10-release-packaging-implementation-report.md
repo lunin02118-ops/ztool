@@ -9,6 +9,7 @@ artifact boundary explicit before that testing starts.
 ## Changed files
 
 - `scripts/build_release_package.ps1`
+- `scripts/verify_release_package.ps1`
 - `ZTool.exe`
 - `ZTool.dll`
 - `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`
@@ -44,6 +45,23 @@ Root runtime artifacts are aligned with the live-tested recommended pair:
 
 The packager now uses those root artifacts by default.
 
+`scripts/verify_release_package.ps1` verifies a built package before manual
+acceptance:
+
+- `manifest.json` and `SHA256SUMS.txt` consistency;
+- expected `runtime/ZTool.exe` / `runtime/ZTool.dll` hashes;
+- optional required `runtime/SolidWorksTools.dll`;
+- clean manifest state unless explicitly allowed;
+- absence of private keys, DB files, dumps, logs and local build/test caches;
+- full package file coverage by `SHA256SUMS.txt`;
+- full payload file coverage by `manifest.files`.
+
+The verifier is fail-closed for unaccounted files: a file present in the
+package but missing from `SHA256SUMS.txt` fails verification, and a payload file
+present in the package but missing from `manifest.files` also fails
+verification. This prevents accidental or suspicious release-package drift from
+passing the release gate.
+
 ## Backward compatibility
 
 No runtime application behavior is changed. This phase only adds packaging and
@@ -51,13 +69,13 @@ release documentation.
 
 ## Tests run
 
-Dry-run package command:
+Production-complete local package command:
 
 ```powershell
 ./scripts/build_release_package.ps1 `
-  -Version 1.0.0-phase10-root-artifacts `
-  -OutputRoot $env:TEMP\ztool-release-phase10d `
-  -AllowMissingSolidWorksTools
+  -Version 1.0.0-phase10-current `
+  -OutputRoot $env:TEMP\ztool-release-phase10-current `
+  -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll"
 ```
 
 Verification commands:
@@ -65,6 +83,17 @@ Verification commands:
 ```powershell
 python tools\secret_scan.py
 git diff --check
+git diff --check origin/main...HEAD
+./scripts/verify_release_package.ps1 `
+  -PackageRoot "$env:TEMP\ztool-release-phase10-current\ZTool-1.0.0-phase10-current-<timestamp>" `
+  -RequireSolidWorksTools
+
+Set-Content `
+  -LiteralPath "$env:TEMP\ztool-release-phase10-current\ZTool-1.0.0-phase10-current-<timestamp>\runtime\extra.txt" `
+  -Value "unexpected"
+./scripts/verify_release_package.ps1 `
+  -PackageRoot "$env:TEMP\ztool-release-phase10-current\ZTool-1.0.0-phase10-current-<timestamp>" `
+  -RequireSolidWorksTools
 ```
 
 Additional manual PowerShell checks verified:
@@ -79,7 +108,7 @@ Additional manual PowerShell checks verified:
 Output package:
 
 ```text
-C:\Temp\ztool-release-phase10d\ZTool-1.0.0-phase10-root-artifacts-20260614-164044
+C:\Temp\ztool-release-phase10-current\ZTool-1.0.0-phase10-current-<timestamp>
 ```
 
 Key runtime hashes:
@@ -93,9 +122,17 @@ Results:
 
 - `SHA256SUMS.txt` verified successfully, including Cyrillic paths.
 - Package leak scan PASS.
+- `verify_release_package.ps1 -RequireSolidWorksTools` PASS on full local
+  package:
+  `dirty=false`, `solidworks_tools_included=true`, `sha256sums_entries=99`,
+  `manifest_files=98`.
+- Negative extra-file test PASS: after adding `runtime/extra.txt`, verifier
+  fails with `SHA256SUMS file set mismatch` before the package can pass the
+  release gate.
 - `python tools\secret_scan.py` PASS.
-- `git diff --check` has only Windows CRLF conversion warnings for touched
-  Markdown files.
+- `git diff --check` PASS; Git printed LF-to-CRLF warning for the touched
+  report file, no whitespace errors.
+- `git diff --check origin/main...HEAD` PASS.
 
 ## Manual checks
 
@@ -146,11 +183,6 @@ For an installed runtime rollback:
 
 ## Known limitations
 
-- The dry-run used `-AllowMissingSolidWorksTools`, so it is not production
-  complete.
-- Dry-run manifest has `dirty=true` because it was generated while Phase 10
-  edits were still uncommitted. The final release package must be generated
-  from a clean checkout after the release branch is fixed.
 - Final Go/No-Go still requires the manual checklist in
   `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`.
 - R-009 is mitigated by aligning root runtime artifacts and making the packager

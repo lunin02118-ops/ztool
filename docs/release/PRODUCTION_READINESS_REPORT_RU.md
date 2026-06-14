@@ -22,6 +22,22 @@ Fill from `release/<package>/manifest.json` and `SHA256SUMS.txt`.
 | `runtime/ZTool.settings` | TBD | |
 | `license-server` | TBD | |
 
+## Package verifier
+
+Command:
+
+```powershell
+scripts\verify_release_package.ps1 -PackageRoot "<package>" -RequireSolidWorksTools
+```
+
+Expected: `release package verification: PASS`.
+
+Paste verifier JSON summary here:
+
+```json
+TBD
+```
+
 ## Test evidence
 
 Attach or link:
