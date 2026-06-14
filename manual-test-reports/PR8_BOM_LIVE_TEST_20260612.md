@@ -1585,3 +1585,186 @@ Application Error/.NET Runtime/WER по ZTool за время прогона: н
 Итог `67d6292`: **PASS**. Падение `0xc0000409` на режиме 4 не
 воспроизводится. Полный BOM-прогон 8/8 прошёл при корректном запуске ZTool из
 ленты SolidWorks.
+
+## Retest: commit 8be50ec, SafeListBinder clipboard allow-list
+
+Проверен новый `ZTool_binderfix.exe`, содержащий оба binder-патча:
+`VTBinder` для конфигов и `SafeListBinder` для clipboard paste.
+
+```text
+repo commit: 8be50ec
+runtime EXE: D:\ztool-pr8-test\ZTool.exe
+source EXE: client-core\dist\ZTool_binderfix.exe
+SHA256: 4D8AA7EA82755D89DF978BDE29F8176143D0E9FF817F35789433E435A848CF56
+
+runtime DLL: D:\ztool-pr8-test\ZTool.dll
+SHA256: D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9
+```
+
+Проверка инъекции:
+
+```text
+BinderInject verify: PASS
+type ZTool.VTBinder: present, BindToType override=yes
+ZTool.code::DeserializeBinary: binder-wire sites=1
+ZTool.code::DeserializeObject: binder-wire sites=1
+type ZTool.SafeListBinder: present, BindToType override=yes
+pasteitem_Click allow-list binder sites=4
+```
+
+Метод запуска: SolidWorks запущен через
+`explorer.exe "C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk"`, после полной
+инициализации открыта сборка
+`D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`, ZTool запущен только кнопкой
+`Управление файлами` на ленте SolidWorks. Прямой запуск `ZTool.exe` не
+использовался.
+
+Подключение к SW:
+
+```text
+Get-Process ZTool:
+Path: D:\ztool-pr8-test\ZTool.exe
+SHA256: 4D8AA7EA82755D89DF978BDE29F8176143D0E9FF817F35789433E435A848CF56
+
+Подключить SW:
+Подключение завершено, затрачено 0,2 сек, всего 29 поз.
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+Presets: 8
+FilterRulesList: 5
+Service columns:
+  Col_Number anchor OK
+  Col_Quantity anchor OK
+  Col_Path anchor OK
+  Col_Preview anchor OK
+```
+
+BOM export:
+
+```text
+export folder:
+D:\ztool-pr8-test\bom-exports\full-test-8be50ec-safelistbinder-swlaunch
+```
+
+Результат полного BOM-прогона:
+
+| # | Режим | Файл | Строк | № п/п | Кол-во | Путь | Эскизы | Итог |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |
+| 1 | Экспорт сводной спецификации | `01_summary_0614-A00-safelistbinder.xlsx` | 29 | 29/29 | 29/29 | 29/29 | - | PASS |
+| 2 | Экспорт иерархической спецификации | `02_hierarchy_0614-A00-safelistbinder.xlsx` | 32 | 32/32 | 32/32 | 32/32 | - | PASS |
+| 3 | Экспорт спецификации верхнего уровня | `03_top_level_0614-A00-safelistbinder.xlsx` | 6 | 6/6 | 6/6 | 6/6 | - | PASS |
+| 4 | Экспорт сводной спецификации деталей | `04_parts_only_0614-A00-safelistbinder.xlsx` | 25 | 25/25 | 25/25 | 25/25 | - | PASS |
+| 5 | Экспорт сводной спецификации (с эскизами) | `05_summary_images_0614-A00-safelistbinder.xlsx` | 29 | 29/29 | 29/29 | 29/29 | есть | PASS |
+| 6 | Экспорт иерархической спецификации (с эскизами) | `06_hierarchy_images_0614-A00-safelistbinder.xlsx` | 32 | 32/32 | 32/32 | 32/32 | есть | PASS |
+| 7 | Обрабатываемые детали | `07_processed_filter_0614-A00-safelistbinder.xlsx` | 15 | 15/15 | 15/15 | 15/15 | - | PASS |
+| 8 | Покупные изделия | `08_purchased_filter_0614-A00-safelistbinder.xlsx` | 9 | 9/9 | 9/9 | 9/9 | - | PASS |
+
+Валидатор:
+
+```text
+Найдено файлов: 8
+Ожидаемо: 8 (по одному на режим)
+
+[PASS] 01_summary_0614-A00-safelistbinder.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+
+[PASS] 02_hierarchy_0614-A00-safelistbinder.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+
+[PASS] 03_top_level_0614-A00-safelistbinder.xlsx
+  Строк данных: 6
+  № п/п: 6/6 | Кол-во: 6/6 | Путь: 6/6
+
+[PASS] 04_parts_only_0614-A00-safelistbinder.xlsx
+  Строк данных: 25
+  № п/п: 25/25 | Кол-во: 25/25 | Путь: 25/25
+
+[PASS] 05_summary_images_0614-A00-safelistbinder.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+  Эскизы: ЕСТЬ
+
+[PASS] 06_hierarchy_images_0614-A00-safelistbinder.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+  Эскизы: ЕСТЬ
+
+[PASS] 07_processed_filter_0614-A00-safelistbinder.xlsx
+  Строк данных: 15
+  № п/п: 15/15 | Кол-во: 15/15 | Путь: 15/15
+
+[PASS] 08_purchased_filter_0614-A00-safelistbinder.xlsx
+  Строк данных: 9
+  № п/п: 9/9 | Кол-во: 9/9 | Путь: 9/9
+
+ПРОВЕРКА СОГЛАСОВАННОСТИ РЕЖИМОВ:
+  - Режим 7 (Обрабатываемые детали): 15 из 29 строк - фильтр применён.
+  - Режим 8 (Покупные изделия): 9 из 29 строк - фильтр применён.
+
+ИТОГ: PASS - все файлы содержат данные в служебных колонках
+```
+
+Проверка crash-регрессии:
+
+```text
+Mode 4: PASS, файл создан, ZTool.exe остался жив.
+ZTool process after export: Responding=True
+Application Error/.NET Runtime/WER по ZTool за время прогона: нет
+Новых WER dump-файлов: нет
+Старый dump ZTool.exe.19004.dmp относится к падению 350c8c5.
+```
+
+Clipboard copy/paste live-тест:
+
+```text
+Форма: FrmOutputlist / "Пакетное преобразование формата"
+Открытие: ZTool -> Инструменты -> Пакетное преобразование форматов
+Заполнение списка: Добавить файл -> загрузка открытых файлов из SolidWorks
+Список до копирования: 32 файла
+
+copyitem_Click:
+  PASS - показано сообщение "Успешно скопировано 32 поз."
+
+pasteitem_Click:
+  FAIL - показано сообщение:
+  "Не удалось загрузить файл или сборку 'ZBinderDonor, Version=0.0.0.0,
+  Culture=neutral, PublicKeyToken=null' либо одну из их зависимостей.
+  Требуется сборка со строгим именем. (Исключение из HRESULT: 0x80131044)"
+```
+
+Скрин ошибки:
+
+```text
+D:\ztool-pr8-test\manual-artifacts\screen-outputlist-after-paste-8be50ec.png
+```
+
+IL-диагностика причины:
+
+```text
+pasteitem_Click wire:
+  FrmOutputlist/FrmPrintlist/FrmSetDrwlist/FrmSyncDrwName:
+    newobj ZTool.SafeListBinder::.ctor()  SCOPE=ZTool.exe
+
+Но внутри ZTool.SafeListBinder::BindToType:
+  call ZTool.SafeListBinder::IsAllowed(System.String)
+  SCOPE=ZBinderDonor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+
+В ZTool.exe остался AssemblyRef:
+  ZBinderDonor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+```
+
+Вывод: инъекция `SafeListBinder` частичная. Точки `pasteitem_Click` указывают
+на `ZTool.SafeListBinder`, но внутренний call `BindToType -> IsAllowed`
+оставлен со scope donor-сборки. Поэтому обычная штатная вставка списка требует
+`ZBinderDonor.dll` и падает без него. Это блокер для варианта A/E clipboard
+allow-list.
+
+Итог `8be50ec`: **PARTIAL**. BOM-регрессия не воспроизводится (`PASS, 8/8`),
+но новая защита clipboard paste не прошла live-тест: `copyitem_Click` работает,
+`pasteitem_Click` падает из-за утечки ссылки на `ZBinderDonor`.

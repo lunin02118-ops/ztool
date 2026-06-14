@@ -168,5 +168,20 @@ TCP-сервер переведён на единую БД с админкой: 
   фильтры 7-8 применились. Ключевая регрессия закрыта: режим 4 больше не
   роняет `ZTool.exe`, новых `Application Error/.NET Runtime/WER` и новых dump
   по ZTool за время прогона нет. Итог `67d6292`: `PASS`.
+- Ретест `8be50ec` / новый `ZTool_binderfix.exe` с `VTBinder + SafeListBinder`
+  (`4D8AA7EA...A848CF56`) выполнен тем же корректным способом. `BinderInject
+  verify` = `PASS` (`VTBinder` 2 точки, `SafeListBinder` 4 точки), `Подключить
+  SW` дал `29 поз.`, pre-flight `PASS`, полный BOM экспорт 8 режимов в
+  `D:\ztool-pr8-test\bom-exports\full-test-8be50ec-safelistbinder-swlaunch`
+  прошёл: валидатор `PASS, 8/8`; строки 29/32/6/25/29/32/15/9,
+  `№ п/п`/`Кол-во`/`Путь` заполнены, эскизы и фильтры работают, новых crash/WER
+  нет. Но live-тест clipboard path в `FrmOutputlist` провалился: `copyitem_Click`
+  работает (`Успешно скопировано 32 поз.`), а `pasteitem_Click` падает с
+  `Не удалось загрузить файл или сборку 'ZBinderDonor, Version=0.0.0.0,
+  Culture=neutral, PublicKeyToken=null' ... HRESULT: 0x80131044`. IL-диагностика:
+  точки `pasteitem_Click` создают `ZTool.SafeListBinder` со scope `ZTool.exe`,
+  но внутри `ZTool.SafeListBinder::BindToType` вызов `IsAllowed()` остался со
+  scope `ZBinderDonor`; в EXE также остался `AssemblyRef ZBinderDonor`. Итог
+  `8be50ec`: `PARTIAL` - BOM `PASS`, clipboard allow-list `FAIL`.
 
 > Конкретные адреса/хосты/ключи инфраструктуры в репозитории не публикуются.
