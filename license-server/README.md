@@ -96,6 +96,36 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 мигрируют в hash при первом открытии БД. Поле `device_limit` реально задаёт
 число разных активных машин на код; значение по умолчанию остаётся `1`.
 
+## Operations CLI
+
+Healthcheck проверяет production-safe logging config, загрузку ключей,
+RSA self-check, актуальность схемы, write-lock БД и SQLite `quick_check`.
+Команда не создаёт БД молча: если путь ошибочный, проверка падает.
+
+```bash
+python -m ztool_license_server.cli --db /var/lib/ztool-license-server/licenses.db \
+  healthcheck \
+  --private-key-file /etc/ztool-license-server/private_key.txt \
+  --public-key-file /etc/ztool-license-server/public_key.txt
+```
+
+Backup делается через SQLite backup API, а не raw copy hot DB:
+
+```bash
+python -m ztool_license_server.cli --db /var/lib/ztool-license-server/licenses.db \
+  backup --out /var/backups/ztool-license-server/licenses-YYYYMMDD.db
+python -m ztool_license_server.cli verify-backup \
+  /var/backups/ztool-license-server/licenses-YYYYMMDD.db
+```
+
+Примеры production deployment лежат в `deploy/`:
+
+- `deploy/systemd/` — unit, env example и runbook.
+- `deploy/docker/` — Dockerfile/compose для staging или изоляции.
+- `deploy/backup/` — backup script и restore drill.
+- `deploy/monitoring/` — log/audit-derived metrics и alerts.
+- `deploy/firewall/` — UFW/fail2ban notes для TCP 58000.
+
 ## Stateful activation and transfer
 
 Онлайн-регистрация теперь связана серверным pending-state:
