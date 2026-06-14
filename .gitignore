@@ -34,3 +34,27 @@ tools/chm-i18n/_chm_build/
 *.log
 *.tmp
 *.bak
+
+# --- local env / secrets ---
+.env
+.env.*
+!.env.example
+*.local
+license-server/keys/private_key.txt
+license-server/keys/keypair_info.json
+license-server/keys/*.pem
+license-server/keys/*.key
+
+# --- local license/runtime state ---
+license-server/*.db
+license-server/*.sqlite
+license-server/*.sqlite3
+license-server/data/
+license-server/backups/
+
+# --- large local diagnostics ---
+*.dmp
+*.dump
+*.wer
+crash-dumps/
+manual-artifacts/

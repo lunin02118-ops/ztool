@@ -71,3 +71,13 @@ python -m ztool_license_server
 
 Все документы на русском. Полный список с описанием и статусом актуальности —
 в [`docs/INDEX.md`](docs/INDEX.md).
+
+## Production hardening
+
+Текущий `main` считается рабочей baseline-версией, а подготовка к production
+ведётся отдельными фазовыми ветками `hardening/XX-*`. Стартовая дорожная карта:
+[`docs/production/PRODUCTION_HARDENING_PLAN_RU.md`](docs/production/PRODUCTION_HARDENING_PLAN_RU.md).
+
+Перед мержем hardening PR обязательны audit gates из
+[`docs/production/AUDIT_GATES_RU.md`](docs/production/AUDIT_GATES_RU.md) и
+implementation report в `docs/audit/`.
