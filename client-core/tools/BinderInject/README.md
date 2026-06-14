@@ -105,14 +105,27 @@ rebuild.
   `List<string>` round-trips; disallowed `System.Data.DataTable` and
   `System.Collections.Hashtable` payloads are **rejected** with
   `SerializationException` (never materialized). **PASS**
+- Behavioural probe against the **patched exe itself** — `ZTool.SafeListBinder`
+  is loaded out of `ZTool_binderfix.exe`, instantiated, and its
+  `BindToType`→`IsAllowed` path exercised: allowed round-trip passes, gadget
+  payload rejected. This is the exact path that previously threw
+  `0x80131044`. **PASS**
+- No `ZBinderDonor` assembly reference / string remains in the patched exe. **PASS**
 - End-to-end round-trip through the patched `code.DeserializeBinary` /
   `code.DeserializeObject` for Font, Color and DataTable. **PASS** (no regression)
 
 Artifact: `client-core/dist/ZTool_binderfix.exe`
-SHA256 `4d8aa7ea82755d89df978bde29f8176143d0e9ff817f35789433e435a848cf56`
+SHA256 `0bf4cb0b4174d1ccdfef17373de7ea4965fc0a2e42f27393e0b2571d9955864b`
 (base `ZTool.exe` = `d41639a3…2a4833`).
 
+> The transplant must remap a binder's intra-type method calls (e.g.
+> `SafeListBinder.BindToType` → `IsAllowed`) and self type-references onto the
+> **injected** TypeDef. An earlier build left those pointing at the donor, so
+> paste threw `Could not load file or assembly 'ZBinderDonor' … 0x80131044`.
+> `CopyType` now clones method stubs first, then bodies with a `MethodDef` map.
+>
 > Earlier artifacts superseded by the hash above:
 > `d5cac49d…5614db` (no `PreserveAll`, crashed BOM parts-summary export with
-> `0xc0000409`) and `7488a71f…b82e7f3` (VTBinder only, before the clipboard
-> allow-list binder was added).
+> `0xc0000409`), `7488a71f…b82e7f3` (VTBinder only), and
+> `4d8aa7ea…a848cf56` (clipboard binder, but its `IsAllowed` call still bound to
+> the donor assembly → paste failed with `0x80131044`).

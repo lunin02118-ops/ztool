@@ -128,6 +128,19 @@ internal static class Program
         // token/heap offset and only append the new VTBinder rows. maxStack is left
         // to be recomputed (the two edited methods need it); PreserveAll does not
         // touch maxStack.
+        // Defensive: the transplanted binder bodies must not leave any reference to
+        // the donor assembly. If one slipped through, the patched exe would try to
+        // load ZBinderDonor at runtime (FileNotFound / 0x80131044).
+        for (int i = target.GetAssemblyRefs().Count() - 1; i >= 0; i--)
+        {
+            var ar = target.GetAssemblyRefs().ElementAt(i);
+            if (ar.Name == "ZBinderDonor")
+            {
+                Console.Error.WriteLine($"! leftover donor AssemblyRef '{ar.Name}' after transplant; aborting");
+                return 1;
+            }
+        }
+
         var writerOpts = new dnlib.DotNet.Writer.ModuleWriterOptions(target);
         writerOpts.MetadataOptions.Flags |= dnlib.DotNet.Writer.MetadataFlags.PreserveAll;
         target.Write(outPath, writerOpts);
@@ -196,15 +209,19 @@ internal static class Program
     }
 
     // Recreate a (simple, non-generic) TypeDef from the donor inside the target and
-    // return the injected instance .ctor. Method bodies are cloned via CopyBody;
-    // all operands resolve to framework refs imported into the target.
+    // return the injected instance .ctor. Method bodies are cloned via CopyBody.
+    // Framework operands are imported into the target; references to the donor type
+    // itself or its sibling methods are remapped onto the injected TypeDef so the
+    // patched exe never depends on the donor assembly (ZBinderDonor).
     private static MethodDef CopyType(TypeDef src, ModuleDef target, Importer importer)
     {
         var baseType = importer.Import(src.BaseType);
         var nt = new TypeDefUser(src.Namespace, src.Name, baseType) { Attributes = src.Attributes };
         target.Types.Add(nt);
 
-        MethodDef ctor = null;
+        // Pass 1: create every method (signatures only) so intra-type calls can be
+        // remapped before any body is cloned.
+        var methodMap = new Dictionary<MethodDef, MethodDef>();
         foreach (var sm in src.Methods)
         {
             var ret = importer.Import(sm.MethodSig.RetType);
@@ -215,14 +232,22 @@ internal static class Program
             var nm = new MethodDefUser(sm.Name, sig, sm.ImplAttributes, sm.Attributes);
             nm.Parameters.UpdateParameterTypes();
             nt.Methods.Add(nm);
-            CopyBody(sm, nm, importer);
-            if (sm.Name == ".ctor") ctor = nm;
+            methodMap[sm] = nm;
+        }
+
+        // Pass 2: clone bodies, remapping self-references onto the injected type.
+        MethodDef ctor = null;
+        foreach (var sm in src.Methods)
+        {
+            CopyBody(sm, methodMap[sm], importer, src, nt, methodMap);
+            if (sm.Name == ".ctor") ctor = methodMap[sm];
         }
         if (ctor == null) throw new Exception($"donor type {src.FullName} has no .ctor");
         return ctor;
     }
 
-    private static void CopyBody(MethodDef src, MethodDef dst, Importer importer)
+    private static void CopyBody(MethodDef src, MethodDef dst, Importer importer,
+        TypeDef srcType, TypeDef newType, Dictionary<MethodDef, MethodDef> methodMap)
     {
         var sb = src.Body;
         var nb = new CilBody { InitLocals = sb.InitLocals, MaxStack = sb.MaxStack };
@@ -255,9 +280,18 @@ internal static class Program
                 case Instruction[] ts: ni.Operand = ts.Select(x => map[x]).ToArray(); break;
                 case Local lv: ni.Operand = localMap[lv]; break;
                 case Parameter p: ni.Operand = dstParams[p.Index]; break;
-                case IMethod im: ni.Operand = importer.Import(im); break;
+                case IMethod im:
+                    // A call to a sibling method of the donor type must point at the
+                    // injected method, not at the donor assembly.
+                    if (im is MethodDef mdsrc && methodMap.TryGetValue(mdsrc, out var mapped))
+                        ni.Operand = mapped;
+                    else
+                        ni.Operand = importer.Import(im);
+                    break;
                 case IField f: ni.Operand = importer.Import(f); break;
-                case ITypeDefOrRef ty: ni.Operand = importer.Import(ty); break;
+                case ITypeDefOrRef ty:
+                    ni.Operand = ReferenceEquals(ty, srcType) ? (ITypeDefOrRef)newType : importer.Import(ty);
+                    break;
                 case TypeSig tsig: ni.Operand = importer.Import(tsig); break;
                 default: ni.Operand = o; break; // string / numeric literals
             }
