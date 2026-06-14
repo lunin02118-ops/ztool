@@ -1449,3 +1449,139 @@ SHA256: 97BFCCF04BB5F9F15A27A334EA3BDDAC730344A552976AE405F4042580A8067A
 рукопожатие с add-in работает (`29 поз.`), первые 3 BOM-режима экспортируются
 валидно, но полный прогон 8 режимов заблокирован падением `ZTool.exe` в
 `ucrtbase.dll` на BOM-export (`0xc0000409`).
+
+## Retest: commit 67d6292, binderfix PreserveAll
+
+Проверен исправленный `ZTool_binderfix.exe`, собранный через
+`MetadataFlags.PreserveAll`.
+
+```text
+repo commit: 67d6292
+runtime EXE: D:\ztool-pr8-test\ZTool.exe
+source EXE: client-core\dist\ZTool_binderfix.exe
+SHA256: 7488A71F5C9353D44946816DF5BD7DD8D94D414C09D552536B9AC5921B82E7F3
+
+runtime DLL: D:\ztool-pr8-test\ZTool.dll
+SHA256: D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9
+```
+
+Проверка инъекции:
+
+```text
+BinderInject verify: PASS
+ZTool.VTBinder present
+ZTool.code::DeserializeBinary binder-wire sites=1
+ZTool.code::DeserializeObject binder-wire sites=1
+```
+
+Метод запуска: SolidWorks запущен через
+`explorer.exe "C:\Users\Public\Desktop\SOLIDWORKS 2025.lnk"`, после полной
+инициализации открыта сборка
+`D:\ztool-pr8-test\TestModel\0614-A00.SLDASM`, ZTool запущен только кнопкой
+`Управление файлами` на ленте SolidWorks. Прямой запуск `ZTool.exe` не
+использовался.
+
+Подключение к SW:
+
+```text
+Get-Process ZTool:
+Path: D:\ztool-pr8-test\ZTool.exe
+SHA256: 7488A71F5C9353D44946816DF5BD7DD8D94D414C09D552536B9AC5921B82E7F3
+
+Подключить SW:
+Подключение завершено, затрачено 0,3 сек, всего 29 поз.
+```
+
+Pre-flight:
+
+```text
+RESULT: PASS - settings/template are consistent for export.
+Presets: 8
+FilterRulesList: 5
+Service columns:
+  Col_Number anchor OK
+  Col_Quantity anchor OK
+  Col_Path anchor OK
+  Col_Preview anchor OK
+```
+
+BOM export:
+
+```text
+export folder:
+D:\ztool-pr8-test\bom-exports\full-test-67d6292-binderfix-preserveall-swlaunch
+```
+
+Результат полного прогона:
+
+| # | Режим | Файл | Строк | № п/п | Кол-во | Путь | Эскизы | Итог |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |
+| 1 | Экспорт сводной спецификации | `01_summary_0614-A00-binderfix-preserveall.xlsx` | 29 | 29/29 | 29/29 | 29/29 | - | PASS |
+| 2 | Экспорт иерархической спецификации | `02_hierarchy_0614-A00-binderfix-preserveall.xlsx` | 32 | 32/32 | 32/32 | 32/32 | - | PASS |
+| 3 | Экспорт спецификации верхнего уровня | `03_top_level_0614-A00-binderfix-preserveall.xlsx` | 6 | 6/6 | 6/6 | 6/6 | - | PASS |
+| 4 | Экспорт сводной спецификации деталей | `04_parts_only_0614-A00-binderfix-preserveall.xlsx` | 25 | 25/25 | 25/25 | 25/25 | - | PASS |
+| 5 | Экспорт сводной спецификации (с эскизами) | `05_summary_images_0614-A00-binderfix-preserveall.xlsx` | 29 | 29/29 | 29/29 | 29/29 | есть | PASS |
+| 6 | Экспорт иерархической спецификации (с эскизами) | `06_hierarchy_images_0614-A00-binderfix-preserveall.xlsx` | 32 | 32/32 | 32/32 | 32/32 | есть | PASS |
+| 7 | Обрабатываемые детали | `07_processed_filter_0614-A00-binderfix-preserveall.xlsx` | 15 | 15/15 | 15/15 | 15/15 | - | PASS |
+| 8 | Покупные изделия | `08_purchased_filter_0614-A00-binderfix-preserveall.xlsx` | 9 | 9/9 | 9/9 | 9/9 | - | PASS |
+
+Валидатор:
+
+```text
+Найдено файлов: 8
+Ожидаемо: 8 (по одному на режим)
+
+[PASS] 01_summary_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+
+[PASS] 02_hierarchy_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+
+[PASS] 03_top_level_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 6
+  № п/п: 6/6 | Кол-во: 6/6 | Путь: 6/6
+
+[PASS] 04_parts_only_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 25
+  № п/п: 25/25 | Кол-во: 25/25 | Путь: 25/25
+
+[PASS] 05_summary_images_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 29
+  № п/п: 29/29 | Кол-во: 29/29 | Путь: 29/29
+  Эскизы: ЕСТЬ
+
+[PASS] 06_hierarchy_images_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 32
+  № п/п: 32/32 | Кол-во: 32/32 | Путь: 32/32
+  Эскизы: ЕСТЬ
+
+[PASS] 07_processed_filter_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 15
+  № п/п: 15/15 | Кол-во: 15/15 | Путь: 15/15
+
+[PASS] 08_purchased_filter_0614-A00-binderfix-preserveall.xlsx
+  Строк данных: 9
+  № п/п: 9/9 | Кол-во: 9/9 | Путь: 9/9
+
+ПРОВЕРКА СОГЛАСОВАННОСТИ РЕЖИМОВ:
+  - Режим 7 (Обрабатываемые детали): 15 из 29 строк - фильтр применён.
+  - Режим 8 (Покупные изделия): 9 из 29 строк - фильтр применён.
+
+ИТОГ: PASS - все файлы содержат данные в служебных колонках
+```
+
+Проверка crash-регрессии:
+
+```text
+Mode 4: PASS, файл создан, ZTool.exe остался жив.
+ZTool process after export: Responding=True
+Application Error/.NET Runtime/WER по ZTool за время прогона: нет
+Новых WER dump-файлов: нет
+Старый dump ZTool.exe.19004.dmp относится к падению 350c8c5.
+```
+
+Итог `67d6292`: **PASS**. Падение `0xc0000409` на режиме 4 не
+воспроизводится. Полный BOM-прогон 8/8 прошёл при корректном запуске ZTool из
+ленты SolidWorks.

@@ -157,5 +157,16 @@ TCP-сервер переведён на единую БД с админкой: 
   `D:\ztool-pr8-test\manual-artifacts\dumps\ZTool.exe.19004.dmp`,
   SHA256 `97BFCCF04BB5F9F15A27A334EA3BDDAC730344A552976AE405F4042580A8067A`.
   Итог `350c8c5`: `FAIL`, нужен фикс crash перед продолжением 8/8.
+- Ретест `67d6292` / `ZTool_binderfix.exe` с `MetadataFlags.PreserveAll`
+  (`7488A71F...B82E7F3`) выполнен тем же корректным способом: SolidWorks
+  через Explorer/ShellExecute, сборка `0614-A00.SLDASM`, ZTool запущен кнопкой
+  `Управление файлами` из ленты SolidWorks. `Подключить SW` дал `29 поз.`,
+  pre-flight `PASS`. Полный экспорт 8 режимов в
+  `D:\ztool-pr8-test\bom-exports\full-test-67d6292-binderfix-preserveall-swlaunch`
+  прошёл: валидатор `PASS, 8/8`; строки по режимам 29/32/6/25/29/32/15/9,
+  `№ п/п`/`Кол-во`/`Путь` заполнены полностью, эскизы есть в режимах 5-6,
+  фильтры 7-8 применились. Ключевая регрессия закрыта: режим 4 больше не
+  роняет `ZTool.exe`, новых `Application Error/.NET Runtime/WER` и новых dump
+  по ZTool за время прогона нет. Итог `67d6292`: `PASS`.
 
 > Конкретные адреса/хосты/ключи инфраструктуры в репозитории не публикуются.
