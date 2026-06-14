@@ -16,7 +16,7 @@ we own; the exe stays byte-identical everywhere else.
 |------|------|------|
 | `src/SR.cs`                     | `ZTool.SR`                     | hardware fingerprint (`GetMNum`, disk/board/UUID), registry read/write, `IsReg1`/`IsReg2` license-blob validation |
 | `src/SecurityCenter.cs`         | `ZTool.SecurityCenter`         | AES/DES helpers used by the blob format |
-| `src/TCPClient.cs`              | `ZTool.TCPClient`              | server connection (`185.112.102.122:58000`), request/response handling, result-code dispatch |
+| `src/TCPClient.cs`              | `ZTool.TCPClient`              | server connection (`<LICENSE_SERVER_IP>:58000`), request/response handling, result-code dispatch |
 | `src/GetRegistrycreatedtime.cs` | `ZTool.GetRegistrycreatedtime` | reads the registry-key creation time used as the `GD51` key seed |
 
 Everything these classes reference but that we do **not** edit (`code`, `RSAHelper`, `CConfigMng`,
@@ -169,7 +169,7 @@ backing fields (`_SWver`, …) would duplicate every element.
 
 - **GUI stays in the binary.** Only the four licensing classes are source-editable; forms and
   resources are left untouched in the exe.
-- The exe reports version **1.0** and talks to **185.112.102.122:58000** with our server key
+- The exe reports version **1.0** and talks to **<LICENSE_SERVER_IP>:58000** with our server key
   (these come from the already-rekeyed base `ZTool-base.exe`).
 
 ### Base vs. deliverable (repo layout)

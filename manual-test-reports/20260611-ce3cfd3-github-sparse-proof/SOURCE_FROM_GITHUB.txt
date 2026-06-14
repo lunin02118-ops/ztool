@@ -1,4 +1,0 @@
-repo=https://github.com/lunin02118-ops/ztool.git
-branch=integration/all-prs
-commit=ce3cfd36a9edaf19672d11a4fa345f69734d3e53
-sparse_clone=D:\Development\ztool\github-sparse-ce3cfd3-v2

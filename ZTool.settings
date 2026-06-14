@@ -11,7 +11,6 @@
     <string>Материал</string>
     <string>Тип</string>
     <string>Версия</string>
-    <string>Количество</string>
     <string>Обработка поверхности</string>
     <string>Дата разработки</string>
     <string>Масса</string>
@@ -24,7 +23,6 @@
     <string>Текст</string>
     <string>Текст</string>
     <string>Текст</string>
-    <string>Число</string>
     <string>Текст</string>
     <string>Дата</string>
     <string>Текст</string>
@@ -37,7 +35,7 @@
     <string>18</string>
     <string>90</string>
   </Preview_Hotkey>
-  <bompath />
+  <bompath>D:\ZTool\Шаблоны спецификации</bompath>
   <image_size>
     <Width>64</Width>
     <Height>64</Height>
@@ -59,7 +57,6 @@
   <togetherConfig>false</togetherConfig>
   <GetDataOption>0</GetDataOption>
   <propshow>
-    <string>1</string>
     <string>1</string>
     <string>1</string>
     <string>1</string>
@@ -107,7 +104,7 @@ False</string>
     <string>TextBox1
 </string>
   </savetoswcfg>
-  <bomsubfolder>false</bomsubfolder>
+  <bomsubfolder>true</bomsubfolder>
   <ColIndex />
   <ColWidth />
   <SetDrwCfg />
@@ -122,7 +119,49 @@ False</string>
   <MenuStyle>2</MenuStyle>
   <MenuColor>2</MenuColor>
   <MenuColor2>2</MenuColor2>
-  <FilterRulesList />
+  <FilterRulesList>
+    <CustomRule>
+      <name>Обрабатываемые детали</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Покупные изделия</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|外购;Покупное;Стандартное</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>С обработкой поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Не равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Без обработки поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Недостающие обязательные свойства</name>
+      <type>true</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Равно	|@#$%|</string>
+        <string>$Номер чертежа$	|@#$%|Равно	|@#$%|</string>
+        <string>$Материал$	|@#$%|Равно	|@#$%|</string>
+        <string>$Масса$	|@#$%|Равно	|@#$%|</string>
+        <string>$Имя детали$	|@#$%|Равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+  </FilterRulesList>
   <ReNameFilterRule />
   <ExpandMaterialList>false</ExpandMaterialList>
   <HideSw1>false</HideSw1>
@@ -156,7 +195,7 @@ False</string>
   <bomsettings>
     <bomsetting>
       <name>Экспорт сводной спецификации</name>
-      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -172,7 +211,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт иерархической спецификации</name>
-      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -188,7 +227,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт спецификации верхнего уровня</name>
-      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>2</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -204,7 +243,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт сводной спецификации деталей</name>
-      <bomname>C:\Users\Administrator\wt_client\_runmax\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>3</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -218,6 +257,74 @@ False</string>
       <RulesList />
       <includetop>true</includetop>
     </bomsetting>
+    <bomsetting>
+      <name>Экспорт сводной спецификации (с эскизами)</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>true</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Экспорт иерархической спецификации (с эскизами)</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>1</type>
+      <insertimagebool>true</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>false</ByRuler>
+      <ByFilter>true</ByFilter>
+      <RulesList />
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Обрабатываемые детали</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Обрабатываемые детали</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Покупные изделия</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Покупные изделия</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
   </bomsettings>
   <K3code />
   <macrolist />
@@ -225,7 +332,62 @@ False</string>
   <IsCollpased>false</IsCollpased>
   <Splitwidth>300</Splitwidth>
   <copyswfilecfg />
-  <namemappinglist />
+  <namemappinglist>
+    <columnnamemapping>
+      <name>PropVal_0</name>
+      <name2>PropResolvedVal_0</name2>
+      <text>Разработал</text>
+      <mappingname />
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_1</name>
+      <name2>PropResolvedVal_1</name2>
+      <text>Имя детали</text>
+      <mappingname>零件名称</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_2</name>
+      <name2>PropResolvedVal_2</name2>
+      <text>Номер чертежа</text>
+      <mappingname>图号</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_3</name>
+      <name2>PropResolvedVal_3</name2>
+      <text>Материал</text>
+      <mappingname>材质</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_4</name>
+      <name2>PropResolvedVal_4</name2>
+      <text>Тип</text>
+      <mappingname>类型</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_5</name>
+      <name2>PropResolvedVal_5</name2>
+      <text>Версия</text>
+      <mappingname>版本</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_6</name>
+      <name2>PropResolvedVal_6</name2>
+      <text>Обработка поверхности</text>
+      <mappingname>表面处理</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_7</name>
+      <name2>PropResolvedVal_7</name2>
+      <text>Дата разработки</text>
+      <mappingname />
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>PropVal_8</name>
+      <name2>PropResolvedVal_8</name2>
+      <text>Масса</text>
+      <mappingname>重量</mappingname>
+    </columnnamemapping>
+  </namemappinglist>
   <usenpoi>true</usenpoi>
   <frmsortcfg />
   <fillsettings />

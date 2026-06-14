@@ -4,6 +4,35 @@
 АКТУАЛЬНЫЙ ФАЙЛ (с иконками): ZTool_ru_candidate2.dll
 SHA256: eea7c9ae89edb139ed029f2b4fbb0c1d27459ccb31d1b8d60d0560cf15ba0961
 
+ЗАЩИЩЁННЫЙ ВАРИАНТ (defensive): ZTool_ru_candidate2_pmpguard.dll
+SHA256: 7ca18a535871d8c9f10c6c9bdde8bd931f8be2118b7b6590d12deb8313036fd0
+  Идентичен candidate2, но тело ZTool.PMPHandler.DefWndProc обёрнуто в
+  try/catch(System.Exception) (патчер: client-core/tools/PmpGuardPatch).
+  Цель: init-race на этапе IPC-рукопожатия WM_COPYDATA («Подключить SW»)
+  больше не валит аддин NullReferenceException — ранний/неполный пакет
+  просто игнорируется. Поведение во всём остальном без изменений.
+  ВНИМАНИЕ: preflight-проверка хеша ждёт eea7c9...ba0961 — для этого варианта
+  ожидаемый хеш 7ca18a...036fd0 (это нормально, не ошибка).
+
+ЗАЩИЩЁННЫЙ ВАРИАНТ v2 (defensive, РЕКОМЕНДУЕТСЯ): ZTool_ru_candidate2_pmpguard2.dll
+SHA256: d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9
+  = pmpguard.dll (обёртка DefWndProc) + дополнительный патч модалок NullReference.
+  В методах чтения SW ZTool.PMPHandler.GetDataByBom / GetDataFromSel /
+  GetDataFromVis каждый внутренний catch(Exception) и логирует ошибку через
+  sendmessageC(6, ex.ToString()), и показывал модалку MessageBox.Show(ex.Message).
+  При раннем/повторном «Подключить SW» SolidWorks COM отдаёт null посреди чтения,
+  ловится здесь -> пользователь видел «Ссылка на объект не указывает на экземпляр
+  объекта». Патч вставляет перед каждым MessageBox.Show проверку
+  «if (ex is NullReferenceException) -> пропустить показ» (5 точек: 1+1+3).
+  Итог: транзиентные null по-прежнему уходят в лог (sendmessageC), но модалку
+  больше не показывают; для всех остальных исключений модалка остаётся.
+  Патчер (воспроизводимо): client-core/tools/NullModalGuard
+    NullModalGuard <in.dll> patch  <out.dll>   — применить (5/5)
+    NullModalGuard <out.dll> verify            — проверить (VERIFY: PASS)
+  Применяется поверх pmpguard.dll, поэтому содержит обе защиты.
+  preflight ждёт eea7c9...ba0961 — для этого варианта ожидаемый хеш
+  d053542...92eb9 (это нормально, не ошибка).
+
 Предыдущий (без иконок):      ZTool_ru_candidate1.dll
 SHA256: bc04c6994469ba717ace5ab1ff541a6da1fc96b32d83266e04f9d40d85c31647
 
