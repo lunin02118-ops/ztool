@@ -24,7 +24,8 @@
 param(
     [string]$BaseExe = (Join-Path $PSScriptRoot '..\ZTool-base.exe'),
     [string]$OutExe  = (Join-Path $PSScriptRoot 'out\ZTool.exe'),
-    [switch]$Publicize
+    [switch]$Publicize,
+    [switch]$AllowUnknownInputs
 )
 
 $ErrorActionPreference = 'Stop'
@@ -38,6 +39,114 @@ function Invoke-Checked([string]$What) {
 }
 
 if (-not (Test-Path $BaseExe)) { throw "base exe not found: $BaseExe" }
+
+$repoRoot = Resolve-Path (Join-Path $core '..')
+
+function Get-Sha256([string]$Path) {
+    return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+}
+
+function Get-RelativePathForManifest([string]$Path) {
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $root = $repoRoot.Path.TrimEnd('\') + '\'
+    if ($resolved.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+        return $resolved.Substring($root.Length).Replace('\', '/')
+    }
+    return $resolved
+}
+
+function Assert-BuildInputs {
+    $manifestPath = Join-Path $core 'build-inputs.json'
+    if (-not (Test-Path $manifestPath)) { throw "build input manifest missing: $manifestPath" }
+    $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+    foreach ($entry in $manifest.PSObject.Properties) {
+        $rel = $entry.Name
+        $expected = [string]$entry.Value.sha256
+        $path = Join-Path $repoRoot $rel
+        if (-not (Test-Path $path)) {
+            $msg = "build input missing: $rel"
+            if ($AllowUnknownInputs) { Write-Warning $msg; continue }
+            throw $msg
+        }
+        $actual = Get-Sha256 $path
+        if ($actual -ne $expected.ToLowerInvariant()) {
+            $msg = "build input hash mismatch: $rel expected=$expected actual=$actual"
+            if ($AllowUnknownInputs) { Write-Warning $msg; continue }
+            throw $msg
+        }
+    }
+
+    $defaultBase = (Resolve-Path (Join-Path $repoRoot 'ZTool-base.exe')).Path
+    $actualBase = (Resolve-Path -LiteralPath $BaseExe).Path
+    if (-not $actualBase.Equals($defaultBase, [StringComparison]::OrdinalIgnoreCase) -and -not $AllowUnknownInputs) {
+        throw "custom BaseExe requires -AllowUnknownInputs: $BaseExe"
+    }
+}
+
+function Get-PublicKeyTokenHex([string]$AssemblyPath) {
+    try {
+        $pkt = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path -LiteralPath $AssemblyPath).Path).GetPublicKeyToken()
+        if ($null -eq $pkt -or $pkt.Length -eq 0) { return "" }
+        return -join ($pkt | ForEach-Object { $_.ToString('x2') })
+    } catch {
+        return "<error: $($_.Exception.Message)>"
+    }
+}
+
+function Write-OutputManifest([string]$VerifyOutput, [int]$ReinjectExitCode) {
+    $manifestPath = Join-Path (Split-Path $OutExe) 'ZTool.manifest.json'
+    $dangling = $null
+    if ($VerifyOutput -match 'dangling typerefs = (?<n>\d+)') {
+        $dangling = [int]$Matches['n']
+    }
+    $gitCommit = (& git -C $repoRoot rev-parse HEAD 2>$null)
+    $gitBranch = (& git -C $repoRoot rev-parse --abbrev-ref HEAD 2>$null)
+    $gitDirty = [bool](& git -C $repoRoot status --porcelain 2>$null)
+    $versionInfo = (Get-Item -LiteralPath $OutExe).VersionInfo
+
+    $manifest = [ordered]@{
+        generated_at = (Get-Date).ToUniversalTime().ToString('o')
+        git = [ordered]@{
+            commit = $gitCommit
+            branch = $gitBranch
+            dirty = $gitDirty
+        }
+        inputs = [ordered]@{
+            base_exe = [ordered]@{
+                path = Get-RelativePathForManifest $BaseExe
+                sha256 = Get-Sha256 $BaseExe
+            }
+            public_ref = [ordered]@{
+                path = 'client-core/ref/ZTool.public.dll'
+                sha256 = Get-Sha256 (Join-Path $core 'ref\ZTool.public.dll')
+            }
+            rsa_ref = [ordered]@{
+                path = 'client-core/ref/ZTool_rsa.dll'
+                sha256 = Get-Sha256 (Join-Path $core 'ref\ZTool_rsa.dll')
+            }
+            translations = [ordered]@{
+                path = 'client-core/tools/Localizer/translations.tsv'
+                sha256 = Get-Sha256 (Join-Path $core 'tools\Localizer\translations.tsv')
+            }
+        }
+        output = [ordered]@{
+            path = Get-RelativePathForManifest $OutExe
+            sha256 = Get-Sha256 $OutExe
+            public_key_token = Get-PublicKeyTokenHex $OutExe
+            file_version = $versionInfo.FileVersion
+            product_version = $versionInfo.ProductVersion
+        }
+        verification = [ordered]@{
+            reinjector_exit_code = $ReinjectExitCode
+            dangling_refs = $dangling
+        }
+    }
+
+    $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+    Write-Host "manifest -> $manifestPath" -ForegroundColor Green
+}
+
+Assert-BuildInputs
 
 if ($Publicize) {
     Write-Host '== [1/5] publicize base exe -> ref/ZTool.public.dll ==' -ForegroundColor Cyan
@@ -86,8 +195,11 @@ dotnet run -c Release --project (Join-Path $core 'tools\BinderInject') -- verify
 Invoke-Checked 'binder verify'
 
 Write-Host '== [6/6] verify output exe ==' -ForegroundColor Cyan
-dotnet run -c Release --project (Join-Path $core 'tools\Reinjector') -- --verify $OutExe
+$verifyOutput = dotnet run -c Release --project (Join-Path $core 'tools\Reinjector') -- --verify $OutExe 2>&1
+$verifyExit = $LASTEXITCODE
+$verifyOutput | ForEach-Object { Write-Host $_ }
 Invoke-Checked 'verify (dangling references found)'
+Write-OutputManifest ($verifyOutput -join "`n") $verifyExit
 
 Write-Host ""
 Write-Host "DONE -> $OutExe" -ForegroundColor Green

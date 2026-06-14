@@ -1,0 +1,18 @@
+{
+  "ZTool-base.exe": {
+    "sha256": "c10ce334fdbbbc05b8186a6e657a22c1ed4add8bd638c59d65e5b6798cb4b18d",
+    "description": "Pristine re-keyed build input executable"
+  },
+  "client-core/ref/ZTool.public.dll": {
+    "sha256": "59241547c1596beeaec815b83bc7e53bdd6a7c5b8d220b9633d0cdbda072fa60",
+    "description": "Publicized compile-time reference"
+  },
+  "client-core/ref/ZTool_rsa.dll": {
+    "sha256": "274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90",
+    "description": "RSA helper reference"
+  },
+  "client-core/tools/Localizer/translations.tsv": {
+    "sha256": "02615bc2728d54906d4c51b6d7f71c4ffacd2cba153f480245b0b85792d540a8",
+    "description": "Committed ZH->RU translation table"
+  }
+}

@@ -4,3 +4,4 @@ dumps/full-memory-20260609-081854/*.dmp.part* filter=lfs diff=lfs merge=lfs -tex
 *.py text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+client-core/tools/Localizer/translations.tsv text eol=crlf
