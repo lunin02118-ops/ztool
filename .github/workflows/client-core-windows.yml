@@ -1,0 +1,41 @@
+name: client-core-windows
+
+on:
+  pull_request:
+    paths:
+      - "client-core/**"
+      - "ZTool-base.exe"
+      - "ZTool.exe"
+      - ".github/workflows/client-core-windows.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "client-core/**"
+      - "ZTool-base.exe"
+      - "ZTool.exe"
+      - ".github/workflows/client-core-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build client core and reinject
+        run: |
+          cd client-core
+          ./build.ps1
+
+      - name: Verify reinjected output
+        run: dotnet run -c Release --project client-core/tools/Reinjector -- --verify client-core/out/ZTool.exe
