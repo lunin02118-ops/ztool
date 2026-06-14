@@ -39,6 +39,8 @@
 | [`security/KEY_COMPROMISE_RUNBOOK_RU.md`](security/KEY_COMPROMISE_RUNBOOK_RU.md) | Runbook при компромиссе RSA private key | актуален |
 | [`security/ABUSE_RATE_LIMIT_POLICY_RU.md`](security/ABUSE_RATE_LIMIT_POLICY_RU.md) | Abuse/rate-limit policy и fail2ban пример | актуален |
 | [`security/DATA_RETENTION_PRIVACY_RU.md`](security/DATA_RETENTION_PRIVACY_RU.md) | Data retention, privacy и redaction policy | актуален |
+| [`release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`](release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md) | Финальный план приёмочного тестирования release package | актуален |
+| [`release/PRODUCTION_READINESS_REPORT_RU.md`](release/PRODUCTION_READINESS_REPORT_RU.md) | Шаблон production readiness report | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`../МЕТОДИКА_ПРОВЕРКИ.md`](<../МЕТОДИКА_ПРОВЕРКИ.md>) | Общая методика проверки | актуален |
 | [`../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md`](<../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md>) | Методика теста всего приложения (DLL+EXE+сервер) | актуален |
@@ -52,6 +54,7 @@
 |----------|----------|--------|
 | [`audit/README.md`](audit/README.md) | Правила implementation reports для hardening фаз | актуален |
 | [`audit/phase-00-baseline-implementation-report.md`](audit/phase-00-baseline-implementation-report.md) | Отчёт Phase 00 baseline docs | актуален |
+| [`audit/phase-10-release-packaging-implementation-report.md`](audit/phase-10-release-packaging-implementation-report.md) | Отчёт Phase 10 release packaging | актуален |
 | [`../AUDIT_ru.md`](<../AUDIT_ru.md>) | Аудит дистрибутива и методика русификации | исторический (см. раздел «Актуализация PR #8» в конце) |
 | [`../AUDIT_REPORT_RU.md`](<../AUDIT_REPORT_RU.md>) | Отчёт аудита: русификация + сервер лицензий | исторический (см. раздел «Актуализация PR #8» в конце) |
 

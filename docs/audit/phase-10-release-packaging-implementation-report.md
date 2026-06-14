@@ -1,0 +1,148 @@
+# Phase 10 release packaging implementation report
+
+## Scope
+
+Phase 10 adds a reproducible release packaging entry point for the production
+cut. It does not replace manual SolidWorks acceptance testing; it makes the
+artifact boundary explicit before that testing starts.
+
+## Changed files
+
+- `scripts/build_release_package.ps1`
+- `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`
+- `docs/release/PRODUCTION_READINESS_REPORT_RU.md`
+- `docs/INDEX.md`
+- `docs/production/RISK_REGISTER_RU.md`
+- `docs/audit/phase-10-release-packaging-implementation-report.md`
+
+## Behavior changes
+
+`scripts/build_release_package.ps1` creates a release directory containing:
+
+- `runtime/` with `ZTool.exe`, `ZTool.dll`, settings, help, BOM templates and
+  runtime dependencies;
+- `license-server/` without private keys, databases, local backups or cache
+  folders;
+- `deploy/` with systemd/Docker/backup/monitoring materials;
+- `docs/` with production, security, release and audit documentation;
+- `manifest.json` with source commit, branch, runtime inputs and payload file
+  hashes;
+- `SHA256SUMS.txt` with UTF-8 paths, including Cyrillic template paths.
+
+The script fails closed when required runtime files are missing. For production
+it requires `SolidWorksTools.dll`; for dry-runs only it accepts
+`-AllowMissingSolidWorksTools`.
+
+## Backward compatibility
+
+No runtime application behavior is changed. This phase only adds packaging and
+release documentation.
+
+## Tests run
+
+Dry-run package command:
+
+```powershell
+./scripts/build_release_package.ps1 `
+  -Version 1.0.0-phase10-test3 `
+  -OutputRoot $env:TEMP\ztool-release-phase10c `
+  -AllowMissingSolidWorksTools
+```
+
+Verification commands:
+
+```powershell
+python tools\secret_scan.py
+git diff --check
+```
+
+Additional manual PowerShell checks verified:
+
+- all paths in `SHA256SUMS.txt` resolve and match actual file hashes;
+- package contains no private keys, DB files, dumps, logs, coverage data or
+  `egg-info` folders;
+- `runtime/ZTool.exe` and `runtime/ZTool.dll` match expected hashes.
+
+## Test results
+
+Output package:
+
+```text
+C:\Temp\ztool-release-phase10c\ZTool-1.0.0-phase10-test3-20260614-161859
+```
+
+Key runtime hashes:
+
+| File | SHA256 |
+| --- | --- |
+| `runtime/ZTool.exe` | `235db669bb8189de1d060135923286550a25623025feb04d50410188f77cd18a` |
+| `runtime/ZTool.dll` | `d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9` |
+
+Results:
+
+- `SHA256SUMS.txt` verified successfully, including Cyrillic paths.
+- Package leak scan PASS.
+- `python tools\secret_scan.py` PASS.
+- `git diff --check` has only Windows CRLF conversion warnings for touched
+  Markdown files.
+
+## Manual checks
+
+Not executed in this phase:
+
+- SolidWorks ribbon/load smoke;
+- online activation and transfer from real UI;
+- BOM export 8/8 from the packaged runtime;
+- staging VPS deploy and restore drill.
+
+These are moved to the final checklist in
+`docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`.
+
+## Security notes
+
+- Release package excludes private keys, DB files, backups, logs, dumps and
+  local build/test caches.
+- `SHA256SUMS.txt` is UTF-8 without BOM so Cyrillic paths are preserved and
+  verifiable.
+- `manifest.json` records runtime input paths and package payload hashes.
+
+## Migration notes
+
+For a production package, run from a clean checkout and pass the real
+`SolidWorksTools.dll` path:
+
+```powershell
+./scripts/build_release_package.ps1 `
+  -Version <release-version> `
+  -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll"
+```
+
+The generated package should then be copied to the acceptance machine and
+tested by the final plan.
+
+## Rollback plan
+
+Packaging changes are additive. Rollback is to use the previously accepted
+runtime folder/package and ignore the generated Phase 10 package.
+
+For an installed runtime rollback:
+
+- stop ZTool/SolidWorks;
+- restore the previous runtime folder;
+- re-register the previous `ZTool.dll` via `RegAsm`;
+- restore previous server service/env/DB backup if the server package was also
+  deployed.
+
+## Known limitations
+
+- The dry-run used `-AllowMissingSolidWorksTools`, so it is not production
+  complete.
+- Dry-run manifest has `dirty=true` because it was generated while Phase 10
+  edits were still uncommitted. The final release package must be generated
+  from a clean checkout after the release branch is fixed.
+- Final Go/No-Go still requires the manual checklist in
+  `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`.
+- R-009 remains open until the root repository artifacts or release branch
+  policy stop relying on ambiguous top-level binaries. The Phase 10 package
+  script avoids that ambiguity by using explicit runtime inputs, but the final
+  package must still be accepted from its own manifest.
