@@ -10,7 +10,6 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 
 from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
@@ -18,6 +17,7 @@ from .license_blob import generate_offline_activation
 from .machineid import is_valid_machine_code
 from .db import LicenseDB
 from .config import ServerConfig
+from .key_provider import KeyProvider
 
 
 def cmd_keygen(args):
@@ -26,7 +26,7 @@ def cmd_keygen(args):
     kp = generate_keypair()
     print(f"Public ComponentKey (for client):\n{kp['public_component_key']}\n")
     verify_keypair(kp)
-    save_keypair(kp, args.dir)
+    save_keypair(kp, args.dir, write_debug_info=args.write_debug_key_info)
     print(f"\nDone. Keys saved to: {args.dir}")
     print("IMPORTANT: Keep private_key.txt SECRET. Only distribute public_key.txt.")
 
@@ -110,16 +110,18 @@ def cmd_offline_activate(args):
         sys.exit(1)
     if args.keys_dir:
         config.keys_dir = args.keys_dir
-    pub_path = os.path.join(config.keys_dir, 'public_key.txt')
-    priv_path = os.path.join(config.keys_dir, 'private_key.txt')
-    if not (os.path.exists(pub_path) and os.path.exists(priv_path)):
-        print(f"ERROR: key pair not found in {config.keys_dir}. Run 'keygen' first.",
+    if args.private_key_file:
+        config.private_key_file = args.private_key_file
+    if args.public_key_file:
+        config.public_key_file = args.public_key_file
+    provider = KeyProvider.from_config(config)
+    try:
+        public_key = provider.load_public_key()
+        private_key = provider.load_private_key()
+    except Exception as exc:
+        print(f"ERROR: key pair not available: {exc}. Run 'keygen' first.",
               file=sys.stderr)
         sys.exit(1)
-    with open(pub_path) as f:
-        public_key = f.read().strip()
-    with open(priv_path) as f:
-        private_key = f.read().strip()
 
     payload = generate_offline_activation(
         machine_code=args.machine_code,
@@ -144,6 +146,11 @@ def main():
     # keygen
     p_keygen = sub.add_parser('keygen', help='Generate RSA key pair')
     p_keygen.add_argument('--dir', default='keys', help='Output directory')
+    p_keygen.add_argument(
+        '--write-debug-key-info',
+        action='store_true',
+        help='Also write keypair_info.json with private exponent metadata (not for production)',
+    )
 
     # add-code
     p_add = sub.add_parser('add-code', help='Add a license code')
@@ -168,6 +175,8 @@ def main():
                            help='Generate an offline activation file for a machine code')
     p_off.add_argument('machine_code', help='Machine code reported by the client')
     p_off.add_argument('--keys-dir', default=None, help='Directory with public/private keys')
+    p_off.add_argument('--private-key-file', default=None, help='Explicit private key file')
+    p_off.add_argument('--public-key-file', default=None, help='Explicit public key file')
     p_off.add_argument('--client-version', default=ServerConfig.client_version,
                        help='Client product version (default: %(default)s)')
     p_off.add_argument('--x86', action='store_true', help='Target 32-bit client (default: x64)')

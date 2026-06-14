@@ -31,6 +31,36 @@
 python -m ztool_license_server.server --port 58000
 ```
 
+Production-safe запуск:
+
+```bash
+export ZTOOL_RUNTIME_ENV=production
+export ZTOOL_LOG_LEVEL=INFO
+export ZTOOL_PRIVATE_KEY_FILE=/etc/ztool-license/private_key.txt
+export ZTOOL_PUBLIC_KEY_FILE=/etc/ztool-license/public_key.txt
+export ZTOOL_DB_PATH=/var/lib/ztool-license-server/licenses.db
+python -m ztool_license_server.server
+```
+
+В production `DEBUG` запрещён по умолчанию: сервер завершит старт, если
+`ZTOOL_RUNTIME_ENV=production` и `ZTOOL_LOG_LEVEL=DEBUG`. Временный аварийный
+режим включается только явно через `ZTOOL_ALLOW_DEBUG_LOGGING=1`; даже в этом
+режиме расшифрованные protocol payload в application log не пишутся.
+
+Ключи можно хранить как раньше в `ZTOOL_KEYS_DIR`, но для production
+предпочтительны явные пути `ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`.
+На Unix private key в production должен иметь права `0600` или строже.
+
+Генерация ключей:
+
+```bash
+python -m ztool_license_server.cli keygen --dir /etc/ztool-license
+```
+
+По умолчанию создаются только `public_key.txt` и `private_key.txt`.
+Диагностический `keypair_info.json` с приватными компонентами пишется только
+по явному флагу `--write-debug-key-info` и не предназначен для production.
+
 ## Привязка к оборудованию (валидация машинного кода)
 
 Активация **жёстко привязывается к железу**. Сервер принимает заявку только если

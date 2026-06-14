@@ -6,8 +6,8 @@ Generates a new key pair where:
 - Private key: stored on the server for signing licenses (ComponentKey format with d instead of e)
 """
 
-import os
 import json
+import os
 from Crypto.PublicKey import RSA
 
 from .rsa_ztool import make_component_key, resolve_key
@@ -44,35 +44,57 @@ def generate_keypair(bits: int = 1024, e: int = 65537) -> dict:
     }
 
 
-def save_keypair(keypair: dict, directory: str) -> None:
+def _chmod_private_key(path: str) -> None:
+    """Restrict private key file permissions where chmod semantics are useful."""
+    if os.name != "nt":
+        os.chmod(path, 0o600)
+
+
+def save_keypair(keypair: dict, directory: str, write_debug_info: bool = False) -> None:
     """Save key pair to files in specified directory."""
     os.makedirs(directory, exist_ok=True)
 
     # Public key (safe to distribute / embed in client)
     pub_path = os.path.join(directory, "public_key.txt")
-    with open(pub_path, 'w') as f:
+    with open(pub_path, 'w', encoding='utf-8') as f:
         f.write(keypair["public_component_key"])
 
     # Private key (KEEP SECRET - server only)
     priv_path = os.path.join(directory, "private_key.txt")
-    with open(priv_path, 'w') as f:
+    with open(priv_path, 'w', encoding='utf-8') as f:
         f.write(keypair["private_component_key"])
+    _chmod_private_key(priv_path)
 
-    # Full key info (for backup)
-    info_path = os.path.join(directory, "keypair_info.json")
-    with open(info_path, 'w') as f:
-        json.dump(keypair, f, indent=2)
+    if write_debug_info:
+        # Full key info includes d_hex and is intentionally opt-in only.
+        info_path = os.path.join(directory, "keypair_info.json")
+        with open(info_path, 'w', encoding='utf-8') as f:
+            json.dump(keypair, f, indent=2)
 
     print(f"Keys saved to: {directory}")
     print(f"  Public key (for client):  {pub_path}")
     print(f"  Private key (for server): {priv_path}")
+    if write_debug_info:
+        print(f"  Debug key info:           {os.path.join(directory, 'keypair_info.json')}")
 
 
 def load_keypair(directory: str) -> dict:
     """Load key pair from directory."""
     info_path = os.path.join(directory, "keypair_info.json")
-    with open(info_path, 'r') as f:
-        return json.load(f)
+    if os.path.exists(info_path):
+        with open(info_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    pub_path = os.path.join(directory, "public_key.txt")
+    priv_path = os.path.join(directory, "private_key.txt")
+    with open(pub_path, 'r', encoding='utf-8') as f:
+        public_key = f.read().strip()
+    with open(priv_path, 'r', encoding='utf-8') as f:
+        private_key = f.read().strip()
+    return {
+        "public_component_key": public_key,
+        "private_component_key": private_key,
+    }
 
 
 def verify_keypair(keypair: dict) -> bool:
@@ -95,7 +117,7 @@ if __name__ == "__main__":
     print("Generating RSA-1024 key pair for ZTool license server...")
     kp = generate_keypair()
     print(f"\nPublic ComponentKey:\n{kp['public_component_key']}\n")
-    print(f"Private ComponentKey:\n{kp['private_component_key'][:60]}...\n")
+    print("Private ComponentKey: written to private_key.txt (not printed)\n")
 
     verify_keypair(kp)
 
