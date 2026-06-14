@@ -25,6 +25,11 @@
 
 | Документ | Описание | Статус |
 |----------|----------|--------|
+| [`production/PRODUCTION_HARDENING_PLAN_RU.md`](production/PRODUCTION_HARDENING_PLAN_RU.md) | Production hardening roadmap по фазам 00–10 | актуален |
+| [`production/RELEASE_BASELINE_RU.md`](production/RELEASE_BASELINE_RU.md) | Baseline текущего `main`: хеши, тесты, ограничения | актуален |
+| [`production/RISK_REGISTER_RU.md`](production/RISK_REGISTER_RU.md) | Production risk register | актуален |
+| [`production/AUDIT_GATES_RU.md`](production/AUDIT_GATES_RU.md) | Audit/merge gates для hardening PR | актуален |
+| [`production/OPERATIONS_TODO_RU.md`](production/OPERATIONS_TODO_RU.md) | Operations backlog для production deployment | актуален |
 | [`PLAN_BOM_MODES_RU.md`](PLAN_BOM_MODES_RU.md) | План по режимам экспорта BOM | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`../МЕТОДИКА_ПРОВЕРКИ.md`](<../МЕТОДИКА_ПРОВЕРКИ.md>) | Общая методика проверки | актуален |
@@ -37,6 +42,8 @@
 
 | Документ | Описание | Статус |
 |----------|----------|--------|
+| [`audit/README.md`](audit/README.md) | Правила implementation reports для hardening фаз | актуален |
+| [`audit/phase-00-baseline-implementation-report.md`](audit/phase-00-baseline-implementation-report.md) | Отчёт Phase 00 baseline docs | актуален |
 | [`../AUDIT_ru.md`](<../AUDIT_ru.md>) | Аудит дистрибутива и методика русификации | исторический (см. раздел «Актуализация PR #8» в конце) |
 | [`../AUDIT_REPORT_RU.md`](<../AUDIT_REPORT_RU.md>) | Отчёт аудита: русификация + сервер лицензий | исторический (см. раздел «Актуализация PR #8» в конце) |
 
