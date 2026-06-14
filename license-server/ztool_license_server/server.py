@@ -198,54 +198,55 @@ class LicenseServer:
         machine_field = parts[2] if len(parts) > 2 else ""
         machine_code = recover_raw_machine(machine_field, self.config.client_version)
 
-        # Validate the registration code
-        is_valid, error = self.db.validate_code(reg_code)
-        if not is_valid:
+        with self.db.transaction():
+            # Validate the registration code
+            is_valid, error = self.db.validate_code(reg_code)
+            if not is_valid:
+                self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                                  result="rejected", details=error)
+                return self._make_result(status_to_result(error, Result.INVALID_CODE))
+
+            # Check password if set. check_password() returns True for codes that
+            # have no password configured, so this also accepts password-less codes
+            # while rejecting an empty/wrong password on a protected code (matching
+            # _handle_apply_remove).
+            if not self.db.check_password(reg_code, password):
+                self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                                  result="wrong_password")
+                return self._make_result(Result.WRONG_PASSWORD)
+
+            # Reject anything that is not a genuine hardware fingerprint. Without
+            # this an empty/garbage machine code would consume a license seat and be
+            # handed a blob the client can never validate (IsReg1 needs a 36-char
+            # GUID UUID), so the seat would be silently lost. This is the
+            # hardware-binding check the activation flow was missing.
+            if not is_valid_machine_code(machine_code):
+                self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                                  result="rejected", details="invalid machine code")
+                return self._make_result(Result.INFO_ERROR)
+
+            # Bind the seat to this machine (idempotent for repeats).
+            success, error = self.db.activate(reg_code, machine_code)
+            if not success:
+                self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
+                                  result="limit_reached", details=error)
+                return self._make_result(status_to_result(error, Result.DEVICE_LIMIT))
+
+            # Generate the license transport payload (the string FrmRg.rg()
+            # consumes: AES_getver( "\t".join(4 registry branch blobs) )). The real
+            # client delivers the blob in THIS (apply_register) response with result
+            # code 13, then saves it (SR.rg), validates IsReg1, and follows up with
+            # a 131 (register confirm) carrying SR.get_rginfo().
+            blob = generate_license_blob(
+                machine_code=machine_code,
+                public_key=self._public_key,
+                private_key=self._private_key,
+                client_version=self.config.client_version,
+            )
+
             self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                              result="rejected", details=error)
-            return self._make_result(status_to_result(error, Result.INVALID_CODE))
-
-        # Check password if set. check_password() returns True for codes that
-        # have no password configured, so this also accepts password-less codes
-        # while rejecting an empty/wrong password on a protected code (matching
-        # _handle_apply_remove).
-        if not self.db.check_password(reg_code, password):
-            self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                              result="wrong_password")
-            return self._make_result(Result.WRONG_PASSWORD)
-
-        # Reject anything that is not a genuine hardware fingerprint. Without
-        # this an empty/garbage machine code would consume a license seat and be
-        # handed a blob the client can never validate (IsReg1 needs a 36-char
-        # GUID UUID), so the seat would be silently lost. This is the
-        # hardware-binding check the activation flow was missing.
-        if not is_valid_machine_code(machine_code):
-            self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                              result="rejected", details="invalid machine code")
-            return self._make_result(Result.INFO_ERROR)
-
-        # Bind the seat to this machine (idempotent for repeats).
-        success, error = self.db.activate(reg_code, machine_code)
-        if not success:
-            self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                              result="limit_reached", details=error)
-            return self._make_result(status_to_result(error, Result.DEVICE_LIMIT))
-
-        # Generate the license transport payload (the string FrmRg.rg()
-        # consumes: AES_getver( "\t".join(4 registry branch blobs) )). The real
-        # client delivers the blob in THIS (apply_register) response with result
-        # code 13, then saves it (SR.rg), validates IsReg1, and follows up with
-        # a 131 (register confirm) carrying SR.get_rginfo().
-        blob = generate_license_blob(
-            machine_code=machine_code,
-            public_key=self._public_key,
-            private_key=self._private_key,
-            client_version=self.config.client_version,
-        )
-
-        self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
-                          result="accepted")
-        return self._make_result(Result.APPLY_OK, blob)
+                              result="accepted")
+            return self._make_result(Result.APPLY_OK, blob)
 
     async def _handle_register_confirm(self, plaintext: str) -> bytes:
         """
@@ -307,29 +308,30 @@ class LicenseServer:
         machine_field = parts[2] if len(parts) > 2 else ""
         machine_code = recover_raw_machine(machine_field, self.config.client_version)
 
-        # A transfer can only target a genuine, previously-bound fingerprint.
-        if not is_valid_machine_code(machine_code):
-            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                              result="rejected", details="invalid machine code")
-            return self._make_result(Result.INFO_ERROR)
+        with self.db.transaction():
+            # A transfer can only target a genuine, previously-bound fingerprint.
+            if not is_valid_machine_code(machine_code):
+                self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                                  result="rejected", details="invalid machine code")
+                return self._make_result(Result.INFO_ERROR)
 
-        # Check password
-        if not self.db.check_password(reg_code, password):
-            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                              result="wrong_password")
-            return self._make_result(Result.WRONG_PASSWORD)
+            # Check password
+            if not self.db.check_password(reg_code, password):
+                self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                                  result="wrong_password")
+                return self._make_result(Result.WRONG_PASSWORD)
 
-        # Deactivate. On success reply 11 -> the client runs SR.outrg() and then
-        # sends a 132 (remove confirm), which we answer with 7 (transfer done).
-        success, error = self.db.deactivate(reg_code, machine_code)
-        if success:
-            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                              result="success")
-            return self._make_result(Result.TRANSFER_OUT_OK)
-        else:
-            self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
-                              result="failed", details=error)
-            return self._make_result(status_to_result(error, Result.REGISTER_FAILED))
+            # Deactivate. On success reply 11 -> the client runs SR.outrg() and then
+            # sends a 132 (remove confirm), which we answer with 7 (transfer done).
+            success, error = self.db.deactivate(reg_code, machine_code)
+            if success:
+                self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                                  result="success")
+                return self._make_result(Result.TRANSFER_OUT_OK)
+            else:
+                self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
+                                  result="failed", details=error)
+                return self._make_result(status_to_result(error, Result.REGISTER_FAILED))
 
     async def _handle_remove_confirm(self, plaintext: str) -> bytes:
         """Handle remove confirm (Sendtype 132): finalise a transfer/removal."""

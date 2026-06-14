@@ -37,7 +37,7 @@ class TestLicenseDB:
         """One code binds to exactly ONE machine; a different machine is
         rejected until the license is transferred off the first."""
         code = "ACTIV-ATION-TESTT-CODEE-12345"
-        db.add_license_code(code)
+        db.add_license_code(code, device_limit=1)
 
         # First machine activates.
         success, error = db.activate(code, "MACHINE_CODE_1")
@@ -114,6 +114,14 @@ class TestLicenseDB:
 
         assert db.check_password(code, "MySecret123")
         assert not db.check_password(code, "WrongPassword")
+        row = db._conn.execute(
+            "SELECT password, password_hash, password_salt, password_algo FROM license_codes WHERE code = ?",
+            (code,),
+        ).fetchone()
+        assert row["password"] == ""
+        assert row["password_hash"]
+        assert row["password_salt"]
+        assert row["password_algo"] == "pbkdf2_sha256"
 
     def test_no_password_always_passes(self, db):
         """Code without password should accept any password check."""
