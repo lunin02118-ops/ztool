@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
 
-LATEST_SCHEMA_VERSION = 5
+LATEST_SCHEMA_VERSION = 6
 PASSWORD_ALGO = "pbkdf2_sha256"
 PASSWORD_ITERATIONS = 200_000
 
@@ -75,6 +75,7 @@ class LicenseDB:
             (3, "pending_activation_transfer", self._migration_003_pending_tables),
             (4, "indexes_constraints", self._migration_004_indexes),
             (5, "pending_state_columns", self._migration_005_pending_state_columns),
+            (6, "pending_transfer_branch_hashes", self._migration_006_pending_transfer_branch_hashes),
         ]
         applied = {
             row["version"]
@@ -199,6 +200,18 @@ class LicenseDB:
         self._conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_pending_transfer_client_status
                 ON pending_transfers(client_ip, status)
+        """)
+
+    def _migration_006_pending_transfer_branch_hashes(self) -> None:
+        self._add_column_if_missing("pending_transfers", "transfer_branches_hash", "TEXT")
+        self._add_column_if_missing("pending_transfers", "transfer_blob_hash", "TEXT")
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_transfer_hash_status
+                ON pending_transfers(transfer_branches_hash, status)
+        """)
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_transfer_ip_hash_status
+                ON pending_transfers(client_ip, transfer_branches_hash, status)
         """)
 
     def _add_column_if_missing(self, table: str, column: str, definition: str) -> None:
@@ -379,6 +392,8 @@ class LicenseDB:
         code: str,
         machine_code: str,
         machine_hash: str,
+        transfer_branches_hash: str,
+        transfer_blob_hash: str,
         ttl_seconds: int,
         client_ip: str = "",
     ) -> Tuple[bool, str]:
@@ -393,13 +408,16 @@ class LicenseDB:
         """, (code, machine_code))
         self._conn.execute("""
             INSERT INTO pending_transfers (
-                code, machine_code, machine_hash, client_ip, nonce, expires_at, status
+                code, machine_code, machine_hash, transfer_branches_hash,
+                transfer_blob_hash, client_ip, nonce, expires_at, status
             )
-            VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
         """, (
             code,
             machine_code,
             machine_hash,
+            transfer_branches_hash,
+            transfer_blob_hash,
             client_ip,
             secrets.token_hex(16),
             self._expires_after(ttl_seconds),
@@ -407,27 +425,29 @@ class LicenseDB:
         self._commit_if_needed()
         return True, ""
 
-    def find_pending_transfer(self, client_ip: str = ""):
+    def find_pending_transfer(self, transfer_branches_hash: str, client_ip: str = ""):
         self.cleanup_expired_pending()
+        if not transfer_branches_hash:
+            return None
         now = self._now()
         if client_ip:
-            row = self._conn.execute("""
+            return self._conn.execute("""
                 SELECT * FROM pending_transfers
                 WHERE client_ip = ?
+                  AND transfer_branches_hash = ?
                   AND status = 'pending'
                   AND (expires_at IS NULL OR expires_at >= ?)
                 ORDER BY id DESC
                 LIMIT 1
-            """, (client_ip, now)).fetchone()
-            if row is not None:
-                return row
+            """, (client_ip, transfer_branches_hash, now)).fetchone()
         return self._conn.execute("""
             SELECT * FROM pending_transfers
-            WHERE status = 'pending'
+            WHERE transfer_branches_hash = ?
+              AND status = 'pending'
               AND (expires_at IS NULL OR expires_at >= ?)
             ORDER BY id DESC
             LIMIT 1
-        """, (now,)).fetchone()
+        """, (transfer_branches_hash, now)).fetchone()
 
     def confirm_pending_transfer(self, pending_id: int) -> None:
         self._conn.execute("""

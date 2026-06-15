@@ -61,6 +61,8 @@ class ZToolClientEmulator:
         self.host = host
         self.port = port
         self.public_key = public_key
+        self.last_transfer_blob = ""
+        self.last_transfer_branches = None
 
     def _rsa(self, value: str) -> str:
         if not value:
@@ -112,19 +114,49 @@ class ZToolClientEmulator:
     async def register_confirm(self, blob, client_version=ServerConfig.client_version):
         """Sendtype 131. SR.get_rginfo(): the four registry branch ciphertexts
         (un-hexed) plus three RSA-encrypted timestamps."""
-        gv = getver_today(client_version, is_64bit=True)
-        branches = aes.decrypt(blob, gv).split("\t")
-        ts = self._rsa("1.0")
-        lines = list(branches) + [ts, ts, ts]
+        lines = self.rginfo_lines(blob=blob, client_version=client_version)
         return await self._send(Sendtype.REGISTER_CONFIRM, lines)
 
     async def apply_remove(self, code, machine, password=DUMMY_PW):
         lines = [self._rsa(code), self._machine_field(machine), self._rsa(password),
                  self._rsa("HOST\\user")]
-        return await self._send(Sendtype.APPLY_REMOVE, lines)
+        result, body = await self._send(Sendtype.APPLY_REMOVE, lines)
+        if result == Result.TRANSFER_OUT_OK and body:
+            self.last_transfer_blob = body
+            self.last_transfer_branches = self.transport_branches(body)
+        return result, body
 
-    async def remove_confirm(self):
-        return await self._send(Sendtype.REMOVE_CONFIRM, [self._rsa("x")])
+    def transport_branches(self, blob: str, client_version=ServerConfig.client_version) -> list:
+        gv = getver_today(client_version, is_64bit=True)
+        return aes.decrypt(blob, gv).split("\t")
+
+    def rginfo_lines(
+        self,
+        blob: str = "",
+        branches: list | None = None,
+        client_version=ServerConfig.client_version,
+    ) -> list:
+        """Real SR.get_rginfo shape: four branch strings plus three RSA times."""
+        if branches is None:
+            if blob:
+                branches = self.transport_branches(blob, client_version=client_version)
+            else:
+                branches = self.last_transfer_branches
+        if not branches:
+            return []
+        ts = self._rsa("1.0")
+        return list(branches) + [ts, ts, ts]
+
+    def rginfo_payload(
+        self,
+        blob: str = "",
+        branches: list | None = None,
+        client_version=ServerConfig.client_version,
+    ) -> str:
+        return "\n".join(self.rginfo_lines(blob, branches, client_version))
+
+    async def remove_confirm(self, blob: str = "", branches: list | None = None):
+        return await self._send(Sendtype.REMOVE_CONFIRM, self.rginfo_lines(blob, branches))
 
     def unwrap_license_blob(self, blob: str, client_version=ServerConfig.client_version) -> str:
         """Reverse the transport payload the way FrmRg.rg()+IsReg1 do, returning

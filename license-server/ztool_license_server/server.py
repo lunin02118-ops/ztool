@@ -192,6 +192,16 @@ class LicenseServer:
             getver_today(self.config.client_version, is_64bit=True),
         ).split("\t")
 
+    @staticmethod
+    def _parse_rginfo_payload(plaintext: str) -> tuple[list, list]:
+        fields = [
+            ln.strip()
+            for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+        ]
+        while fields and not fields[-1]:
+            fields.pop()
+        return fields, fields[:4]
+
     async def _handle_apply_register(self, plaintext: str, client_ip: str = "") -> bytes:
         """
         Handle Apply_register (128): Registration application.
@@ -299,10 +309,7 @@ class LicenseServer:
         verbatim) — echoing back the apply_register branches makes IsReg2 fail
         and the client shows "Регистрация не удалась".
         """
-        fields = [ln.strip() for ln in plaintext.replace('\r\n', '\n').replace('\r', '\n').split('\n')]
-        while fields and not fields[-1]:
-            fields.pop()
-        branches = fields[:4]
+        fields, branches = self._parse_rginfo_payload(plaintext)
 
         if len(branches) != 4 or any(not branch for branch in branches) or len(fields) < 6:
             self.db.log_action("register", result="error",
@@ -379,21 +386,25 @@ class LicenseServer:
                                   result="wrong_password")
                 return self._make_result(Result.WRONG_PASSWORD)
 
+            transfer_blob = generate_license_blob(
+                machine_code=TRANSFER_OUT_MACHINE_CODE,
+                public_key=self._public_key,
+                private_key=self._private_key,
+                client_version=self.config.client_version,
+            )
+            transfer_branches = self._transport_branches(transfer_blob)
+
             # Reserve transfer. Deactivation happens only after remove_confirm.
             success, error = self.db.create_pending_transfer(
                 code=reg_code,
                 machine_code=machine_code,
                 machine_hash=gd51(machine_code),
+                transfer_branches_hash=self._hash_branches(transfer_branches),
+                transfer_blob_hash=self._hash_text(transfer_blob),
                 ttl_seconds=self.config.pending_transfer_ttl_seconds,
                 client_ip=client_ip,
             )
             if success:
-                transfer_blob = generate_license_blob(
-                    machine_code=TRANSFER_OUT_MACHINE_CODE,
-                    public_key=self._public_key,
-                    private_key=self._private_key,
-                    client_version=self.config.client_version,
-                )
                 self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                                   result="pending")
                 return self._make_result(Result.TRANSFER_OUT_OK, transfer_blob)
@@ -404,11 +415,21 @@ class LicenseServer:
 
     async def _handle_remove_confirm(self, plaintext: str, client_ip: str = "") -> bytes:
         """Handle remove confirm (Sendtype 132): finalise a transfer/removal."""
+        fields, branches = self._parse_rginfo_payload(plaintext)
+        if len(branches) != 4 or any(not branch for branch in branches):
+            self.db.log_action("remove_confirm", result="rejected",
+                               details=f"remove confirm: expected transfer branches, got {len(fields)} fields")
+            return self._make_result(Result.TRANSFER_FAILED)
+        transfer_branches_hash = self._hash_branches(branches)
+
         with self.db.transaction():
-            pending = self.db.find_pending_transfer(client_ip)
+            pending = self.db.find_pending_transfer(
+                transfer_branches_hash=transfer_branches_hash,
+                client_ip=client_ip,
+            )
             if pending is None:
                 self.db.log_action("remove_confirm", result="rejected",
-                                   details="remove confirm: no pending transfer")
+                                   details="remove confirm: no matching pending transfer")
                 return self._make_result(Result.TRANSFER_FAILED)
             success, error = self.db.deactivate(pending["code"], pending["machine_code"])
             if not success:

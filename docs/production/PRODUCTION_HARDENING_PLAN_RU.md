@@ -1036,8 +1036,8 @@ Critical: verify real client semantics. Current client code calls `outrg(receive
 `_handle_remove_confirm` должен:
 
 ```text
-[ ] parse enough info to bind to pending transfer if protocol has payload;
-[ ] if payload has no code/machine, bind by client IP + most recent pending transfer only as last resort;
+[ ] parse real SR.get_rginfo() payload after SR.outrg();
+[ ] bind by transfer branch hash + client IP, not by latest/global pending row;
 [ ] reject if no pending transfer;
 [ ] reject expired pending transfer;
 [ ] finalize deactivation transactionally.

@@ -10,7 +10,7 @@
 | ID | Severity | Риск | Текущий статус | Фаза-владелец |
 |----|----------|------|----------------|---------------|
 | R-001 | P1 | `apply_register` / `register_confirm` недостаточно связаны pending state, TTL и hash/nonce. | Mitigated in Phase 04: pending activation by branch hash + TTL; confirm without matching apply rejected. Real-client smoke still required. | Phase 04 |
-| R-002 | P1 | `apply_remove` / `remove_confirm` требуют stateful transfer model и idempotency policy. | Mitigated in Phase 04: pending transfer + TTL, transfer blob returned for `outrg`, blind confirm rejected. Legacy 132 binding uses client-IP fallback; manual smoke required. | Phase 04 |
+| R-002 | P1 | `apply_remove` / `remove_confirm` требуют stateful transfer model и idempotency policy. | Mitigated in Phase 04: pending transfer + TTL, transfer blob returned for `outrg`, `remove_confirm` bound by transfer branch hash + client IP, blind/cross-IP/replay confirm rejected. Manual smoke required. | Phase 04 |
 | R-003 | P1 | Production logging может раскрывать plaintext/protocol payload при DEBUG. | Mitigated in Phase 01: production DEBUG fail-closed, protocol payload redacted to size/hash. | Phase 01 |
 | R-004 | P1 | RSA private key хранится через простые файлы без production key lifecycle/runbook. | Partially mitigated in Phase 01: explicit key files, no default `keypair_info.json`, Unix 0600 check. Lifecycle/runbook remains Phase 09. | Phase 01, Phase 09 |
 | R-005 | P1 | TCP protocol не имеет полного fail-closed parser/limits/timeout hardening. | Mitigated in Phase 02: server parser limits/timeouts + client `ReadExact`; real-client activation smoke remains required before release. | Phase 02 |

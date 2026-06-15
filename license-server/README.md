@@ -109,7 +109,8 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 
 - `apply_remove` создаёт pending transfer и возвращает `11 + transfer blob`,
   который нужен реальному клиентскому `SR.outrg()`;
-- `remove_confirm` освобождает seat только при наличии pending transfer;
+- `remove_confirm` принимает реальный payload `SR.get_rginfo()`, сверяет hash
+  transfer-веток и IP клиента, затем освобождает только связанный seat;
 - без `apply_remove` ответ `remove_confirm` — `8` (`TRANSFER_FAILED`).
 
 TTL задаётся переменными `ZTOOL_PENDING_ACTIVATION_TTL_SECONDS` и

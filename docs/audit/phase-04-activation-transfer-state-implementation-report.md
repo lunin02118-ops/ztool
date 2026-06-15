@@ -21,8 +21,10 @@ Phase 04 связывает legacy protocol steps через серверное 
 - `license-server/ztool_license_server/cli.py`
 - `license-server/tests/test_integration.py`
 - `license-server/tests/test_activation_state.py`
+- `license-server/tests/test_db_migrations.py`
 - `license-server/tests/test_transfer_state.py`
 - `license-server/README.md`
+- `docs/production/PRODUCTION_HARDENING_PLAN_RU.md`
 - `docs/production/RISK_REGISTER_RU.md`
 
 ## Behavior changes
@@ -42,7 +44,11 @@ Transfer:
 - It creates pending transfer and returns `11 + transfer blob`.
 - The transfer blob is intentionally non-empty because real client calls
   `SR.outrg(receive)` before sending `remove_confirm`.
-- `remove_confirm` deactivates only when a pending transfer exists.
+- The server stores `transfer_branches_hash` and `transfer_blob_hash` for the
+  issued transfer blob.
+- `remove_confirm` parses the real `SR.get_rginfo()` payload, computes the hash
+  of the returned transfer branches and deactivates only the matching pending
+  transfer from the same client IP.
 - `remove_confirm` without pending transfer returns `TRANSFER_FAILED` (`8`).
 
 TTL:
@@ -58,9 +64,9 @@ TTL:
   transfer.
 - `apply_remove` response is more compatible with real client than before:
   it now includes the transfer blob required by `outrg()`.
-- Because legacy `remove_confirm` payload does not carry code/machine, server
-  binds it by client IP + most recent pending transfer as strongest compatible
-  fallback.
+- `remove_confirm` no longer uses the most-recent/global pending fallback. The
+  client already returns enough data through `SR.get_rginfo()` after `outrg()`,
+  so binding is by transfer branch hash + client IP.
 
 ## Commands run
 
@@ -74,14 +80,15 @@ git diff --check
 
 ## Test results
 
-- `python -m pytest -q`: `101 passed, 2 skipped`
+- `python -m pytest -q`: `105 passed, 2 skipped`
 - `git diff --check`: PASS; только Windows warning о будущей замене LF на CRLF.
 
 ## Security notes
 
 - `R-001` mitigated: register confirm requires pending apply branch hash.
-- `R-002` mitigated with legacy-compatible binding. Limitation: remove confirm
-  cannot cryptographically carry code/machine without changing client protocol.
+- `R-002` mitigated with legacy-compatible binding: transfer confirm must echo
+  the issued transfer branches from the same client IP. Blind confirm, cross-IP
+  confirm, modified branches and replay are rejected.
 
 ## Manual checks
 
@@ -99,7 +106,6 @@ rollback production DB нужен backup до выката.
 
 ## Known limitations
 
-- `remove_confirm` binding uses client IP fallback because legacy payload 132
-  does not include code/machine. Это совместимый максимум без изменения клиента.
+- Manual real-client transfer smoke remains required before production rollout.
 - Pending rows are expired lazily and через CLI `cleanup-pending`; отдельный
   фоновой job/runbook остаётся для Phase 05.
