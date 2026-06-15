@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import sys
 
 from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
@@ -80,11 +81,11 @@ def cmd_list_activations(args):
     if not rows:
         print("No activations.")
     else:
-        print(f"{'Code':<30} {'Machine (first 40)':<42} {'Date':<22} {'Active'}")
+        print(f"{'Code':<30} {'Machine SHA256':<16} {'Date':<22} {'Active'}")
         print("-" * 100)
         for row in rows:
-            mc = row['machine_code'][:40] + "..." if len(row['machine_code']) > 40 else row['machine_code']
-            print(f"{row['code']:<30} {mc:<42} {row['activated_at']:<22} "
+            machine_hash = hashlib.sha256(row['machine_code'].encode('utf-8')).hexdigest()[:12]
+            print(f"{row['code']:<30} {machine_hash:<16} {row['activated_at']:<22} "
                   f"{'Yes' if row['is_active'] else 'No'}")
     db.close()
 
