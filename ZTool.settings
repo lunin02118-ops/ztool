@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SWver>0</SWver>
-  <materialpath />
+  <materialpath>D:\ZTool\SW模板\MyMaterials.sldmat</materialpath>
   <rowcolor>66</rowcolor>
   <colorselrow>false</colorselrow>
   <propname>
@@ -403,7 +403,7 @@ False</string>
     <Y>0</Y>
   </mainformLocation>
   <mainformWindowState>0</mainformWindowState>
-  <usematerialcolor>false</usematerialcolor>
+  <usematerialcolor>true</usematerialcolor>
   <markrepeat>-1</markrepeat>
   <fillcolumncfg />
   <columnInfolist />

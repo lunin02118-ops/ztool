@@ -10,6 +10,10 @@
 - `runtime/ZTool.exe` hash matches accepted release hash.
 - `runtime/ZTool.dll` hash matches accepted release hash.
 - `runtime/SolidWorksTools.dll` is present.
+- `runtime/SW模板/MyMaterials.sldmat` is present.
+- `runtime/ZTool.settings` points `materialpath` at packaged
+  `runtime/SW模板/MyMaterials.sldmat`.
+- `runtime/ZTool.settings` has `usematerialcolor=true`.
 - Package contains no private keys, DB files, dumps or local logs.
 
 ## Server
@@ -53,6 +57,8 @@
 - `Управление файлами` starts package `runtime/ZTool.exe`.
 - `Подключить SW` reads expected rows.
 - Read by BOM and read all modes checked.
+- Default material library is available in ZTool settings.
+- Material/color columns are populated as expected after `Подключить SW`.
 - BOM export 8/8 modes PASS.
 - Save/export basic smoke PASS.
 

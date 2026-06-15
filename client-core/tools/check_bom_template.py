@@ -12,6 +12,8 @@ mutually consistent so that a real export inside SolidWorks can succeed:
      left unfilled on export.
   3. Reports the column -> header(propname) -> template-anchor wiring and the
      preset table (name / type / thumbnails / filters) for a human cross-check.
+  4. Checks that the default material library referenced by <materialpath> is
+     available locally and reports whether material colors are enabled.
 
 This does NOT verify data population - that requires SolidWorks + a model whose
 custom-property names match the <text> (propname) values. See the methodology.
@@ -23,6 +25,11 @@ Exit code 0 = all checks passed, 1 = at least one problem found.
 import os
 import re
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 try:
     import openpyxl
@@ -89,7 +96,12 @@ def parse_settings(path):
                                         rl.group(1), re.S)
                 filter_rules[rule_name] = bodies
 
-    return presets, mappings, filter_rules
+    material = {
+        "materialpath": tag(xml, "materialpath") or "",
+        "usematerialcolor": tag(xml, "usematerialcolor") or "",
+    }
+
+    return presets, mappings, filter_rules, material
 
 
 # Field separator ZTool.exe (CustomFilter.FilterByRule) splits rule strings on.
@@ -118,7 +130,7 @@ def template_defined_names(path):
 
 def main():
     settings = sys.argv[1] if len(sys.argv) > 1 else "ZTool.settings"
-    presets, mappings, filter_rules = parse_settings(settings)
+    presets, mappings, filter_rules, material = parse_settings(settings)
 
     problems = 0
     print("=" * 70)
@@ -234,6 +246,40 @@ def main():
     # '#'/'№' ...), so a header like "Подсчитанное количество" can never be
     # bound by ANY template anchor - the column stays empty by construction.
     problems += check_service_columns(names)
+
+    # --- 5. material library / color defaults ---
+    print("\n[5] Material library / material color defaults:")
+    mat_path = material.get("materialpath") or ""
+    use_mat_color = material.get("usematerialcolor") or ""
+    if use_mat_color.lower() == "true":
+        print("    usematerialcolor: true")
+    else:
+        print("    usematerialcolor: %s (material colors disabled)" %
+              (use_mat_color or "<missing>"))
+
+    if mat_path:
+        candidates = [mat_path]
+        if not os.path.isabs(mat_path):
+            candidates.append(os.path.join(os.path.dirname(os.path.abspath(settings)),
+                                           mat_path))
+        for base_dir in [
+            os.path.dirname(os.path.abspath(settings)),
+            os.getcwd(),
+        ]:
+            candidates.append(os.path.join(base_dir, "SW模板",
+                                           os.path.basename(mat_path)))
+        local_mat = next((p for p in candidates if os.path.exists(p)), None)
+        if local_mat:
+            print("    materialpath: %s [OK: %s]" % (mat_path, local_mat))
+        else:
+            print("  ** ERROR: materialpath points to a missing library: %s" %
+                  mat_path)
+            problems += 1
+    elif use_mat_color.lower() == "true":
+        print("  ** ERROR: usematerialcolor=true but materialpath is empty")
+        problems += 1
+    else:
+        print("    materialpath: <empty>")
 
     return finish(problems)
 
