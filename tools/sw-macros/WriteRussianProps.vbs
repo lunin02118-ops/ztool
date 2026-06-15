@@ -32,6 +32,12 @@ Dim P_VERSION   : P_VERSION = "Версия"
 Dim P_SURFACE   : P_SURFACE = "Обработка поверхности"
 Dim P_MASS      : P_MASS    = "Масса"
 
+' --- Дефолтные значения «Тип» (временная заглушка под фильтр-режимы).
+'     Фильтр «Обрабатываемые детали» ловит значение «Мех.обработка».
+'     Подправьте под реальную классификацию (Покупное/Литьё/…) позже.
+Dim T_PART      : T_PART    = "Мех.обработка"   ' для деталей
+Dim T_ASSEMBLY  : T_ASSEMBLY= "Сборка"          ' для сборок
+
 ' --- Константы SolidWorks API ---
 Const swDocPART          = 1
 Const swDocASSEMBLY      = 2
@@ -109,23 +115,25 @@ Function ProcessModel(model)
 
     Dim isPart : isPart = (model.GetType = swDocPART)
 
-    Dim massVal, matVal
+    Dim massVal, matVal, typeVal
     massVal = "SW-Mass@" & fname
     If isPart Then
-        matVal = "SW-Material@" & fname
+        matVal  = "SW-Material@" & fname
+        typeVal = T_PART
     Else
-        matVal = ""                 ' у сборок нет единого материала
+        matVal  = ""                ' у сборок нет единого материала
+        typeVal = T_ASSEMBLY
     End If
 
     ' Пишем на уровне документа ("") ...
-    WriteAll model, "", desig, matVal, massVal
+    WriteAll model, "", desig, matVal, massVal, typeVal
     ' ... и на уровне активной конфигурации (если применимо)
     Dim cfgName
     On Error Resume Next
     cfgName = model.ConfigurationManager.ActiveConfiguration.Name
     On Error GoTo 0
     If cfgName <> "" Then
-        WriteAll model, cfgName, desig, matVal, massVal
+        WriteAll model, cfgName, desig, matVal, massVal, typeVal
     End If
 
     ' Сохраняем документ
@@ -139,13 +147,13 @@ Function ProcessModel(model)
 End Function
 
 ' Записывает весь набор свойств в указанную конфигурацию (cfg="" = документ)
-Sub WriteAll(model, cfg, desig, matVal, massVal)
+Sub WriteAll(model, cfg, desig, matVal, massVal, typeVal)
     Dim cpm
     Set cpm = model.Extension.CustomPropertyManager(cfg)
     SetProp cpm, P_NAME,     ""
     SetProp cpm, P_DESIG,    desig
     SetProp cpm, P_MATERIAL, matVal
-    SetProp cpm, P_TYPE,     ""
+    SetProp cpm, P_TYPE,     typeVal
     SetProp cpm, P_VERSION,  ""
     SetProp cpm, P_SURFACE,  ""
     SetProp cpm, P_MASS,     massVal
