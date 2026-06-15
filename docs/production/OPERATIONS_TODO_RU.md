@@ -45,10 +45,10 @@
 
 ## Release package
 
-- Собирать пакет только из manifest.
-- Включать SHA256SUMS.
-- Не включать private keys, DB, dumps, local logs.
-- Проверять, что root/runtime artifacts совпадают с live-tested hashes.
+- [Phase 10] Собирать пакет через release packager с `manifest.json`.
+- [Phase 10] Включать `SHA256SUMS.txt`.
+- [Phase 10] Не включать private keys, DB, dumps, local logs.
+- [Phase 10] Проверять, что root/runtime artifacts совпадают с live-tested hashes.
 
 ## Manual operations
 

@@ -1,0 +1,80 @@
+# Final acceptance test plan
+
+Тесты выполняются только на release package с точным `manifest.json` и
+`SHA256SUMS.txt`.
+
+## Package pre-flight
+
+- `scripts/verify_release_package.ps1 -PackageRoot <package> -RequireSolidWorksTools` PASS.
+- `manifest.git.dirty=false`.
+- `runtime/ZTool.exe` hash matches accepted release hash.
+- `runtime/ZTool.dll` hash matches accepted release hash.
+- `runtime/SolidWorksTools.dll` is present.
+- Package contains no private keys, DB files, dumps or local logs.
+
+## Server
+
+- Fresh install на staging VPS.
+- Migration from previous DB backup.
+- Key load через `ZTOOL_PRIVATE_KEY_FILE` / `ZTOOL_PUBLIC_KEY_FILE`.
+- `python -m ztool_license_server.cli healthcheck` PASS.
+- `backup` + `verify-backup` PASS.
+- Valid online activation PASS.
+- Invalid code rejected.
+- Wrong password rejected.
+- Expired code rejected.
+- `device_limit` enforced.
+- Transfer-out via real UI PASS.
+- Replay confirm rejected.
+- Malformed frame rejected.
+- Oversized frame rejected.
+
+## Client
+
+- Clean Windows VM / clean test folder.
+- Old registry/license traces cleared.
+- `RegAsm ZTool.dll /codebase` PASS.
+- Trial starts.
+- Activation dialog RU.
+- Online activation succeeds.
+- App restart remains licensed.
+- Transfer via UI succeeds.
+- Reactivation after transfer succeeds.
+- Invalid code message RU.
+- Wrong password message RU.
+- Server unavailable message RU.
+
+## SolidWorks
+
+- SOLIDWORKS 2025 smoke PASS.
+- Optional SOLIDWORKS 2024/2023 smoke.
+- ZTool ribbon visible.
+- Icons visible.
+- `Управление файлами` starts package `runtime/ZTool.exe`.
+- `Подключить SW` reads expected rows.
+- Read by BOM and read all modes checked.
+- BOM export 8/8 modes PASS.
+- Save/export basic smoke PASS.
+
+## Localization
+
+- `localization_scan.py` PASS: `unclassified_han=0`.
+- UI screenshot checklist complete.
+- BOM template RU formatting accepted.
+
+## Ops
+
+- systemd service starts.
+- service restarts on failure.
+- logs redacted.
+- DEBUG disabled in production env.
+- backup exists.
+- restore drill completed.
+
+## Go/No-Go
+
+Go only if:
+
+- all P0/P1 risks are closed or explicitly accepted;
+- release package verifier PASS;
+- rollback package/instructions are ready.
