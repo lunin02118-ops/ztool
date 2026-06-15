@@ -6,8 +6,8 @@
   <colorselrow>false</colorselrow>
   <propname>
     <string>Разработал</string>
-    <string>Имя детали</string>
-    <string>Номер чертежа</string>
+    <string>Наименование</string>
+    <string>Обозначение</string>
     <string>Материал</string>
     <string>Тип</string>
     <string>Версия</string>
@@ -342,38 +342,38 @@ False</string>
     <columnnamemapping>
       <name>PropVal_1</name>
       <name2>PropResolvedVal_1</name2>
-      <text>Имя детали</text>
-      <mappingname>零件名称</mappingname>
+      <text>Наименование</text>
+      <mappingname>Наименование</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_2</name>
       <name2>PropResolvedVal_2</name2>
-      <text>Номер чертежа</text>
-      <mappingname>图号</mappingname>
+      <text>Обозначение</text>
+      <mappingname>Обозначение</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_3</name>
       <name2>PropResolvedVal_3</name2>
       <text>Материал</text>
-      <mappingname>材质</mappingname>
+      <mappingname>Материал</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_4</name>
       <name2>PropResolvedVal_4</name2>
       <text>Тип</text>
-      <mappingname>类型</mappingname>
+      <mappingname>Тип</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_5</name>
       <name2>PropResolvedVal_5</name2>
       <text>Версия</text>
-      <mappingname>版本</mappingname>
+      <mappingname>Версия</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_6</name>
       <name2>PropResolvedVal_6</name2>
       <text>Обработка поверхности</text>
-      <mappingname>表面处理</mappingname>
+      <mappingname>Обработка поверхности</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_7</name>
@@ -385,7 +385,7 @@ False</string>
       <name>PropVal_8</name>
       <name2>PropResolvedVal_8</name2>
       <text>Масса</text>
-      <mappingname>重量</mappingname>
+      <mappingname>Масса</mappingname>
     </columnnamemapping>
   </namemappinglist>
   <usenpoi>true</usenpoi>
