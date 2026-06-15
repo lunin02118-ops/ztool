@@ -31,6 +31,9 @@
 | [`production/AUDIT_GATES_RU.md`](production/AUDIT_GATES_RU.md) | Audit/merge gates для hardening PR | актуален |
 | [`production/OPERATIONS_TODO_RU.md`](production/OPERATIONS_TODO_RU.md) | Operations backlog для production deployment | актуален |
 | [`PLAN_BOM_MODES_RU.md`](PLAN_BOM_MODES_RU.md) | План по режимам экспорта BOM | актуален |
+| [`localization/LOCALIZATION_PROCESS_RU.md`](localization/LOCALIZATION_PROCESS_RU.md) | Проверяемый процесс локализации и JSON scan gate | актуален |
+| [`localization/WHITELIST_POLICY_RU.md`](localization/WHITELIST_POLICY_RU.md) | Правила whitelist для оставшихся Han-строк | актуален |
+| [`localization/UI_SCREENSHOT_CHECKLIST_RU.md`](localization/UI_SCREENSHOT_CHECKLIST_RU.md) | Ручной UI checklist для release candidate | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`../МЕТОДИКА_ПРОВЕРКИ.md`](<../МЕТОДИКА_ПРОВЕРКИ.md>) | Общая методика проверки | актуален |
 | [`../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md`](<../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md>) | Методика теста всего приложения (DLL+EXE+сервер) | актуален |

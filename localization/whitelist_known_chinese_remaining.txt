@@ -1,0 +1,14 @@
+# Known remaining Han strings after the current localized build.
+# Format: one exact source substring per line. Each entry must have a reason in docs.
+二维码
+工具箱.png
+平铺ToolStripMenuItem
+小图标ToolStripMenuItem
+列表ToolStripMenuItem
+列表ToolStripMenuItem1
+在solidworks中打开ToolStripMenuItem
+在文件夹中打开ToolStripMenuItem
+修改ToolStripMenuItem
+/进阶操作/BOM表模板制作和导出.htm
+/进阶操作/缩略图显示及操作.htm
+/基本操作/保存数据到SolidWorks.htm
