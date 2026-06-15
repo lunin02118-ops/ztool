@@ -49,14 +49,22 @@ Const swCustomPropertyDeleteAndAdd = 0  ' Add3: удалить старое и �
 Dim swApp
 On Error Resume Next
 Set swApp = GetObject(, "SldWorks.Application")
+If Err.Number <> 0 Then Err.Clear
 On Error GoTo 0
-If swApp Is Nothing Then
+If Not IsObject(swApp) Then
     WScript.Echo "SolidWorks не запущен. Откройте SW и сборку 0614-A00, затем запустите снова."
     WScript.Quit 1
 End If
 
 Dim swModel
+On Error Resume Next
 Set swModel = swApp.ActiveDoc
+If Err.Number <> 0 Then Err.Clear
+On Error GoTo 0
+If Not IsObject(swModel) Then
+    WScript.Echo "Нет активного документа. Откройте сборку 0614-A00 и сделайте её активной."
+    WScript.Quit 1
+End If
 If swModel Is Nothing Then
     WScript.Echo "Нет активного документа. Откройте сборку 0614-A00 и сделайте её активной."
     WScript.Quit 1
