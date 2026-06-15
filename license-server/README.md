@@ -63,6 +63,9 @@ python -m ztool_license_server.server
 python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 ```
 
+Если заданы `ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`, то `keygen`
+без `--dir` пишет ключи именно в эти файлы. `--dir` остаётся явным override.
+
 По умолчанию создаются только `public_key.txt` и `private_key.txt`.
 Диагностический `keypair_info.json` с приватными компонентами пишется только
 по явному флагу `--write-debug-key-info` и не предназначен для production.
@@ -101,6 +104,10 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 Healthcheck проверяет production-safe logging config, загрузку ключей,
 RSA self-check, актуальность схемы, write-lock БД и SQLite `quick_check`.
 Команда не создаёт БД молча: если путь ошибочный, проверка падает.
+
+Все management-команды читают `ZTOOL_DB_PATH`, `ZTOOL_KEYS_DIR`,
+`ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`; CLI-флаги остаются явными
+override.
 
 ```bash
 python -m ztool_license_server.cli --db /var/lib/ztool-license-server/licenses.db \

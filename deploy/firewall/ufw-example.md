@@ -20,6 +20,8 @@ sudo ufw status verbose
 Минимальный abuse-control до появления встроенного rate limit:
 
 - включить fail2ban по `journalctl -u ztool-license-server` для повторяющихся
-  `wrong_password`, `invalid machine code`, `Protocol error`;
+  `security event ... result=wrong_password`, `security event ...
+  result=invalid_code`, `security event ... result=invalid_machine_code`,
+  `Protocol error`;
 - ограничить доступ на 58000 по IP, если список клиентов известен;
 - алертить резкий рост отказов, см. `deploy/monitoring/alerts.md`.

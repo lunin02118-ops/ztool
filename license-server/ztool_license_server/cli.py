@@ -16,7 +16,12 @@ from pathlib import Path
 import sqlite3
 import sys
 
-from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
+from .crypto.keygen import (
+    generate_keypair,
+    save_keypair,
+    save_keypair_files,
+    verify_keypair,
+)
 from .crypto.rsa_ztool import decrypt_string, encrypt_string
 from .license_blob import generate_offline_activation
 from .machineid import is_valid_machine_code
@@ -28,20 +33,32 @@ from .logging_utils import assert_safe_log_config
 
 def cmd_keygen(args):
     """Generate RSA-1024 key pair."""
+    config = _config_from_args(args)
     print("Generating RSA-1024 key pair...")
     kp = generate_keypair()
     print(f"Public ComponentKey (for client):\n{kp['public_component_key']}\n")
     verify_keypair(kp)
-    save_keypair(kp, args.dir, write_debug_info=args.write_debug_key_info)
-    print(f"\nDone. Keys saved to: {args.dir}")
+    if args.dir:
+        save_keypair(kp, args.dir, write_debug_info=args.write_debug_key_info)
+        location = args.dir
+    elif config.private_key_file and config.public_key_file:
+        save_keypair_files(
+            kp,
+            public_key_file=config.public_key_file,
+            private_key_file=config.private_key_file,
+            write_debug_info=args.write_debug_key_info,
+        )
+        location = f"{config.public_key_file} / {config.private_key_file}"
+    else:
+        save_keypair(kp, config.keys_dir, write_debug_info=args.write_debug_key_info)
+        location = config.keys_dir
+    print(f"\nDone. Keys saved to: {location}")
     print("IMPORTANT: Keep private_key.txt SECRET. Only distribute public_key.txt.")
 
 
 def cmd_add_code(args):
     """Add a license code to the database."""
-    config = ServerConfig()
-    if args.db:
-        config.db_path = args.db
+    config = _config_from_args(args)
     db = LicenseDB(config.db_path)
     db.add_license_code(
         code=args.code,
@@ -56,9 +73,7 @@ def cmd_add_code(args):
 
 def cmd_list_codes(args):
     """List all license codes."""
-    config = ServerConfig()
-    if args.db:
-        config.db_path = args.db
+    config = _config_from_args(args)
     db = LicenseDB(config.db_path)
     rows = db._conn.execute("SELECT * FROM license_codes").fetchall()
     if not rows:
@@ -74,9 +89,7 @@ def cmd_list_codes(args):
 
 def cmd_list_activations(args):
     """List all activations."""
-    config = ServerConfig()
-    if args.db:
-        config.db_path = args.db
+    config = _config_from_args(args)
     db = LicenseDB(config.db_path)
     rows = db._conn.execute(
         "SELECT a.*, l.device_limit FROM activations a "
@@ -97,9 +110,7 @@ def cmd_list_activations(args):
 
 def cmd_purge_invalid(args):
     """Deactivate license seats wrongly bound to empty/non-hardware machine codes."""
-    config = ServerConfig()
-    if args.db:
-        config.db_path = args.db
+    config = _config_from_args(args)
     db = LicenseDB(config.db_path)
     purged = db.purge_invalid_activations()
     print(f"Purged {purged} invalid activation(s).")
@@ -108,9 +119,7 @@ def cmd_purge_invalid(args):
 
 def cmd_cleanup_pending(args):
     """Expire stale pending activation/transfer rows."""
-    config = ServerConfig()
-    if args.db:
-        config.db_path = args.db
+    config = _config_from_args(args)
     db = LicenseDB(config.db_path)
     activations, transfers = db.cleanup_expired_pending()
     print(f"Expired pending activations: {activations}")
@@ -222,18 +231,12 @@ def cmd_verify_backup(args):
 
 def cmd_offline_activate(args):
     """Produce an offline activation file for a given machine code."""
-    config = ServerConfig()
+    config = _config_from_args(args)
     if not is_valid_machine_code(args.machine_code):
         print("ERROR: machine code is not a valid hardware fingerprint "
               "(expected '<36-char GUID>|<disk>|<board>'). Refusing to issue "
               "a license the client cannot validate.", file=sys.stderr)
         sys.exit(1)
-    if args.keys_dir:
-        config.keys_dir = args.keys_dir
-    if args.private_key_file:
-        config.private_key_file = args.private_key_file
-    if args.public_key_file:
-        config.public_key_file = args.public_key_file
     provider = KeyProvider.from_config(config)
     try:
         public_key = provider.load_public_key()
@@ -265,7 +268,14 @@ def main():
 
     # keygen
     p_keygen = sub.add_parser('keygen', help='Generate RSA key pair')
-    p_keygen.add_argument('--dir', default='keys', help='Output directory')
+    p_keygen.add_argument('--dir', default=None,
+                          help='Output directory (overrides ZTOOL_KEYS_DIR / explicit key files)')
+    p_keygen.add_argument('--keys-dir', default=None,
+                          help='Output directory, same as --dir (kept for config symmetry)')
+    p_keygen.add_argument('--private-key-file', default=None,
+                          help='Explicit private key output path')
+    p_keygen.add_argument('--public-key-file', default=None,
+                          help='Explicit public key output path')
     p_keygen.add_argument(
         '--write-debug-key-info',
         action='store_true',
