@@ -43,6 +43,8 @@ export ZTOOL_MAX_BODY_SIZE=2097152
 export ZTOOL_MAX_FRAMES_PER_CONNECTION=16
 export ZTOOL_READ_TIMEOUT_SECONDS=10
 export ZTOOL_IDLE_TIMEOUT_SECONDS=30
+export ZTOOL_PENDING_ACTIVATION_TTL_SECONDS=600
+export ZTOOL_PENDING_TRANSFER_TTL_SECONDS=600
 python -m ztool_license_server.server
 ```
 
@@ -93,6 +95,30 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 Новые пароли лицензий хранятся как `pbkdf2_sha256`, старые plaintext-пароли
 мигрируют в hash при первом открытии БД. Поле `device_limit` реально задаёт
 число разных активных машин на код; значение по умолчанию остаётся `1`.
+
+## Stateful activation and transfer
+
+Онлайн-регистрация теперь связана серверным pending-state:
+
+- `apply_register` создаёт pending activation и возвращает `13 + license blob`;
+- `register_confirm` принимается только если клиент возвращает те же 4 ветки
+  blob до истечения TTL;
+- активная запись в `activations` создаётся только после успешного confirm.
+
+Перенос лицензии также stateful:
+
+- `apply_remove` создаёт pending transfer и возвращает `11 + transfer blob`,
+  который нужен реальному клиентскому `SR.outrg()`;
+- `remove_confirm` принимает реальный payload `SR.get_rginfo()`, сверяет hash
+  transfer-веток и IP клиента, затем освобождает только связанный seat;
+- без `apply_remove` ответ `remove_confirm` — `8` (`TRANSFER_FAILED`).
+
+TTL задаётся переменными `ZTOOL_PENDING_ACTIVATION_TTL_SECONDS` и
+`ZTOOL_PENDING_TRANSFER_TTL_SECONDS`, по умолчанию `600`. Очистка expired rows:
+
+```bash
+python -m ztool_license_server.cli cleanup-pending
+```
 
 ## Привязка к оборудованию (валидация машинного кода)
 

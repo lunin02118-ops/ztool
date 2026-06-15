@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
 
-LATEST_SCHEMA_VERSION = 4
+LATEST_SCHEMA_VERSION = 6
 PASSWORD_ALGO = "pbkdf2_sha256"
 PASSWORD_ITERATIONS = 200_000
 
@@ -74,6 +74,8 @@ class LicenseDB:
             (2, "password_hash_columns", self._migration_002_password_hash_columns),
             (3, "pending_activation_transfer", self._migration_003_pending_tables),
             (4, "indexes_constraints", self._migration_004_indexes),
+            (5, "pending_state_columns", self._migration_005_pending_state_columns),
+            (6, "pending_transfer_branch_hashes", self._migration_006_pending_transfer_branch_hashes),
         ]
         applied = {
             row["version"]
@@ -178,6 +180,40 @@ class LicenseDB:
                 ON pending_transfers(code, status)
         """)
 
+    def _migration_005_pending_state_columns(self) -> None:
+        self._add_column_if_missing("pending_activations", "machine_hash", "TEXT")
+        self._add_column_if_missing("pending_activations", "apply_branches_hash", "TEXT")
+        self._add_column_if_missing("pending_activations", "transport_hash", "TEXT")
+        self._add_column_if_missing("pending_activations", "client_ip", "TEXT")
+        self._add_column_if_missing("pending_activations", "confirmed_at", "TEXT")
+        self._add_column_if_missing("pending_transfers", "machine_hash", "TEXT")
+        self._add_column_if_missing("pending_transfers", "client_ip", "TEXT")
+        self._add_column_if_missing("pending_transfers", "confirmed_at", "TEXT")
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_activation_hash
+                ON pending_activations(apply_branches_hash, status)
+        """)
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_activation_code_machine
+                ON pending_activations(code, machine_code, status)
+        """)
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_transfer_client_status
+                ON pending_transfers(client_ip, status)
+        """)
+
+    def _migration_006_pending_transfer_branch_hashes(self) -> None:
+        self._add_column_if_missing("pending_transfers", "transfer_branches_hash", "TEXT")
+        self._add_column_if_missing("pending_transfers", "transfer_blob_hash", "TEXT")
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_transfer_hash_status
+                ON pending_transfers(transfer_branches_hash, status)
+        """)
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pending_transfer_ip_hash_status
+                ON pending_transfers(client_ip, transfer_branches_hash, status)
+        """)
+
     def _add_column_if_missing(self, table: str, column: str, definition: str) -> None:
         columns = {
             row["name"]
@@ -224,6 +260,202 @@ class LicenseDB:
     def _verify_password(password: str, password_hash: str, salt: str) -> bool:
         candidate_hash, _ = LicenseDB._hash_password(password, salt)
         return hmac.compare_digest(candidate_hash, password_hash)
+
+    @staticmethod
+    def _now() -> str:
+        return datetime.now().isoformat()
+
+    @staticmethod
+    def _expires_after(ttl_seconds: int) -> str:
+        return (datetime.now() + timedelta(seconds=ttl_seconds)).isoformat()
+
+    def cleanup_expired_pending(self) -> Tuple[int, int]:
+        """Expire pending activation/transfer rows whose TTL elapsed."""
+        now = self._now()
+        cur = self._conn.execute("""
+            UPDATE pending_activations
+            SET status = 'expired'
+            WHERE status = 'pending'
+              AND expires_at IS NOT NULL
+              AND expires_at < ?
+        """, (now,))
+        expired_activations = cur.rowcount
+        cur = self._conn.execute("""
+            UPDATE pending_transfers
+            SET status = 'expired'
+            WHERE status = 'pending'
+              AND expires_at IS NOT NULL
+              AND expires_at < ?
+        """, (now,))
+        expired_transfers = cur.rowcount
+        self._commit_if_needed()
+        return expired_activations, expired_transfers
+
+    def get_reserved_activation_count(self, code: str) -> int:
+        """Count active plus non-expired pending machines for a code."""
+        self.cleanup_expired_pending()
+        now = self._now()
+        row = self._conn.execute("""
+            SELECT COUNT(DISTINCT machine_code) AS cnt
+            FROM (
+                SELECT machine_code FROM activations
+                WHERE code = ? AND is_active = 1
+                UNION
+                SELECT machine_code FROM pending_activations
+                WHERE code = ?
+                  AND status = 'pending'
+                  AND (expires_at IS NULL OR expires_at >= ?)
+            )
+        """, (code, code, now)).fetchone()
+        return row["cnt"]
+
+    def reserve_pending_activation(
+        self,
+        code: str,
+        machine_code: str,
+        machine_hash: str,
+        apply_branches_hash: str,
+        transport_hash: str,
+        ttl_seconds: int,
+        client_ip: str = "",
+    ) -> Tuple[bool, str]:
+        """Reserve a pending activation seat until register_confirm."""
+        self.cleanup_expired_pending()
+        device_limit = self.get_device_limit(code)
+        if device_limit <= 0:
+            return False, "授权电脑数量已达上限"
+
+        now = self._now()
+        other = self._conn.execute("""
+            SELECT COUNT(DISTINCT machine_code) AS cnt
+            FROM (
+                SELECT machine_code FROM activations
+                WHERE code = ? AND is_active = 1 AND machine_code != ?
+                UNION
+                SELECT machine_code FROM pending_activations
+                WHERE code = ?
+                  AND machine_code != ?
+                  AND status = 'pending'
+                  AND (expires_at IS NULL OR expires_at >= ?)
+            )
+        """, (code, machine_code, code, machine_code, now)).fetchone()["cnt"]
+        if other >= device_limit:
+            return False, "授权电脑数量已达上限"
+
+        self._conn.execute("""
+            UPDATE pending_activations
+            SET status = 'superseded'
+            WHERE code = ? AND machine_code = ? AND status = 'pending'
+        """, (code, machine_code))
+        self._conn.execute("""
+            INSERT INTO pending_activations (
+                code, machine_code, machine_hash, apply_branches_hash,
+                transport_hash, client_ip, nonce, expires_at, status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        """, (
+            code,
+            machine_code,
+            machine_hash,
+            apply_branches_hash,
+            transport_hash,
+            client_ip,
+            secrets.token_hex(16),
+            self._expires_after(ttl_seconds),
+        ))
+        self._commit_if_needed()
+        return True, ""
+
+    def find_pending_activation(self, apply_branches_hash: str, machine_hash: str):
+        self.cleanup_expired_pending()
+        now = self._now()
+        return self._conn.execute("""
+            SELECT * FROM pending_activations
+            WHERE apply_branches_hash = ?
+              AND machine_hash = ?
+              AND status = 'pending'
+              AND (expires_at IS NULL OR expires_at >= ?)
+            ORDER BY id DESC
+            LIMIT 1
+        """, (apply_branches_hash, machine_hash, now)).fetchone()
+
+    def confirm_pending_activation(self, pending_id: int) -> None:
+        self._conn.execute("""
+            UPDATE pending_activations
+            SET status = 'confirmed', confirmed_at = ?
+            WHERE id = ? AND status = 'pending'
+        """, (self._now(), pending_id))
+        self._commit_if_needed()
+
+    def create_pending_transfer(
+        self,
+        code: str,
+        machine_code: str,
+        machine_hash: str,
+        transfer_branches_hash: str,
+        transfer_blob_hash: str,
+        ttl_seconds: int,
+        client_ip: str = "",
+    ) -> Tuple[bool, str]:
+        """Create a pending transfer; deactivation happens on remove_confirm."""
+        self.cleanup_expired_pending()
+        if not self.is_machine_activated(code, machine_code):
+            return False, "无需转出"
+        self._conn.execute("""
+            UPDATE pending_transfers
+            SET status = 'superseded'
+            WHERE code = ? AND machine_code = ? AND status = 'pending'
+        """, (code, machine_code))
+        self._conn.execute("""
+            INSERT INTO pending_transfers (
+                code, machine_code, machine_hash, transfer_branches_hash,
+                transfer_blob_hash, client_ip, nonce, expires_at, status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        """, (
+            code,
+            machine_code,
+            machine_hash,
+            transfer_branches_hash,
+            transfer_blob_hash,
+            client_ip,
+            secrets.token_hex(16),
+            self._expires_after(ttl_seconds),
+        ))
+        self._commit_if_needed()
+        return True, ""
+
+    def find_pending_transfer(self, transfer_branches_hash: str, client_ip: str = ""):
+        self.cleanup_expired_pending()
+        if not transfer_branches_hash:
+            return None
+        now = self._now()
+        if client_ip:
+            return self._conn.execute("""
+                SELECT * FROM pending_transfers
+                WHERE client_ip = ?
+                  AND transfer_branches_hash = ?
+                  AND status = 'pending'
+                  AND (expires_at IS NULL OR expires_at >= ?)
+                ORDER BY id DESC
+                LIMIT 1
+            """, (client_ip, transfer_branches_hash, now)).fetchone()
+        return self._conn.execute("""
+            SELECT * FROM pending_transfers
+            WHERE transfer_branches_hash = ?
+              AND status = 'pending'
+              AND (expires_at IS NULL OR expires_at >= ?)
+            ORDER BY id DESC
+            LIMIT 1
+        """, (transfer_branches_hash, now)).fetchone()
+
+    def confirm_pending_transfer(self, pending_id: int) -> None:
+        self._conn.execute("""
+            UPDATE pending_transfers
+            SET status = 'confirmed', confirmed_at = ?
+            WHERE id = ? AND status = 'pending'
+        """, (self._now(), pending_id))
+        self._commit_if_needed()
 
     def add_license_code(self, code: str, password: str = "",
                          device_limit: int = 1,

@@ -22,6 +22,12 @@ def test_fresh_db_migrates_to_latest_schema(tmp_path):
         assert "audit_log" in tables
         assert "pending_activations" in tables
         assert "pending_transfers" in tables
+        transfer_columns = {
+            row["name"]
+            for row in db._conn.execute("PRAGMA table_info(pending_transfers)").fetchall()
+        }
+        assert "transfer_branches_hash" in transfer_columns
+        assert "transfer_blob_hash" in transfer_columns
     finally:
         db.close()
 

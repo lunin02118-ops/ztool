@@ -101,6 +101,18 @@ def cmd_purge_invalid(args):
     db.close()
 
 
+def cmd_cleanup_pending(args):
+    """Expire stale pending activation/transfer rows."""
+    config = ServerConfig()
+    if args.db:
+        config.db_path = args.db
+    db = LicenseDB(config.db_path)
+    activations, transfers = db.cleanup_expired_pending()
+    print(f"Expired pending activations: {activations}")
+    print(f"Expired pending transfers: {transfers}")
+    db.close()
+
+
 def cmd_offline_activate(args):
     """Produce an offline activation file for a given machine code."""
     config = ServerConfig()
@@ -171,6 +183,10 @@ def main():
     sub.add_parser('purge-invalid',
                    help='Deactivate seats bound to empty/non-hardware machine codes')
 
+    # cleanup-pending
+    sub.add_parser('cleanup-pending',
+                   help='Expire stale pending activation/transfer rows')
+
     # offline-activate
     p_off = sub.add_parser('offline-activate',
                            help='Generate an offline activation file for a machine code')
@@ -195,6 +211,8 @@ def main():
         cmd_list_activations(args)
     elif args.command == 'purge-invalid':
         cmd_purge_invalid(args)
+    elif args.command == 'cleanup-pending':
+        cmd_cleanup_pending(args)
     elif args.command == 'offline-activate':
         cmd_offline_activate(args)
     else:

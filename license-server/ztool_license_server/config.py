@@ -59,6 +59,10 @@ class ServerConfig:
     read_timeout_seconds: float = 10.0
     idle_timeout_seconds: float = 30.0
 
+    # Stateful activation/transfer
+    pending_activation_ttl_seconds: int = 600
+    pending_transfer_ttl_seconds: int = 600
+
     @classmethod
     def from_env(cls) -> 'ServerConfig':
         """Load configuration from environment variables."""
@@ -85,6 +89,14 @@ class ServerConfig:
             idle_timeout_seconds=_env_float(
                 'ZTOOL_IDLE_TIMEOUT_SECONDS',
                 cls.idle_timeout_seconds,
+            ),
+            pending_activation_ttl_seconds=_env_int(
+                'ZTOOL_PENDING_ACTIVATION_TTL_SECONDS',
+                cls.pending_activation_ttl_seconds,
+            ),
+            pending_transfer_ttl_seconds=_env_int(
+                'ZTOOL_PENDING_TRANSFER_TTL_SECONDS',
+                cls.pending_transfer_ttl_seconds,
             ),
             client_version=os.getenv('ZTOOL_CLIENT_VERSION', cls.client_version),
         )
