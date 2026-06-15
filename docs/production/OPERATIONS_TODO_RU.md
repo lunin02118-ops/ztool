@@ -12,15 +12,15 @@
 
 ## License server deployment
 
-- Зафиксировать production layout:
+- [Phase 05] Зафиксировать production layout:
   - `/opt/ztool-license-server/app`
-  - `/etc/ztool-license-server/server.env`
-  - `/var/lib/ztool-license-server/ztool_licenses.db`
+  - `/etc/ztool-license-server/ztool-license-server.env`
+  - `/var/lib/ztool-license-server/licenses.db`
   - `/var/backups/ztool-license-server/`
-- Добавить systemd unit.
-- Добавить healthcheck.
-- Добавить backup/restore procedure.
-- Добавить журналирование audit events без секретов.
+- [Phase 05] Добавить systemd unit.
+- [Phase 05] Добавить healthcheck.
+- [Phase 05] Добавить backup/restore procedure.
+- [Phase 01/05] Добавить журналирование audit events без секретов.
 
 ## Database
 
@@ -31,14 +31,17 @@
 
 ## Monitoring
 
-- Логировать события:
+- [Phase 05] Документировать события:
   - activation requested/confirmed;
   - transfer requested/confirmed;
   - invalid code/password;
   - protocol parse reject;
   - rate limit.
-- Добавить минимальные метрики или structured log counters.
-- Настроить alert на рост отказов/исключений.
+- [Phase 05] Добавить минимальные log/audit-derived метрики.
+- [Phase 05] Настроить alert на рост отказов/исключений.
+- [Deferred] Встроенный rate limit в приложении. На Phase 05 закрыто
+  firewall/fail2ban-документацией; серверный лимитер выносится в отдельный PR,
+  чтобы не смешивать ops-деплой и изменение runtime-политики.
 
 ## Release package
 

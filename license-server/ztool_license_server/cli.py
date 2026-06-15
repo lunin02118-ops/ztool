@@ -11,14 +11,19 @@ Usage:
 
 import argparse
 import hashlib
+import os
+from pathlib import Path
+import sqlite3
 import sys
 
 from .crypto.keygen import generate_keypair, save_keypair, verify_keypair
+from .crypto.rsa_ztool import decrypt_string, encrypt_string
 from .license_blob import generate_offline_activation
 from .machineid import is_valid_machine_code
-from .db import LicenseDB
+from .db import LATEST_SCHEMA_VERSION, LicenseDB
 from .config import ServerConfig
 from .key_provider import KeyProvider
+from .logging_utils import assert_safe_log_config
 
 
 def cmd_keygen(args):
@@ -113,6 +118,108 @@ def cmd_cleanup_pending(args):
     db.close()
 
 
+def _config_from_args(args) -> ServerConfig:
+    config = ServerConfig.from_env()
+    if getattr(args, "db", None):
+        config.db_path = args.db
+    if getattr(args, "keys_dir", None):
+        config.keys_dir = args.keys_dir
+    if getattr(args, "private_key_file", None):
+        config.private_key_file = args.private_key_file
+    if getattr(args, "public_key_file", None):
+        config.public_key_file = args.public_key_file
+    return config
+
+
+def _require_existing_file(path: str, label: str) -> None:
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"{label} not found: {path}")
+
+
+def cmd_healthcheck(args):
+    """Check DB, schema, keypair and safe config."""
+    config = _config_from_args(args)
+    try:
+        assert_safe_log_config(
+            config.log_level,
+            config.runtime_env,
+            config.allow_debug_logging,
+        )
+
+        provider = KeyProvider.from_config(config)
+        public_key = provider.load_public_key()
+        private_key = provider.load_private_key()
+        test_message = "healthcheck"
+        encrypted = encrypt_string(test_message, public_key, encoding="utf-8")
+        decrypted = decrypt_string(encrypted, private_key, encoding="utf-8")
+        if decrypted != test_message:
+            raise RuntimeError("keypair self-check failed")
+
+        _require_existing_file(config.db_path, "Database")
+        db = LicenseDB(config.db_path)
+        try:
+            if db.get_schema_version() != LATEST_SCHEMA_VERSION:
+                raise RuntimeError(
+                    f"schema version mismatch: {db.get_schema_version()} != {LATEST_SCHEMA_VERSION}"
+                )
+            db._conn.execute("BEGIN IMMEDIATE")
+            db._conn.rollback()
+            integrity = db._conn.execute("PRAGMA quick_check").fetchone()[0]
+            if integrity.lower() != "ok":
+                raise RuntimeError(f"db quick_check failed: {integrity}")
+        finally:
+            db.close()
+    except Exception as exc:
+        print(f"HEALTHCHECK FAIL: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    print("HEALTHCHECK OK")
+
+
+def cmd_backup(args):
+    """Create a safe SQLite backup using sqlite3 backup API."""
+    config = _config_from_args(args)
+    _require_existing_file(config.db_path, "Database")
+    out_path = args.out
+    out_dir = os.path.dirname(os.path.abspath(out_path))
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    src = sqlite3.connect(config.db_path)
+    try:
+        dst = sqlite3.connect(out_path)
+        try:
+            src.backup(dst)
+        finally:
+            dst.close()
+    finally:
+        src.close()
+    print(f"Backup written to: {out_path}")
+
+
+def cmd_verify_backup(args):
+    """Verify a backup DB without mutating it."""
+    _require_existing_file(args.path, "Backup")
+    uri = f"{Path(args.path).resolve().as_uri()}?mode=ro"
+    conn = sqlite3.connect(uri, uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        integrity = conn.execute("PRAGMA integrity_check").fetchone()[0]
+        if integrity.lower() != "ok":
+            print(f"BACKUP FAIL: integrity_check={integrity}", file=sys.stderr)
+            sys.exit(1)
+        row = conn.execute("SELECT MAX(version) AS version FROM schema_version").fetchone()
+        version = int(row["version"] or 0)
+        if version != LATEST_SCHEMA_VERSION:
+            print(
+                f"BACKUP FAIL: schema version {version} != {LATEST_SCHEMA_VERSION}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+    finally:
+        conn.close()
+    print("BACKUP OK")
+
+
 def cmd_offline_activate(args):
     """Produce an offline activation file for a given machine code."""
     config = ServerConfig()
@@ -187,6 +294,20 @@ def main():
     sub.add_parser('cleanup-pending',
                    help='Expire stale pending activation/transfer rows')
 
+    # healthcheck
+    p_health = sub.add_parser('healthcheck', help='Check DB, keys and config')
+    p_health.add_argument('--keys-dir', default=None, help='Directory with public/private keys')
+    p_health.add_argument('--private-key-file', default=None, help='Explicit private key file')
+    p_health.add_argument('--public-key-file', default=None, help='Explicit public key file')
+
+    # backup
+    p_backup = sub.add_parser('backup', help='Create SQLite backup using backup API')
+    p_backup.add_argument('--out', required=True, help='Output backup DB path')
+
+    # verify-backup
+    p_verify = sub.add_parser('verify-backup', help='Verify backup DB integrity and schema')
+    p_verify.add_argument('path', help='Backup DB path')
+
     # offline-activate
     p_off = sub.add_parser('offline-activate',
                            help='Generate an offline activation file for a machine code')
@@ -213,6 +334,12 @@ def main():
         cmd_purge_invalid(args)
     elif args.command == 'cleanup-pending':
         cmd_cleanup_pending(args)
+    elif args.command == 'healthcheck':
+        cmd_healthcheck(args)
+    elif args.command == 'backup':
+        cmd_backup(args)
+    elif args.command == 'verify-backup':
+        cmd_verify_backup(args)
     elif args.command == 'offline-activate':
         cmd_offline_activate(args)
     else:

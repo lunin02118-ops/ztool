@@ -1,0 +1,13 @@
+services:
+  ztool-license-server:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "58000:58000"
+    volumes:
+      - ./data:/var/lib/ztool-license-server
+      - ./keys:/etc/ztool-license-server:ro
+    restart: unless-stopped
