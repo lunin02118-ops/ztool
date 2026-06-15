@@ -17,7 +17,8 @@ from .crypto.rsa_ztool import decrypt_string
 from .crypto import aes_security_center as aes
 from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
-from .protocol.dispatcher import Sendtype, Status, Result, status_to_result
+from .protocol.framing import ProtocolError
+from .protocol.dispatcher import REQUEST_SENDTYPES, Sendtype, Status, Result, status_to_result
 from .license_blob import (
     generate_license_blob,
     getver_today,
@@ -79,21 +80,42 @@ class LicenseServer:
         """Handle a single client connection."""
         addr = writer.get_extra_info('peername')
         logger.info("Client connected: %s", addr)
-        parser = FrameParser()
+        parser = FrameParser(
+            max_body_size=self.config.max_body_size,
+            allowed_sendtypes=REQUEST_SENDTYPES,
+        )
+        frames_seen = 0
 
         try:
             while True:
-                data = await reader.read(4096)
+                timeout = (
+                    self.config.read_timeout_seconds
+                    if parser.buffered_bytes
+                    else self.config.idle_timeout_seconds
+                )
+                data = await asyncio.wait_for(reader.read(4096), timeout=timeout)
                 if not data:
                     break
 
                 parser.feed(data)
                 for sendtype, body_bytes in parser.parse_all():
+                    frames_seen += 1
+                    if frames_seen > self.config.max_frames_per_connection:
+                        logger.warning(
+                            "Too many frames from %s: limit=%d",
+                            addr,
+                            self.config.max_frames_per_connection,
+                        )
+                        return
                     response = await self._process_message(sendtype, body_bytes)
                     if response is not None:
                         writer.write(response)
                         await writer.drain()
 
+        except asyncio.TimeoutError:
+            logger.info("Client timed out: %s", addr)
+        except ProtocolError as e:
+            logger.warning("Protocol error from %s: %s", addr, e)
         except (ConnectionResetError, BrokenPipeError):
             logger.info("Client disconnected: %s", addr)
         except Exception as e:
@@ -400,6 +422,15 @@ async def main():
     parser.add_argument('--db', default=None, help='Database path')
     parser.add_argument('--log-level', default=None, help='Log level')
     parser.add_argument('--runtime-env', default=None, help='Runtime env: development/test/production')
+    parser.add_argument('--max-body-size', type=int, default=None, help='Maximum request body size in bytes')
+    parser.add_argument(
+        '--max-frames-per-connection',
+        type=int,
+        default=None,
+        help='Maximum frames accepted on one TCP connection',
+    )
+    parser.add_argument('--read-timeout-seconds', type=float, default=None, help='Partial-frame read timeout')
+    parser.add_argument('--idle-timeout-seconds', type=float, default=None, help='Idle connection timeout')
     parser.add_argument(
         '--allow-debug-logging',
         action='store_true',
@@ -427,6 +458,14 @@ async def main():
         config.log_level = args.log_level
     if args.runtime_env:
         config.runtime_env = args.runtime_env
+    if args.max_body_size is not None:
+        config.max_body_size = args.max_body_size
+    if args.max_frames_per_connection is not None:
+        config.max_frames_per_connection = args.max_frames_per_connection
+    if args.read_timeout_seconds is not None:
+        config.read_timeout_seconds = args.read_timeout_seconds
+    if args.idle_timeout_seconds is not None:
+        config.idle_timeout_seconds = args.idle_timeout_seconds
     if args.allow_debug_logging is not None:
         config.allow_debug_logging = args.allow_debug_logging
 

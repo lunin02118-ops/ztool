@@ -47,6 +47,15 @@ class Sendtype(IntEnum):
     VERIFY_REMOVE = 132
 
 
+REQUEST_SENDTYPES = frozenset({
+    int(Sendtype.APPLY_REGISTER),
+    int(Sendtype.APPLY_REMOVE),
+    int(Sendtype.REGISTER),
+    int(Sendtype.REGISTER_CONFIRM),
+    int(Sendtype.REMOVE_CONFIRM),
+})
+
+
 class Result(IntEnum):
     """Numeric result codes the client reads from the FIRST 10-byte header
     field of the server response (``getreceive`` -> ``byte_to_Int`` ->

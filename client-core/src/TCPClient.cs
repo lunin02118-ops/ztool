@@ -55,6 +55,10 @@ public class TCPClient
 
 	private const int L_length = 10;
 
+	private const int MAX_RESPONSE_BODY = 10485760;
+
+	private const int RESPONSE_READ_TIMEOUT_MS = 20000;
+
 	internal bool isok;
 
 	private readonly ManualResetEvent TimeoutObject;
@@ -286,32 +290,59 @@ public class TCPClient
 	public string getreceive(Socket s, ref string m_head)
 	{
 		s.ReceiveBufferSize = 1024;
-		string text = "";
-		byte[] array = new byte[10];
-		byte[] array2 = new byte[10];
-		byte[] array3 = new byte[10485760];
-		int num = 0;
-		int i = 0;
-		if (s.Receive(array, 10, SocketFlags.None) == 0)
+		int receiveTimeout = s.ReceiveTimeout;
+		try
 		{
-			return "";
-		}
-		m_head = Conversions.ToString(code.byte_to_Int(array));
-		if (s.Receive(array2, 10, SocketFlags.None) == 0)
-		{
-			return "";
-		}
-		int num2;
-		for (num2 = code.byte_to_Int(array2); i < num2; i = checked(i + num))
-		{
-			num = s.Receive(array3, i, s.ReceiveBufferSize, SocketFlags.None);
-			if (num == 0)
+			s.ReceiveTimeout = RESPONSE_READ_TIMEOUT_MS;
+			byte[] array = new byte[H_length];
+			int offset = 0;
+			while (offset < array.Length)
 			{
-				return "";
+				int num = s.Receive(array, offset, array.Length - offset, SocketFlags.None);
+				if (num == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num);
 			}
+			m_head = Conversions.ToString(code.byte_to_Int(array));
+			byte[] array2 = new byte[L_length];
+			offset = 0;
+			while (offset < array2.Length)
+			{
+				int num2 = s.Receive(array2, offset, array2.Length - offset, SocketFlags.None);
+				if (num2 == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num2);
+			}
+			int num3 = code.byte_to_Int(array2);
+			if (num3 < 0 || num3 > MAX_RESPONSE_BODY)
+			{
+				throw new InvalidOperationException("Некорректный размер ответа сервера");
+			}
+			byte[] array3 = new byte[num3];
+			offset = 0;
+			while (offset < array3.Length)
+			{
+				int num4 = s.Receive(array3, offset, array3.Length - offset, SocketFlags.None);
+				if (num4 == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num4);
+			}
+			return Encoding.UTF8.GetString(array3, 0, array3.Length).Trim();
 		}
-		text = Encoding.UTF8.GetString(array3, 0, num2);
-		return text.Trim();
+		catch (SocketException ex) when (ex.SocketErrorCode == SocketError.TimedOut)
+		{
+			throw new TimeoutException("Тайм-аут чтения ответа сервера", ex);
+		}
+		finally
+		{
+			s.ReceiveTimeout = receiveTimeout;
+		}
 	}
 
 	public byte[] getsendbuffer(int rgtype, string sendstring)

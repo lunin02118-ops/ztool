@@ -13,6 +13,16 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    return default if value is None else int(value)
+
+
+def _env_float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    return default if value is None else float(value)
+
+
 @dataclass
 class ServerConfig:
     """License server configuration."""
@@ -43,6 +53,12 @@ class ServerConfig:
     runtime_env: str = "development"
     allow_debug_logging: bool = False
 
+    # Protocol limits
+    max_body_size: int = 2 * 1024 * 1024
+    max_frames_per_connection: int = 16
+    read_timeout_seconds: float = 10.0
+    idle_timeout_seconds: float = 30.0
+
     @classmethod
     def from_env(cls) -> 'ServerConfig':
         """Load configuration from environment variables."""
@@ -57,5 +73,18 @@ class ServerConfig:
             log_level=os.getenv('ZTOOL_LOG_LEVEL', 'INFO'),
             runtime_env=os.getenv('ZTOOL_RUNTIME_ENV', os.getenv('ZTOOL_ENV', 'development')),
             allow_debug_logging=_env_bool('ZTOOL_ALLOW_DEBUG_LOGGING'),
+            max_body_size=_env_int('ZTOOL_MAX_BODY_SIZE', cls.max_body_size),
+            max_frames_per_connection=_env_int(
+                'ZTOOL_MAX_FRAMES_PER_CONNECTION',
+                cls.max_frames_per_connection,
+            ),
+            read_timeout_seconds=_env_float(
+                'ZTOOL_READ_TIMEOUT_SECONDS',
+                cls.read_timeout_seconds,
+            ),
+            idle_timeout_seconds=_env_float(
+                'ZTOOL_IDLE_TIMEOUT_SECONDS',
+                cls.idle_timeout_seconds,
+            ),
             client_version=os.getenv('ZTOOL_CLIENT_VERSION', cls.client_version),
         )

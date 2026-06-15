@@ -39,6 +39,10 @@ export ZTOOL_LOG_LEVEL=INFO
 export ZTOOL_PRIVATE_KEY_FILE=/etc/ztool-license/private_key.txt
 export ZTOOL_PUBLIC_KEY_FILE=/etc/ztool-license/public_key.txt
 export ZTOOL_DB_PATH=/var/lib/ztool-license-server/licenses.db
+export ZTOOL_MAX_BODY_SIZE=2097152
+export ZTOOL_MAX_FRAMES_PER_CONNECTION=16
+export ZTOOL_READ_TIMEOUT_SECONDS=10
+export ZTOOL_IDLE_TIMEOUT_SECONDS=30
 python -m ztool_license_server.server
 ```
 
@@ -60,6 +64,21 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 По умолчанию создаются только `public_key.txt` и `private_key.txt`.
 Диагностический `keypair_info.json` с приватными компонентами пишется только
 по явному флагу `--write-debug-key-info` и не предназначен для production.
+
+## TCP protocol limits
+
+Сервер fail-closed обрабатывает malformed/oversized кадры:
+
+- `ZTOOL_MAX_BODY_SIZE` — максимум тела запроса, по умолчанию `2097152`.
+- `ZTOOL_MAX_FRAMES_PER_CONNECTION` — максимум кадров на одно TCP-соединение,
+  по умолчанию `16`.
+- `ZTOOL_READ_TIMEOUT_SECONDS` — тайм-аут ожидания продолжения частичного
+  кадра, по умолчанию `10`.
+- `ZTOOL_IDLE_TIMEOUT_SECONDS` — тайм-аут простоя соединения без данных, по
+  умолчанию `30`.
+
+Отрицательная длина, неизвестный `sendtype`, тело больше лимита и переполнение
+буфера закрывают соединение без stack trace для клиента.
 
 ## Привязка к оборудованию (валидация машинного кода)
 

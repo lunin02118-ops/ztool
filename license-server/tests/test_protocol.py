@@ -3,7 +3,8 @@
 import pytest
 from ztool_license_server.protocol.framing import (
     encode_int_field, decode_int_field, build_frame,
-    build_response_frame, FrameParser, HEADER_FIELD_SIZE,
+    build_response_frame, FrameParser, FrameTooLarge, HEADER_FIELD_SIZE,
+    InvalidFrame,
 )
 from ztool_license_server.protocol.dispatcher import Sendtype
 
@@ -116,3 +117,33 @@ class TestFrameParser:
         parser.feed(frame)
         result = parser.try_parse()
         assert result == (131, b"")
+
+    def test_negative_length_rejected(self):
+        """Reject malicious frames with negative body length."""
+        frame = encode_int_field(128) + encode_int_field(-1)
+        parser = FrameParser()
+        parser.feed(frame)
+        with pytest.raises(InvalidFrame, match="Negative body length"):
+            parser.try_parse()
+
+    def test_oversized_length_rejected_before_body_allocation(self):
+        """Reject oversized length from the header without waiting for the body."""
+        frame = encode_int_field(128) + encode_int_field(11)
+        parser = FrameParser(max_body_size=10)
+        parser.feed(frame)
+        with pytest.raises(FrameTooLarge, match="exceeds max_body_size"):
+            parser.try_parse()
+
+    def test_unknown_sendtype_rejected_when_allowed_set_is_configured(self):
+        """Server mode rejects unsupported request sendtypes."""
+        frame = build_frame(999, b"body")
+        parser = FrameParser(allowed_sendtypes={128, 129, 130, 131, 132})
+        parser.feed(frame)
+        with pytest.raises(InvalidFrame, match="Unsupported sendtype"):
+            parser.try_parse()
+
+    def test_buffer_growth_is_limited(self):
+        """A partial frame cannot grow past the configured maximum buffer."""
+        parser = FrameParser(max_body_size=4)
+        with pytest.raises(FrameTooLarge, match="Frame buffer exceeded"):
+            parser.feed(build_frame(128, b"12345"))
