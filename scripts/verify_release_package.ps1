@@ -46,6 +46,12 @@ function Assert-Hash([string]$Path, [string]$Expected) {
     }
 }
 
+function Get-XmlText([xml]$Xml, [string]$ElementName) {
+    $node = $Xml.SelectSingleNode("//$ElementName")
+    if ($null -eq $node) { return $null }
+    return $node.InnerText.Trim()
+}
+
 $root = (Resolve-Path -LiteralPath $PackageRoot).Path
 $manifestPath = Join-Path $root 'manifest.json'
 $sumsPath = Join-Path $root 'SHA256SUMS.txt'
@@ -133,9 +139,32 @@ foreach ($entry in $manifestFiles) {
 $clientExe = Join-Path $runtimeDir 'ZTool.exe'
 $addinDll = Join-Path $runtimeDir 'ZTool.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
+$settingsPath = Join-Path $runtimeDir 'ZTool.settings'
+$materialLibrary = Join-Path $runtimeDir 'SW模板\MyMaterials.sldmat'
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
+Assert-File $settingsPath
+Assert-File $materialLibrary
+
+[xml]$settingsXml = Get-Content -LiteralPath $settingsPath -Encoding UTF8 -Raw
+$settingsMaterialPath = Get-XmlText $settingsXml 'materialpath'
+$useMaterialColor = Get-XmlText $settingsXml 'usematerialcolor'
+if ([string]::IsNullOrWhiteSpace($settingsMaterialPath)) {
+    Fail 'runtime/ZTool.settings materialpath is empty'
+}
+if ($useMaterialColor -ne 'true') {
+    Fail "runtime/ZTool.settings usematerialcolor must be true, got '$useMaterialColor'"
+}
+$resolvedMaterialPath = if ([System.IO.Path]::IsPathRooted($settingsMaterialPath)) {
+    $settingsMaterialPath
+} else {
+    Join-Path $runtimeDir $settingsMaterialPath
+}
+Assert-File $resolvedMaterialPath
+if ((Resolve-Path -LiteralPath $resolvedMaterialPath).Path -ne (Resolve-Path -LiteralPath $materialLibrary).Path) {
+    Fail "runtime/ZTool.settings materialpath must point to runtime/SW模板/MyMaterials.sldmat, got $settingsMaterialPath"
+}
 
 if ($RequireSolidWorksTools) {
     Assert-File $solidWorksTools
@@ -151,6 +180,7 @@ $summary = [ordered]@{
     branch = $manifest.git.branch
     dirty = [bool]$manifest.git.dirty
     solidworks_tools_included = [bool]$manifest.runtime.solidworks_tools_included
+    material_library = $settingsMaterialPath
     sha256sums_entries = $verifiedSums
     manifest_files = @($manifestFiles).Count
     runtime_ztool_exe = Get-Sha256 $clientExe

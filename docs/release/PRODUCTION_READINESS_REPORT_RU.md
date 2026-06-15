@@ -20,6 +20,7 @@ Fill from `release/<package>/manifest.json` and `SHA256SUMS.txt`.
 | `runtime/ZTool.exe` | TBD | |
 | `runtime/ZTool.dll` | TBD | |
 | `runtime/ZTool.settings` | TBD | |
+| `runtime/SW模板/MyMaterials.sldmat` | TBD | Default material library |
 | `license-server` | TBD | |
 
 ## Package verifier
@@ -48,6 +49,7 @@ Attach or link:
 - SolidWorks screenshots;
 - activation/transfer screenshots/logs;
 - BOM export files/screenshots.
+- Material library/color screenshot from ZTool table after `Подключить SW`.
 
 ## Security controls
 
