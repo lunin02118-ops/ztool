@@ -50,8 +50,8 @@ sudo -u ztool test -r /etc/ztool-license-server/public_key.txt
 операцией, например добавлением первого кода:
 
 ```bash
-sudo -u ztool /opt/ztool-license-server/.venv/bin/python -m ztool_license_server.cli \
-  --db /var/lib/ztool-license-server/licenses.db list-codes
+sudo -u ztool bash -lc 'set -a; source /etc/ztool-license-server/ztool-license-server.env; set +a; \
+  /opt/ztool-license-server/.venv/bin/python -m ztool_license_server.cli list-codes'
 ```
 
 Проверка:

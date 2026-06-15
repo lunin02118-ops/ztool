@@ -186,6 +186,34 @@ class LicenseServer:
     def _hash_text(value: str) -> str:
         return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
+    @staticmethod
+    def _short_hash(value: str) -> str:
+        if not value:
+            return "-"
+        return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
+
+    def _log_security_event(
+        self,
+        *,
+        client_ip: str,
+        action: str,
+        result: str,
+        code: str = "",
+        machine_code: str = "",
+        details: str = "",
+    ) -> None:
+        """Emit perimeter-visible security events without raw secrets/fingerprints."""
+        logger.warning(
+            "security event ip=%s action=%s result=%s code_sha256=%s "
+            "machine_sha256=%s details=%s",
+            client_ip or "-",
+            action,
+            result,
+            self._short_hash(code),
+            self._short_hash(machine_code),
+            details or "-",
+        )
+
     def _transport_branches(self, transport: str) -> list:
         return aes.decrypt(
             transport,
@@ -237,6 +265,14 @@ class LicenseServer:
             if not is_valid:
                 self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                                   result="rejected", details=error)
+                self._log_security_event(
+                    client_ip=client_ip,
+                    action="apply_register",
+                    result="invalid_code",
+                    code=reg_code,
+                    machine_code=machine_code,
+                    details=error,
+                )
                 return self._make_result(status_to_result(error, Result.INVALID_CODE))
 
             # Check password if set. check_password() returns True for codes that
@@ -246,6 +282,13 @@ class LicenseServer:
             if not self.db.check_password(reg_code, password):
                 self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                                   result="wrong_password")
+                self._log_security_event(
+                    client_ip=client_ip,
+                    action="apply_register",
+                    result="wrong_password",
+                    code=reg_code,
+                    machine_code=machine_code,
+                )
                 return self._make_result(Result.WRONG_PASSWORD)
 
             # Reject anything that is not a genuine hardware fingerprint. Without
@@ -256,6 +299,13 @@ class LicenseServer:
             if not is_valid_machine_code(machine_code):
                 self.db.log_action("apply_register", code=reg_code, machine_code=machine_code,
                                   result="rejected", details="invalid machine code")
+                self._log_security_event(
+                    client_ip=client_ip,
+                    action="apply_register",
+                    result="invalid_machine_code",
+                    code=reg_code,
+                    machine_code=machine_code,
+                )
                 return self._make_result(Result.INFO_ERROR)
 
             # Build the apply transport first, then reserve the pending seat by
@@ -378,12 +428,26 @@ class LicenseServer:
             if not is_valid_machine_code(machine_code):
                 self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                                   result="rejected", details="invalid machine code")
+                self._log_security_event(
+                    client_ip=client_ip,
+                    action="apply_remove",
+                    result="invalid_machine_code",
+                    code=reg_code,
+                    machine_code=machine_code,
+                )
                 return self._make_result(Result.INFO_ERROR)
 
             # Check password
             if not self.db.check_password(reg_code, password):
                 self.db.log_action("apply_remove", code=reg_code, machine_code=machine_code,
                                   result="wrong_password")
+                self._log_security_event(
+                    client_ip=client_ip,
+                    action="apply_remove",
+                    result="wrong_password",
+                    code=reg_code,
+                    machine_code=machine_code,
+                )
                 return self._make_result(Result.WRONG_PASSWORD)
 
             transfer_blob = generate_license_blob(

@@ -78,6 +78,38 @@ def save_keypair(keypair: dict, directory: str, write_debug_info: bool = False) 
         print(f"  Debug key info:           {os.path.join(directory, 'keypair_info.json')}")
 
 
+def save_keypair_files(
+    keypair: dict,
+    public_key_file: str,
+    private_key_file: str,
+    write_debug_info: bool = False,
+) -> None:
+    """Save key pair to explicit public/private key files."""
+    os.makedirs(os.path.dirname(os.path.abspath(public_key_file)), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(private_key_file)), exist_ok=True)
+
+    with open(public_key_file, 'w', encoding='utf-8') as f:
+        f.write(keypair["public_component_key"])
+
+    with open(private_key_file, 'w', encoding='utf-8') as f:
+        f.write(keypair["private_component_key"])
+    _chmod_private_key(private_key_file)
+
+    if write_debug_info:
+        info_path = os.path.join(
+            os.path.dirname(os.path.abspath(private_key_file)),
+            "keypair_info.json",
+        )
+        with open(info_path, 'w', encoding='utf-8') as f:
+            json.dump(keypair, f, indent=2)
+
+    print("Keys saved to explicit files:")
+    print(f"  Public key (for client):  {public_key_file}")
+    print(f"  Private key (for server): {private_key_file}")
+    if write_debug_info:
+        print(f"  Debug key info:           {info_path}")
+
+
 def load_keypair(directory: str) -> dict:
     """Load key pair from directory."""
     info_path = os.path.join(directory, "keypair_info.json")

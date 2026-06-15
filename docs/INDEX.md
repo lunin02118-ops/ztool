@@ -56,6 +56,7 @@
 | [`audit/README.md`](audit/README.md) | Правила implementation reports для hardening фаз | актуален |
 | [`audit/phase-00-baseline-implementation-report.md`](audit/phase-00-baseline-implementation-report.md) | Отчёт Phase 00 baseline docs | актуален |
 | [`audit/phase-10-release-packaging-implementation-report.md`](audit/phase-10-release-packaging-implementation-report.md) | Отчёт Phase 10 release packaging | актуален |
+| [`audit/prod-readiness-audit-followup-2026-06-15.md`](audit/prod-readiness-audit-followup-2026-06-15.md) | Follow-up по блокерам B-1/B-2 из production readiness audit | актуален |
 | [`../AUDIT_ru.md`](<../AUDIT_ru.md>) | Аудит дистрибутива и методика русификации | исторический (см. раздел «Актуализация PR #8» в конце) |
 | [`../AUDIT_REPORT_RU.md`](<../AUDIT_REPORT_RU.md>) | Отчёт аудита: русификация + сервер лицензий | исторический (см. раздел «Актуализация PR #8» в конце) |
 

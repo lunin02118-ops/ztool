@@ -23,6 +23,7 @@ NOT by themselves prove byte-compatibility with the real client on a bench.
 """
 
 import asyncio
+import logging
 
 import pytest
 
@@ -260,12 +261,16 @@ async def test_protected_code_rejects_empty_password(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_invalid_code_rejected(tmp_path):
+async def test_invalid_code_rejected(tmp_path, caplog):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
+        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
         code, body = await client.apply_register("ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ", MACHINE_A)
         assert code == Result.INVALID_CODE
         assert body == ""
+        assert "security event" in caplog.text
+        assert "result=invalid_code" in caplog.text
+        assert "ZZZZZ-ZZZZZ" not in caplog.text
 
 
 @pytest.mark.asyncio
@@ -327,11 +332,15 @@ async def test_transfer_out_flow(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_wrong_password_rejected(tmp_path):
+async def test_wrong_password_rejected(tmp_path, caplog):
     server, aio_server, client = await _make_server(tmp_path, password="secret123")
     async with aio_server:
+        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
         cw, _ = await client.apply_register(CODE, MACHINE_A, password="wrong")
         assert cw == Result.WRONG_PASSWORD
+        assert "security event" in caplog.text
+        assert "result=wrong_password" in caplog.text
+        assert MACHINE_A not in caplog.text
 
 
 @pytest.mark.asyncio
@@ -350,16 +359,19 @@ async def test_empty_machine_code_rejected(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_junk_machine_code_rejected(tmp_path):
+async def test_junk_machine_code_rejected(tmp_path, caplog):
     """Regression: a non-GUID fingerprint ('x', not <36-char GUID>|...) must be
     rejected, so the server only ever binds/issues licenses a real client can
     validate (IsReg1 requires a 36-char GUID UUID)."""
     server, aio_server, client = await _make_server(tmp_path, device_limit=2)
     async with aio_server:
+        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
         code, body = await client.apply_register(CODE, "x")
         assert code == Result.INFO_ERROR
         assert body == ""
         assert server.db.get_activation_count(CODE) == 0
+        assert "security event" in caplog.text
+        assert "result=invalid_machine_code" in caplog.text
 
 
 @pytest.mark.asyncio

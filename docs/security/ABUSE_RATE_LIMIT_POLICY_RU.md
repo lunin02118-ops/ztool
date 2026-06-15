@@ -4,11 +4,9 @@
 controls: firewall/fail2ban/journal monitoring. In-process limiter можно
 добавить отдельным PR, если abuse станет реальной проблемой.
 
-Важно: часть событий, например `wrong_password` и invalid machine/code, может
-попадать в DB `audit_log`, а не напрямую в journald. Для таких событий нужен
-отдельный journal/exporter rule или периодический DB-based detector, иначе
-пример fail2ban ниже будет ловить только те случаи, которые реально пишутся в
-application logs.
+События `wrong_password`, `invalid_code` и `invalid_machine_code` пишутся и в
+DB `audit_log`, и в application logs как redacted `security event ip=...`.
+Поэтому fail2ban/journald может ловить онлайн-перебор без доступа к SQLite.
 
 ## Что считать abuse
 
@@ -25,8 +23,9 @@ Filter `/etc/fail2ban/filter.d/ztool-license-server.conf`:
 ```ini
 [Definition]
 failregex = ^.*Protocol error from \('<HOST>', .*\):.*$
-            ^.*wrong_password.*<HOST>.*$
-            ^.*invalid machine code.*<HOST>.*$
+            ^.*security event ip=<HOST> .*result=wrong_password.*$
+            ^.*security event ip=<HOST> .*result=invalid_code.*$
+            ^.*security event ip=<HOST> .*result=invalid_machine_code.*$
 ignoreregex =
 ```
 

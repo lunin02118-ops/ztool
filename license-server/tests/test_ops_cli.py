@@ -4,7 +4,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from ztool_license_server.cli import cmd_backup, cmd_healthcheck, cmd_verify_backup
+from ztool_license_server.cli import (
+    cmd_add_code,
+    cmd_backup,
+    cmd_keygen,
+    cmd_healthcheck,
+    cmd_list_codes,
+    cmd_verify_backup,
+)
 from ztool_license_server.crypto.keygen import generate_keypair, save_keypair
 from ztool_license_server.db import LicenseDB
 
@@ -78,6 +85,51 @@ def test_backup_requires_existing_source_db(tmp_path):
 
     assert not db_path.exists()
     assert not backup_path.exists()
+
+
+def test_license_code_cli_uses_env_db_path(tmp_path, monkeypatch, capsys):
+    env_db = tmp_path / "env" / "licenses.db"
+    wrong_db = tmp_path / "cwd" / "licenses.db"
+    wrong_db.parent.mkdir()
+    monkeypatch.chdir(wrong_db.parent)
+    monkeypatch.setenv("ZTOOL_DB_PATH", str(env_db))
+
+    cmd_add_code(SimpleNamespace(
+        db=None,
+        code="ENV00-TEST0-CODE0-00000-00001",
+        password="",
+        limit=2,
+        expires=None,
+        note="env-db",
+    ))
+    cmd_list_codes(SimpleNamespace(db=None))
+
+    out = capsys.readouterr().out
+    assert "ENV00-TEST0-CODE0-00000-00001" in out
+    assert env_db.exists()
+    assert not wrong_db.exists()
+
+
+def test_keygen_uses_explicit_env_key_files(tmp_path, monkeypatch, capsys):
+    public_key = tmp_path / "conf" / "public_key.txt"
+    private_key = tmp_path / "secure" / "private_key.txt"
+    monkeypatch.setenv("ZTOOL_PUBLIC_KEY_FILE", str(public_key))
+    monkeypatch.setenv("ZTOOL_PRIVATE_KEY_FILE", str(private_key))
+
+    cmd_keygen(SimpleNamespace(
+        dir=None,
+        keys_dir=None,
+        public_key_file=None,
+        private_key_file=None,
+        write_debug_key_info=False,
+    ))
+
+    out = capsys.readouterr().out
+    assert "Keys saved to explicit files" in out
+    assert public_key.exists()
+    assert private_key.exists()
+    assert public_key.read_text(encoding="utf-8").strip()
+    assert private_key.read_text(encoding="utf-8").strip()
 
 
 def test_verify_backup_rejects_wrong_schema_version(tmp_path, capsys):
