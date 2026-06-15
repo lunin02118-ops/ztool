@@ -34,6 +34,7 @@
 | [`localization/LOCALIZATION_PROCESS_RU.md`](localization/LOCALIZATION_PROCESS_RU.md) | Проверяемый процесс локализации и JSON scan gate | актуален |
 | [`localization/WHITELIST_POLICY_RU.md`](localization/WHITELIST_POLICY_RU.md) | Правила whitelist для оставшихся Han-строк | актуален |
 | [`localization/UI_SCREENSHOT_CHECKLIST_RU.md`](localization/UI_SCREENSHOT_CHECKLIST_RU.md) | Ручной UI checklist для release candidate | актуален |
+| [`client-core/BINARY_BUILD_POLICY_RU.md`](client-core/BINARY_BUILD_POLICY_RU.md) | Правила fail-closed client-core build, input hashes, manifest, PublicKeyToken | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`../МЕТОДИКА_ПРОВЕРКИ.md`](<../МЕТОДИКА_ПРОВЕРКИ.md>) | Общая методика проверки | актуален |
 | [`../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md`](<../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md>) | Методика теста всего приложения (DLL+EXE+сервер) | актуален |

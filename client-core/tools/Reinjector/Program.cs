@@ -101,27 +101,40 @@ internal sealed class RedirectMapper : ImportMapper
 
 internal static class Matcher
 {
+    public static bool AllowFuzzyMatch { get; set; } = false;
+
     private static string Key(TypeSig s) => s?.FullName ?? "";
 
     public static MethodDef FindMethod(TypeDef tt, MethodDef src)
         => FindMethodBySig(tt, src.Name?.String, src.MethodSig);
 
+    private static bool SigMatches(MethodDef candidate, MethodSig sig)
+    {
+        if (candidate == null || sig == null || candidate.MethodSig == null) return false;
+        var pc = sig.Params.Count;
+        if ((candidate.MethodSig.Params.Count) != pc) return false;
+        if (Key(candidate.MethodSig.RetType) != Key(sig.RetType)) return false;
+        for (int i = 0; i < pc; i++)
+            if (Key(candidate.MethodSig.Params[i]) != Key(sig.Params[i])) return false;
+        return true;
+    }
+
     public static MethodDef FindMethodBySig(TypeDef tt, string name, MethodSig sig)
     {
         if (tt == null || name == null) return null;
         var byName = tt.Methods.Where(m => m.Name == name).ToList();
-        if (byName.Count <= 1) return byName.FirstOrDefault();
+        if (byName.Count == 0) return null;
+        if (byName.Count == 1)
+        {
+            if (sig == null || SigMatches(byName[0], sig)) return byName[0];
+            return AllowFuzzyMatch ? byName[0] : null;
+        }
         var pc = sig?.Params.Count ?? 0;
         var cand = byName.Where(m => (m.MethodSig?.Params.Count ?? 0) == pc).ToList();
         if (cand.Count == 1) return cand[0];
         foreach (var m in cand)
-        {
-            bool ok = true;
-            for (int i = 0; i < pc; i++)
-                if (Key(m.MethodSig.Params[i]) != Key(sig.Params[i])) { ok = false; break; }
-            if (ok && Key(m.MethodSig.RetType) == Key(sig.RetType)) return m;
-        }
-        return cand.FirstOrDefault() ?? byName.FirstOrDefault();
+            if (SigMatches(m, sig)) return m;
+        return AllowFuzzyMatch ? (cand.FirstOrDefault() ?? byName.FirstOrDefault()) : null;
     }
 }
 
@@ -133,7 +146,17 @@ internal static class Program
         {
             var m = ModuleDefMD.Load(args[1]);
             Console.WriteLine("AssemblyRefs:");
+            int badRefs = 0;
             foreach (var ar in m.GetAssemblyRefs()) Console.WriteLine("  " + ar.FullName);
+            foreach (var ar in m.GetAssemblyRefs())
+            {
+                var n = ar.Name?.String;
+                if (n == "ZTool.public" || n == "ZTool.Core")
+                {
+                    Console.WriteLine("  ! dangling assembly ref <- " + n);
+                    badRefs++;
+                }
+            }
             Console.WriteLine("TypeRefs into ZTool.public / ZTool.Core:");
             int bad = 0;
             foreach (var tr in m.GetTypeRefs())
@@ -141,6 +164,7 @@ internal static class Program
                 var n = tr.DefinitionAssembly?.Name?.String;
                 if (n == "ZTool.public" || n == "ZTool.Core") { Console.WriteLine("  ! " + tr.FullName + "  <- " + n); bad++; }
             }
+            bad += badRefs;
             Console.WriteLine($"dangling typerefs = {bad}");
             return bad > 0 ? 1 : 0;
         }
@@ -201,10 +225,12 @@ internal static class Program
         bool listOnly = false;
         bool noOpt = false;
         bool preserve = false;
+        bool allowFuzzyMatch = false;
         for (int i = 3; i < args.Length; i++)
         {
             if (args[i] == "--noopt") { noOpt = true; continue; }
             if (args[i] == "--preserve") { preserve = true; continue; }
+            if (args[i] == "--allow-fuzzy-match") { allowFuzzyMatch = true; continue; }
             if (args[i] == "--types" && i + 1 < args.Length)
                 typeFilter = new HashSet<string>(args[++i].Split(',').Select(s => s.Trim()));
             else if (args[i] == "--methods" && i + 1 < args.Length)
@@ -217,12 +243,13 @@ internal static class Program
 
         var target = ModuleDefMD.Load(targetPath);
         var source = ModuleDefMD.Load(sourcePath);
+        Matcher.AllowFuzzyMatch = allowFuzzyMatch;
         var mapper = new RedirectMapper(target, source);
         var importer = new Importer(target,
             ImporterOptions.TryToUseTypeDefs | ImporterOptions.TryToUseMethodDefs | ImporterOptions.TryToUseFieldDefs,
             new GenericParamContext(), mapper);
 
-        int replaced = 0, skipped = 0;
+        int replaced = 0, skipped = 0, missingTargets = 0;
         foreach (var st in source.GetTypes())
         {
             if (st.IsGlobalModuleType) continue;
@@ -230,7 +257,12 @@ internal static class Program
             if (!typeFilter.Contains(simple)) continue;
 
             var tt = target.GetTypes().FirstOrDefault(t => t.FullName == st.FullName);
-            if (tt == null) { Console.Error.WriteLine($"  ! no target type {st.FullName}"); continue; }
+            if (tt == null)
+            {
+                Console.Error.WriteLine($"  ! no target type {st.FullName}");
+                missingTargets++;
+                continue;
+            }
 
             foreach (var sm in st.Methods)
             {
@@ -239,7 +271,12 @@ internal static class Program
                 if (methodFilter != null && !methodFilter.Contains(sm.Name.String)) continue;
                 if (methodExclude.Contains(sm.Name.String)) continue;
                 var tm = Matcher.FindMethod(tt, sm);
-                if (tm == null) { Console.Error.WriteLine($"  ! no target method {st.Name}::{sm.Name}"); continue; }
+                if (tm == null)
+                {
+                    Console.Error.WriteLine($"  ! no target method {st.Name}::{sm.Name}");
+                    missingTargets++;
+                    continue;
+                }
                 CopyBody(sm, tm, importer, mapper, noOpt);
                 replaced++;
             }
@@ -248,7 +285,13 @@ internal static class Program
         if (listOnly)
         {
             Console.WriteLine($"listed: candidate methods only (no write)");
-            return 0;
+            return missingTargets > 0 ? 1 : 0;
+        }
+
+        if (missingTargets > 0)
+        {
+            Console.Error.WriteLine($"ERROR: missing target types/methods = {missingTargets}; output not written");
+            return 1;
         }
 
         var opts = new dnlib.DotNet.Writer.ModuleWriterOptions(target);
