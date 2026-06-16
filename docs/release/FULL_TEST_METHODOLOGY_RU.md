@@ -81,7 +81,24 @@ PR #33: восстановление видимости колонок и уда
    Get-Process SLDWORKS,ZTool -ErrorAction SilentlyContinue | Stop-Process -Force
    ```
 
-2. Сделать backup затрагиваемых веток реестра в папку отчёта.
+2. Нормализовать окружение процесса, из которого запускается тест.
+
+   В Codex/PowerShell окружение может отличаться от обычного запуска с рабочего
+   стола. Практически важный случай: пустой `$env:WINDIR` приводит к ложной
+   ошибке SolidWorks «Не удалось загрузить Microsoft .NET Framework» или вечному
+   `splash`, хотя запуск через ярлык/проводник у пользователя работает.
+
+   ```powershell
+   $env:WINDIR = 'C:\Windows'
+   $env:SystemRoot = 'C:\Windows'
+   $env:ComSpec = 'C:\Windows\system32\cmd.exe'
+
+   if (-not $env:WINDIR -or -not (Test-Path "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe")) {
+       throw "Broken launch environment: WINDIR/RegAsm is not available"
+   }
+   ```
+
+3. Сделать backup затрагиваемых веток реестра в папку отчёта.
 
    ```powershell
    $stamp = Get-Date -Format yyyyMMdd-HHmmss
@@ -94,7 +111,7 @@ PR #33: восстановление видимости колонок и уда
    reg export "HKLM\SOFTWARE\Classes\ZTool.SwAddin" "$backup\HKLM_Classes_ZTool.SwAddin.reg" /y
    ```
 
-3. Проверить и убрать старые следы `ZTool`/старых test-dir путей.
+4. Проверить и убрать старые следы `ZTool`/старых test-dir путей.
 
    ```powershell
    reg query HKLM\SOFTWARE\Classes /f ZTool /s /reg:64
@@ -106,22 +123,22 @@ PR #33: восстановление видимости колонок и уда
    тестовую папку `runtime`, тест **невалиден**: удалить stale-запись или
    перерегистрировать add-in из текущей папки.
 
-4. Зарегистрировать именно текущий `runtime\ZTool.dll`.
+5. Зарегистрировать именно текущий `runtime\ZTool.dll`.
 
    ```powershell
    Push-Location <runtime>
-   & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe" .\ZTool.dll /codebase
+   & "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe" .\ZTool.dll /codebase
    Pop-Location
    ```
 
-5. Повторно проверить, что `CodeBase` в `HKLM\SOFTWARE\Classes` указывает на
+6. Повторно проверить, что `CodeBase` в `HKLM\SOFTWARE\Classes` указывает на
    текущий `runtime\ZTool.dll`, а не на старую папку.
 
    ```powershell
    reg query HKLM\SOFTWARE\Classes /f "<runtime>\ZTool.dll" /s /reg:64
    ```
 
-6. Для тестов лицензирования на чистой машине дополнительно очистить license
+7. Для тестов лицензирования на чистой машине дополнительно очистить license
    state. Для BOM/цветов/экспорта этот шаг выполнять только если нужен именно
    clean-license сценарий.
 
@@ -132,8 +149,9 @@ PR #33: восстановление видимости колонок и уда
    ```
 
 Если после этого SolidWorks всё равно показывает «Не удалось загрузить Microsoft
-.NET Framework», сначала повторить registry pre-flight и проверить `CodeBase`;
-не продолжать BOM/цветовые тесты из такой сессии.
+.NET Framework», сначала проверить `$env:WINDIR`, `$env:SystemRoot`, затем
+повторить registry pre-flight и проверить `CodeBase`; не продолжать
+BOM/цветовые тесты из такой сессии.
 
 > SolidWorks для теста открывать **через файл сборки**
 > `TestModel/0614-A00.SLDASM` (проводник/ассоциация `.SLDASM`). Не стартовать
@@ -150,6 +168,81 @@ Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256
 
 Если путь не из тестового runtime-каталога или hash не совпадает с ожидаемым,
 тест невалиден: сначала исправить регистрацию/путь запуска.
+
+### 2.2 Протокол работы с окнами и координатная карта
+
+Чтобы живой прогон был воспроизводимым, нельзя тестировать из «плавающих» окон
+и случайных координат. Перед `Подключить SW`, экспортом BOM и тестами цветов
+нужно привести окна к одному виду и сохранить скриншоты контрольных точек.
+
+Обязательный порядок:
+
+1. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
+2. Развернуть окно SolidWorks на основном мониторе.
+3. Запустить ZTool только кнопкой ленты SolidWorks (`Управление файлами`).
+4. Развернуть окно `ZTool 1.0(x64)`.
+5. Проверить, что ZTool видит 29 строк после `Подключить SW`.
+6. Все клики ниже считать **относительно левого верхнего угла развернутого
+   окна ZTool**, а не от экрана. Если окно не развернуто, координатная карта
+   недействительна.
+7. После каждого критического шага сохранять скриншот в папку отчёта:
+   `01-sw-open.png`, `02-ztool-connected.png`, `03-export-menu.png`,
+   `04-bom-XX-save-dialog.png`, `05-bom-XX-result.xlsx`.
+
+PowerShell-заготовка для фиксации текущего окна:
+
+```powershell
+$z = Get-Process ZTool | Select-Object -First 1
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public class WinRect {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+  public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+}
+'@
+[WinRect]::ShowWindow($z.MainWindowHandle, 3) | Out-Null # maximize
+$r = New-Object WinRect+RECT
+[WinRect]::GetWindowRect($z.MainWindowHandle, [ref]$r) | Out-Null
+"ZTool rect: $($r.Left),$($r.Top),$($r.Right),$($r.Bottom)"
+```
+
+Базовые координаты для развернутого ZTool:
+
+| Действие | Координата `X,Y` внутри окна ZTool | Ожидаемо |
+|----------|------------------------------------|----------|
+| Вкладка `Главная` | `78,35` | Открыта лента подключения/таблицы |
+| Вкладка `Спецификация` | `155,35` | Открыта лента экспорта BOM |
+| `Подключить SW` | `38,72` | Статус: `Подключение завершено`, в таблице 29 строк |
+| Dropdown `Экспорт спецификации` | `54,103` | Открыто меню из 8 режимов |
+| `Режим 1` | `126,60` | Активен режим 1 |
+| `Режим 2` | `126,83` | Активен режим 2 |
+| Множитель количества | `290,86` | Поле множителя активно |
+
+Меню `Экспорт спецификации` после клика `54,103`:
+
+| ID | Пункт меню | Координата `X,Y` внутри окна ZTool |
+|----|------------|------------------------------------|
+| `BOM-01` | Экспорт сводной спецификации | `120,130` |
+| `BOM-02` | Экспорт иерархической спецификации | `120,152` |
+| `BOM-03` | Экспорт спецификации верхнего уровня | `120,174` |
+| `BOM-04` | Экспорт сводной спецификации деталей | `120,196` |
+| `BOM-05` | Экспорт сводной спецификации (с эскизами) | `120,218` |
+| `BOM-06` | Экспорт иерархической спецификации (с эскизами) | `120,240` |
+| `BOM-07` | Обрабатываемые детали | `120,262` |
+| `BOM-08` | Покупные изделия | `120,284` |
+
+Для стандартного окна сохранения Excel не использовать случайный выбор папки
+мышью. В поле `Имя файла` вставить полный путь вида
+`<report>\bom-exports\BOM-01-summary.xlsx` и нажать `Enter`. Если диалог
+открылся не в том каталоге, это не ошибка ZTool, но в отчёте фиксируется
+скриншотом.
+
+Если появляется модальное окно `Вопрос / Получить данные заново?`, выбрать
+`ОК`, затем повторить скриншот `02-ztool-connected.png`. Если появляется
+`Не удалось загрузить Microsoft .NET Framework`, вернуться в §2.1: это не
+валидная ZTool-сессия.
 
 ---
 
@@ -390,7 +483,8 @@ Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256
 ### 13.2 Живой SolidWorks-прогон (обязателен для FULL PASS)
 
 1. Выполнить registry pre-flight из §2.1: закрыть SW/ZTool, сохранить backup
-   реестра, убрать stale `CodeBase`, зарегистрировать текущий `runtime\ZTool.dll`.
+   реестра, нормализовать `$env:WINDIR/SystemRoot/ComSpec`, убрать stale
+   `CodeBase`, зарегистрировать текущий `runtime\ZTool.dll`.
 2. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
 3. На ленте SolidWorks открыть ZTool → `Управление файлами`.
 4. Зафиксировать путь/hash процесса `ZTool.exe` командами из §2.
