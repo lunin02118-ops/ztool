@@ -135,15 +135,38 @@ def load_translations(path: Path, whitelist: dict[str, set[str]]) -> tuple[dict[
 
 
 def run_localizer(localizer_project: Path, dotnet: str, exe: Path, mode: str) -> list[str]:
-    result = subprocess.run(
-        [dotnet, "run", "-c", "Release", "--project", str(localizer_project), "--", mode, str(exe)],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
+    command = [
+        dotnet,
+        "run",
+        "-c",
+        "Release",
+        "--project",
+        str(localizer_project),
+        "--",
+        mode,
+        str(exe),
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"dotnet executable not found: {dotnet}") from exc
+    except subprocess.CalledProcessError as exc:
+        details = "\n".join(
+            part for part in [exc.stdout.strip(), exc.stderr.strip()] if part
+        )
+        suffix = f"\n{details}" if details else ""
+        raise RuntimeError(
+            f"Localizer scan command failed with exit code {exc.returncode}: {' '.join(command)}"
+            f"{suffix}"
+        ) from exc
     return result.stdout.splitlines()
 
 
@@ -239,7 +262,11 @@ def main() -> int:
     parser.add_argument("--fail-on-unclassified", action="store_true")
     args = parser.parse_args()
 
-    report = build_report(args)
+    try:
+        report = build_report(args)
+    except RuntimeError as exc:
+        print(f"localization_scan error: {exc}", file=sys.stderr)
+        return 2
     payload = json.dumps(report, ensure_ascii=False, indent=2)
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)

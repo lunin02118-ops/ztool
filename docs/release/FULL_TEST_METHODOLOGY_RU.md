@@ -521,6 +521,13 @@ PASS: после повторного чтения ZTool показывает з
 паритет с оригиналом, а только подтверждают, что сборка/профиль/шаблоны готовы к
 живому тесту.
 
+Перед запуском проверить toolchain:
+
+- `python --version` — совместимая версия Python; CI использует 3.12.
+- `dotnet --list-sdks` — должен показать установленный SDK. Одного .NET Runtime
+  недостаточно: `client-core/build.ps1`, `Localizer`, `Reinjector` и
+  `localization_scan.py` используют `dotnet build/run`.
+
 - `Get-FileHash .\ZTool.exe -Algorithm SHA256`
 - `Get-FileHash .\ZTool.dll -Algorithm SHA256`
 - `python client-core/tools/check_bom_template.py ZTool.settings`

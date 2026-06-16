@@ -302,7 +302,7 @@ internal static class Program
         if (form == null || init?.Body == null) return 0;
         if (form.FindMethod("SplitGrid_KeyDown") != null) return 0;
 
-        IMethod FindMethodRef(string name, string declaringTypeName = null) =>
+        IMethod FindMethodRef(string name, string declaringTypeName = null, int? paramCount = null) =>
             mod.GetTypes()
                 .SelectMany(t => t.Methods)
                 .Where(m => m.Body != null)
@@ -310,7 +310,8 @@ internal static class Program
                 .Select(i => i.Operand as IMethod)
                 .FirstOrDefault(m => m != null
                     && m.Name == name
-                    && (declaringTypeName == null || m.DeclaringType?.Name == declaringTypeName));
+                    && (declaringTypeName == null || m.DeclaringType?.Name == declaringTypeName)
+                    && (paramCount == null || m.MethodSig?.Params.Count == paramCount.Value));
 
         var addKeyDown = FindMethodRef("add_KeyDown");
         var keyHandlerCtor = FindMethodRef(".ctor", "KeyEventHandler");
@@ -321,7 +322,7 @@ internal static class Program
         var getCurrentCell = FindMethodRef("get_CurrentCell", "DataGridView");
         var getRowIndex = FindMethodRef("get_RowIndex", "DataGridViewCell");
         var getRowCount = FindMethodRef("get_RowCount", "DataGridView");
-        var endEdit = FindMethodRef("EndEdit", "DataGridView");
+        var endEdit = FindMethodRef("EndEdit", "DataGridView", paramCount: 0);
         var getRows = FindMethodRef("get_Rows", "DataGridView");
         var removeAt = FindMethodRef("RemoveAt", "DataGridViewRowCollection");
 
