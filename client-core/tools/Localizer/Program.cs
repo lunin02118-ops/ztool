@@ -258,7 +258,8 @@ internal static class Program
     // The material/color context menu uses the component kind stored in
     // Col_Extname.Tag as an internal key. The vendor key is "零件"; it is not a
     // visible label in these methods. Translating it to "Деталь" makes commands
-    // like "Случайный цвет" silently skip selected part rows.
+    // like "Случайный цвет" silently skip selected part rows or read material
+    // colors without marking rows as parts.
     private static int RestoreMaterialPartKindKeys(ModuleDefMD mod)
     {
         int changes = 0;
@@ -266,6 +267,9 @@ internal static class Program
         {
             "GetMaterialName",
             "Material_list_ItemClicked",
+            "mens_click",
+            "addctl",
+            "readstr",
         };
 
         var form = mod.GetTypes().FirstOrDefault(t => t.FullName == "ZTool.Frmmain");
