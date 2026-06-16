@@ -13,6 +13,13 @@
 > `docs/production/*`). Цель — единая картина качества, рисков и готовности к продакшену,
 > с привязкой находок к файлам и строкам, и вход для `REFACTORING_PLAN_2026-06-16_RU.md`.
 
+> **Актуализация 2026-06-16 (рев. 3).** После базы аудита (`91fc2b5`) в `main` влиты PR #30
+> (лицензионное соглашение) и PR #32 (подписанный PDF удалён из `main`, оставлено резюме
+> `docs/legal/README.md`). Открыты: PR #33 (фиксы клиента + методика §2.1/2.2 от исполнителя),
+> PR #34 (очистка LFS без force-push), PR #35 (`scripts/sw_test_preflight.ps1` + skill —
+> решение проблемы тестирования у исполнителя). Новая находка **F-13** (окружение
+> тестирования) добавлена ниже; рекомендация по статусу не изменилась.
+
 ---
 
 ## 0. Executive summary (RU)
@@ -232,7 +239,7 @@ Severity: **P0** — блокер продакшена/доступности; *
 
 | ID | Sev | Находка | Доказательство | Рекомендация |
 |----|-----|---------|----------------|--------------|
-| B1 | P0 | Memory-dump 3.1 ГБ в Git LFS ломает чистый clone (budget exceeded) | `dumps/full-memory-20260609-081854/*.dmp.part00{1,2}` (1.6+1.5 ГБ); `git clone` → smudge error | Убрать дампы из LFS/истории (`git filter-repo`/BFG), хранить вне Git (release asset/внешнее хранилище); оставить только README с инструкцией восстановления |
+| B1 | P0 | Memory-dump 3.1 ГБ в Git LFS ломает чистый clone (budget exceeded) | `dumps/full-memory-20260609-081854/*.dmp.part00{1,2}` (1.6+1.5 ГБ); `git clone` → smudge error | **Адресовано PR #34 (без force-push):** дамп убран из HEAD обычным коммитом → clone чинится; README хранит SHA256 + способ воспроизведения. Полная вычистка из истории — опционально (требует force-push) |
 | B2 | P0 | Нет автоматического доказательства паритета клиента | gap-аудит §«Что не было закрыто»; нет parity-гейта в CI | Реализовать `client-semantic-parity` (Phase 11): чтение N позиций, BOM 8/8, материал/ручной/случайный цвет, save→reread, JSON+скрины |
 | B3 | P1 | Готовые ветки/PR не слиты в `main` | `origin/devin/1781595783-phase11-string-registry-gates` (Phase 11), `…-release-acceptance-ci`, `…-fix-db-bare-path`, `docs-*` | Ревью и merge по порядку зависимостей; зафиксировать в плане |
 | B4 | P1 | Локализация по языку, а не по роли (риск перевода ключей) | баг `零件`→«Деталь» в `Frmmain`; `localization_scan.py` не различает роль | `internal-string-invariants` тест: сравнение оригинал/локализ. по whitelisted internal keys, fail на новый перевод vendor-key |
@@ -243,6 +250,7 @@ Severity: **P0** — блокер продакшена/доступности; *
 | Q3 | P3 | Клиентский код — декомпилят с CN-идентификаторами/VB-артефактами | `client-core/src/*.cs` | В рамках Варианта B — переименование/очистка; иначе задокументировать как vendor-surface |
 | S1 | P2 | Слабая крипта (RSA-1024 no-pad/DES/MD5) — vendor-совместимость | `crypto/*`, bandit skips в `pyproject.toml` | Зафиксировать как принятый риск + план миграции при возможности |
 | H1 | P3 | Дублирующиеся/исторические доки и mojibake-имена в прошлом | `DOC_AUDIT_2026-06-14_RU.md` | Поддерживать `docs/INDEX.md` как единственный указатель |
+| F-13 | P0 | Окружение тестирования у исполнителя ломает живой прогон в SolidWorks | `FULL_TEST_METHODOLOGY_RU.md` §2.1/2.2 (PR #33): пустой `WINDIR` → ложная ошибка «.NET Framework failed to load»/splash; stale `RegAsm CodeBase`/AddIn → грузится не тот `ZTool.dll`; LFS ломает clone | **Адресовано PR #35:** `scripts/sw_test_preflight.ps1` (нормализация env, registry pre-flight, RegAsm /codebase, проверка хешей) + skill `solidworks-ztool-testing`. Исполнителю прогнать `-Register` на SW-машине (🟠) |
 
 Примечание по секретам: приватный RSA-ключ в репозитории **не найден**; `client-rekey/new_*.txt` —
 это шифртекст/подпись (безопасно), `license-server/keys/` содержит только `public_key.txt`.

@@ -1,10 +1,19 @@
 # План рефакторинга и подготовки к продакшену ZTool
 
-- Дата: 2026-06-16 (ревизия 2 — основательный инженерный план)
+- Дата: 2026-06-16 (ревизия 3 — актуализация: решение проблемы тестирования у исполнителя)
 - Вход: `docs/audit/CODEBASE_AUDIT_2026-06-16_RU.md`
 - Аудитор: Devin. Исполнитель: отдельный агент на машине с **SolidWorks 2025**.
 - Правовое основание: подписанное соглашение Lee Chan / `z-tool.cn` → V. Lunin от 2026-05-30.
-  Публичное резюме без подписей: `docs/legal/README.md`.
+  Публичное резюме без подписей: `docs/legal/README.md` (подписанный PDF удалён из `main`, PR #32).
+
+> **Актуализация (рев. 3).** С момента рев. 2 в репозитории появилось:
+> - PR #30 (merged) — добавлено лицензионное соглашение; PR #32 (merged) — подписанный PDF удалён из `main`,
+>   оставлено текстовое резюме (`docs/legal/README.md`). Вопрос «убрать PDF из истории» — **закрыт**.
+> - PR #33 (open) — исполнитель починил клиента (видимость колонок, удаление строк в «Разделить столбец»)
+>   и задокументировал реальные проблемы тестирования в `docs/release/FULL_TEST_METHODOLOGY_RU.md` §2.1/§2.2.
+> - PR #34 (open) — очистка LFS **без force-push** (дамп убран из HEAD обычным коммитом) — закрывает A1 ниже.
+> - PR #35 (open) — `scripts/sw_test_preflight.ps1` + skill `solidworks-ztool-testing` — закрывает C2/C3/C5
+>   и снимает блокер тестирования у исполнителя (см. новый раздел **C0**).
 
 > **Главная цель пользователя:** «полный исходный код с максимальной и лёгкой поддержкой».
 > Это значит, что стратегический приоритет — **Вариант B: полная реконструкция клиента ZTool
@@ -42,13 +51,18 @@
 
 ## A. Гигиена и доступность репозитория (P0) 🟢
 
-A1. **Вынести memory-dump из Git.** 🟢
-- Сейчас: `dumps/full-memory-20260609-081854/SLDWORKS_1344_full.dmp.part00{1,2}` (1.6+1.5 ГБ, LFS),
-  чистый `git clone` падает: `This repository exceeded its LFS budget` (воспроизведено аудитором).
-- Действие: переписать историю (`git filter-repo`/BFG), убрав дамп; перенести в внешнее хранилище
-  (GitHub Release asset/S3/сетевой диск); оставить `dumps/.../README.txt` с SHA256 и инструкцией.
-- **Требует force-push в `main` → только с явного разрешения пользователя.**
-- DoD: свежий `git clone` без smudge-ошибок; CI зелёный; размер `.git` ↓ кратно.
+A1. **Вынести memory-dump из Git.** 🟢 — **СДЕЛАНО без force-push (PR #34).**
+- Было: `dumps/full-memory-20260609-081854/SLDWORKS_1344_full.dmp.part00{1,2}` (1.6+1.5 ГБ, LFS),
+  чистый `git clone` падал: `This repository exceeded its LFS budget` (воспроизведено аудитором).
+- Решение (PR #34): дамп убран из **текущего** коммита обычным `git rm` (история `main` НЕ переписана,
+  force-push не нужен). Обычный `git clone` тянет LFS-объекты только для HEAD — после удаления из HEAD
+  smudge больше не запускается. Проверено свежим clone: clone проходит, `git lfs ls-files` пуст.
+  `dumps/.../README.txt` сохранён как карточка восстановления (SHA256 + размеры + способ воспроизведения
+  дампа на машине с SW). Дамп архивируется во внешнем хранилище (адрес вписать в README после загрузки).
+- DoD: ✅ свежий `git clone` без smudge-ошибок; ✅ CI зелёный.
+- Опционально (отложено): полная вычистка 3 ГБ из `.git` через `git filter-repo`/BFG — **требует force-push
+  в `main`**, делать только при явном разрешении и только ради размера репозитория; на доступность clone
+  уже не влияет.
 
 A2. **Инвентаризация крупных бинарников.** 🟢 — что остаётся в репо как релиз-артефакт, что в Release assets.
 DoD: список «что и почему» в `docs/production/RELEASE_BASELINE_RU.md`.
@@ -58,24 +72,53 @@ DoD: secret-scan зелёный, задокументировано.
 
 ## B. Свести готовую работу в `main` (P1) 🟢
 
-Незакрытые ветки (проверить PR, ребейз, CI, merge/закрыть с причиной):
+Открытые PR/ветки (проверить, ребейз, CI, merge/закрыть с причиной):
+- **PR #33** `codex/fix-split-delete-summary-columns` — фиксы клиента (колонки/удаление строк) + методика §2.1/2.2.
+  Mergeable, отдельный обновлённый `ZTool.exe` (hash `7688EA39…`). Влить после ревью.
+- **PR #34** `devin/…-remove-lfs-dump` — очистка LFS (см. A1). Влить первым: чинит clone у всех.
+- **PR #35** `devin/…-sw-test-preflight` — pre-flight скрипт + skill (см. C0). Влить вместе с #33.
+- **PR #31** — этот аудит + план.
 - `origin/devin/1781595783-phase11-string-registry-gates` — **Phase 11** (string-invariants + registry preflight).
 - `origin/devin/1781585626-release-acceptance-ci` — release acceptance CI.
 - `origin/devin/1781244274-fix-db-bare-path` — фикс пути БД сервера.
 - `origin/docs-plan-ru`, `origin/docs-production-hardening-plan` — доки (проверить актуальность).
 
 DoD: `git branch -r --no-merged origin/main` без «готовых» веток; решения зафиксированы.
+Рекомендуемый порядок merge: #34 → (#33 + #35) → Phase 11/release-CI → #31.
+
+## C0. Решение проблемы тестирования у исполнителя (P0) — реализовано PR #35
+
+Симптом (с машины SW 2025): SolidWorks/ZTool из автоматизации-shell давали ложную ошибку
+«Не удалось загрузить Microsoft .NET Framework» / вечный splash, либо грузили **не тот** `ZTool.dll`,
+либо репозиторий не клонировался из-за LFS. Три корневые причины и их закрытие:
+
+1. **LFS ломает clone/pull.** → A1 / PR #34 (или обходной `GIT_LFS_SKIP_SMUDGE=1 git clone`).
+2. **Пустой `WINDIR`/`SystemRoot` в окружении запуска** → ложная ошибка .NET / splash, хотя через ярлык
+   всё работает. → `scripts/sw_test_preflight.ps1` нормализует `WINDIR/SystemRoot/ComSpec` и проверяет RegAsm.
+3. **Грязный реестр (stale `RegAsm CodeBase`/AddIn-ключи)** → SW грузит чужой DLL. → тот же скрипт бэкапит
+   реестр, сообщает о stale-ссылках и с `-Register` перерегистрирует текущий `runtime\ZTool.dll` и проверяет
+   `CodeBase`; плюс сверяет SHA256 `ZTool.exe`/`ZTool.dll` с принятыми.
+
+Инструменты: `scripts/sw_test_preflight.ps1` (идемпотентный, read-mostly, JSON-отчёт) и skill
+`.agents/skills/solidworks-ztool-testing` (чеклист для будущих сессий-исполнителей). Это автоматизирует
+ручной runbook из `docs/release/FULL_TEST_METHODOLOGY_RU.md` §2.1/§2.2.
+
+DoD исполнителя (🟠): `sw_test_preflight.ps1 -RuntimeDir .\runtime -Register` → status `PASS`; затем
+`TestModel/0614-A00.SLDASM` открыт через Explorer, ZTool из ленты, окно развёрнуто, хеш работающего
+`ZTool.exe` совпадает — и только из такой сессии запускать BOM/цвет/свойства.
 
 ## C. Доказуемость клиента (Phase 11) — мост к Треку 2 (P0/P1)
 
 C1. `internal-string-invariants` тест 🟢 — сравнение оригинал/локализ. по whitelisted internal keys;
    `零件` проверять в методах `Frmmain` (`GetMaterialName`, `Material_list_ItemClicked`, `mens_click`,
    `addctl`, `readstr`); любой перевод vendor-key без whitelist → fail. DoD: гейт в CI.
-C2. `solidworks-registry-preflight.ps1` 🟠 — `RegAsm CodeBase`, global/versioned `HKLM Addins`,
-   `HKCU AddInsStartup`; печать SHA256 реально используемых `ZTool.dll`/`ZTool.exe`; fail при
-   чужом exe/старом пути/CN-описании. DoD: PASS на тест-машине, артефакт в `manual-test-reports/`.
+C2. Registry/launch pre-flight 🟠 — **реализовано: `scripts/sw_test_preflight.ps1` (PR #35).**
+   `RegAsm CodeBase`, `HKLM Addins`, `HKCU AddInsStartup`, печать SHA256 реально используемых
+   `ZTool.dll`/`ZTool.exe`, fail при чужом exe/старом пути. Осталось 🟠: прогнать `-Register` на
+   тест-машине и приложить JSON-отчёт в `manual-test-reports/` (см. C0).
 C3. Единый способ запуска приёмки 🟠 — открывать `TestModel/0614-A00.SLDASM` через Explorer,
-   ZTool только кнопкой add-in. DoD: зафиксировано в preflight.
+   ZTool только кнопкой add-in (зафиксировано в `FULL_TEST_METHODOLOGY_RU.md` §2.2 и в skill C0).
+   DoD: подтверждено хешем работающего `ZTool.exe`.
 C4. `client-semantic-parity` 🟠 — чтение N позиций (целевое 29), BOM 8/8, материал/ручной/случайный
    цвет, save→reread; результат JSON+скрины+Excel. DoD: всё PASS, нет CJK в видимых путях.
 C5. Полуавтомат методики 🟠 — макрос/PowerShell открывает модель, пишет свойства, гоняет экспорт,
