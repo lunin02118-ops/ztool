@@ -291,6 +291,167 @@ internal static class Program
         return changes;
     }
 
+    // The original split-column dialog lets users add mapping rows, but it has
+    // no explicit delete button. WinForms users naturally press Delete on the
+    // selected grid row; make that path work for the three rule grids without
+    // changing the split/match business logic.
+    private static int PatchSplitColumnDeleteRows(ModuleDefMD mod)
+    {
+        var form = mod.Find("ZTool.FrmSplitcloumn", false);
+        var init = form?.FindMethod("InitializeComponent");
+        if (form == null || init?.Body == null) return 0;
+        if (form.FindMethod("SplitGrid_KeyDown") != null) return 0;
+
+        IMethod FindMethodRef(string name, string declaringTypeName = null) =>
+            mod.GetTypes()
+                .SelectMany(t => t.Methods)
+                .Where(m => m.Body != null)
+                .SelectMany(m => m.Body.Instructions)
+                .Select(i => i.Operand as IMethod)
+                .FirstOrDefault(m => m != null
+                    && m.Name == name
+                    && (declaringTypeName == null || m.DeclaringType?.Name == declaringTypeName));
+
+        var addKeyDown = FindMethodRef("add_KeyDown");
+        var keyHandlerCtor = FindMethodRef(".ctor", "KeyEventHandler");
+        var getKeyCode = FindMethodRef("get_KeyCode", "KeyEventArgs");
+        var setHandled = FindMethodRef("set_Handled", "HandledEventArgs")
+            ?? FindMethodRef("set_Handled", "KeyEventArgs");
+        var setSuppress = FindMethodRef("set_SuppressKeyPress", "KeyEventArgs");
+        var getCurrentCell = FindMethodRef("get_CurrentCell", "DataGridView");
+        var getRowIndex = FindMethodRef("get_RowIndex", "DataGridViewCell");
+        var getRowCount = FindMethodRef("get_RowCount", "DataGridView");
+        var endEdit = FindMethodRef("EndEdit", "DataGridView");
+        var getRows = FindMethodRef("get_Rows", "DataGridView");
+        var removeAt = FindMethodRef("RemoveAt", "DataGridViewRowCollection");
+
+        if (addKeyDown == null || keyHandlerCtor == null || getKeyCode == null
+            || setHandled == null || setSuppress == null || getCurrentCell == null
+            || getRowIndex == null || getRowCount == null || endEdit == null
+            || getRows == null || removeAt == null)
+        {
+            Console.WriteLine("  FrmSplitcloumn: Delete-row patch skipped (WinForms refs missing)");
+            return 0;
+        }
+
+        var dataGridViewType = getCurrentCell.DeclaringType;
+        var dataGridViewCellType = getRowIndex.DeclaringType;
+        var keyEventArgsType = getKeyCode.DeclaringType;
+        var exceptionType = mod.CorLibTypes.GetTypeRef("System", "Exception");
+
+        var handler = new MethodDefUser(
+            "SplitGrid_KeyDown",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, new ClassSig(keyEventArgsType)),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        handler.Body = new CilBody { InitLocals = true };
+        handler.Body.Variables.Add(new Local(new ClassSig(dataGridViewType))); // V_0: grid
+        handler.Body.Variables.Add(new Local(new ClassSig(dataGridViewCellType))); // V_1: current cell
+        handler.Body.Variables.Add(new Local(mod.CorLibTypes.Int32)); // V_2: row index
+
+        var ret = Instruction.Create(OpCodes.Ret);
+        var afterKeyCheck = Instruction.Create(OpCodes.Nop);
+        var afterGridCheck = Instruction.Create(OpCodes.Nop);
+        var afterCellCheck = Instruction.Create(OpCodes.Nop);
+        var afterNonNegativeCheck = Instruction.Create(OpCodes.Nop);
+        var afterBoundsCheck = Instruction.Create(OpCodes.Nop);
+        var handlerStart = Instruction.Create(OpCodes.Pop);
+
+        var body = handler.Body.Instructions;
+        var tryStart = Instruction.Create(OpCodes.Ldarg_2);
+        body.Add(tryStart);
+        body.Add(Instruction.Create(OpCodes.Callvirt, getKeyCode));
+        body.Add(Instruction.CreateLdcI4(46)); // System.Windows.Forms.Keys.Delete
+        body.Add(Instruction.Create(OpCodes.Ceq));
+        body.Add(Instruction.Create(OpCodes.Brtrue, afterKeyCheck));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+
+        body.Add(afterKeyCheck);
+        body.Add(Instruction.Create(OpCodes.Ldarg_1));
+        body.Add(Instruction.Create(OpCodes.Isinst, dataGridViewType));
+        body.Add(Instruction.Create(OpCodes.Stloc_0));
+        body.Add(Instruction.Create(OpCodes.Ldloc_0));
+        body.Add(Instruction.Create(OpCodes.Brtrue, afterGridCheck));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+
+        body.Add(afterGridCheck);
+        body.Add(Instruction.Create(OpCodes.Ldloc_0));
+        body.Add(Instruction.Create(OpCodes.Callvirt, getCurrentCell));
+        body.Add(Instruction.Create(OpCodes.Stloc_1));
+        body.Add(Instruction.Create(OpCodes.Ldloc_1));
+        body.Add(Instruction.Create(OpCodes.Brtrue, afterCellCheck));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+
+        body.Add(afterCellCheck);
+        body.Add(Instruction.Create(OpCodes.Ldloc_1));
+        body.Add(Instruction.Create(OpCodes.Callvirt, getRowIndex));
+        body.Add(Instruction.Create(OpCodes.Stloc_2));
+        body.Add(Instruction.Create(OpCodes.Ldloc_2));
+        body.Add(Instruction.CreateLdcI4(0));
+        body.Add(Instruction.Create(OpCodes.Bge, afterNonNegativeCheck));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+        body.Add(afterNonNegativeCheck);
+        body.Add(Instruction.Create(OpCodes.Ldloc_2));
+        body.Add(Instruction.Create(OpCodes.Ldloc_0));
+        body.Add(Instruction.Create(OpCodes.Callvirt, getRowCount));
+        body.Add(Instruction.Create(OpCodes.Blt, afterBoundsCheck));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+
+        body.Add(afterBoundsCheck);
+        body.Add(Instruction.Create(OpCodes.Ldloc_0));
+        body.Add(Instruction.Create(OpCodes.Callvirt, endEdit));
+        body.Add(Instruction.Create(OpCodes.Pop));
+        body.Add(Instruction.Create(OpCodes.Ldloc_0));
+        body.Add(Instruction.Create(OpCodes.Callvirt, getRows));
+        body.Add(Instruction.Create(OpCodes.Ldloc_2));
+        body.Add(Instruction.Create(OpCodes.Callvirt, removeAt));
+        body.Add(Instruction.Create(OpCodes.Ldarg_2));
+        body.Add(Instruction.CreateLdcI4(1));
+        body.Add(Instruction.Create(OpCodes.Callvirt, setHandled));
+        body.Add(Instruction.Create(OpCodes.Ldarg_2));
+        body.Add(Instruction.CreateLdcI4(1));
+        body.Add(Instruction.Create(OpCodes.Callvirt, setSuppress));
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+
+        body.Add(handlerStart);
+        body.Add(Instruction.Create(OpCodes.Leave, ret));
+        body.Add(ret);
+        handler.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
+        {
+            CatchType = exceptionType,
+            TryStart = tryStart,
+            TryEnd = handlerStart,
+            HandlerStart = handlerStart,
+            HandlerEnd = ret,
+        });
+        form.Methods.Add(handler);
+
+        int changes = 1;
+        foreach (var getterName in new[] { "get_dgv_match", "get_dgv2", "get_dgv_split" })
+        {
+            var getter = form.FindMethod(getterName);
+            if (getter == null) continue;
+            var retIns = init.Body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+            if (retIns == null) continue;
+            var add = new[]
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Callvirt, getter),
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldftn, handler),
+                Instruction.Create(OpCodes.Newobj, keyHandlerCtor),
+                Instruction.Create(OpCodes.Callvirt, addKeyDown),
+                Instruction.Create(OpCodes.Nop),
+            };
+            foreach (var ins in add)
+                init.Body.Instructions.Insert(init.Body.Instructions.IndexOf(retIns), ins);
+            changes++;
+        }
+
+        Console.WriteLine($"  FrmSplitcloumn: Delete removes the current split-rule row (edits={changes})");
+        return changes;
+    }
+
     // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
     // instead of the vendor's leftover 3.8.4.0. Both edits are length-preserving (the numeric
     // DWORDs are fixed size; UTF-16 "3.8.4" and "1.0.0" are both 5 chars), so the PE section
@@ -564,6 +725,7 @@ internal static class Program
             int nameForced = ForceAssemblyName(mod, "ZTool");
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
+            int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -585,7 +747,7 @@ internal static class Program
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
             // normalize it to 1.0.0 so the file's reported version matches.
             int win32Ver = NormalizeWin32Version(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
