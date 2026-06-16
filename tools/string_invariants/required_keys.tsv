@@ -1,6 +1,7 @@
 # Semantic vendor keys that MUST remain (byte-level UTF-16LE) in the named binary.
 # Columns: binary<TAB>key<TAB>note
-ZTool.dll	零件	Col_Extname.Tag semantic key (material/colour logic in Frmmain)
+ZTool.exe	零件	Frmmain Col_Extname.Tag semantic key for material/manual/random colour logic
+ZTool.dll	零件	Add-in/vendor part-kind semantic key
 ZTool.dll	$零件名称$	part-name naming placeholder
 ZTool.dll	$图号$	drawing-number naming placeholder
 ZTool.dll	$版本$	version naming placeholder

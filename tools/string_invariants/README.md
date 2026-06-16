@@ -28,9 +28,11 @@ invariants against the actual shipped binaries (`ZTool.exe`, `ZTool.dll`):
   a literal newline. A note starting with `REVIEW` keeps the gate green but
   reprints the entry in a REVIEW section for a human to confirm it is an internal
   key / font / path and not a missed translation.
-  Roles: `control-name`, `font`, `placeholder-token`, `image-name`, `help-path`,
-  `sample-text`, `visible-text`.
+  Roles: `control-name`, `font`, `placeholder-token`, `semantic-key`,
+  `image-name`, `help-path`, `sample-text`, `visible-text`.
 - `required_keys.tsv` — `binary<TAB>key<TAB>note`. Keys that MUST remain.
+  `零件` is required in `ZTool.exe` (Frmmain material/manual/random colour
+  logic) and in `ZTool.dll` (add-in/vendor part-kind key).
 
 ## Usage
 

@@ -51,7 +51,7 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 - **Тестовая модель:** `TestModel/0614-A00.SLDASM` (29 поз., полный комплект в `TestModel/`).
 - **Релиз-пакет:** `runtime/ZTool.exe`, `runtime/ZTool.dll`, `runtime/SolidWorksTools.dll`,
   `SolidWorksTemplates/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
-  принятыми (рекомендуемая связка: `ZTool.exe`=`0BF4CB0B…9955864B`,
+  принятыми (рекомендуемая связка: `ZTool.exe`=`C5785471…2DD03A9`,
   `ZTool.dll`=`D0535425…0E492EB9`).
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
   → PASS; `manifest.git.dirty=false`; в пакете нет приватных ключей/БД/дампов/логов.
@@ -309,7 +309,8 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
   (парсер `tools/dotnet_strings.py`, без зависимостей);
 - падает, если появилась **неклассифицированная** Han-строка (новый непереведённый
   UI-текст или испорченная локализация) — список разрешённых ролей
-  (control-name/font/placeholder-token/…) ведётся в `tools/string_invariants/allowed_han.tsv`;
+  (control-name/font/placeholder-token/semantic-key/…) ведётся в
+  `tools/string_invariants/allowed_han.tsv`;
 - проверяет **присутствие** обязательных vendor-ключей (`零件`, плейсхолдеры `$...$`/`<...>`)
   по байтам (UTF-16LE) — `tools/string_invariants/required_keys.tsv`; их перевод/удаление =
   ровно та регрессия, что ломала цвета;

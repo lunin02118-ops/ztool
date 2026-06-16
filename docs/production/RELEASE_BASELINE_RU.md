@@ -35,7 +35,7 @@ Last merge: PR #11, repo tidy/docs/CHM
 
 | Компонент | Путь в репозитории | SHA256 |
 |-----------|--------------------|--------|
-| `ZTool.exe` binderfix | `client-core/dist/ZTool_binderfix.exe` | `0BF4CB0B4174D1CCDFEF17373DE7EA4965FC0A2E42F27393E0B2571D9955864B` |
+| `ZTool.exe` binderfix + material/color key fix | `ZTool.exe` | `C578547138DB061A29294260E5D0FAC03F6D86FF1A00A7154F0F6DC0D2DD03A9` |
 | `ZTool.dll` pmpguard2 | `dumps/candidate-ru-20260609/ZTool_ru_candidate2_pmpguard2.dll` | `D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9` |
 
 ## Repository root binary state

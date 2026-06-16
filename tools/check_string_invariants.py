@@ -114,19 +114,42 @@ def evaluate(han_by_binary, key_counts, allowed, required, emit=lambda *_: None)
 
 
 def self_test():
-    allowed = {"修改ToolStripMenuItem": ("control-name", "internal"),
+    allowed = {"零件": ("semantic-key", "internal part-kind key"),
+               "修改ToolStripMenuItem": ("control-name", "internal"),
                "宋体": ("font", "font")}
-    required = [("ZTool.dll", "零件", "semantic key")]
+    required = [("ZTool.exe", "零件", "Frmmain material/color key"),
+                ("ZTool.dll", "零件", "add-in part-kind key")]
     # good: all Han classified, required key present
-    good_f, _ = evaluate({"ZTool.dll": ["修改ToolStripMenuItem", "宋体"]},
-                         {("ZTool.dll", "零件"): 2}, allowed, required)
-    # bad: a new unclassified Han string AND the required key dropped
-    bad_f, _ = evaluate({"ZTool.dll": ["随机颜色", "宋体"]},
-                        {("ZTool.dll", "零件"): 0}, allowed, required)
-    print("self-test: good_failures=%d (want 0), bad_failures=%d (want 2)"
-          % (len(good_f), len(bad_f)))
-    ok = len(good_f) == 0 and len(bad_f) == 2
-    print("SELF-TEST PASS" if ok else "SELF-TEST FAIL: %r" % bad_f)
+    good_f, _ = evaluate({"ZTool.exe": ["零件"],
+                          "ZTool.dll": ["零件", "修改ToolStripMenuItem", "宋体"]},
+                         {("ZTool.exe", "零件"): 1,
+                          ("ZTool.dll", "零件"): 2}, allowed, required)
+    # bad #1: the exact production regression - ZTool.exe loses the Frmmain key
+    missing_exe_f, _ = evaluate({"ZTool.exe": ["零件"],
+                                 "ZTool.dll": ["零件", "宋体"]},
+                                {("ZTool.exe", "零件"): 0,
+                                 ("ZTool.dll", "零件"): 2}, allowed, required)
+    # bad #2: a new unclassified Han string must still fail the allow-list gate
+    unclassified_f, _ = evaluate({"ZTool.exe": ["随机颜色"],
+                                  "ZTool.dll": ["零件", "宋体"]},
+                                 {("ZTool.exe", "零件"): 1,
+                                  ("ZTool.dll", "零件"): 2}, allowed, required)
+    print("self-test: good_failures=%d (want 0), "
+          "missing_exe_key_failures=%d (want 1), "
+          "unclassified_failures=%d (want 1)"
+          % (len(good_f), len(missing_exe_f), len(unclassified_f)))
+    ok = (
+        len(good_f) == 0 and
+        len(missing_exe_f) == 1 and
+        "ZTool.exe" in missing_exe_f[0] and
+        len(unclassified_f) == 1 and
+        "unclassified Han" in unclassified_f[0]
+    )
+    if ok:
+        print("SELF-TEST PASS")
+    else:
+        print("SELF-TEST FAIL: missing_exe=%r unclassified=%r"
+              % (missing_exe_f, unclassified_f))
     return 0 if ok else 1
 
 

@@ -30,7 +30,7 @@ param(
     [string]$AddinClsid = '{59959DFA-3229-4B86-852E-52ABF2BDB8C0}',
     [string]$SolidWorksVersionKey = 'SOLIDWORKS 2025',
 
-    [string]$ExpectedClientExeSha256 = '0bf4cb0b4174d1ccdfef17373de7ea4965fc0a2e42f27393e0b2571d9955864b',
+    [string]$ExpectedClientExeSha256 = 'c578547138db061a29294260e5d0fac03f6d86ff1a00a7154f0f6dc0d2dd03a9',
     [string]$ExpectedAddinDllSha256 = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9',
 
     [switch]$AllowMissingSolidWorks

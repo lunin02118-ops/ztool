@@ -12,6 +12,9 @@ then that many bytes = UTF-16LE chars + 1 trailing flag byte.
 import struct
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 
 def _u16(b, o):
     return struct.unpack_from("<H", b, o)[0]
