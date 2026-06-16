@@ -83,7 +83,7 @@ $swTools = Copy-OptionalSolidWorksTools
 if ($swTools) { $copied += $swTools }
 
 Copy-TreeFiltered (Join-Path $repoRoot 'Шаблоны спецификации') (Join-Path $runtimeDir 'Шаблоны спецификации')
-Copy-TreeFiltered (Join-Path $repoRoot 'SW模板') (Join-Path $runtimeDir 'SW模板')
+Copy-TreeFiltered (Join-Path $repoRoot 'SolidWorksTemplates') (Join-Path $runtimeDir 'SolidWorksTemplates')
 & (Join-Path $repoRoot 'client-core\tools\set_bom_template_path.ps1') `
     -Folder $runtimeDir `
     -Settings (Join-Path $runtimeDir 'ZTool.settings')

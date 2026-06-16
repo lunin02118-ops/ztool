@@ -266,7 +266,7 @@ def main():
             os.path.dirname(os.path.abspath(settings)),
             os.getcwd(),
         ]:
-            candidates.append(os.path.join(base_dir, "SW模板",
+            candidates.append(os.path.join(base_dir, "SolidWorksTemplates",
                                            os.path.basename(mat_path)))
         local_mat = next((p for p in candidates if os.path.exists(p)), None)
         if local_mat:

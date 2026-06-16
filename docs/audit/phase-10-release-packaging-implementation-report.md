@@ -27,7 +27,7 @@ artifact boundary explicit before that testing starts.
 `scripts/build_release_package.ps1` creates a release directory containing:
 
 - `runtime/` with `ZTool.exe`, `ZTool.dll`, settings, help, BOM templates,
-  default SolidWorks/material templates (`SW模板/`) and runtime dependencies;
+  default SolidWorks/material templates (`SolidWorksTemplates/`) and runtime dependencies;
 - `license-server/` without private keys, databases, local backups or cache
   folders;
 - `deploy/` with systemd/Docker/backup/monitoring materials;
@@ -49,7 +49,7 @@ Root runtime artifacts are aligned with the live-tested recommended pair:
 
 The packager now uses those root artifacts by default.
 
-The packager also copies `SW模板/MyMaterials.sldmat` and runs
+The packager also copies `SolidWorksTemplates/MyMaterials.sldmat` and runs
 `client-core/tools/set_bom_template_path.ps1` against the packaged
 `runtime/ZTool.settings`. This rewrites both BOM template paths and the
 material database path to the actual package runtime folder, and restores
@@ -62,7 +62,7 @@ acceptance:
 - `manifest.json` and `SHA256SUMS.txt` consistency;
 - expected `runtime/ZTool.exe` / `runtime/ZTool.dll` hashes;
 - optional required `runtime/SolidWorksTools.dll`;
-- required `runtime/SW模板/MyMaterials.sldmat`;
+- required `runtime/SolidWorksTemplates/MyMaterials.sldmat`;
 - `runtime/ZTool.settings` has non-empty `materialpath`, points it at the
   packaged material library, and has `usematerialcolor=true`;
 - clean manifest state unless explicitly allowed;
@@ -140,7 +140,7 @@ Results:
   package:
   `dirty=false`, `solidworks_tools_included=true`, `sha256sums_entries=118`,
   `manifest_files=117`.
-- Material-library gate PASS: `runtime/SW模板/MyMaterials.sldmat` is present,
+- Material-library gate PASS: `runtime/SolidWorksTemplates/MyMaterials.sldmat` is present,
   `runtime/ZTool.settings materialpath` points at it, and
   `usematerialcolor=true`.
 - Negative extra-file test PASS: after adding `runtime/extra.txt`, verifier

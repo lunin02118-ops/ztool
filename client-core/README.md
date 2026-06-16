@@ -146,7 +146,7 @@ that member as an **empty** list. For the Save-options dialog (`FrmSaveOption`) 
 back to its WinForms *designer* defaults — and the designer default `CheckBox6 = True`
 (= `code.Updatereferencebool`) makes the dialog auto-fill its "reference update" folder (`TextBox1`)
 from the **currently opened model's directory** and then persist that absolute path on save. On a
-machine that opened a model under e.g. `D:\…\测试模型`, that stale path is what later drove the
+machine that opened a model under e.g. `D:\…\TestModel`, that stale path is what later drove the
 *"Сохранить в папку"* column, so re-saving went to a foreign/non-existent directory instead of the
 user's chosen one.
 

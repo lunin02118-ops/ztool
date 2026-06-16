@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SWver>0</SWver>
-  <materialpath>D:\ZTool\SW模板\MyMaterials.sldmat</materialpath>
+  <materialpath>D:\ZTool\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
   <rowcolor>66</rowcolor>
   <colorselrow>false</colorselrow>
   <propname>

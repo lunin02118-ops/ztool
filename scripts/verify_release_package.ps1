@@ -140,7 +140,27 @@ $clientExe = Join-Path $runtimeDir 'ZTool.exe'
 $addinDll = Join-Path $runtimeDir 'ZTool.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
 $settingsPath = Join-Path $runtimeDir 'ZTool.settings'
-$materialLibrary = Join-Path $runtimeDir 'SW模板\MyMaterials.sldmat'
+$materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
+
+function Test-HasCjk {
+    param([string] $Text)
+    foreach ($ch in $Text.ToCharArray()) {
+        $code = [int][char]$ch
+        if (($code -ge 0x3400 -and $code -le 0x9FFF) -or
+            ($code -ge 0xF900 -and $code -le 0xFAFF) -or
+            ($code -ge 0x3040 -and $code -le 0x30FF)) {
+            return $true
+        }
+    }
+    return $false
+}
+
+Get-ChildItem -LiteralPath $root -Recurse -Force | ForEach-Object {
+    $rel = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
+    if (Test-HasCjk $rel) {
+        Fail "package path contains CJK characters: $rel"
+    }
+}
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
@@ -163,7 +183,7 @@ $resolvedMaterialPath = if ([System.IO.Path]::IsPathRooted($settingsMaterialPath
 }
 Assert-File $resolvedMaterialPath
 if ((Resolve-Path -LiteralPath $resolvedMaterialPath).Path -ne (Resolve-Path -LiteralPath $materialLibrary).Path) {
-    Fail "runtime/ZTool.settings materialpath must point to runtime/SW模板/MyMaterials.sldmat, got $settingsMaterialPath"
+    Fail "runtime/ZTool.settings materialpath must point to runtime/SolidWorksTemplates/MyMaterials.sldmat, got $settingsMaterialPath"
 }
 
 if ($RequireSolidWorksTools) {

@@ -10,13 +10,13 @@
   file so they point at "<Folder>\Шаблоны спецификации\bom_шаблон.xlsx".
 
   The material database path has the same constraint. This script also rewrites
-  <materialpath> to "<Folder>\SW模板\MyMaterials.sldmat" and enables
+  <materialpath> to "<Folder>\SolidWorksTemplates\MyMaterials.sldmat" and enables
   <usematerialcolor>true</usematerialcolor>, restoring the default material
   library/color behavior without embedding a developer-machine path.
 
 .PARAMETER Folder
   The ZTool install root that contains the "Шаблоны спецификации" subfolder
-  with bom_шаблон.xlsx and the "SW模板" subfolder with MyMaterials.sldmat.
+  with bom_шаблон.xlsx and the "SolidWorksTemplates" subfolder with MyMaterials.sldmat.
   Example: D:\ztool-pr8-test
 
 .PARAMETER Settings
@@ -37,14 +37,14 @@ if (-not (Test-Path $Settings)) { throw "Settings file not found: $Settings" }
 
 $tplDir  = Join-Path $Folder "Шаблоны спецификации"
 $tplFile = Join-Path $tplDir "bom_шаблон.xlsx"
-$matDir  = Join-Path $Folder "SW模板"
+$matDir  = Join-Path $Folder "SolidWorksTemplates"
 $matFile = Join-Path $matDir "MyMaterials.sldmat"
 
 if (-not (Test-Path $tplFile)) {
     Write-Warning "Template not found at $tplFile - path will still be written, copy the template there."
 }
 if (-not (Test-Path $matFile)) {
-    Write-Warning "Material library not found at $matFile - path will still be written, copy SW模板 there."
+    Write-Warning "Material library not found at $matFile - path will still be written, copy SolidWorksTemplates there."
 }
 
 # UTF-8 without BOM, preserve content

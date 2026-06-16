@@ -10,9 +10,9 @@
 - `runtime/ZTool.exe` hash matches accepted release hash.
 - `runtime/ZTool.dll` hash matches accepted release hash.
 - `runtime/SolidWorksTools.dll` is present.
-- `runtime/SW模板/MyMaterials.sldmat` is present.
+- `runtime/SolidWorksTemplates/MyMaterials.sldmat` is present.
 - `runtime/ZTool.settings` points `materialpath` at packaged
-  `runtime/SW模板/MyMaterials.sldmat`.
+  `runtime/SolidWorksTemplates/MyMaterials.sldmat`.
 - `runtime/ZTool.settings` has `usematerialcolor=true`.
 - Package contains no private keys, DB files, dumps or local logs.
 

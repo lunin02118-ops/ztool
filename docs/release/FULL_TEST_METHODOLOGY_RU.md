@@ -50,7 +50,7 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 - **SolidWorks:** 2025 (обязательно), опционально 2024/2023 smoke.
 - **Тестовая модель:** `0614-A00.SLDASM` (29 поз., полный комплект в `测模/`).
 - **Релиз-пакет:** `runtime/ZTool.exe`, `runtime/ZTool.dll`, `runtime/SolidWorksTools.dll`,
-  `SW模/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
+  `SolidWorksTemplates/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
   принятыми (рекомендуемая связка: `ZTool.exe`=`0BF4CB0B…9955864B`,
   `ZTool.dll`=`D0535425…0E492EB9`).
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
@@ -156,7 +156,7 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 > соответствуют». Раздел — приоритетный.
 
 Предпосылки: `usematerialcolor=true` и валидный `materialpath`
-(`SW模/MyMaterials.sldmat`) — обеспечивает **PR #23**. Без этого цвета не
+(`SolidWorksTemplates/MyMaterials.sldmat`) — обеспечивает **PR #23**. Без этого цвета не
 подхватываются (исходная причина: было `usematerialcolor=false`, пустой
 `materialpath`).
 

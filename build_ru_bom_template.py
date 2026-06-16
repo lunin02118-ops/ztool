@@ -1,6 +1,6 @@
 """Build the Russian BOM Excel template from an explicit Chinese source.
 
-Translates ONLY shared-string header text of ``BOM表模板/bom模板.xlsx`` and
+Translates ONLY shared-string header text of ``BomTemplateOriginal/bom-template.xlsx`` and
 writes ``Шаблоны спецификации/bom_шаблон.xlsx``. Other workbook parts
 (worksheets, styles, column widths, merged cells, drawings, line breaks) are
 copied unchanged so layout/behavior stays compatible with the original.
@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 
-DEFAULT_SRC = Path("BOM表模板") / "bom模板.xlsx"
+DEFAULT_SRC = Path("BomTemplateOriginal") / "bom-template.xlsx"
 DEFAULT_OUT = Path("Шаблоны спецификации") / "bom_шаблон.xlsx"
 EXPECTED_SHARED_STRINGS = 25
 

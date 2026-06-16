@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SWver>0</SWver>
-  <materialpath>D:\ztool-pr8-test\SW模\MyMaterials.sldmat</materialpath>
+  <materialpath>D:\ztool-pr8-test\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
   <rowcolor>73</rowcolor>
   <colorselrow>false</colorselrow>
   <propname>
@@ -776,7 +776,7 @@ False</string>
 0</string>
   </K3code>
   <macrolist>
-    <string>D:\ZTool\宏程序\等轴测显示并保存.swp</string>
+    <string>D:\ZTool\LegacyMacros\save-isometric-view.swp</string>
   </macrolist>
   <checkupdata>true</checkupdata>
   <IsCollpased>false</IsCollpased>
