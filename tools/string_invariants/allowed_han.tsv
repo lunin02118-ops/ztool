@@ -1,0 +1,31 @@
+# Allow-list of Han strings that may remain in localized client binaries.
+# Columns: string<TAB>role<TAB>note   ('\n' in string = literal newline)
+# role: control-name | font | placeholder-token | image-name | help-path | sample-text | visible-text
+# note starting with REVIEW = allowed but surfaced for human confirmation.
+$图号$	placeholder-token	BOM/naming placeholder key (semantic, must stay)
+$属性名称$，表示写入自定义\n%属性名称%，表示写入配置	visible-text	REVIEW: untranslated tooltip in ZTool.dll (likely a real localization miss)
+$版本$	placeholder-token	BOM/naming placeholder key (semantic, must stay)
+$零件名称$	placeholder-token	BOM/naming placeholder key (semantic, must stay)
+/基本操作/保存数据到SolidWorks.htm	help-path	REVIEW: CHM topic path; confirm matches help_ru.chm topic names
+/进阶操作/BOM表模板制作和导出.htm	help-path	REVIEW: CHM topic path; confirm matches help_ru.chm topic names
+/进阶操作/缩略图显示及操作.htm	help-path	REVIEW: CHM topic path; confirm matches help_ru.chm topic names
+<磁盘文件名>	placeholder-token	naming placeholder key (semantic, must stay)
+<配置名称>	placeholder-token	naming placeholder key (semantic, must stay)
+今天。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible
+修改ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+冰雨。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible
+列表ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+列表ToolStripMenuItem1	control-name	WinForms control Name / ApplyResources key (internal)
+华文行楷	font	font family name
+在solidworks中打开ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+在文件夹中打开ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+天意。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible
+宋体	font	font family name (SimSun)
+小图标ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+工具箱.png	image-name	embedded image resource name (internal)
+平铺ToolStripMenuItem	control-name	WinForms control Name / ApplyResources key (internal)
+微软雅黑	font	font family name (Microsoft YaHei)
+忘情水。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible
+来生缘。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible
+楷体	font	font family name (KaiTi)
+笨小孩。。。	sample-text	REVIEW: vendor sample/easter-egg text; confirm not user-visible

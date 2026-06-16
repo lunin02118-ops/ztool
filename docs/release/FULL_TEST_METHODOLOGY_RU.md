@@ -292,8 +292,42 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
   (для production-пакета — с `-RequireSolidWorksTools`; падает при отсутствии
   библиотеки материалов или `usematerialcolor=false`).
 - `python tools/bom_export_assert.py --self-test` — самопроверка ассерта экспорта.
+- `python tools/check_string_invariants.py --self-test` — самопроверка гейта инвариантов строк.
+- `python tools/check_string_invariants.py` — **инварианты внутренних строк** локализованных
+  бинарей (см. §13.1).
 - `python tools/secret_scan.py`
 - Лиценз-сервер: `pytest -q license-server`, `ruff check`, `bandit` — чисто.
+
+### 13.1. Инварианты внутренних строк (роль, а не язык)
+
+Причина бага с цветами (см. `docs/audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md`):
+строки в бинаре классифицировались **по языку**, а не **по роли** — китайский литерал
+`零件` это семантический ключ (`Col_Extname.Tag`, сравнивается в методах `Frmmain`),
+а не переводимый UI-текст. Гейт `tools/check_string_invariants.py`:
+
+- извлекает Han-строки из `#US`-heap локализованных `ZTool.exe`/`ZTool.dll`
+  (парсер `tools/dotnet_strings.py`, без зависимостей);
+- падает, если появилась **неклассифицированная** Han-строка (новый непереведённый
+  UI-текст или испорченная локализация) — список разрешённых ролей
+  (control-name/font/placeholder-token/…) ведётся в `tools/string_invariants/allowed_han.tsv`;
+- проверяет **присутствие** обязательных vendor-ключей (`零件`, плейсхолдеры `$...$`/`<...>`)
+  по байтам (UTF-16LE) — `tools/string_invariants/required_keys.tsv`; их перевод/удаление =
+  ровно та регрессия, что ломала цвета;
+- выводит секцию **REVIEW** (help-пути, sample/easter-egg тексты, непереведённый tooltip
+  в `ZTool.dll`) — пункты, которые человек должен подтвердить как намеренно оставленные.
+
+### 13.2. Registry / launch preflight (на машине с SolidWorks)
+
+Перед Ярусом 2/3 на машине с SW запускать
+`scripts/solidworks-registry-preflight.ps1 -InstallRoot <путь>`:
+
+- сверяет SHA256 реально установленных `ZTool.exe`/`ZTool.dll` с принятой связкой;
+- проверяет COM `CodeBase` add-in CLSID — указывает внутрь `InstallRoot` и матчит хеш;
+- global/versioned `HKLM\...\Addins` (нет CJK в описании) и `HKCU\...\AddInsStartup` (=1);
+- ловит «вторую» `ZTool.exe` по другому пути и не тот запущенный процесс.
+
+Падает, если найден старый/китайский add-in, чужой путь или несовпадение хеша. В CI
+скрипт только парсится на синтаксис (реестр/SW на раннере отсутствуют).
 
 ### Ярус 2 — сверка экспортированной спецификации (детерминированно)
 
@@ -314,14 +348,34 @@ Golden-файлы снимаются один раз на машине с SW с 
 
 ## 14. Go / No-Go
 
+### 14.0. Разделение статусов готовности
+
+Слово «production-ready» применять только к конкретному слою. Не объявлять всю ветку
+готовой только по hardening-фазам (см. аудит 2026-06-16):
+
+- **`hardening complete`** — инфраструктура/пакет/CI/безопасность готовы (Ярус 1 PASS,
+  verifier PASS, инварианты строк PASS). НЕ означает клиентский паритет.
+- **`client parity complete`** — подтверждено живьём в SolidWorks: registry preflight
+  PASS, запуск только через тестовую сборку `.SLDASM`, чтение 29 позиций, BOM 8/8,
+  русские свойства, материал/ручной цвет/случайный цвет/сохранить→перечитать, нет
+  новых краш/WER. Артефакты — в `manual-test-reports/` или `full-auto-runs/`.
+- **`production GO`** — только после обоих.
+
+До `client parity complete` корректная формулировка статуса:
+«hardening train merged, client production acceptance not complete».
+
+### 14.1. Условия GO
+
 GO только если:
 
 - все области §4–§12 — ПАРИТЕТ PASS (или отличие явно принято как локализация/легаси);
 - §6.3 (цвета материал/покраска) — PASS против оригинала;
 - BOM 8/8 режимов — PASS;
-- §13 (авто-проверки) — PASS;
+- §13 (авто-проверки) — PASS, включая §13.1 инварианты строк;
+- §13.2 registry/launch preflight на машине с SW — PASS;
 - релиз-пакет verifier — PASS; есть пакет/инструкция отката;
-- нет новых краш/WER/dump.
+- нет новых краш/WER/dump;
+- статусы `hardening complete` И `client parity complete` (§14.0) — оба закрыты.
 
 ---
 

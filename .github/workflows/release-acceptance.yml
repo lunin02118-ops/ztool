@@ -15,6 +15,9 @@ on:
       - "Шаблоны спецификации/**"
       - "scripts/build_release_package.ps1"
       - "scripts/verify_release_package.ps1"
+      - "scripts/solidworks-registry-preflight.ps1"
+      - "ZTool.exe"
+      - "ZTool.dll"
       - "tools/**"
       - ".github/workflows/release-acceptance.yml"
   push:
@@ -29,6 +32,9 @@ on:
       - "Шаблоны спецификации/**"
       - "scripts/build_release_package.ps1"
       - "scripts/verify_release_package.ps1"
+      - "scripts/solidworks-registry-preflight.ps1"
+      - "ZTool.exe"
+      - "ZTool.dll"
       - "tools/**"
       - ".github/workflows/release-acceptance.yml"
 
@@ -62,6 +68,21 @@ jobs:
 
       - name: BOM export asserter - committed example fixture
         run: python tools/bom_export_assert.py tools/golden/example_bom.xlsx tools/golden/example_bom.golden.json
+
+      - name: Internal-string invariants self-test
+        run: python tools/check_string_invariants.py --self-test
+
+      - name: Internal-string invariants (localized binaries vs vendor keys)
+        run: python tools/check_string_invariants.py
+
+      - name: SolidWorks registry preflight - syntax check
+        run: |
+          $e = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/solidworks-registry-preflight.ps1),
+            [ref]$null, [ref]$e) | Out-Null
+          if ($e) { $e | ForEach-Object { Write-Host $_ }; exit 1 }
+          Write-Host 'registry preflight script: syntax OK'
 
       - name: Build dry-run release package
         run: |
