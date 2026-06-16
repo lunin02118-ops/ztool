@@ -20,6 +20,9 @@ Whitelist разрешён только для строк, которые нел
 
 ## Known remaining на текущем build
 
+- `零件` - internal material/color part-kind key in `Frmmain`
+  (`Col_Extname.Tag`). Перевод ломает команды цвета/материала, включая
+  `Случайный цвет`.
 - `二维码` / `工具箱.png` - legacy resource names/vendor QR asset names.
 - `*ToolStripMenuItem` с китайским prefix - internal WinForms component names,
   не captions.

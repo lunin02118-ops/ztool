@@ -255,6 +255,38 @@ internal static class Program
         return 0;
     }
 
+    // The material/color context menu uses the component kind stored in
+    // Col_Extname.Tag as an internal key. The vendor key is "零件"; it is not a
+    // visible label in these methods. Translating it to "Деталь" makes commands
+    // like "Случайный цвет" silently skip selected part rows.
+    private static int RestoreMaterialPartKindKeys(ModuleDefMD mod)
+    {
+        int changes = 0;
+        var methodNames = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "GetMaterialName",
+            "Material_list_ItemClicked",
+        };
+
+        var form = mod.GetTypes().FirstOrDefault(t => t.FullName == "ZTool.Frmmain");
+        if (form == null) return 0;
+
+        foreach (var method in form.Methods.Where(m => methodNames.Contains(m.Name) && m.Body != null))
+        {
+            foreach (var ins in method.Body.Instructions)
+            {
+                if (ins.OpCode.Code == Code.Ldstr && (ins.Operand as string) == "Деталь")
+                {
+                    ins.Operand = "零件";
+                    changes++;
+                }
+            }
+        }
+
+        Console.WriteLine($"  material/color: restored internal part-kind key \"零件\" in Frmmain color handlers (edits={changes})");
+        return changes;
+    }
+
     // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
     // instead of the vendor's leftover 3.8.4.0. Both edits are length-preserving (the numeric
     // DWORDs are fixed size; UTF-16 "3.8.4" and "1.0.0" are both 5 chars), so the PE section
@@ -527,6 +559,7 @@ internal static class Program
             int pktChanges = PatchHandshakePkt(mod);
             int nameForced = ForceAssemblyName(mod, "ZTool");
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
+            int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -548,7 +581,7 @@ internal static class Program
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
             // normalize it to 1.0.0 so the file's reported version matches.
             int win32Ver = NormalizeWin32Version(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
