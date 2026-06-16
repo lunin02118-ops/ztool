@@ -158,7 +158,11 @@ $backupTargets = @(
     @{ Key = 'HKCU\SOFTWARE\ZTool'; File = 'HKCU_ZTool.reg' },
     @{ Key = 'HKLM\SOFTWARE\SolidWorks'; File = 'HKLM_SolidWorks.reg' },
     @{ Key = 'HKCU\SOFTWARE\SolidWorks'; File = 'HKCU_SolidWorks.reg' },
-    @{ Key = 'HKLM\SOFTWARE\Classes\ZTool.SwAddin'; File = 'HKLM_Classes_ZTool.SwAddin.reg' }
+    @{ Key = 'HKLM\SOFTWARE\Classes\ZTool.SwAddin'; File = 'HKLM_Classes_ZTool.SwAddin.reg' },
+    # license-state keys that -CleanLicenseState (step 7) deletes; backed up here
+    # so deletion is always preceded by a backup
+    @{ Key = 'HKLM\SOFTWARE\SolURxxCfNU'; File = 'HKLM_SolURxxCfNU.reg' },
+    @{ Key = 'HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ'; File = 'HKLM_Microsoft_MzORu8qE4HhZ.reg' }
 )
 foreach ($t in $backupTargets) {
     $out = Join-Path $ReportDir $t.File
