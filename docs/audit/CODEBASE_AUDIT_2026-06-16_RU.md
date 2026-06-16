@@ -3,9 +3,10 @@
 - Дата: 2026-06-16
 - Аудитор: Devin (роль — аудитор; исполнение правок выполняет отдельный агент на машине с SolidWorks 2025)
 - База аудита: `main` @ `91fc2b5` (`docs(audit): record client production readiness gap`)
-- Правовое основание работ: `docs/legal/ztool_license_agreement_signed.pdf`
-  (Lic. agreement Lee Chan / z-tool.cn → V. Lunin, 2026-05-30; Art. 2.3 — реверс-инжиниринг,
-  Art. 3 — замена сервера лицензий и перевыпуск ключей).
+- Правовое основание работ: подписанное соглашение Lee Chan / `z-tool.cn` →
+  V. Lunin от 2026-05-30. Публичное резюме без подписей и персональных данных:
+  `docs/legal/README.md` (Art. 2.3 — реверс-инжиниринг, Art. 3 — замена
+  сервера лицензий и перевыпуск ключей).
 
 > Этот документ — независимый сводный аудит. Он не заменяет, а дополняет существующие
 > внутренние отчёты (`AUDIT_ru.md`, `docs/audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md`,
