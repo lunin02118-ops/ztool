@@ -2,6 +2,10 @@
 
 В этой папке хранятся implementation reports для фаз production hardening.
 
+Отдельные post-factum gap-аудиты тоже лежат здесь, но не обязаны повторять
+шаблон implementation report. Они фиксируют разрывы между hardening scope и
+фактической production readiness.
+
 ## Naming
 
 ```text
@@ -13,6 +17,12 @@ phase-XX-<short-name>-implementation-report.md
 ```text
 phase-00-baseline-implementation-report.md
 phase-01-secrets-logging-implementation-report.md
+```
+
+Post-factum пример:
+
+```text
+refactor-production-readiness-gap-audit-2026-06-16_RU.md
 ```
 
 ## Required sections
