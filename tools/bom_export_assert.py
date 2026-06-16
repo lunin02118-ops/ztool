@@ -55,11 +55,16 @@ def norm_rgb(value):
     """Normalize an openpyxl color / hex string to upper 'RRGGBB' or None."""
     if value is None:
         return None
+    # An openpyxl Color carries a real RGB only when its type is 'rgb'. For
+    # 'theme'/'indexed' colors .rgb is a misleading default (e.g. '00000000'),
+    # so treat anything that is not an explicit RGB color as unknown.
+    ctype = getattr(value, "type", None)
+    if ctype is not None and ctype != "rgb":
+        return None
     rgb = getattr(value, "rgb", value)
     if rgb is None:
         return None
     if not isinstance(rgb, str):
-        # Theme/indexed colors carry no direct RGB; treat as unknown.
         return None
     rgb = rgb.upper()
     if len(rgb) == 8:  # ARGB -> drop alpha
@@ -143,6 +148,15 @@ def to_number(value):
         return None
 
 
+def values_equal(got, exp):
+    """Compare numerically when both sides are numbers (so 2 == 2.0), else by
+    string. Real exports may serialize an integer quantity as a float."""
+    gn, en = to_number(got), to_number(exp)
+    if gn is not None and en is not None:
+        return gn == en
+    return str(got) == str(exp)
+
+
 def assert_workbook(path, spec):
     c = Checker()
     ws = load_sheet(path, spec)
@@ -205,7 +219,7 @@ def assert_workbook(path, spec):
                      % (match, col, norm_rgb(exp), got))
             else:
                 got = rec["values"].get(key)
-                c.ok(str(got) == str(exp),
+                c.ok(values_equal(got, exp),
                      "row %s: %r expected %r, got %r" % (match, key, exp, got))
 
     return c.report()
