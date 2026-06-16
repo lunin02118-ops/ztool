@@ -273,14 +273,42 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 
 ## 13. Автоматизированные предварительные проверки (до ручной приёмки)
 
-Гонять до SW-приёмки; все должны быть PASS:
+Автоматизация приёмки разбита на ярусы:
 
+- **Ярус 1 — без SolidWorks (CI).** Workflow `.github/workflows/release-acceptance.yml`
+  гоняет все проверки ниже на каждый PR/`push` в `main`; зелёный прогон — обязательное
+  предусловие SW-приёмки. Запускается и вручную теми же командами.
+- **Ярус 2 — полу-авто (раннер с SW).** Человек/UI-харнесс запускает экспорт в
+  SolidWorks, а результат проверяется детерминированно скриптом-ассертом (см. ниже).
+- **Ярус 3 — только руками:** визуальный A/B против оригинала, лицензии на реальном
+  железе, скриншот-чек-лист UI, наблюдение крашей/WER.
+
+### Ярус 1 — авто-проверки (все должны быть PASS)
+
+- `python tools/check_no_cjk_filenames.py` — нет иероглифов в именах tracked-файлов/папок (область M).
 - `python client-core/tools/check_bom_template.py ZTool.settings`
 - `python client-core/tools/check_bom_template.py client-core/dist/ZTool.settings`
-- `scripts/verify_release_package.ps1 -PackageRoot <pkg> -RequireSolidWorksTools`
-  (падает при отсутствии библиотеки материалов или `usematerialcolor=false`)
+- Сборка dry-run пакета + `scripts/verify_release_package.ps1 -PackageRoot <pkg>`
+  (для production-пакета — с `-RequireSolidWorksTools`; падает при отсутствии
+  библиотеки материалов или `usematerialcolor=false`).
+- `python tools/bom_export_assert.py --self-test` — самопроверка ассерта экспорта.
 - `python tools/secret_scan.py`
 - Лиценз-сервер: `pytest -q license-server`, `ruff check`, `bandit` — чисто.
+
+### Ярус 2 — сверка экспортированной спецификации (детерминированно)
+
+После экспорта режима BOM в SolidWorks результат проверяется без SolidWorks:
+
+```
+python tools/bom_export_assert.py <export.xlsx> tools/golden/<режим>.golden.json
+```
+
+Ассерт сверяет состав/порядок колонок, число строк данных, служебную «Количество»
+(числа > 0 и итоговую сумму), значения ячеек по ключу и **цвет заливки (RGB)** —
+объективная замена «пипетки» из §6.3 для цветов материал/покраска (COL-*).
+Golden-файлы снимаются один раз на машине с SW с заведомо корректного экспорта
+(идеально — A/B против оригинала) и коммитятся как фикстуры; см.
+`tools/golden/README.md`. Пример формата — `tools/golden/example_bom.*`.
 
 ---
 
