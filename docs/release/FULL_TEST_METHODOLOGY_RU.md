@@ -66,6 +66,75 @@ PR #33: восстановление видимости колонок и уда
   `usematerialcolor=true` (см. §6 и PR #23), русскими `propname`/`namemapping`
   (PR #25) и `FilterRulesList`.
 
+### 2.1 Обязательная чистота реестра перед живым запуском
+
+Перед каждым живым прогоном нельзя полагаться на состояние от прошлого теста:
+старые `RegAsm CodeBase`, ключи SolidWorks AddIn и `HKCU\SOFTWARE\ZTool` могут
+заставить SolidWorks загрузить не тот `ZTool.dll`/`ZTool.exe` или дать ложную
+ошибку инициализации `.NET Framework`.
+
+Обязательный порядок:
+
+1. Закрыть SolidWorks и ZTool полностью.
+
+   ```powershell
+   Get-Process SLDWORKS,ZTool -ErrorAction SilentlyContinue | Stop-Process -Force
+   ```
+
+2. Сделать backup затрагиваемых веток реестра в папку отчёта.
+
+   ```powershell
+   $stamp = Get-Date -Format yyyyMMdd-HHmmss
+   $backup = "manual-test-reports\registry-backup-$stamp"
+   New-Item -ItemType Directory -Force $backup | Out-Null
+
+   reg export HKCU\SOFTWARE\ZTool "$backup\HKCU_ZTool.reg" /y
+   reg export "HKLM\SOFTWARE\SolidWorks" "$backup\HKLM_SolidWorks.reg" /y
+   reg export "HKCU\SOFTWARE\SolidWorks" "$backup\HKCU_SolidWorks.reg" /y
+   reg export "HKLM\SOFTWARE\Classes\ZTool.SwAddin" "$backup\HKLM_Classes_ZTool.SwAddin.reg" /y
+   ```
+
+3. Проверить и убрать старые следы `ZTool`/старых test-dir путей.
+
+   ```powershell
+   reg query HKLM\SOFTWARE\Classes /f ZTool /s /reg:64
+   reg query HKLM\SOFTWARE\SolidWorks /f ZTool /s /reg:64
+   reg query HKCU\SOFTWARE\SolidWorks /f ZTool /s /reg:64
+   ```
+
+   Если найден `CodeBase` или SolidWorks AddIn key, указывающий не на текущую
+   тестовую папку `runtime`, тест **невалиден**: удалить stale-запись или
+   перерегистрировать add-in из текущей папки.
+
+4. Зарегистрировать именно текущий `runtime\ZTool.dll`.
+
+   ```powershell
+   Push-Location <runtime>
+   & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe" .\ZTool.dll /codebase
+   Pop-Location
+   ```
+
+5. Повторно проверить, что `CodeBase` в `HKLM\SOFTWARE\Classes` указывает на
+   текущий `runtime\ZTool.dll`, а не на старую папку.
+
+   ```powershell
+   reg query HKLM\SOFTWARE\Classes /f "<runtime>\ZTool.dll" /s /reg:64
+   ```
+
+6. Для тестов лицензирования на чистой машине дополнительно очистить license
+   state. Для BOM/цветов/экспорта этот шаг выполнять только если нужен именно
+   clean-license сценарий.
+
+   ```powershell
+   reg delete HKCU\SOFTWARE\ZTool /f
+   reg delete HKLM\SOFTWARE\SolURxxCfNU /f
+   reg delete HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ /f
+   ```
+
+Если после этого SolidWorks всё равно показывает «Не удалось загрузить Microsoft
+.NET Framework», сначала повторить registry pre-flight и проверить `CodeBase`;
+не продолжать BOM/цветовые тесты из такой сессии.
+
 > SolidWorks для теста открывать **через файл сборки**
 > `TestModel/0614-A00.SLDASM` (проводник/ассоциация `.SLDASM`). Не стартовать
 > `SldWorks.exe` отдельно из shell: это даёт другой init-контекст и может приводить
@@ -320,19 +389,21 @@ Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256
 
 ### 13.2 Живой SolidWorks-прогон (обязателен для FULL PASS)
 
-1. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
-2. На ленте SolidWorks открыть ZTool → `Управление файлами`.
-3. Зафиксировать путь/hash процесса `ZTool.exe` командами из §2.
-4. Нажать `Подключить SW`; ожидаемо 29 позиций.
-5. Проверить, что SummaryInfo-колонки не показаны по умолчанию (`REG-08`).
-6. Прогнать «Разделить столбец» и удалить тестовую строку клавишей `Delete`
+1. Выполнить registry pre-flight из §2.1: закрыть SW/ZTool, сохранить backup
+   реестра, убрать stale `CodeBase`, зарегистрировать текущий `runtime\ZTool.dll`.
+2. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
+3. На ленте SolidWorks открыть ZTool → `Управление файлами`.
+4. Зафиксировать путь/hash процесса `ZTool.exe` командами из §2.
+5. Нажать `Подключить SW`; ожидаемо 29 позиций.
+6. Проверить, что SummaryInfo-колонки не показаны по умолчанию (`REG-08`).
+7. Прогнать «Разделить столбец» и удалить тестовую строку клавишей `Delete`
    (`REG-09`).
-7. Экспортировать все 8 режимов BOM в отдельную папку.
-8. Запустить `validate_bom_exports.py` на папку с экспортами.
-9. Выполнить цветовые A/B проверки §6.3 против оригинала.
-10. Проверить Event Viewer: нет новых `Application Error`, `.NET Runtime`, WER/dump.
+8. Экспортировать все 8 режимов BOM в отдельную папку.
+9. Запустить `validate_bom_exports.py` на папку с экспортами.
+10. Выполнить цветовые A/B проверки §6.3 против оригинала.
+11. Проверить Event Viewer: нет новых `Application Error`, `.NET Runtime`, WER/dump.
 
-Если любой из шагов 1–10 пропущен, итоговый статус — не `FULL PASS`, а
+Если любой из шагов 1–11 пропущен, итоговый статус — не `FULL PASS`, а
 `PARTIAL / offline checked`.
 
 ---
