@@ -105,15 +105,248 @@ False</string>
 </string>
   </savetoswcfg>
   <bomsubfolder>true</bomsubfolder>
-  <ColIndex />
-  <ColWidth />
+  <ColIndex>
+    <string>0
+0</string>
+    <string>1
+1</string>
+    <string>2
+2</string>
+    <string>3
+3</string>
+    <string>4
+4</string>
+    <string>5
+5</string>
+    <string>6
+6</string>
+    <string>7
+8</string>
+    <string>8
+7</string>
+    <string>9
+27</string>
+    <string>10
+28</string>
+    <string>11
+29</string>
+    <string>12
+30</string>
+    <string>13
+31</string>
+    <string>14
+32</string>
+    <string>15
+33</string>
+    <string>16
+34</string>
+    <string>17
+40</string>
+    <string>18
+37</string>
+    <string>19
+39</string>
+    <string>20
+35</string>
+    <string>21
+9</string>
+    <string>22
+10</string>
+    <string>23
+11</string>
+    <string>24
+12</string>
+    <string>25
+13</string>
+    <string>26
+14</string>
+    <string>27
+15</string>
+    <string>28
+16</string>
+    <string>29
+17</string>
+    <string>30
+18</string>
+    <string>31
+19</string>
+    <string>32
+20</string>
+    <string>33
+21</string>
+    <string>34
+22</string>
+    <string>35
+23</string>
+    <string>36
+24</string>
+    <string>37
+25</string>
+    <string>38
+26</string>
+    <string>39
+36</string>
+  </ColIndex>
+  <ColWidth>
+    <string>5
+344</string>
+    <string>6
+440</string>
+    <string>7
+150</string>
+    <string>8
+140</string>
+    <string>9
+400</string>
+    <string>10
+140</string>
+    <string>11
+140</string>
+    <string>12
+200</string>
+    <string>13
+200</string>
+    <string>14
+200</string>
+    <string>15
+200</string>
+    <string>16
+200</string>
+    <string>17
+200</string>
+    <string>18
+200</string>
+    <string>19
+200</string>
+    <string>20
+200</string>
+    <string>21
+200</string>
+    <string>22
+200</string>
+    <string>23
+200</string>
+    <string>24
+200</string>
+    <string>25
+200</string>
+    <string>26
+200</string>
+    <string>27
+200</string>
+    <string>28
+200</string>
+    <string>29
+200</string>
+    <string>30
+200</string>
+    <string>31
+200</string>
+    <string>32
+200</string>
+    <string>33
+200</string>
+    <string>34
+200</string>
+    <string>35
+200</string>
+    <string>36
+200</string>
+    <string>37
+200</string>
+    <string>38
+200</string>
+    <string>39
+200</string>
+  </ColWidth>
   <SetDrwCfg />
   <BomByVal>true</BomByVal>
   <ReNameByFilter>false</ReNameByFilter>
   <ReNameByRule>false</ReNameByRule>
   <ReNameByCheck>false</ReNameByCheck>
   <ReNameFilterarr />
-  <Colvisible />
+  <Colvisible>
+    <string>0
+True</string>
+    <string>1
+False</string>
+    <string>2
+True</string>
+    <string>3
+True</string>
+    <string>4
+True</string>
+    <string>5
+True</string>
+    <string>6
+False</string>
+    <string>7
+True</string>
+    <string>8
+True</string>
+    <string>9
+False</string>
+    <string>10
+False</string>
+    <string>11
+True</string>
+    <string>12
+False</string>
+    <string>13
+False</string>
+    <string>14
+False</string>
+    <string>15
+False</string>
+    <string>16
+False</string>
+    <string>17
+False</string>
+    <string>18
+False</string>
+    <string>19
+False</string>
+    <string>20
+False</string>
+    <string>21
+False</string>
+    <string>22
+False</string>
+    <string>23
+True</string>
+    <string>24
+False</string>
+    <string>25
+True</string>
+    <string>26
+False</string>
+    <string>27
+True</string>
+    <string>28
+False</string>
+    <string>29
+True</string>
+    <string>30
+False</string>
+    <string>31
+True</string>
+    <string>32
+False</string>
+    <string>33
+True</string>
+    <string>34
+False</string>
+    <string>35
+True</string>
+    <string>36
+False</string>
+    <string>37
+True</string>
+    <string>38
+False</string>
+    <string>39
+True</string>
+  </Colvisible>
   <ReadOnlyFolderbool>0</ReadOnlyFolderbool>
   <ReConnectClearFilter>0</ReConnectClearFilter>
   <MenuStyle>2</MenuStyle>
