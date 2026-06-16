@@ -1,0 +1,74 @@
+name: release-acceptance
+
+# Tier 1 of the pre-release acceptance gate (no SolidWorks required).
+# Mirrors the automated pre-flight checks of docs/release/FULL_TEST_METHODOLOGY_RU.md
+# (§13) plus the localization name gate (area M) and exercises the Tier 2 BOM
+# export asserter via its self-test.
+
+on:
+  pull_request:
+    paths:
+      - "ZTool.settings"
+      - "client-core/dist/ZTool.settings"
+      - "client-core/tools/check_bom_template.py"
+      - "SolidWorksTemplates/**"
+      - "Шаблоны спецификации/**"
+      - "scripts/build_release_package.ps1"
+      - "scripts/verify_release_package.ps1"
+      - "tools/**"
+      - ".github/workflows/release-acceptance.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "ZTool.settings"
+      - "client-core/dist/ZTool.settings"
+      - "client-core/tools/check_bom_template.py"
+      - "SolidWorksTemplates/**"
+      - "Шаблоны спецификации/**"
+      - "scripts/build_release_package.ps1"
+      - "scripts/verify_release_package.ps1"
+      - "tools/**"
+      - ".github/workflows/release-acceptance.yml"
+
+jobs:
+  acceptance:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: python -m pip install --quiet openpyxl
+
+      - name: Localization name gate (no CJK in tracked paths)
+        run: python tools/check_no_cjk_filenames.py
+
+      - name: BOM export pre-flight - root ZTool.settings
+        run: python client-core/tools/check_bom_template.py ZTool.settings
+
+      - name: BOM export pre-flight - client-core/dist/ZTool.settings
+        run: python client-core/tools/check_bom_template.py client-core/dist/ZTool.settings
+
+      - name: BOM export asserter self-test
+        run: python tools/bom_export_assert.py --self-test
+
+      - name: BOM export asserter - committed example fixture
+        run: python tools/bom_export_assert.py tools/golden/example_bom.xlsx tools/golden/example_bom.golden.json
+
+      - name: Build dry-run release package
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'ztool-release'
+          ./scripts/build_release_package.ps1 -OutputRoot $out -AllowMissingSolidWorksTools
+          $pkg = (Get-ChildItem -Path $out -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
+          "PKG=$pkg" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Verify release package
+        run: ./scripts/verify_release_package.ps1 -PackageRoot "$env:PKG"

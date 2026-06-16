@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Build a ZTool release package with manifest and SHA256SUMS.
 

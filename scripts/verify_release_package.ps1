@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Verify a ZTool release package before manual acceptance testing.
 
