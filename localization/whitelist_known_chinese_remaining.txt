@@ -1,5 +1,7 @@
 # Known remaining Han strings after the current localized build.
 # Format: one exact source substring per line. Each entry must have a reason in docs.
+# Internal material/color part-kind key; see docs/localization/WHITELIST_POLICY_RU.md.
+零件
 二维码
 工具箱.png
 平铺ToolStripMenuItem
