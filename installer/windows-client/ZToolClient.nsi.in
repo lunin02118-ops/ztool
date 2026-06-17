@@ -1,0 +1,183 @@
+Unicode true
+
+!include "MUI2.nsh"
+!include "LogicLib.nsh"
+!include "x64.nsh"
+
+!define PRODUCT_NAME "ZTool"
+!define COMPANY_NAME "Vizbuka"
+!define PRODUCT_VERSION "@@PRODUCT_VERSION@@"
+!define PRODUCT_VERSION_4 "@@PRODUCT_VERSION_4@@"
+!define PACKAGE_NAME "@@PACKAGE_NAME@@"
+!define SOURCE_RUNTIME "@@SOURCE_RUNTIME@@"
+!define OUTPUT_SETUP "@@OUTPUT_SETUP@@"
+!define ADDIN_GUID "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}"
+!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ZTool"
+
+Name "${PRODUCT_NAME}"
+OutFile "${OUTPUT_SETUP}"
+InstallDir "$PROGRAMFILES64\ZTool"
+InstallDirRegKey HKLM "${UNINSTALL_KEY}" "InstallLocation"
+RequestExecutionLevel admin
+SetCompressor /SOLID lzma
+ShowInstDetails show
+ShowUninstDetails show
+
+VIProductVersion "${PRODUCT_VERSION_4}"
+VIAddVersionKey /LANG=1033 "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey /LANG=1033 "CompanyName" "${COMPANY_NAME}"
+VIAddVersionKey /LANG=1033 "FileDescription" "ZTool client installer"
+VIAddVersionKey /LANG=1033 "FileVersion" "${PRODUCT_VERSION_4}"
+VIAddVersionKey /LANG=1033 "ProductVersion" "${PRODUCT_VERSION}"
+VIAddVersionKey /LANG=1033 "OriginalFilename" "${PACKAGE_NAME}-Setup.exe"
+VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright ${COMPANY_NAME}"
+
+!define MUI_ABORTWARNING
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "Russian"
+
+!macro CleanVersionSpecificSolidWorks Version
+  DeleteRegKey HKLM "SOFTWARE\SolidWorks\SOLIDWORKS ${Version}\Addins\${ADDIN_GUID}"
+  DeleteRegValue HKCU "SOFTWARE\SolidWorks\SOLIDWORKS ${Version}\AddInsStartup" "${ADDIN_GUID}"
+  DeleteRegKey HKCU "SOFTWARE\SolidWorks\SOLIDWORKS ${Version}\AddInsStartup\${ADDIN_GUID}"
+!macroend
+
+Function .onInit
+  SetRegView 64
+  ${IfNot} ${RunningX64}
+    MessageBox MB_ICONSTOP "ZTool requires 64-bit Windows."
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function RequireNoRunningZTool
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,ZTool -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
+  Pop $0
+  Pop $1
+  ${If} $0 == 42
+    MessageBox MB_ICONSTOP "Закройте SolidWorks и ZTool перед установкой."
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Section "ZTool client" SecMain
+  SetShellVarContext all
+  SetRegView 64
+  Call RequireNoRunningZTool
+
+  StrCpy $0 "$WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
+  IfFileExists "$0" 0 regasm_missing
+
+  IfFileExists "$INSTDIR\ZTool.dll" 0 copy_files
+    ExecWait '"$0" "$INSTDIR\ZTool.dll" /unregister /silent'
+
+  copy_files:
+  SetOverwrite on
+  SetOutPath "$INSTDIR"
+  File /r "${SOURCE_RUNTIME}\*.*"
+
+  IfFileExists "$INSTDIR\ZTool.exe" 0 missing_payload
+  IfFileExists "$INSTDIR\ZTool.dll" 0 missing_payload
+
+  ExecWait '"$0" "$INSTDIR\ZTool.dll" /codebase /silent' $1
+  ${If} $1 != 0
+    MessageBox MB_ICONSTOP "Не удалось зарегистрировать ZTool.dll через RegAsm. Код: $1"
+    Abort
+  ${EndIf}
+
+  WriteRegDWORD HKLM "SOFTWARE\SolidWorks\Addins\${ADDIN_GUID}" "" 1
+  WriteRegStr HKLM "SOFTWARE\SolidWorks\Addins\${ADDIN_GUID}" "Title" "ZTool"
+  WriteRegStr HKLM "SOFTWARE\SolidWorks\Addins\${ADDIN_GUID}" "Description" "ZTool SolidWorks Add-in"
+  WriteRegDWORD HKCU "SOFTWARE\SolidWorks\AddInsStartup" "${ADDIN_GUID}" 1
+  WriteRegDWORD HKCU "SOFTWARE\SolidWorks\AddInsStartup\${ADDIN_GUID}" "" 1
+  !insertmacro CleanVersionSpecificSolidWorks "2020"
+  !insertmacro CleanVersionSpecificSolidWorks "2021"
+  !insertmacro CleanVersionSpecificSolidWorks "2022"
+  !insertmacro CleanVersionSpecificSolidWorks "2023"
+  !insertmacro CleanVersionSpecificSolidWorks "2024"
+  !insertmacro CleanVersionSpecificSolidWorks "2025"
+  !insertmacro CleanVersionSpecificSolidWorks "2026"
+  !insertmacro CleanVersionSpecificSolidWorks "2027"
+  !insertmacro CleanVersionSpecificSolidWorks "2028"
+  !insertmacro CleanVersionSpecificSolidWorks "2029"
+  !insertmacro CleanVersionSpecificSolidWorks "2030"
+
+  CreateDirectory "$SMPROGRAMS\ZTool"
+  CreateShortCut "$SMPROGRAMS\ZTool\ZTool.lnk" "$INSTDIR\ZTool.exe"
+  CreateShortCut "$SMPROGRAMS\ZTool\Uninstall ZTool.lnk" "$INSTDIR\Uninstall.exe"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayName" "ZTool"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "Publisher" "${COMPANY_NAME}"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM "${UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoModify" 1
+  WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoRepair" 1
+  Goto done
+
+  regasm_missing:
+    MessageBox MB_ICONSTOP "Не найден 64-bit RegAsm: $0. Установите/почините .NET Framework 4.x."
+    Abort
+
+  missing_payload:
+    MessageBox MB_ICONSTOP "В установочном пакете отсутствует ZTool.exe или ZTool.dll."
+    Abort
+
+  done:
+SectionEnd
+
+Function un.onInit
+  SetRegView 64
+FunctionEnd
+
+Function un.RequireNoRunningZTool
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,ZTool -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
+  Pop $0
+  Pop $1
+  ${If} $0 == 42
+    MessageBox MB_ICONSTOP "Закройте SolidWorks и ZTool перед удалением."
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Section "Uninstall"
+  SetShellVarContext all
+  SetRegView 64
+  Call un.RequireNoRunningZTool
+
+  StrCpy $0 "$WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
+  IfFileExists "$0" 0 skip_regasm_uninstall
+  IfFileExists "$INSTDIR\ZTool.dll" 0 skip_regasm_uninstall
+    ExecWait '"$0" "$INSTDIR\ZTool.dll" /unregister /silent'
+
+  skip_regasm_uninstall:
+  DeleteRegKey HKLM "SOFTWARE\SolidWorks\Addins\${ADDIN_GUID}"
+  DeleteRegValue HKCU "SOFTWARE\SolidWorks\AddInsStartup" "${ADDIN_GUID}"
+  DeleteRegKey HKCU "SOFTWARE\SolidWorks\AddInsStartup\${ADDIN_GUID}"
+  !insertmacro CleanVersionSpecificSolidWorks "2020"
+  !insertmacro CleanVersionSpecificSolidWorks "2021"
+  !insertmacro CleanVersionSpecificSolidWorks "2022"
+  !insertmacro CleanVersionSpecificSolidWorks "2023"
+  !insertmacro CleanVersionSpecificSolidWorks "2024"
+  !insertmacro CleanVersionSpecificSolidWorks "2025"
+  !insertmacro CleanVersionSpecificSolidWorks "2026"
+  !insertmacro CleanVersionSpecificSolidWorks "2027"
+  !insertmacro CleanVersionSpecificSolidWorks "2028"
+  !insertmacro CleanVersionSpecificSolidWorks "2029"
+  !insertmacro CleanVersionSpecificSolidWorks "2030"
+  DeleteRegKey HKLM "${UNINSTALL_KEY}"
+
+  Delete "$SMPROGRAMS\ZTool\ZTool.lnk"
+  Delete "$SMPROGRAMS\ZTool\Uninstall ZTool.lnk"
+  RMDir "$SMPROGRAMS\ZTool"
+
+  ; License state is intentionally preserved on uninstall.
+  RMDir /r "$INSTDIR"
+SectionEnd
