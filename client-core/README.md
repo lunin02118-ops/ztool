@@ -150,16 +150,22 @@ machine that opened a model under e.g. `D:\…\TestModel`, that stale path is wh
 *"Сохранить в папку"* column, so re-saving went to a foreign/non-existent directory instead of the
 user's chosen one.
 
-The shipped profile therefore declares **all five** sections explicitly so the distribution never
+The shipped profile therefore declares the volatile sections explicitly so the distribution never
 depends on volatile designer defaults:
 
 | section | shipped value | why |
 |---------|---------------|-----|
-| `savetoswcfg`    | vendor designer defaults **except** `CheckBox6=False` and `TextBox1` empty | ref-update off + no stale/foreign save path |
+| `savetoswcfg`    | vendor designer defaults with `CheckBox6=True` and `TextBox1` empty | ref-update/save-to-new-folder works, while `TextBox1` carries no stale path |
 | `Dropdownlist`   | empty | a fresh install carries no foreign dropdown data |
-| `namemappinglist`| empty | no foreign column→property mappings |
+| `namemappinglist`| preserved from base profile | required `PropVal_*` → BOM template anchor mappings |
 | `fillsettings`   | empty | no foreign auto-fill rules |
 | `fillcolumncfg`  | empty | drops the vendor `datasource` xls path |
+| `columnInfolist` | complete default grid layout | property column pairs `PropVal_0..8`/`PropResolvedVal_0..8` are visible; write flows must edit the non-read-only `PropVal_*` cells |
+
+For live write tests, switch the status-bar property toggle to `Выражение свойства`
+before editing. `FrmFilling.ComboBox1` lists only visible, non-read-only columns;
+if it contains only `Сводка_*` or misses the target property, the UI is still on
+`PropResolvedVal_*`/summary columns and the write gate must fail.
 
 Regenerate reproducibly (idempotent) with `tools/gen_dist_profile.ps1`, which serializes via the
 intact (non-publicized) `CConfigDO` type — the publicized DLL must not be used, as its public
