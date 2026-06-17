@@ -61,3 +61,9 @@ license-server/backups/
 *.wer
 crash-dumps/
 manual-artifacts/
+
+# --- preflight registry backups (machine/license-state; do not commit) ---
+# JSON reports / screenshots under manual-test-reports/ may be tracked as
+# evidence, but raw registry exports must not be.
+*.reg
+manual-test-reports/**/*.reg
