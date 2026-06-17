@@ -78,8 +78,12 @@ R1.1 🟠 **Чистота установки/удаления (анонимны
   SolidWorks сохраняет анонимные вкладки `AssyContext\Tab12`, `DrwContext\Tab10`, `PartContext\Tab21`
   (без `ModuleName`/`RefName`, но с ZTool-кнопками `2,59425`, `41658..41675`) — старая очистка по
   `ZTool`/`59959DFA` их не ловила, отсюда «пустая вкладка». **Действие:** установщик/деинсталлятор и
-  pre-flight должны чистить и эту анонимную сигнатуру. DoD: после установки ровно одна вкладка `ZTool`,
-  без пустой; после удаления — ноль вкладок и ключей.
+  pre-flight должны чистить и эту анонимную сигнатуру. **Готов скрипт** `scripts/clean_ztool_commandmanager_tabs.ps1`
+  (бэкап реестра → поиск именованных ZTool-вкладок И анонимных клонов `Tab Props=0,1,1,-1` + кнопки `2,59425`/`41658..41675`
+  под `{AssyContext,PartContext,DrwContext}\Tab*`, плюс `Custom API Flyouts`; dry-run по умолчанию, удаление по `-Apply`,
+  `-IncludeAddInsStartup` обнуляет автозагрузку для деинсталляции; идемпотентен, пишет JSON-отчёт). Логика проверена
+  на синтетическом реестре (анонимный клон и именованная вкладка удаляются, «чужая» вкладка не трогается, повторный
+  прогон — `CLEAN`). DoD: после установки ровно одна вкладка `ZTool`, без пустой; после удаления — ноль вкладок и ключей.
 R1.2 🟢 **Манифест релиза без `-AllowDirtyManifest`.** Текущее evidence получено с `dirty=true`
   (правки были незакоммичены). DoD: финальный пакет собирается из чистого дерева, `verify_release_package.ps1`
   PASS **без** `-AllowDirtyManifest`.
@@ -93,8 +97,10 @@ R1.5 🟢 **Параметризовать путь установки.** Убр
 ## R2. Релиз-чеклист (Definition of Release)
 
 1. 🟢 Чистое дерево → `client-core/build.ps1` → `Reinjector/BinderInject --verify` PASS.
-2. 🟢 `verify_release_package.ps1 -RequireSolidWorksTools` PASS **без** `-AllowDirtyManifest`; хеши совпадают.
-3. 🟠 `scripts/sw_test_preflight.ps1 -RuntimeDir .\runtime -Register` → `PASS`; JSON-отчёт в evidence.
+2. 🟢 `verify_release_package.ps1 -RequireSolidWorksTools` PASS **без** `-AllowDirtyManifest`; хеши совпадают
+   (ожидаемые хеши — единый источник `scripts/expected_release_hashes.json`, общий для verify и pre-flight).
+3. 🟠 `scripts/clean_ztool_commandmanager_tabs.ps1 -Apply` (чистка анонимных вкладок, R1.1), затем
+   `scripts/sw_test_preflight.ps1 -RuntimeDir .\runtime -Register` → `PASS`; оба JSON-отчёта в evidence.
 4. 🟠 Живой SW-прогон по `FULL_TEST_METHODOLOGY_RU.md`: подключение, **8/8 BOM** реально экспортированы,
    цвета/материалы, `PROP-WRITE-ZTOOL`, `REG-08`/`REG-09`, ровно одна вкладка `ZTool`.
 5. 🟢 Сервер лицензий развёрнут (R1.4), активация клиента проверена.
