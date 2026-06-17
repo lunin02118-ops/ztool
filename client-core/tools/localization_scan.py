@@ -21,6 +21,14 @@ LDSTR_RE = re.compile(r'^\[(?P<context>[^\]]+)\]\s+"(?P<value>.*)"$')
 RES_RE = re.compile(r'^\[(?P<resource>[^\]]+)\]\s+(?P<key>.*?)\s+=\s+"(?P<value>.*)"$')
 
 
+def configure_stdio() -> None:
+    """Keep Windows console encodings from crashing JSON output with Han text."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def has_han(value: str) -> bool:
     return bool(HAN_RE.search(value or ""))
 
@@ -247,6 +255,7 @@ def build_report(args) -> dict:
 
 
 def main() -> int:
+    configure_stdio()
     parser = argparse.ArgumentParser(description="Validate ZTool localization state")
     parser.add_argument("--exe", type=Path, default=None, help="Localized ZTool.exe to scan")
     parser.add_argument("--translations", type=Path, required=True, help="translations.tsv")
