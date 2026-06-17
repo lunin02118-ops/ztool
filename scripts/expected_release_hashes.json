@@ -1,0 +1,5 @@
+{
+  "_comment": "Single source of truth for the accepted ZTool runtime artifact hashes (PR #33 build, commit 2f0c9a4). Both scripts/verify_release_package.ps1 and scripts/sw_test_preflight.ps1 load their default expected hashes from this file. Update here when the accepted build changes.",
+  "client_exe_sha256": "7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd",
+  "addin_dll_sha256": "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9"
+}
