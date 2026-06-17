@@ -3,6 +3,52 @@
 Подробные отчёты (скриншоты, локальные пути, серверные детали) намеренно
 **не** хранятся в репозитории. Ниже — краткая сводка проверок по этой ветке.
 
+## Актуальный live addendum 2026-06-17
+
+- Строгий fixture-прогон `BOM-07/08` выполнен в
+  `manual-test-reports/FULL_TEST_20260617-bom-filter-fixture/`.
+- Root cause стартовой ошибки `.NET Framework` и двойной вкладки ZTool:
+  stale autoload **parent-value**
+  `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{59959DFA-3229-4B86-852E-52ABF2BDB8C0}=1`
+  плюс cached CommandManager tabs. После backup parent-value и subkey выставлены
+  в `0`, stale вкладки удалены, SolidWorks стартует без `.NET Framework` modal.
+- На fixture-сборке `0614-A00.SLDASM` ZTool подключился к SolidWorks и загрузил
+  29 строк. Путь процесса:
+  `manual-test-reports/FULL_TEST_20260617-bom-filter-fixture/runtime/ZTool.exe`,
+  SHA256 `7688EA399F3EA38672966043EDBE5F3F0102048369706882F4A35EB009A5D8FD`.
+- Все 8 BOM-режимов экспортированы через UI automation; валидатор дал `PASS`.
+  Строки: `29/32/6/25/29/32/18/6`, эскизы есть в `BOM-05/06`.
+- Строгий `Тип` gate закрыт:
+  `BOM-07-machined.xlsx` = 18 строк, `Тип` пустых `0`, все
+  `Мех.обработка`; `BOM-08-purchased.xlsx` = 6 строк, `Тип` пустых `0`, все
+  `Покупное`.
+- Event Viewer в окне fixture-прогона чистый: новых `Application Error`,
+  `.NET Runtime`, WER или ZTool/SolidWorks событий нет.
+- Caveat: из-за нестабильных координат ленты ZTool был открыт через COM callback
+  add-in `openZtool(0)`, то есть тот же callback, который висит на кнопке
+  `Управление файлами`; это не заявляется как отдельный literal ribbon-click
+  PASS.
+- Методика `docs/release/FULL_TEST_METHODOLOGY_RU.md` обновлена отдельным
+  known-incident блоком: `.NET Framework` modal теперь сначала трактуется как
+  registry-preflight failure; обязательно проверяются parent-value и subkey
+  `AddInsStartup`, cached `CommandManager` tabs и COM `CodeBase`.
+- Clean production package gate закрывается из detached clean worktree текущего
+  HEAD: `verify_release_package.ps1 -RequireSolidWorksTools` = `PASS`,
+  `manifest.git.dirty=false`, `SolidWorksTools.dll=true`; конкретный package
+  path/hash фиксируется в `FULL_TEST_20260617-production-package`.
+
+- A/B с original CN выполнен в
+  `manual-test-reports/FULL_TEST_20260617-ab-reg09-color/`: original CN и RU
+  подключаются к SolidWorks на `TestModel/0614-A00.SLDASM`, по 29 строк.
+- `COL-UI` material-color parity: `PASS` по pixel gate против original CN
+  (`RGB=(0,0,0)`, material-column x-bounds совпали, black row-index pattern
+  совпал на видимом пересечении). По продуктному решению принимается UI-only
+  material parity; `COL-XLSX`/цветные Excel fills не являются release gate.
+- `REG-09`: `PASS` live для `dgv_split`, `dgv_match`, `dgv2`; строка удаляется
+  через выбор row header и клавишу `Delete`.
+- Event Viewer в окне A/B/REG-09 чистый: новых `Application Error`,
+  `.NET Runtime`, WER или ZTool/SolidWorks событий нет.
+
 ## Лицензирование (серверная часть)
 
 Перевыпущенный клиент `ZTool.exe` проверен против боевого license-сервера —

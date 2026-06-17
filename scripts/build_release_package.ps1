@@ -20,10 +20,12 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
 $packageName = "ZTool-$Version-$stamp"
-$packageRoot = Join-Path $OutputRoot $packageName
+$outputRootPath = [System.IO.Path]::GetFullPath($OutputRoot)
+$packageRoot = Join-Path $outputRootPath $packageName
 $runtimeDir = Join-Path $packageRoot 'runtime'
 $serverDir = Join-Path $packageRoot 'license-server'
 $docsDir = Join-Path $packageRoot 'docs'
+$specTemplatesDirName = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('0KjQsNCx0LvQvtC90Ysg0YHQv9C10YbQuNGE0LjQutCw0YbQuNC4'))
 
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
@@ -82,7 +84,7 @@ $copied += Copy-RequiredFile (Join-Path $repoRoot 'NPOI.OpenXmlFormats.dll') $ru
 $swTools = Copy-OptionalSolidWorksTools
 if ($swTools) { $copied += $swTools }
 
-Copy-TreeFiltered (Join-Path $repoRoot 'Шаблоны спецификации') (Join-Path $runtimeDir 'Шаблоны спецификации')
+Copy-TreeFiltered (Join-Path $repoRoot $specTemplatesDirName) (Join-Path $runtimeDir $specTemplatesDirName)
 Copy-TreeFiltered (Join-Path $repoRoot 'SolidWorksTemplates') (Join-Path $runtimeDir 'SolidWorksTemplates')
 & (Join-Path $repoRoot 'client-core\tools\set_bom_template_path.ps1') `
     -Folder $runtimeDir `

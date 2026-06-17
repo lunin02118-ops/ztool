@@ -115,7 +115,7 @@ rebuild.
   `code.DeserializeObject` for Font, Color and DataTable. **PASS** (no regression)
 
 Artifact: `client-core/dist/ZTool_binderfix.exe`
-SHA256 `0bf4cb0b4174d1ccdfef17373de7ea4965fc0a2e42f27393e0b2571d9955864b`
+SHA256 `7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd`
 (base `ZTool.exe` = `d41639a3…2a4833`).
 
 > The transplant must remap a binder's intra-type method calls (e.g.

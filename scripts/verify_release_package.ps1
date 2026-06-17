@@ -10,7 +10,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PackageRoot,
 
-    [string]$ExpectedClientExeSha256 = "0bf4cb0b4174d1ccdfef17373de7ea4965fc0a2e42f27393e0b2571d9955864b",
+    [string]$ExpectedClientExeSha256 = "7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd",
     [string]$ExpectedAddinDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9",
 
     [switch]$RequireSolidWorksTools,

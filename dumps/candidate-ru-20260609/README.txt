@@ -54,7 +54,8 @@ SHA256: bc04c6994469ba717ace5ab1ff541a6da1fc96b32d83266e04f9d40d85c31647
   Assembly.LoadFile OK; класс ZTool.SwAddin : ISwAddin (GUID 59959DFA-...) на месте;
   23 EmbeddedResource (162272 байт) читаются; все картинки декодируются GDI (валидные).
 
-Как тестировать (см. МЕТОДИКА_ТЕСТА_DLL.md в корне репо):
+Как тестировать (актуальная методика: docs/release/FULL_TEST_METHODOLOGY_RU.md;
+историческая DLL-методика перенесена в docs/archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_DLL.md):
   1. Get-FileHash <файл> -Algorithm SHA256  -> должно быть eea7c9ae...ba0961
   2. Переименовать в ZTool.dll, рядом положить SolidWorksTools.dll (+ ZTool.exe для кнопок-лаунчеров).
   3. Прогон с шага 3.1 (LoadFile / RegAsm / реестр), затем 4-5 в SolidWorks.

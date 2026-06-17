@@ -35,8 +35,11 @@ $ErrorActionPreference = "Stop"
 
 if (-not (Test-Path $Settings)) { throw "Settings file not found: $Settings" }
 
-$tplDir  = Join-Path $Folder "Шаблоны спецификации"
-$tplFile = Join-Path $tplDir "bom_шаблон.xlsx"
+$specTemplatesDirName = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('0KjQsNCx0LvQvtC90Ysg0YHQv9C10YbQuNGE0LjQutCw0YbQuNC4'))
+$bomTemplateFileName = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('Ym9tX9GI0LDQsdC70L7QvS54bHN4'))
+
+$tplDir  = Join-Path $Folder $specTemplatesDirName
+$tplFile = Join-Path $tplDir $bomTemplateFileName
 $matDir  = Join-Path $Folder "SolidWorksTemplates"
 $matFile = Join-Path $matDir "MyMaterials.sldmat"
 
