@@ -17,12 +17,13 @@
 
 ## Рекомендуемая связка для развёртывания
 
-Актуально после слияния **PR #8** (merge `78e679c`). Обе сборки прошли живые
-ретесты в SolidWorks 2025 на сборке `0614-A00.SLDASM` (8/8 режимов BOM):
+Актуально для текущей release-candidate ветки после PR #33. Offline/release
+gates ожидают следующие runtime-хеши; полный production GO требует живого
+прогона по [`docs/release/FULL_TEST_METHODOLOGY_RU.md`](docs/release/FULL_TEST_METHODOLOGY_RU.md):
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
-| `ZTool.exe` | главное приложение (`binderfix`)   | `0BF4CB0B…9955864B`    |
+| `ZTool.exe` | главное приложение (`binderfix` + PR #33) | `7688EA39…09A5D8FD` |
 | `ZTool.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
 
 Что внесено в PR #8:
@@ -36,6 +37,9 @@
      таблица автозаполнения);
    - `SafeListBinder` — allow-list при вставке из буфера обмена (только
      `List<string>`/`string`/`string[]`, остальное отклоняется).
+
+После PR #8 в текущей ветке дополнительно восстановлена дефолтная видимость
+колонок и удаление строк клавишей `Delete` в диалоге «Разделить столбец».
 
 Подробности и результаты ретестов: [`manual-test-reports/SUMMARY.md`](manual-test-reports/SUMMARY.md).
 

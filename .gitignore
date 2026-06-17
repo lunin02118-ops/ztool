@@ -34,6 +34,9 @@ tools/chm-i18n/_chm_build/
 *.log
 *.tmp
 *.bak
+localization-report.json
+manual-test-reports/package-smoke/
+.codex-remote-attachments/
 
 # --- local env / secrets ---
 .env

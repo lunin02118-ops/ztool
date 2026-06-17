@@ -1,7 +1,7 @@
 # Указатель документации ZTool
 
-Все документы на русском языке. Статус актуальности — на момент слияния
-**PR #8** (merge `78e679c`, дата 2026-06-14).
+Все документы на русском языке. Главная рабочая методика тестирования после
+рефакторинга — `docs/release/FULL_TEST_METHODOLOGY_RU.md`.
 
 Полный аудит документации (что актуально, что устарело, найденный мусор):
 [`DOC_AUDIT_2026-06-14_RU.md`](DOC_AUDIT_2026-06-14_RU.md).
@@ -39,15 +39,16 @@
 | [`security/KEY_COMPROMISE_RUNBOOK_RU.md`](security/KEY_COMPROMISE_RUNBOOK_RU.md) | Runbook при компромиссе RSA private key | актуален |
 | [`security/ABUSE_RATE_LIMIT_POLICY_RU.md`](security/ABUSE_RATE_LIMIT_POLICY_RU.md) | Abuse/rate-limit policy и fail2ban пример | актуален |
 | [`security/DATA_RETENTION_PRIVACY_RU.md`](security/DATA_RETENTION_PRIVACY_RU.md) | Data retention, privacy и redaction policy | актуален |
-| [`release/FULL_TEST_METHODOLOGY_RU.md`](release/FULL_TEST_METHODOLOGY_RU.md) | **Методика полного тестирования всего функционала с паритетом к оригиналу** (после рефакторинга; включает цвета материал/покраска) | актуален |
+| [`release/FULL_TEST_METHODOLOGY_RU.md`](release/FULL_TEST_METHODOLOGY_RU.md) | **Единственная актуальная методика полного тестирования всего функционала с паритетом к оригиналу**; включает запуск через `.SLDASM`, registry pre-flight, объектную UI/WinForms-автоматизацию, свойства, BOM и цвета | актуален |
 | [`release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`](release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md) | Финальный план приёмочного тестирования release package | актуален |
 | [`release/PRODUCTION_READINESS_REPORT_RU.md`](release/PRODUCTION_READINESS_REPORT_RU.md) | Шаблон production readiness report | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
-| [`../МЕТОДИКА_ПРОВЕРКИ.md`](<../МЕТОДИКА_ПРОВЕРКИ.md>) | Общая методика проверки | актуален |
-| [`../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md`](<../МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md>) | Методика теста всего приложения (DLL+EXE+сервер) | актуален |
-| [`../МЕТОДИКА_ДАМПА_DLL.md`](<../МЕТОДИКА_ДАМПА_DLL.md>) | Методика снятия дампа `ZTool.dll` | актуален |
-| [`../МЕТОДИКА_ТЕСТА_DLL.md`](<../МЕТОДИКА_ТЕСТА_DLL.md>) | Методика теста `ZTool.dll` | актуален |
-| [`../Шаблоны спецификации/МЕТОДИКА_ТЕСТИРОВАНИЯ_BOM.md`](<../Шаблоны спецификации/МЕТОДИКА_ТЕСТИРОВАНИЯ_BOM.md>) | Методика тестирования шаблонов BOM | актуален |
+| [`archive/legacy-test-methods/README.md`](archive/legacy-test-methods/README.md) | Архив старых методик тестирования; использовать только как историческую справку | архив |
+| [`archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md`](<archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md>) | Старая общая методика проверки | архив / не запускать напрямую |
+| [`archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md`](<archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md>) | Старая методика теста приложения | архив / не запускать напрямую |
+| [`archive/legacy-test-methods/МЕТОДИКА_ДАМПА_DLL.md`](<archive/legacy-test-methods/МЕТОДИКА_ДАМПА_DLL.md>) | Старая методика снятия дампа `ZTool.dll` | архив / по необходимости |
+| [`archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_DLL.md`](<archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_DLL.md>) | Старая методика теста `ZTool.dll` | архив / не запускать напрямую |
+| [`archive/legacy-test-methods/МЕТОДИКА_ТЕСТИРОВАНИЯ_BOM.md`](<archive/legacy-test-methods/МЕТОДИКА_ТЕСТИРОВАНИЯ_BOM.md>) | Старая методика тестирования BOM-шаблонов | архив / не запускать напрямую |
 
 ## Аудит и русификация
 
@@ -58,6 +59,7 @@
 | [`audit/phase-10-release-packaging-implementation-report.md`](audit/phase-10-release-packaging-implementation-report.md) | Отчёт Phase 10 release packaging | актуален |
 | [`audit/prod-readiness-audit-followup-2026-06-15.md`](audit/prod-readiness-audit-followup-2026-06-15.md) | Follow-up по блокерам B-1/B-2 из production readiness audit | актуален |
 | [`audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md`](audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md) | Gap-аудит: почему hardening не закрыл клиентский SolidWorks-паритет и цвет/запуск | актуален |
+| [`audit/current-state-audit-2026-06-17_RU.md`](audit/current-state-audit-2026-06-17_RU.md) | Текущий аудит ветки PR #33: offline gates, найденные фиксы, блокеры `FULL PASS` | актуален |
 | [`../AUDIT_ru.md`](<../AUDIT_ru.md>) | Аудит дистрибутива и методика русификации | исторический (см. раздел «Актуализация PR #8» в конце) |
 | [`../AUDIT_REPORT_RU.md`](<../AUDIT_REPORT_RU.md>) | Отчёт аудита: русификация + сервер лицензий | исторический (см. раздел «Актуализация PR #8» в конце) |
 

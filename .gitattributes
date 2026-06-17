@@ -1,3 +1,7 @@
+# The 3 GB SolidWorks memory dump was removed from the repo (exceeded the LFS
+# budget and broke clean clones). It is archived externally; see
+# dumps/full-memory-20260609-081854/README.txt. LFS tracking is kept below in
+# case the parts are ever re-added, but the files themselves are not committed.
 dumps/full-memory-20260609-081854/*.dmp filter=lfs diff=lfs merge=lfs -text
 dumps/full-memory-20260609-081854/*.dmp.part* filter=lfs diff=lfs merge=lfs -text
 *.sh text eol=lf

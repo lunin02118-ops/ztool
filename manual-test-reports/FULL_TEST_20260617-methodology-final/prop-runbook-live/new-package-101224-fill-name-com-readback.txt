@@ -1,0 +1,9 @@
+path=D:\Development\ztool\manual-test-reports\FULL_TEST_20260617-methodology-final\prop-runbook-live\fixture-model\PArt-021.SLDPRT
+prop=Наименование
+expected=PROP_WRITE_ZTOOL_101224_1537
+opened=D:\Development\ztool\manual-test-reports\FULL_TEST_20260617-methodology-final\prop-runbook-live\fixture-model\PArt-021.SLDPRT
+scope=<global> names=设计|零件名称|图号|材料|类型|版本|设计日期|重量|Наименование|Обозначение|Материал|Тип|Версия|Обработка поверхности|Дата разработки|Масса
+scope=<global> rc=2 val=BASE_PArt-021 resolved=BASE_PArt-021 wasResolved=True link=False pass=False
+scope=Default names=Наименование|Обозначение|Материал|Тип|Версия|Обработка поверхности|Дата разработки|Масса
+scope=Default rc=2 val=PROP_WRITE_ZTOOL_101224_1537 resolved=PROP_WRITE_ZTOOL_101224_1537 wasResolved=True link=False pass=True
+PASS=True

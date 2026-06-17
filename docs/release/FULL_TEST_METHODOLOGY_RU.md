@@ -1,7 +1,10 @@
 # Методика полного тестирования ZTool после рефакторинга (паритет с оригиналом)
 
 Статус: актуализировано после рефакторинга (hardening PR #12–#22, BOM-шаблоны/русификация,
-binderfix, pmpguard2, библиотека материалов PR #23, русские свойства PR #25).
+binderfix, pmpguard2, библиотека материалов PR #23, русские свойства PR #25,
+PR #33: восстановление видимости колонок и удаление строк в «Разделить столбец»,
+registry pre-flight: parent-value `AddInsStartup`, cached CommandManager tabs,
+`Custom API Flyouts`, Explorer-launch и `LoadAddIn(<runtime>\ZTool.dll)`).
 
 Цель документа — единая методика **полной** проверки всего функционала ZTool с
 **паритетом к оригинальной китайской версии**: после рефакторинга поведение
@@ -10,6 +13,21 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 для оператора с установленным SolidWorks; он дополняет
 `docs/release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md` (тот — релизный гейт, этот —
 функциональная регрессия и паритет).
+
+Важно: этот документ — **методика**, а не отчёт о прохождении. Полный статус
+`FULL PASS` можно ставить только после заполненного журнала §15 с живым прогоном
+в SolidWorks. Offline/pre-flight проверки из §13 подтверждают только готовность
+к живому тесту, но не заменяют его.
+
+### Единственная актуальная методика
+
+Для текущего тестирования рабочим документом считается только этот файл:
+`docs/release/FULL_TEST_METHODOLOGY_RU.md`.
+
+Старые методики перенесены в `docs/archive/legacy-test-methods/` и имеют статус
+**архив / не запускать напрямую**. Они оставлены для истории и восстановления
+контекста, но не являются инструкцией для нового прогона. Если старый документ
+противоречит этому файлу, выполнять этот файл.
 
 ---
 
@@ -51,19 +69,360 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 - **Тестовая модель:** `TestModel/0614-A00.SLDASM` (29 поз., полный комплект в `TestModel/`).
 - **Релиз-пакет:** `runtime/ZTool.exe`, `runtime/ZTool.dll`, `runtime/SolidWorksTools.dll`,
   `SolidWorksTemplates/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
-  принятыми (рекомендуемая связка: `ZTool.exe`=`0BF4CB0B…9955864B`,
-  `ZTool.dll`=`D0535425…0E492EB9`).
+  принятыми. Для ветки PR #33 рекомендуемая связка:
+  `ZTool.exe`=`7688EA399F3EA38672966043EDBE5F3F0102048369706882F4A35EB009A5D8FD`,
+  `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`.
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
   → PASS; `manifest.git.dirty=false`; в пакете нет приватных ключей/БД/дампов/логов.
 - **Конфиг:** `ZTool.settings` с `materialpath` → существующий `MyMaterials.sldmat`,
   `usematerialcolor=true` (см. §6 и PR #23), русскими `propname`/`namemapping`
   (PR #25) и `FilterRulesList`.
 
+`verify_release_package.ps1` является pre-flight gate для свежего release
+package. После запуска ZTool приложение может обновить `runtime/ZTool.settings`
+(например, рабочие пути/пользовательские настройки), поэтому повторный verifier
+на уже использованной live-папке может упасть по hash mismatch. Для immutable
+release-проверки использовать свежесобранный пакет или пересобрать его после
+ручного прогона.
+
+### 2.1 Обязательная чистота реестра перед живым запуском
+
+Перед каждым живым прогоном нельзя полагаться на состояние от прошлого теста:
+старые `RegAsm CodeBase`, ключи SolidWorks AddIn и `HKCU\SOFTWARE\ZTool` могут
+заставить SolidWorks загрузить не тот `ZTool.dll`/`ZTool.exe` или дать ложную
+ошибку инициализации `.NET Framework`.
+
+**Инцидент 2026-06-17: не путать с отсутствием .NET Framework.** Если
+SolidWorks показывает `Не удалось загрузить Microsoft .NET Framework`,
+первым делом считать это registry-preflight failure, а не ошибкой установки
+.NET. Реальная причина повторного дефекта была такой:
+
+- stale parent-value
+  `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{59959DFA-3229-4B86-852E-52ABF2BDB8C0}=1`
+  автозагружал старую надстройку;
+- subkey при этом мог выглядеть чистым или иметь `0`, поэтому проверка только
+  `...\AddInsStartup\{GUID}` недостаточна;
+- cached tabs в
+  `HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager`
+  оставляли вторую вкладку ZTool, включая вкладку без названия;
+- поиск только по `ZTool`/`59959DFA` недостаточен: пустая вкладка может
+  сохраниться как anonymous `CommandManager\...\Tab*` без `ModuleName`/`RefName`,
+  с `Tab Props = 0,1,1,-1` и кнопками ZTool (`41658..59425..41675`);
+- cached flyout в
+  `HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\Custom API Flyouts`
+  мог ссылаться на `{59959DFA-3229-4B86-852E-52ABF2BDB8C0}` и поднимать старую
+  кнопку даже после очистки `CommandManager`;
+- SolidWorks поднимал старую DLL/кнопку, а симптом выглядел как `.NET
+  Framework` modal или дублированная вкладка.
+
+Перед live-прогоном обязательное состояние:
+
+- `HKCU\SOFTWARE\SolidWorks\AddInsStartup` value `{GUID}` = `0`;
+- `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{GUID}` default = `0`;
+- `HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\AddInsStartup` value `{GUID}` = `0`;
+- `HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\AddInsStartup\{GUID}` default = `0`;
+- `CommandManager` cache не содержит `ZTool`/`59959DFA`;
+- `CommandManager` cache не содержит anonymous ZTool clones:
+  `ModuleName`/`RefName` пустые, `Tab Props = 0,1,1,-1`, кнопки содержат
+  `2,59425` и `41658..41675`;
+- `Custom API Flyouts` cache не содержит `ZTool`/`59959DFA`;
+- COM `CodeBase` указывает на текущий/clean `runtime\ZTool.dll`.
+
+Если любой пункт не выполнен, не начинать BOM/цвета/REG-тесты: сначала backup,
+targeted cleanup, `RegAsm /codebase` текущего runtime, повторный snapshot.
+
+Обязательный порядок:
+
+1. Закрыть SolidWorks и ZTool полностью.
+
+   ```powershell
+   Get-Process SLDWORKS,ZTool -ErrorAction SilentlyContinue | Stop-Process -Force
+   ```
+
+2. Нормализовать окружение процесса, из которого запускается тест.
+
+   В Codex/PowerShell окружение может отличаться от обычного запуска с рабочего
+   стола. Практически важный случай: пустой `$env:WINDIR` приводит к ложной
+   ошибке SolidWorks «Не удалось загрузить Microsoft .NET Framework» или вечному
+   `splash`, хотя запуск через ярлык/проводник у пользователя работает.
+
+   ```powershell
+   $env:WINDIR = 'C:\Windows'
+   $env:SystemRoot = 'C:\Windows'
+   $env:ComSpec = 'C:\Windows\system32\cmd.exe'
+
+   if (-not $env:WINDIR -or -not (Test-Path "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe")) {
+       throw "Broken launch environment: WINDIR/RegAsm is not available"
+   }
+   ```
+
+3. Сделать backup затрагиваемых веток реестра в папку отчёта.
+
+   ```powershell
+   $stamp = Get-Date -Format yyyyMMdd-HHmmss
+   $backup = "manual-test-reports\registry-backup-$stamp"
+   New-Item -ItemType Directory -Force $backup | Out-Null
+
+   reg export HKCU\SOFTWARE\ZTool "$backup\HKCU_ZTool.reg" /y
+   reg export "HKLM\SOFTWARE\SolidWorks" "$backup\HKLM_SolidWorks.reg" /y
+   reg export "HKCU\SOFTWARE\SolidWorks" "$backup\HKCU_SolidWorks.reg" /y
+   reg export "HKLM\SOFTWARE\Classes\ZTool.SwAddin" "$backup\HKLM_Classes_ZTool.SwAddin.reg" /y
+   ```
+
+4. Проверить и убрать старые следы `ZTool`/старых test-dir путей.
+
+   ```powershell
+   reg query HKLM\SOFTWARE\Classes /f ZTool /s /reg:64
+   reg query HKLM\SOFTWARE\SolidWorks /f ZTool /s /reg:64
+   reg query HKCU\SOFTWARE\SolidWorks /f ZTool /s /reg:64
+   ```
+
+   Если найден `CodeBase` или SolidWorks AddIn key, указывающий не на текущую
+   тестовую папку `runtime`, тест **невалиден**: удалить stale-запись или
+   перерегистрировать add-in из текущей папки.
+
+   Отдельно обязательно проверить **оба** формата автозагрузки SolidWorks:
+   parent-value и subkey. Практический дефект 2026-06-17: subkey выглядел
+   чистым, но parent-value
+   `HKCU\SOFTWARE\SolidWorks\AddInsStartup\{59959DFA-...}=1` всё равно
+   автозагружал старый ZTool и давал стартовый диалог SolidWorks
+   «Не удалось загрузить Microsoft .NET Framework».
+
+   ```powershell
+   $guid = '{59959DFA-3229-4B86-852E-52ABF2BDB8C0}'
+   $roots = @(
+     'HKCU\SOFTWARE\SolidWorks\AddInsStartup',
+     'HKCU\SOFTWARE\SolidWorks\SOLIDWORKS 2025\AddInsStartup'
+   )
+
+   foreach ($root in $roots) {
+     reg query $root /v $guid
+     reg query "$root\$guid" /ve
+     reg add $root /v $guid /t REG_DWORD /d 0 /f
+     reg add "$root\$guid" /ve /t REG_DWORD /d 0 /f
+   }
+   ```
+
+   Значение `1` в любом из этих мест является blocker для live-прогона: сначала
+   поставить `0`, затем перезапустить SolidWorks.
+
+   Также очистить cached вкладки CommandManager, если в них есть ZTool/GUID,
+   либо если это anonymous ZTool clone. Симптом stale cache: две вкладки, одна
+   без названия, но фактически тоже ZTool; либо запуск старой кнопки после
+   перерегистрации DLL. Перед удалением должен быть сделан backup из шага 3.
+   Отдельно очистить `Custom API Flyouts`: это другой cache SolidWorks, он не
+   удаляется кодом для `CommandManager`.
+
+   ```powershell
+    $guid = '{59959DFA-3229-4B86-852E-52ABF2BDB8C0}'
+    $guidRe = '59959DFA|59959dfa|ZTool'
+    $cm = 'HKCU:\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager'
+    foreach ($ctx in 'AssyContext','PartContext','DrwContext') {
+      $root = Join-Path $cm $ctx
+      Get-ChildItem $root -ErrorAction SilentlyContinue |
+        Where-Object { $_.PSChildName -match '^Tab\d+$' } |
+        ForEach-Object {
+          $props = Get-ItemProperty -LiteralPath $_.PSPath
+          $children = Get-ChildItem -LiteralPath $_.PSPath -Recurse -ErrorAction SilentlyContinue
+          $text = (($props | Out-String), ($children | ForEach-Object {
+            Get-ItemProperty -LiteralPath $_.PSPath | Out-String
+          })) -join "`n"
+          $buttons = @($children | ForEach-Object {
+            (Get-ItemProperty -LiteralPath $_.PSPath).PSObject.Properties |
+              Where-Object { $_.Name -like 'Btn*' } |
+              ForEach-Object { [string]$_.Value }
+          })
+          $buttonText = $buttons -join ';'
+          $isNamedZTool = ($text -match $guidRe) -or
+            ($props.ModuleName -eq $guid) -or
+            ($props.RefName -eq 'ZTool') -or
+            ($props.'Tab Props' -like 'ZTool,*')
+          $isAnonymousZToolClone = (-not $props.ModuleName) -and
+            (-not $props.RefName) -and
+            ($props.'Tab Props' -eq '0,1,1,-1') -and
+            ($buttons -contains '2,59425') -and
+            ($buttonText -match '41658') -and
+            ($buttonText -match '41675')
+
+          if ($isNamedZTool -or $isAnonymousZToolClone) {
+            Remove-Item -LiteralPath $_.PSPath -Recurse -Force
+          }
+        }
+    }
+   ```
+
+   ```powershell
+   $flyouts = 'HKCU:\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\Custom API Flyouts'
+   Get-ChildItem $flyouts -ErrorAction SilentlyContinue |
+     ForEach-Object {
+       $self = Get-ItemProperty -LiteralPath $_.PSPath | Out-String
+       $children = Get-ChildItem -LiteralPath $_.PSPath -Recurse -ErrorAction SilentlyContinue |
+         ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath | Out-String }
+       if ((($self, $children) -join "`n") -match $guidRe) {
+         Remove-Item -LiteralPath $_.PSPath -Recurse -Force
+       }
+     }
+   ```
+
+   Не использовать `RegAsm /u` как штатную очистку: на рабочей машине это уже
+   давало модальный диалог `Cannot delete a subkey tree because the subkey does
+   not exist`. Предпочтительный путь: backup, targeted delete/stale cleanup,
+   затем обычный `RegAsm /codebase` текущего runtime.
+
+5. Зарегистрировать именно текущий `runtime\ZTool.dll`.
+
+   ```powershell
+   Push-Location <runtime>
+   & "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe" .\ZTool.dll /codebase
+   Pop-Location
+   ```
+
+6. Повторно проверить, что `CodeBase` в `HKLM\SOFTWARE\Classes` указывает на
+   текущий `runtime\ZTool.dll`, а не на старую папку.
+
+   ```powershell
+   reg query HKLM\SOFTWARE\Classes /f "<runtime>\ZTool.dll" /s /reg:64
+   ```
+
+   Для детерминированного load-smoke в этой среде использовать путь к DLL:
+   `swApp.LoadAddIn("<runtime>\ZTool.dll")`. Загрузка по одному GUID может вернуть
+   `3`, даже если COM registration корректный; это не заменяет проверку ленты,
+   но помогает быстро отличить проблему загрузки DLL от проблемы cached UI.
+
+7. Для тестов лицензирования на чистой машине дополнительно очистить license
+   state. Для BOM/цветов/экспорта этот шаг выполнять только если нужен именно
+   clean-license сценарий.
+
+   ```powershell
+   reg delete HKCU\SOFTWARE\ZTool /f
+   reg delete HKLM\SOFTWARE\SolURxxCfNU /f
+   reg delete HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ /f
+   ```
+
+Если после этого SolidWorks всё равно показывает «Не удалось загрузить Microsoft
+.NET Framework», сначала проверить `$env:WINDIR`, `$env:SystemRoot`, затем
+повторить registry pre-flight, parent-value `AddInsStartup`, cached
+CommandManager tabs и `CodeBase`; не продолжать
+BOM/цветовые тесты из такой сессии.
+
 > SolidWorks для теста открывать **через файл сборки**
-> `TestModel/0614-A00.SLDASM` (проводник/ассоциация `.SLDASM`). Не стартовать
-> `SldWorks.exe` отдельно из shell: это даёт другой init-контекст и может приводить
+> `TestModel/0614-A00.SLDASM` (проводник/ассоциация `.SLDASM`). Для автоматизации
+> допустимо `explorer.exe "<полный-путь-к-SLDASM>"`. Не использовать прямой
+> `Start-Process <file.SLDASM>` из PowerShell/Codex и не стартовать `SldWorks.exe`
+> отдельно из shell: это даёт другой init-контекст и может приводить
 > к ошибке загрузки .NET. ZTool запускать только из ленты SolidWorks
 > («Управление файлами» стартует `runtime/ZTool.exe`).
+
+Перед любым живым тестом зафиксировать, что реально запущена нужная сборка:
+
+```powershell
+Get-Process ZTool | Select-Object Id,Path,MainWindowTitle
+Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256
+```
+
+Если путь не из тестового runtime-каталога или hash не совпадает с ожидаемым,
+тест невалиден: сначала исправить регистрацию/путь запуска.
+
+### 2.2 Протокол живой автоматизации
+
+Живой прогон должен быть воспроизводимым и не должен зависеть от DPI, положения
+окна, масштаба монитора или случайного клика. Основной способ автоматизации:
+UIA/WinForms/SolidWorks COM-локаторы по имени окна, `AutomationId`, тексту
+кнопки/заголовка, process path/hash и значениям ячеек. Скриншоты нужны как
+артефакты, но сами по себе не являются доказательством прохождения gate.
+
+Жёсткое правило: координатная карта допустима только как диагностический
+fallback и только если в отчёте рядом есть объектное подтверждение:
+
+- какой процесс/окно управлялись (`pid`, `Path`, `SHA256`);
+- какой UIA/WinForms control найден (`AutomationId`/text/class/rect);
+- значение до действия и после действия (`ValuePattern`, Excel/COM read-back);
+- скриншот контрольной точки.
+
+Если gate пройден только hardcoded координатами без read-back, это `NO-GO`.
+
+Обязательный порядок:
+
+1. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
+2. Развернуть окно SolidWorks на основном мониторе.
+3. Запустить ZTool только кнопкой ленты SolidWorks (`Управление файлами`).
+4. Развернуть окно `ZTool 1.0(x64)`.
+5. Проверить, что ZTool видит 29 строк после `Подключить SW`.
+6. Управлять ZTool через UIA/WinForms locator. Для ribbon-кнопок, где
+   `InvokePattern` объявлен, но не исполняет действие, допустим
+   object-located click по найденному элементу, а не координата из таблицы.
+7. После каждого критического шага сохранять JSON/TXT dump и скриншот в папку
+   отчёта:
+   `01-sw-open.png`, `02-ztool-connected.png`, `03-export-menu.png`,
+   `04-bom-XX-save-dialog.png`, `05-bom-XX-result.xlsx`.
+
+PowerShell-заготовка для фиксации текущего окна:
+
+Если автоматизация ищет русские кнопки/диалоги (`Нет`, `Подключить SW`,
+`Экспорт выполнен`), запускать runner из UTF-8-aware shell (`pwsh`) или хранить
+скрипт в корректной кодировке. `powershell.exe` 5.1 без UTF-8 BOM уже приводил
+к неверному matching русских строк и невалидному Save As вводу.
+
+```powershell
+$z = Get-Process ZTool | Select-Object -First 1
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public class WinRect {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+  public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+}
+'@
+[WinRect]::ShowWindow($z.MainWindowHandle, 3) | Out-Null # maximize
+$r = New-Object WinRect+RECT
+[WinRect]::GetWindowRect($z.MainWindowHandle, [ref]$r) | Out-Null
+"ZTool rect: $($r.Left),$($r.Top),$($r.Right),$($r.Bottom)"
+```
+
+Минимальные объектные локаторы ZTool:
+
+| Действие | Locator | Ожидаемо |
+|----------|---------|----------|
+| `Подключить SW` | UIA text `Подключить SW`; чаще `SplitButton` under tab `Главная` | Status содержит `Подключение завершено`, таблица `DGV1` содержит 29 строк |
+| `Сохранить в SW` | UIA text `Сохранить в SW`; чаще верхний `SplitButton`, не generic `Button` | После повторного `Подключить SW` значения вернулись из SolidWorks |
+| `Задать имя свойства` | UIA Button text `Задать имя свойства`; dialog `Frmsetpropname`; grid `DGV1` | В строках есть `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`, `Обработка поверхности`, `Дата разработки`, `Масса` |
+| `PropSwitch` | `StatusStrip1`: text `Вычисленное значение`/`Выражение свойства`; rightmost empty status `Button` before that text | Для записи свойств включён режим `Выражение свойства`, то есть видимы editable `PropVal_*`, а не read-only `PropResolvedVal_*` |
+| `Столбец заполнения` | UIA Button text `Столбец заполнения`; dialog `FrmFilling`; `ComboBox1`, `TextBox1`, `OK_Button` | `ComboBox1` содержит и выбирает нужный столбец, `TextBox1` содержит marker, после `OK` ячейки изменились |
+| BOM export | UIA tab `Спецификация`, menu item by visible text / exported file path | Создан `.xlsx`, валидатор и Excel read-back PASS |
+
+Для стандартного окна сохранения Excel не использовать случайный выбор папки
+мышью. В поле `Имя файла` вставить полный путь вида
+`<report>\bom-exports\BOM-01-summary.xlsx` и нажать `Enter`. Если диалог
+открылся не в том каталоге, это не ошибка ZTool, но в отчёте фиксируется
+скриншотом.
+
+Если появляется модальное окно `Вопрос / Получить данные заново?`, выбрать
+`Да` для контрольного перечитывания или `Нет` перед независимым COM read-back;
+решение зафиксировать в отчёте. Если появляется
+`Не удалось загрузить Microsoft .NET Framework`, вернуться в §2.1: это не
+валидная ZTool-сессия.
+
+### 2.3 Правильный способ запуска SolidWorks для теста
+
+Для живого теста запрещены два проблемных сценария:
+
+- запускать `SldWorks.exe` напрямую из Codex/PowerShell без открытия модели;
+- открывать отдельные `.SLDPRT` и оставлять их активными перед проверкой ZTool.
+
+Правильный сценарий:
+
+1. Закрыть `SLDWORKS` и `ZTool`.
+2. Выполнить §2.1.
+3. Открыть именно `TestModel/0614-A00.SLDASM` через проводник/ассоциацию файла.
+4. Дождаться, что в заголовке SolidWorks активна сборка `0614-A00.SLDASM`.
+5. Запустить ZTool только с ленты SolidWorks → `ZTool` → `Управление файлами`.
+6. Сразу зафиксировать `Get-Process ZTool | Select Id,Path,MainWindowTitle`.
+
+Если активным стал файл детали (`*.SLDPRT`), тест остановить: закрыть ZTool,
+активировать/переоткрыть `0614-A00.SLDASM` и только после этого запускать ZTool.
+Иначе вкладки/лента SolidWorks будут отличаться от сборочного режима, а
+объектные локаторы и ожидаемые команды из §2.2 станут недействительными.
 
 ---
 
@@ -129,13 +488,28 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 | ID | Режим | Ожидаемо (эталон) |
 |----|-------|-------------------|
 | BOM-01 | Сводная спецификация | N строк, все колонки, без вложенности |
-| BOM-02 | Сводная (с эскизами) | То же + колонка эскизов с картинками |
-| BOM-03 | Иерархическая | Уровни (1,2…), отступы |
-| BOM-04 | Иерархическая (с эскизами) | То же + эскизы; **режим не падает** (см. N) |
-| BOM-05 | Обрабатываемые детали | Только `Тип∈{Мех.обработка;Листовая;Литьё;Сварка}` |
-| BOM-06 | Покупные изделия | Только `Тип∈{Покупное;Стандартное}` |
-| BOM-07 | Верхний уровень | Только прямые дочерние (Level 1) |
-| BOM-08 | Только детали (опц.) | Без подсборок, только .SLDPRT |
+| BOM-02 | Иерархическая | Уровни (1,2…), отступы |
+| BOM-03 | Верхний уровень | Только прямые дочерние (Level 1) |
+| BOM-04 | Сводная спецификация деталей | Без подсборок, только .SLDPRT; **режим не падает** (см. N) |
+| BOM-05 | Сводная (с эскизами) | То же, что BOM-01 + колонка эскизов с картинками |
+| BOM-06 | Иерархическая (с эскизами) | То же, что BOM-02 + эскизы |
+| BOM-07 | Обрабатываемые детали | Только `Тип∈{Мех.обработка;Листовая;Литьё;Сварка}` |
+| BOM-08 | Покупные изделия | Только `Тип∈{Покупное;Стандартное}` |
+
+Для `BOM-07`/`BOM-08` нулевой результат на демо-модели без совпадающих значений
+свойства `Тип` фиксируется как `WARN`, а не как сбой экспорта: важно, что файл
+создан и фильтр не возвращает полный нефильтрованный список. Строгий filter
+`PASS` требует fixture-модель с заполненным `Тип`.
+
+Строгий gate для `BOM-07`/`BOM-08`:
+
+- подготовить fixture-копию модели, где `Тип` непустой у проверяемых деталей;
+- экспортировать все 8 режимов через UI ZTool;
+- `BOM-07` должен иметь `rows > 0`, непустой столбец `Тип` и только значения
+  `Мех.обработка`/эквиваленты из `FilterRulesList`;
+- `BOM-08` должен иметь `rows > 0`, непустой столбец `Тип` и только значения
+  `Покупное`/`Стандартное`/эквиваленты из `FilterRulesList`;
+- пустой `Тип` в любой строке `BOM-07`/`BOM-08` = `FAIL`.
 
 **Критерии PASS (каждый режим):** Excel создан без ошибок; № п/п последователен;
 «Количество» — числа > 0 и **= сумме** одинаковых поз. (служебная вычисляемая
@@ -152,6 +526,87 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 | PROP-03 | Модель без свойства | Пустая ячейка, без ошибки/сдвига колонок |
 | PROP-04 | `Материал`/`Масса` как ссылки SW (`SW-Material@`,`SW-Mass@`) | Резолвятся в значения (resolved value) |
 
+#### PROP-RUNBOOK — свойства: read-back и запись
+
+Раздел состоит из двух разных gates. Их нельзя смешивать.
+
+`PROP-READ-EXPORT` — обязательный gate для релиза: свойства уже есть в
+модели, ZTool читает их из SolidWorks и экспортирует в BOM.
+
+1. Выполнить §2.1–§2.3, открыть fixture-копию `0614-A00.SLDASM`, запустить
+   ZTool из ленты.
+2. Заполнить свойства fixture-модели через штатный SolidWorks property workflow
+   или через SolidWorks COM-скрипт тестовой подготовки. Это подготовка данных,
+   а не проверка ZTool-write.
+3. `Подключить SW`: подтвердить 29 строк и считать через UIA/COM/Excel
+   значения `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`,
+   `Обработка поверхности`, `Дата разработки`, `Масса`.
+4. Экспортировать BOM через ZTool UI и проверить Excel read-back. Для строгого
+   `BOM-07/08` `Тип` должен быть непустым и попадать в `FilterRulesList`.
+
+PASS: после `Подключить SW` и после BOM-export значения взяты из SolidWorks и
+есть в Excel. FAIL: ZTool читает 29 строк, но русские свойства пустые/смещены,
+или BOM не содержит ожидаемые значения.
+
+`PROP-WRITE-ZTOOL` — отдельный gate функции записи ZTool в SolidWorks. Он
+засчитывается только если доказаны все три состояния: изменено в UI ZTool,
+сохранено через `Сохранить в SW`, перечитано из SolidWorks после повторного
+`Подключить SW`.
+
+Штатный порядок `PROP-WRITE-ZTOOL`:
+
+1. Открыть fixture-копию модели. Никогда не писать в исходный `TestModel`.
+2. `Подключить SW`; сохранить UIA dump таблицы `DGV1` и screenshot.
+3. Проверить `Задать имя свойства`: dialog `Frmsetpropname` должен содержать
+   нужные русские имена свойств. Важно: этот диалог настраивает имена свойств,
+   но сам по себе не создаёт видимые data-колонки в main grid.
+4. Найти редактируемый столбец объектно: UIA/WinForms header/value dump,
+   не координата. Для записи выбирать именно editable `PropVal_*`
+   (`21,23,...,37` в default `columnInfolist`), а не read-only
+   `PropResolvedVal_*` с тем же заголовком; дубликат заголовка нормален.
+   Перед изменением записать `before`. Обязательный guard: `StatusStrip1`
+   должен показывать `Выражение свойства`. Если видно `Вычисленное значение`,
+   сначала переключить `PropSwitch` объектно найденной status-кнопкой; иначе
+   открытая колонка будет `PropResolvedVal_*` и запись в SolidWorks не пройдёт.
+5. Изменить значение штатным UI ZTool:
+   - inline edit допустим только если после ввода `ValuePattern`/WinForms
+     read-back показывает новое значение;
+   - `Столбец заполнения` допустим только если dialog `FrmFilling` содержит
+     выбранный столбец в `ComboBox1` (например, `Наименование`), `TextBox1`
+     содержит заданное значение, а после `OK` ячейки реально изменились.
+     Если `ComboBox1` содержит только `Сводка_*` или не содержит нужное
+     свойство, это не баг диалога, а неверный режим/столбец: вернуться к
+     `PropSwitch=Выражение свойства` и выбрать editable `PropVal_*`.
+6. Нажать `Сохранить в SW`. В ribbon UIA эта команда может быть `SplitButton`;
+   locator должен кликать найденный объект, обычно верхнюю часть split-button,
+   и ждать `FrmSaveOption`. В окне `Параметры сохранения` выбрать
+   `Save_Changed` (`Сохранять только изменённые`) или, если сценарий явно
+   требует полного сохранения fixture, `Save_All`; затем ждать статуса
+   `Сохранение завершено...` и закрыть информационный `Вопрос`.
+7. Повторно выполнить `Подключить SW` и подтвердить, что marker вернулся из
+   SolidWorks. Дополнительно прочитать то же свойство через SolidWorks COM.
+
+PASS: `before != marker`, после UI edit `DGV1 == marker`, после
+`Сохранить в SW` и повторного `Подключить SW` `DGV1 == marker`, COM read-back
+того же документа/свойства тоже `marker` в нужном scope (`Default` или global,
+который соответствует строке/конфигурации ZTool).
+
+FAIL/NO-GO:
+
+- marker не виден в UI до `Сохранить в SW`;
+- marker виден в UI, но пропал после повторного `Подключить SW`;
+- `Столбец заполнения` открыт, но combo выбора столбца пустой;
+- `Столбец заполнения` открыт в режиме `Вычисленное значение`, combo содержит
+  только `Сводка_*`/другие нецелевые столбцы или выбран не тот столбец
+  (`Сводка_Тема` вместо `Наименование`);
+- inline edit/F2/clipboard не меняет `ValuePattern`;
+- редактировался `PropResolvedVal_*` или другая look-alike колонка вместо
+  `PropVal_*`;
+- `Сохранить в SW` найден как text, но не был реально вызван (`Button` vs
+  `SplitButton`);
+- результат подтверждён только скриншотом или координатным кликом без
+  read-back.
+
 ### 6.3 Область E — Цвета ячеек: материал и покраска (паритет оттенков) ⚑
 
 > Это явно отмеченный пользователем дефект: «цвета ячеек при выборе материала и
@@ -165,15 +620,25 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 
 | ID | Шаги | Ожидаемо (эталон = оригинал) |
 |----|------|------------------------------|
-| COL-01 | Назначить детали материал X из библиотеки → экспорт | Ячейка детали залита **цветом материала X** из `MyMaterials.sldmat`; оттенок = оригиналу |
-| COL-02 | Несколько деталей с разными материалами | У каждой — свой корректный цвет; соответствие материал→цвет = оригинал |
-| COL-03 | Задать детали внешний вид/«покраску» (appearance RGB) в сборке | Цвет ячейки соответствует цвету/оттенку детали в сборке (как в оригинале) |
-| COL-04 | Деталь без материала/покраски | Цвет по умолчанию (`rowcolor`), как в оригинале |
-| COL-05 | Сверка A/B по палитре | Поячеечная сверка оттенков оригинал↔русская: **совпадение RGB** |
+| COL-UI-01 | Назначить детали материал X из библиотеки → подключить модель в UI | Ячейка `Материал` в таблице ZTool залита **цветом материала X** из `MyMaterials.sldmat`; оттенок = оригиналу |
+| COL-UI-02 | Несколько деталей с разными материалами | У каждой — свой корректный цвет; соответствие материал→цвет = оригинал |
+| COL-UI-03 | Задать детали внешний вид/«покраску» (appearance RGB) в сборке | Цвет ячейки соответствует цвету/оттенку детали в сборке (как в оригинале) |
+| COL-UI-04 | Деталь без материала/покраски | Цвет по умолчанию (`rowcolor`), как в оригинале |
+| COL-UI-05 | Сверка A/B по палитре | Поячеечная сверка оттенков original↔RU: **совпадение RGB** |
+| COL-XLSX-01 | Экспорт BOM после `COL-UI-*` | **Accepted out of scope для текущего релиза**: цветной Excel не является release gate, если `COL-UI-*` PASS |
 
-Метод сверки оттенков: экспортировать одну модель в A и B, открыть оба Excel,
-пипеткой/снимком сравнить заливку соответствующих ячеек; зафиксировать RGB. FAIL —
-если оттенок/соответствие материал→цвет отличается от оригинала.
+Метод UI-сверки оттенков: запустить одну модель в A/original и B/RU, подключить
+SolidWorks, сохранить скриншоты таблицы ZTool, сравнить material-column pixels
+по RGB и row-index. Если `rowheight` отличается, сравнивать индексы строк на
+видимом пересечении, а не число видимых прямоугольников. FAIL — если
+оттенок/соответствие material-row отличается от оригинала.
+
+Метод XLSX-сверки оттенков отдельный: экспортировать одну модель в A и B, открыть
+оба Excel или разобрать `openpyxl`, сравнить `cell.fill` соответствующих ячеек.
+По продуктному решению текущего релиза принимается **UI-only material parity**:
+`COL-UI PASS` закрывает цветовой gate, а отсутствие non-default fills в XLSX
+не блокирует release. `COL-XLSX` возвращается в release gate только если цветной
+Excel будет явно восстановлен как требование.
 
 ### 6.4 Область F — Оформление таблицы
 
@@ -268,19 +733,96 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 | REG-05 | Библиотека материалов/цвета | Цвета по материалу/покраске (см. §6.3) — после PR #23 |
 | REG-06 | Запуск из пакета | Лента стартует именно `runtime/ZTool.exe` (а не системный) |
 | REG-07 | Новых Application Error/.NET Runtime/WER/dump | Нет (проверить Event Viewer после прогона) |
+| REG-08 | Дефолтная видимость колонок | После чистого профиля служебные SummaryInfo-колонки (`Сводка_Автор`, `Сводка_Ключевые слова`, `Сводка_Примечание`, `Сводка_Заголовок`, `Сводка_Тема`) скрыты и не мешают основной таблице |
+| REG-09 | Диалог «Разделить столбец» | В `dgv_split`, `dgv_match`, `dgv2` выбранная строка удаляется клавишей `Delete`; лишние строки правил можно убрать без правки XML |
+
+Для `REG-09` выбрать именно строку через левый row header, затем нажать
+`Delete`. Если фокус находится внутри editable `ComboBox` ячейки, Delete может
+обработаться редактором ячейки и не доказывает работу `SplitGrid_KeyDown`.
 
 ---
 
-## 13. Автоматизированные предварительные проверки (до ручной приёмки)
+## 13. Автоматизированные проверки и живой прогон
 
-Гонять до SW-приёмки; все должны быть PASS:
+### 13.1 Offline/pre-flight проверки (можно без SolidWorks)
 
+Гонять до SW-приёмки; все должны быть PASS. Эти проверки **не доказывают**
+паритет с оригиналом, а только подтверждают, что сборка/профиль/шаблоны готовы к
+живому тесту.
+
+Перед запуском проверить toolchain:
+
+- `python --version` — совместимая версия Python; CI использует 3.12.
+- `dotnet --list-sdks` — должен показать установленный SDK. Одного .NET Runtime
+  недостаточно: `client-core/build.ps1`, `Localizer`, `Reinjector` и
+  `localization_scan.py` используют `dotnet build/run`.
+  Если SDK установлен в `C:\Program Files\dotnet`, но старая shell пишет
+  `dotnet is not recognized`, открыть новый терминал или временно добавить путь
+  в текущий процесс:
+  `$env:PATH = 'C:\Program Files\dotnet;' + $env:PATH`.
+
+- `Get-FileHash .\ZTool.exe -Algorithm SHA256`
+- `Get-FileHash .\ZTool.dll -Algorithm SHA256`
 - `python client-core/tools/check_bom_template.py ZTool.settings`
 - `python client-core/tools/check_bom_template.py client-core/dist/ZTool.settings`
 - `scripts/verify_release_package.ps1 -PackageRoot <pkg> -RequireSolidWorksTools`
   (падает при отсутствии библиотеки материалов или `usematerialcolor=false`)
+- `powershell -NoProfile -ExecutionPolicy Bypass -File client-core/build.ps1`
+- `dotnet run -c Release --project client-core/tools/Reinjector -- --verify client-core/out/ZTool.exe`
 - `python tools/secret_scan.py`
+- `git diff --check`
 - Лиценз-сервер: `pytest -q license-server`, `ruff check`, `bandit` — чисто.
+
+Для уже созданных Excel-файлов после живого экспорта:
+
+- `python client-core/tools/validate_bom_exports.py <папка-с-8-xlsx>`
+- Для строгого `BOM-07`/`BOM-08`: отдельно проверить, что в экспортированных
+  файлах столбец `Тип` непустой и содержит только ожидаемые значения фильтра.
+
+Итог `PASS/WARN` допустим для smoke-прогона, если предупреждения относятся только
+к `BOM-07`/`BOM-08` с 0 строк на модели без `Тип`. Для `FULL PASS` такие
+предупреждения нужно закрыть отдельной моделью/эталоном, где фильтры возвращают
+ожидаемые непустые подмножества. Зафиксированный эталон строгого fixture-прогона
+2026-06-17: `BOM-07` = 18 строк только `Мех.обработка`, `BOM-08` = 6 строк
+только `Покупное`, пустых `Тип` = 0.
+
+Важно: `client-core/tools/run_all_bom_exports.ps1` **не нажимает UI ZTool** и не
+создаёт Excel-файлы сам. Он только создаёт чистую папку и печатает чеклист для
+оператора. До появления 8 реальных `.xlsx` это не тест экспорта.
+
+Перед UI-экспортом отключить `Показывать рядом` в ZTool. Если preview оставлен
+включённым, всплывающее окно модели может перекрыть вкладку `Спецификация` и
+оператор/скрипт нажмёт не тот ribbon element; такой прогон считать
+невалидным и повторить после снятия preview.
+
+### 13.2 Живой SolidWorks-прогон (обязателен для FULL PASS)
+
+1. Выполнить registry pre-flight из §2.1: закрыть SW/ZTool, сохранить backup
+   реестра, нормализовать `$env:WINDIR/SystemRoot/ComSpec`, убрать stale
+   `CodeBase`, зарегистрировать текущий `runtime\ZTool.dll`.
+2. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`
+   (`explorer.exe "<полный-путь>"` для автоматизации; не прямой
+   `Start-Process <file.SLDASM>`).
+3. На ленте SolidWorks открыть ZTool → `Управление файлами`.
+4. Зафиксировать путь/hash процесса `ZTool.exe` командами из §2.
+5. Нажать `Подключить SW`; ожидаемо 29 позиций.
+6. Прогнать `PROP-RUNBOOK`: обязательно закрыть `PROP-READ-EXPORT`
+   (fixture-свойства → ZTool read-back → BOM/Excel read-back). Если заявляется
+   функция записи из ZTool, отдельно закрыть `PROP-WRITE-ZTOOL` по §6.2;
+   без UI marker + `Сохранить в SW` + повторный read-back это `NO-GO`, а не PASS.
+7. Проверить, что SummaryInfo-колонки не показаны по умолчанию (`REG-08`).
+8. Прогнать «Разделить столбец»: на каждой вкладке выбрать строку через row
+   header и удалить тестовую строку клавишей `Delete` (`REG-09`).
+9. Экспортировать все 8 режимов BOM в отдельную папку.
+10. Запустить `validate_bom_exports.py` на папку с экспортами.
+11. Для `FULL PASS` закрыть строгий fixture gate `BOM-07`/`BOM-08`: оба файла
+    непустые, фильтр применён, столбец `Тип` не содержит пустых значений.
+12. Выполнить цветовые A/B проверки §6.3 против оригинала. Для текущего релиза
+    release gate — `COL-UI`; `COL-XLSX` принят out of scope.
+13. Проверить Event Viewer: нет новых `Application Error`, `.NET Runtime`, WER/dump.
+
+Если любой из шагов 1–13 пропущен, итоговый статус — не `FULL PASS`, а
+`PARTIAL / offline checked`.
 
 ---
 
@@ -289,8 +831,12 @@ binderfix, pmpguard2, библиотека материалов PR #23, русс
 GO только если:
 
 - все области §4–§12 — ПАРИТЕТ PASS (или отличие явно принято как локализация/легаси);
-- §6.3 (цвета материал/покраска) — PASS против оригинала;
-- BOM 8/8 режимов — PASS;
+- §6.3 `COL-UI` (цвета материал/покраска в таблице ZTool) — PASS против
+  оригинала; `COL-XLSX` принят out of scope для текущего релиза;
+- BOM 8/8 режимов — PASS, включая строгий fixture gate `BOM-07`/`BOM-08` с
+  непустым `Тип`;
+- после live-загрузки SolidWorks видна ровно одна вкладка `ZTool`; пустая
+  adjacent-вкладка или anonymous `CommandManager` clone является NO-GO;
 - §13 (авто-проверки) — PASS;
 - релиз-пакет verifier — PASS; есть пакет/инструкция отката;
 - нет новых краш/WER/dump.
@@ -299,7 +845,18 @@ GO только если:
 
 ## 15. Журнал результатов (шаблон)
 
-Отчёты складывать в `manual-test-reports/` (имя: `FULL_TEST_<дата>.md`).
+Отчёты складывать в `manual-test-reports/` (имя: `FULL_TEST_<дата>.md`) и
+артефакты рядом:
+
+```text
+manual-test-reports/FULL_TEST_<дата>/
+  report.md
+  hashes.txt
+  processes.txt
+  screenshots/
+  bom-exports/
+  event-viewer/
+```
 
 | ID | Вердикт | A (оригинал) | B (русская) | Доказательство | Заметки |
 |----|---------|--------------|-------------|----------------|---------|
