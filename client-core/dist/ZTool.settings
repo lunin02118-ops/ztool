@@ -6,12 +6,11 @@
   <colorselrow>false</colorselrow>
   <propname>
     <string>Разработал</string>
-    <string>Имя детали</string>
-    <string>Номер чертежа</string>
+    <string>Наименование</string>
+    <string>Обозначение</string>
     <string>Материал</string>
     <string>Тип</string>
     <string>Версия</string>
-    <string>Количество</string>
     <string>Обработка поверхности</string>
     <string>Дата разработки</string>
     <string>Масса</string>
@@ -24,7 +23,6 @@
     <string>Текст</string>
     <string>Текст</string>
     <string>Текст</string>
-    <string>Число</string>
     <string>Текст</string>
     <string>Дата</string>
     <string>Текст</string>
@@ -59,7 +57,6 @@
   <togetherConfig>false</togetherConfig>
   <GetDataOption>0</GetDataOption>
   <propshow>
-    <string>1</string>
     <string>1</string>
     <string>1</string>
     <string>1</string>
@@ -108,21 +105,296 @@ False</string>
 </string>
   </savetoswcfg>
   <bomsubfolder>true</bomsubfolder>
-  <ColIndex />
-  <ColWidth />
+  <ColIndex>
+    <string>0
+0</string>
+    <string>1
+1</string>
+    <string>2
+2</string>
+    <string>3
+3</string>
+    <string>4
+4</string>
+    <string>5
+5</string>
+    <string>6
+6</string>
+    <string>7
+8</string>
+    <string>8
+7</string>
+    <string>9
+27</string>
+    <string>10
+28</string>
+    <string>11
+29</string>
+    <string>12
+30</string>
+    <string>13
+31</string>
+    <string>14
+32</string>
+    <string>15
+33</string>
+    <string>16
+34</string>
+    <string>17
+40</string>
+    <string>18
+37</string>
+    <string>19
+39</string>
+    <string>20
+35</string>
+    <string>21
+9</string>
+    <string>22
+10</string>
+    <string>23
+11</string>
+    <string>24
+12</string>
+    <string>25
+13</string>
+    <string>26
+14</string>
+    <string>27
+15</string>
+    <string>28
+16</string>
+    <string>29
+17</string>
+    <string>30
+18</string>
+    <string>31
+19</string>
+    <string>32
+20</string>
+    <string>33
+21</string>
+    <string>34
+22</string>
+    <string>35
+23</string>
+    <string>36
+24</string>
+    <string>37
+25</string>
+    <string>38
+26</string>
+    <string>39
+36</string>
+  </ColIndex>
+  <ColWidth>
+    <string>5
+344</string>
+    <string>6
+440</string>
+    <string>7
+150</string>
+    <string>8
+140</string>
+    <string>9
+400</string>
+    <string>10
+140</string>
+    <string>11
+140</string>
+    <string>12
+200</string>
+    <string>13
+200</string>
+    <string>14
+200</string>
+    <string>15
+200</string>
+    <string>16
+200</string>
+    <string>17
+200</string>
+    <string>18
+200</string>
+    <string>19
+200</string>
+    <string>20
+200</string>
+    <string>21
+200</string>
+    <string>22
+200</string>
+    <string>23
+200</string>
+    <string>24
+200</string>
+    <string>25
+200</string>
+    <string>26
+200</string>
+    <string>27
+200</string>
+    <string>28
+200</string>
+    <string>29
+200</string>
+    <string>30
+200</string>
+    <string>31
+200</string>
+    <string>32
+200</string>
+    <string>33
+200</string>
+    <string>34
+200</string>
+    <string>35
+200</string>
+    <string>36
+200</string>
+    <string>37
+200</string>
+    <string>38
+200</string>
+    <string>39
+200</string>
+  </ColWidth>
   <SetDrwCfg />
   <BomByVal>true</BomByVal>
   <ReNameByFilter>false</ReNameByFilter>
   <ReNameByRule>false</ReNameByRule>
   <ReNameByCheck>false</ReNameByCheck>
   <ReNameFilterarr />
-  <Colvisible />
+  <Colvisible>
+    <string>0
+True</string>
+    <string>1
+False</string>
+    <string>2
+True</string>
+    <string>3
+True</string>
+    <string>4
+True</string>
+    <string>5
+True</string>
+    <string>6
+False</string>
+    <string>7
+True</string>
+    <string>8
+True</string>
+    <string>9
+False</string>
+    <string>10
+False</string>
+    <string>11
+True</string>
+    <string>12
+False</string>
+    <string>13
+False</string>
+    <string>14
+False</string>
+    <string>15
+False</string>
+    <string>16
+False</string>
+    <string>17
+False</string>
+    <string>18
+False</string>
+    <string>19
+False</string>
+    <string>20
+False</string>
+    <string>21
+False</string>
+    <string>22
+False</string>
+    <string>23
+True</string>
+    <string>24
+False</string>
+    <string>25
+True</string>
+    <string>26
+False</string>
+    <string>27
+True</string>
+    <string>28
+False</string>
+    <string>29
+True</string>
+    <string>30
+False</string>
+    <string>31
+True</string>
+    <string>32
+False</string>
+    <string>33
+True</string>
+    <string>34
+False</string>
+    <string>35
+True</string>
+    <string>36
+False</string>
+    <string>37
+True</string>
+    <string>38
+False</string>
+    <string>39
+True</string>
+  </Colvisible>
   <ReadOnlyFolderbool>0</ReadOnlyFolderbool>
   <ReConnectClearFilter>0</ReConnectClearFilter>
   <MenuStyle>2</MenuStyle>
   <MenuColor>2</MenuColor>
   <MenuColor2>2</MenuColor2>
-  <FilterRulesList />
+  <FilterRulesList>
+    <CustomRule>
+      <name>Обрабатываемые детали</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Покупные изделия</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|外购;Покупное;Стандартное</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>С обработкой поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Не равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Без обработки поверхности</name>
+      <type>false</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Содержит	|@#$%|机加;Мех.обработка;Листовая;Литьё;Сварка</string>
+        <string>$Обработка поверхности$	|@#$%|Равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+    <CustomRule>
+      <name>Недостающие обязательные свойства</name>
+      <type>true</type>
+      <RuleList>
+        <string>$Тип$	|@#$%|Равно	|@#$%|</string>
+        <string>$Номер чертежа$	|@#$%|Равно	|@#$%|</string>
+        <string>$Материал$	|@#$%|Равно	|@#$%|</string>
+        <string>$Масса$	|@#$%|Равно	|@#$%|</string>
+        <string>$Имя детали$	|@#$%|Равно	|@#$%|</string>
+      </RuleList>
+    </CustomRule>
+  </FilterRulesList>
   <ReNameFilterRule />
   <ExpandMaterialList>false</ExpandMaterialList>
   <HideSw1>false</HideSw1>
@@ -250,6 +522,42 @@ False</string>
       <RulesList />
       <includetop>true</includetop>
     </bomsetting>
+    <bomsetting>
+      <name>Обрабатываемые детали</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Обрабатываемые детали</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
+    <bomsetting>
+      <name>Покупные изделия</name>
+      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <type>0</type>
+      <insertimagebool>false</insertimagebool>
+      <lockratio>true</lockratio>
+      <image_width>64</image_width>
+      <image_height>48</image_height>
+      <Propertyvalue>true</Propertyvalue>
+      <marknodrw>false</marknodrw>
+      <autocolumnwidth>false</autocolumnwidth>
+      <ByRuler>true</ByRuler>
+      <ByFilter>false</ByFilter>
+      <RulesList>
+        <string>Покупные изделия</string>
+      </RulesList>
+      <includetop>true</includetop>
+    </bomsetting>
   </bomsettings>
   <K3code />
   <macrolist />
@@ -267,13 +575,13 @@ False</string>
     <columnnamemapping>
       <name>PropVal_1</name>
       <name2>PropResolvedVal_1</name2>
-      <text>Имя детали</text>
+      <text>Наименование</text>
       <mappingname>零件名称</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_2</name>
       <name2>PropResolvedVal_2</name2>
-      <text>Номер чертежа</text>
+      <text>Обозначение</text>
       <mappingname>图号</mappingname>
     </columnnamemapping>
     <columnnamemapping>
@@ -297,24 +605,18 @@ False</string>
     <columnnamemapping>
       <name>PropVal_6</name>
       <name2>PropResolvedVal_6</name2>
-      <text>Количество</text>
-      <mappingname>统计数量</mappingname>
-    </columnnamemapping>
-    <columnnamemapping>
-      <name>PropVal_7</name>
-      <name2>PropResolvedVal_7</name2>
       <text>Обработка поверхности</text>
       <mappingname>表面处理</mappingname>
     </columnnamemapping>
     <columnnamemapping>
-      <name>PropVal_8</name>
-      <name2>PropResolvedVal_8</name2>
+      <name>PropVal_7</name>
+      <name2>PropResolvedVal_7</name2>
       <text>Дата разработки</text>
       <mappingname />
     </columnnamemapping>
     <columnnamemapping>
-      <name>PropVal_9</name>
-      <name2>PropResolvedVal_9</name2>
+      <name>PropVal_8</name>
+      <name2>PropResolvedVal_8</name2>
       <text>Масса</text>
       <mappingname>重量</mappingname>
     </columnnamemapping>
@@ -337,5 +639,246 @@ False</string>
   <usematerialcolor>true</usematerialcolor>
   <markrepeat>-1</markrepeat>
   <fillcolumncfg />
-  <columnInfolist />
+  <columnInfolist>
+    <ColumnInfo>
+      <index>0</index>
+      <DisplayIndex>0</DisplayIndex>
+      <Width>68</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>1</index>
+      <DisplayIndex>1</DisplayIndex>
+      <Width>20</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>2</index>
+      <DisplayIndex>2</DisplayIndex>
+      <Width>22</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>3</index>
+      <DisplayIndex>3</DisplayIndex>
+      <Width>22</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>4</index>
+      <DisplayIndex>4</DisplayIndex>
+      <Width>45</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>5</index>
+      <DisplayIndex>5</DisplayIndex>
+      <Width>344</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>6</index>
+      <DisplayIndex>6</DisplayIndex>
+      <Width>440</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>7</index>
+      <DisplayIndex>8</DisplayIndex>
+      <Width>150</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>8</index>
+      <DisplayIndex>7</DisplayIndex>
+      <Width>140</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>9</index>
+      <DisplayIndex>27</DisplayIndex>
+      <Width>191</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>10</index>
+      <DisplayIndex>28</DisplayIndex>
+      <Width>140</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>11</index>
+      <DisplayIndex>29</DisplayIndex>
+      <Width>140</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>12</index>
+      <DisplayIndex>30</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>13</index>
+      <DisplayIndex>31</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>14</index>
+      <DisplayIndex>32</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>15</index>
+      <DisplayIndex>33</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>16</index>
+      <DisplayIndex>34</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>17</index>
+      <DisplayIndex>38</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>18</index>
+      <DisplayIndex>37</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>19</index>
+      <DisplayIndex>39</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>20</index>
+      <DisplayIndex>35</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>21</index>
+      <DisplayIndex>9</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>22</index>
+      <DisplayIndex>10</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>23</index>
+      <DisplayIndex>11</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>24</index>
+      <DisplayIndex>12</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>25</index>
+      <DisplayIndex>13</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>26</index>
+      <DisplayIndex>14</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>27</index>
+      <DisplayIndex>15</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>28</index>
+      <DisplayIndex>16</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>29</index>
+      <DisplayIndex>17</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>30</index>
+      <DisplayIndex>18</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>31</index>
+      <DisplayIndex>19</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>32</index>
+      <DisplayIndex>20</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>33</index>
+      <DisplayIndex>21</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>34</index>
+      <DisplayIndex>22</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>35</index>
+      <DisplayIndex>23</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>36</index>
+      <DisplayIndex>24</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>37</index>
+      <DisplayIndex>25</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>38</index>
+      <DisplayIndex>26</DisplayIndex>
+      <Width>200</Width>
+      <Visible>true</Visible>
+    </ColumnInfo>
+    <ColumnInfo>
+      <index>39</index>
+      <DisplayIndex>36</DisplayIndex>
+      <Width>200</Width>
+      <Visible>false</Visible>
+    </ColumnInfo>
+  </columnInfolist>
 </CConfigDO>

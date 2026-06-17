@@ -6,7 +6,7 @@ import hmac
 import os
 import secrets
 import sqlite3
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
@@ -25,6 +25,7 @@ class LicenseDB:
         if db_dir:
             os.makedirs(db_dir, exist_ok=True)
         self._conn = sqlite3.connect(db_path)
+        self._closed = False
         self._conn.row_factory = sqlite3.Row
         self._transaction_depth = 0
         self._configure_pragmas()
@@ -655,4 +656,11 @@ class LicenseDB:
 
     def close(self):
         """Close the database connection."""
+        if getattr(self, "_closed", True):
+            return
         self._conn.close()
+        self._closed = True
+
+    def __del__(self):
+        with suppress(Exception):
+            self.close()
