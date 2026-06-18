@@ -110,6 +110,27 @@ function Invoke-Reg([string[]]$RegArgs) {
     }
 }
 
+function Get-RegistryPathNeedles([string]$Path) {
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $uri = ([Uri]$resolved).AbsoluteUri
+    return @(
+        $resolved,
+        ($resolved -replace '\\', '/'),
+        $uri,
+        [Uri]::UnescapeDataString($uri)
+    ) | ForEach-Object { $_.ToLowerInvariant() } | Select-Object -Unique
+}
+
+function Test-RegistryLineReferencesPath([string]$Line, [string[]]$Needles) {
+    $normalized = ($Line -replace '\\', '/').ToLowerInvariant()
+    foreach ($needle in $Needles) {
+        if ($normalized.Contains(($needle -replace '\\', '/'))) {
+            return $true
+        }
+    }
+    return $false
+}
+
 # --- 1. Normalize the launch environment ----------------------------------
 Step "normalizing process environment (WINDIR/SystemRoot/ComSpec)"
 if (-not $env:WINDIR) { $env:WINDIR = 'C:\Windows' }
@@ -128,6 +149,8 @@ $exePath = Join-Path $runtime 'ZTool.exe'
 $dllPath = Join-Path $runtime 'ZTool.dll'
 if (-not (Test-Path -LiteralPath $exePath)) { Fail "ZTool.exe not found in $runtime" }
 if (-not (Test-Path -LiteralPath $dllPath)) { Fail "ZTool.dll not found in $runtime" }
+$runtimeNeedles = Get-RegistryPathNeedles $runtime
+$dllPathNeedles = Get-RegistryPathNeedles $dllPath
 
 $exeHash = Get-Sha256 $exePath
 $dllHash = Get-Sha256 $dllPath
@@ -175,8 +198,13 @@ Step "scanning registry for stale ZTool CodeBase / AddIn references"
 $classesHits = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool', '/s', '/reg:64')
 $codeBaseLines = $classesHits | Where-Object { $_ -match 'CodeBase' }
 foreach ($line in $codeBaseLines) {
-    if ($line -notmatch [Regex]::Escape($runtime)) {
-        Warn "registry CodeBase does not point at the runtime under test: $($line.Trim())"
+    if (-not (Test-RegistryLineReferencesPath $line $runtimeNeedles)) {
+        if ($Register) {
+            Step "stale CodeBase before RegAsm: $($line.Trim())"
+        }
+        else {
+            Warn "registry CodeBase does not point at the runtime under test: $($line.Trim())"
+        }
     }
 }
 
@@ -193,9 +221,14 @@ if ($Register) {
     }
 
     Step "verifying CodeBase now points at the runtime DLL"
-    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', $dllPath, '/s', '/reg:64')
-    if (-not ($verify | Where-Object { $_ -match [Regex]::Escape($runtime) })) {
+    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool.dll', '/s', '/reg:64')
+    $verifyCodeBaseLines = @($verify | Where-Object { $_ -match 'CodeBase' })
+    if (-not ($verifyCodeBaseLines | Where-Object { Test-RegistryLineReferencesPath $_ $dllPathNeedles })) {
         Fail "after RegAsm, no HKLM\SOFTWARE\Classes CodeBase references $dllPath; SolidWorks may still load a stale DLL"
+    }
+    $staleAfterRegister = @($verifyCodeBaseLines | Where-Object { -not (Test-RegistryLineReferencesPath $_ $runtimeNeedles) })
+    if ($staleAfterRegister.Count -gt 0) {
+        Fail "after RegAsm, stale HKLM\SOFTWARE\Classes CodeBase still exists: $($staleAfterRegister[0].Trim())"
     }
 }
 else {
