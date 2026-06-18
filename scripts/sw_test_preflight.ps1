@@ -45,7 +45,9 @@
   do NOT use for ordinary BOM/color/export runs. Writes registry.
 
 .PARAMETER ExpectedExeSha256
-  Optional expected SHA256 of RuntimeDir\ZTool.exe (default = PR #33 accepted hash).
+  Optional expected SHA256 of RuntimeDir\ZTool.exe. Default is loaded from
+  scripts/expected_release_hashes.json (single source of truth, shared with
+  verify_release_package.ps1).
 
 .PARAMETER ExpectedDllSha256
   Optional expected SHA256 of RuntimeDir\ZTool.dll (default = accepted hash).
@@ -68,11 +70,33 @@ param(
 
     [switch]$CleanLicenseState,
 
-    [string]$ExpectedExeSha256 = "d3625742baf02dc7ab4c3c1f3b0657645d04c58cf625d7676465492614c3c23c",
-    [string]$ExpectedDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9"
+    [string]$ExpectedExeSha256,
+    [string]$ExpectedDllSha256
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Single source of truth for accepted runtime hashes: scripts/expected_release_hashes.json.
+# The fallback literals below must mirror that file; they only apply if it is missing.
+function Get-ExpectedHashes {
+    $fallback = [ordered]@{
+        client_exe_sha256 = '4ae10b1782f8c5711a0fd4c8356df84ab7cf503e61f8ea8026395c1c9b0a9c44'
+        addin_dll_sha256  = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+    }
+    $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
+    if (Test-Path -LiteralPath $path) {
+        $json = Get-Content -LiteralPath $path -Encoding UTF8 -Raw | ConvertFrom-Json
+        return [ordered]@{
+            client_exe_sha256 = if ($json.client_exe_sha256) { [string]$json.client_exe_sha256 } else { $fallback.client_exe_sha256 }
+            addin_dll_sha256  = if ($json.addin_dll_sha256)  { [string]$json.addin_dll_sha256 }  else { $fallback.addin_dll_sha256 }
+        }
+    }
+    return $fallback
+}
+
+$expectedHashes = Get-ExpectedHashes
+if (-not $ExpectedExeSha256) { $ExpectedExeSha256 = $expectedHashes.client_exe_sha256 }
+if (-not $ExpectedDllSha256) { $ExpectedDllSha256 = $expectedHashes.addin_dll_sha256 }
 
 $script:Warnings = @()
 $script:Steps = @()

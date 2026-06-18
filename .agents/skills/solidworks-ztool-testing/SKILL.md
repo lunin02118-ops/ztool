@@ -65,7 +65,20 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
 
 1. **Get a clean checkout** (if cloning): `GIT_LFS_SKIP_SMUDGE=1 git clone ...`.
 
-2. **Run the pre-flight gate** from the repo root:
+2. **Clear stale ZTool CommandManager tabs** (prevents the blank/duplicate tab —
+   see finding F-14). Dry-run first, then apply:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_ztool_commandmanager_tabs.ps1
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_ztool_commandmanager_tabs.ps1 -Apply
+   ```
+
+   - Removes named ZTool tabs AND anonymous clones (`Tab Props=0,1,1,-1` with the
+     `2,59425` / `41658..41675` button set) plus ZTool `Custom API Flyouts`.
+   - Backs up the SolidWorks HKCU branch before deleting; idempotent; writes JSON.
+   - Add `-IncludeAddInsStartup` only for uninstall (zeroes AddInsStartup).
+
+3. **Run the pre-flight gate** from the repo root:
 
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\sw_test_preflight.ps1 -RuntimeDir .\runtime -Register
@@ -80,12 +93,12 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    - Status must be `PASS` (or `PASS_WITH_WARNINGS` only if you accept the
      warnings) before continuing. Do not test from a failed pre-flight.
 
-3. **Launch correctly.** Open `TestModel\0614-A00.SLDASM` via Explorer / the
+4. **Launch correctly.** Open `TestModel\0614-A00.SLDASM` via Explorer / the
    `.SLDASM` association — do NOT start `SldWorks.exe` standalone from a shell.
    Maximize SolidWorks, then start ZTool only from the SolidWorks ribbon
    ("Управление файлами"), and maximize the `ZTool 1.0(x64)` window.
 
-4. **Confirm the right binary is running** before trusting any result:
+5. **Confirm the right binary is running** before trusting any result:
 
    ```powershell
    Get-Process ZTool | Select-Object Id, Path, MainWindowTitle
@@ -95,7 +108,7 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    If the path is not the test runtime folder or the hash does not match the
    expected build, the test is invalid — fix registration/launch first.
 
-5. **Follow `FULL_TEST_METHODOLOGY_RU.md`** for the actual A/B parity steps
+6. **Follow `FULL_TEST_METHODOLOGY_RU.md`** for the actual A/B parity steps
    (29-row connect check, 8 BOM modes, colors/materials, ESKD properties), and
    save window-tree dumps, read-back JSON/TXT and screenshots of control points
    into the report folder. Coordinate clicks are diagnostic only and never count

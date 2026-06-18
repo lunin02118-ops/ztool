@@ -10,17 +10,48 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PackageRoot,
 
-    [string]$ExpectedClientExeSha256 = "4ae10b1782f8c5711a0fd4c8356df84ab7cf503e61f8ea8026395c1c9b0a9c44",
-    [string]$ExpectedAddinDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9",
-    [string]$ExpectedRibbonSha256 = "57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e",
-    [string]$ExpectedExpandableGridViewSha256 = "89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0",
-    [string]$ExpectedZToolRsaSha256 = "274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90",
+    [string]$ExpectedClientExeSha256,
+    [string]$ExpectedAddinDllSha256,
+    [string]$ExpectedRibbonSha256,
+    [string]$ExpectedExpandableGridViewSha256,
+    [string]$ExpectedZToolRsaSha256,
 
     [switch]$RequireSolidWorksTools,
     [switch]$AllowDirtyManifest
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Single source of truth for accepted runtime hashes: scripts/expected_release_hashes.json.
+# The fallback literals below must mirror that file; they only apply if it is missing.
+function Get-ExpectedHashes {
+    $fallback = [ordered]@{
+        client_exe_sha256             = '4ae10b1782f8c5711a0fd4c8356df84ab7cf503e61f8ea8026395c1c9b0a9c44'
+        addin_dll_sha256              = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+        ribbon_dll_sha256             = '57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e'
+        expandable_grid_view_sha256   = '89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0'
+        ztool_rsa_dll_sha256          = '274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90'
+    }
+    $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
+    if (Test-Path -LiteralPath $path) {
+        $json = Get-Content -LiteralPath $path -Encoding UTF8 -Raw | ConvertFrom-Json
+        return [ordered]@{
+            client_exe_sha256             = if ($json.client_exe_sha256) { [string]$json.client_exe_sha256 } else { $fallback.client_exe_sha256 }
+            addin_dll_sha256              = if ($json.addin_dll_sha256) { [string]$json.addin_dll_sha256 } else { $fallback.addin_dll_sha256 }
+            ribbon_dll_sha256             = if ($json.ribbon_dll_sha256) { [string]$json.ribbon_dll_sha256 } else { $fallback.ribbon_dll_sha256 }
+            expandable_grid_view_sha256   = if ($json.expandable_grid_view_sha256) { [string]$json.expandable_grid_view_sha256 } else { $fallback.expandable_grid_view_sha256 }
+            ztool_rsa_dll_sha256          = if ($json.ztool_rsa_dll_sha256) { [string]$json.ztool_rsa_dll_sha256 } else { $fallback.ztool_rsa_dll_sha256 }
+        }
+    }
+    return $fallback
+}
+
+$expectedHashes = Get-ExpectedHashes
+if (-not $ExpectedClientExeSha256) { $ExpectedClientExeSha256 = $expectedHashes.client_exe_sha256 }
+if (-not $ExpectedAddinDllSha256) { $ExpectedAddinDllSha256 = $expectedHashes.addin_dll_sha256 }
+if (-not $ExpectedRibbonSha256) { $ExpectedRibbonSha256 = $expectedHashes.ribbon_dll_sha256 }
+if (-not $ExpectedExpandableGridViewSha256) { $ExpectedExpandableGridViewSha256 = $expectedHashes.expandable_grid_view_sha256 }
+if (-not $ExpectedZToolRsaSha256) { $ExpectedZToolRsaSha256 = $expectedHashes.ztool_rsa_dll_sha256 }
 
 function Fail([string]$Message) {
     throw "release package verification failed: $Message"
