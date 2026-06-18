@@ -331,15 +331,23 @@ UIA/WinForms/SolidWorks COM-локаторы по имени окна, `Automati
 кнопки/заголовка, process path/hash и значениям ячеек. Скриншоты нужны как
 артефакты, но сами по себе не являются доказательством прохождения gate.
 
-Жёсткое правило: координатная карта допустима только как диагностический
-fallback и только если в отчёте рядом есть объектное подтверждение:
+Жёсткое правило: координатные клики **запрещены для зачёта acceptance-gate**.
+Координата может использоваться только как временная диагностика для скриншота
+или локализации проблемы, но такой шаг не считается прохождением теста.
+Засчитывается только объектное действие, где в отчёте есть:
 
 - какой процесс/окно управлялись (`pid`, `Path`, `SHA256`);
 - какой UIA/WinForms control найден (`AutomationId`/text/class/rect);
 - значение до действия и после действия (`ValuePattern`, Excel/COM read-back);
 - скриншот контрольной точки.
 
-Если gate пройден только hardcoded координатами без read-back, это `NO-GO`.
+Если контрол не найден объектно, результат gate — `FAIL/NO-GO`, а не попытка
+кликнуть "примерно туда". Для legacy WinForms, где UIA не видит вложенные
+контролы, использовать Win32 child-window locator (`pid` + class + visible text)
+и `BM_CLICK`; reusable helper: `scripts/ztool_acceptance_ui.ps1`. Для кнопок,
+которые выполняют сеть, запись лицензии или открывают модальные окна, запускать
+действие через `Invoke-ZToolButtonByText ... -Async`, чтобы тестовый runner не
+зависал на UI thread и мог продолжить сбор evidence.
 
 Обязательный порядок:
 
@@ -348,9 +356,10 @@ fallback и только если в отчёте рядом есть объек
 3. Запустить ZTool только кнопкой ленты SolidWorks (`Управление файлами`).
 4. Развернуть окно `ZTool 1.0(x64)`.
 5. Проверить, что ZTool видит 29 строк после `Подключить SW`.
-6. Управлять ZTool через UIA/WinForms locator. Для ribbon-кнопок, где
-   `InvokePattern` объявлен, но не исполняет действие, допустим
-   object-located click по найденному элементу, а не координата из таблицы.
+6. Управлять ZTool через UIA/WinForms/Win32 locator. Для ribbon-кнопок, где
+   `InvokePattern` объявлен, но не исполняет действие, допустим только
+   object-located action по найденному элементу (`AutomationElement` или
+   `HWND`/text/class), а не координата из таблицы.
 7. После каждого критического шага сохранять JSON/TXT dump и скриншот в папку
    отчёта:
    `01-sw-open.png`, `02-ztool-connected.png`, `03-export-menu.png`,
@@ -381,6 +390,17 @@ $r = New-Object WinRect+RECT
 ```
 
 Минимальные объектные локаторы ZTool:
+
+- No-license gate:
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Проба'` из
+  `scripts/ztool_acceptance_ui.ps1`; evidence должен содержать
+  `window-tree.txt`, `hwnd`, title countdown и факт выхода процесса.
+- Online activation gate:
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Регистрация'`, затем ввод
+  ключа/пароля только в найденные `EDIT` controls с сохранением `window-tree`;
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Активация онлайн' -Async`.
+  Evidence: `hwnd` кнопки, `window-tree` до/после, server row state, старый/new
+  process id после restart. Координатный клик по кнопке активации не засчитывать.
 
 | Действие | Locator | Ожидаемо |
 |----------|---------|----------|

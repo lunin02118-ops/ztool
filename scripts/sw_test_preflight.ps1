@@ -27,7 +27,7 @@
   The script is idempotent and read-mostly: it only writes to the registry when
   -Register (RegAsm) or -CleanLicenseState is passed, and always takes a backup
   first. It does NOT launch SolidWorks or drive the UI; window normalization and
-  the coordinate map remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
+  object-based UI automation remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
 
 .PARAMETER RuntimeDir
   Folder that contains the ZTool.exe / ZTool.dll under test (e.g. the release

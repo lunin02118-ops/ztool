@@ -38,8 +38,12 @@
 - Clean Windows VM / clean test folder.
 - Old registry/license traces cleared.
 - `RegAsm ZTool.dll /codebase` PASS.
-- Trial starts.
+- Trial starts and closes only after object-located `Проба` action
+  (`AutomationElement` or Win32 `HWND`/text/class); coordinate clicks do not
+  count as evidence.
 - Activation dialog RU.
+- Online activation button is invoked by object locator (`Активация онлайн`,
+  `HWND`/text/class, async post); coordinate clicks do not count as evidence.
 - Online activation succeeds.
 - App restart remains licensed.
 - Transfer via UI succeeds.

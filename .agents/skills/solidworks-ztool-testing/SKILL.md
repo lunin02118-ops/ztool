@@ -13,7 +13,7 @@ description: >-
 This skill captures the environment pitfalls that repeatedly broke ZTool testing
 on the SW 2025 machine, and the fixed procedure. Authoritative methodology lives
 in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
-§2.2 window/coordinate protocol). This skill is the short operational checklist.
+§2.2 object-based UI protocol). This skill is the short operational checklist.
 
 ## Known failure modes (and root causes)
 
@@ -38,9 +38,10 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    the live `CodeBase` points at the runtime folder.
 
 4. **Non-reproducible GUI automation.** Testing from floating windows / random
-   screen coordinates is not reproducible. Fix: maximize SolidWorks and the
-   `ZTool 1.0(x64)` window, and treat all clicks as relative to the maximized
-   ZTool window (coordinate map in §2.2).
+   screen coordinates is not reproducible and cannot pass an acceptance gate.
+   Fix: drive controls by UIA/WinForms/SolidWorks COM locators, or by the Win32
+   helper `scripts\ztool_acceptance_ui.ps1` (`pid` + class + visible text +
+   `BM_CLICK`) when legacy WinForms controls are not exposed through UIA.
 
 ## Procedure
 
@@ -78,12 +79,18 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
 
 5. **Follow `FULL_TEST_METHODOLOGY_RU.md`** for the actual A/B parity steps
    (29-row connect check, 8 BOM modes, colors/materials, ESKD properties), and
-   save screenshots of control points into the report folder.
+   save window-tree dumps, read-back JSON/TXT and screenshots of control points
+   into the report folder. Coordinate clicks are diagnostic only and never count
+   as passed evidence.
 
 ## Do / don't
 
 - DO take a registry backup before any registry change (the pre-flight does this).
 - DO record the running ZTool.exe path + hash in the test report.
+- DO use object locators (`AutomationElement`, WinForms control, SolidWorks COM,
+  or `scripts\ztool_acceptance_ui.ps1`) for every gate action.
 - DON'T launch SolidWorks/ZTool from a shell with empty `WINDIR`.
+- DON'T mark a UI action as passed when it only used hardcoded screen
+  coordinates.
 - DON'T mark `FULL PASS` from offline/pre-flight checks alone — a live SolidWorks
   run with the §15 journal filled in is required.
