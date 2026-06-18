@@ -453,17 +453,547 @@ internal static class Program
         return changes;
     }
 
-    // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report 1.0.0
-    // instead of the vendor's leftover 3.8.4.0. Both edits are length-preserving (the numeric
-    // DWORDs are fixed size; UTF-16 "3.8.4" and "1.0.0" are both 5 chars), so the PE section
-    // layout is untouched and no length fields need recomputing.
-    private static int NormalizeWin32Version(string exePath)
+    private sealed class DialogLayout
     {
+        public DialogLayout(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public int Width { get; }
+        public int Height { get; }
+    }
+
+    private static readonly Dictionary<string, DialogLayout> DialogLayoutOverrides =
+        new Dictionary<string, DialogLayout>(StringComparer.Ordinal)
+        {
+            ["FrmSaveOption"] = new DialogLayout(820, 460),
+            ["Frmexportbom"] = new DialogLayout(1040, 560),
+            ["Frmmapping"] = new DialogLayout(780, 520),
+            ["FrmFilterrules"] = new DialogLayout(920, 560),
+            ["FrmSWUnit"] = new DialogLayout(640, 650),
+            ["FrmOptions"] = new DialogLayout(760, 560),
+        };
+
+    private sealed class ControlPatch
+    {
+        public ControlPatch(string name, int? left = null, int? top = null, int? width = null, int? height = null, string text = null)
+        {
+            Name = name;
+            Left = left;
+            Top = top;
+            Width = width;
+            Height = height;
+            Text = text;
+        }
+
+        public string Name { get; }
+        public int? Left { get; }
+        public int? Top { get; }
+        public int? Width { get; }
+        public int? Height { get; }
+        public string Text { get; }
+    }
+
+    private static readonly Dictionary<string, ControlPatch[]> ControlLayoutPatches =
+        new Dictionary<string, ControlPatch[]>(StringComparer.Ordinal)
+        {
+            ["FrmSaveOption"] = new[]
+            {
+                new ControlPatch("GroupBox1", width: 340),
+                new ControlPatch("ComboBox1", width: 318),
+                new ControlPatch("ComboBox2", width: 318),
+                new ControlPatch("ComboBox3", width: 318),
+                new ControlPatch("ComboBox4", width: 318),
+                new ControlPatch("CheckBox9", width: 300, text: "и удалить из сл. расположения"),
+                new ControlPatch("CheckBox1", width: 300),
+                new ControlPatch("CheckBox2", width: 250, text: "Сохранять пустые"),
+                new ControlPatch("CheckBox3", width: 145, text: "Обновлять ед."),
+                new ControlPatch("CheckBox10", width: 260, text: "Автосохранение"),
+                new ControlPatch("LinkLabel2", left: 165, width: 150, text: "Настройки"),
+                new ControlPatch("GroupBox2", left: 360, width: 430),
+                new ControlPatch("CheckBox7", width: 240, text: "Пропускать read-only"),
+                new ControlPatch("CheckBox4", width: 240),
+                new ControlPatch("Label2", width: 310),
+                new ControlPatch("RadioButton2", width: 170),
+                new ControlPatch("GroupBox3", left: 360, width: 430),
+                new ControlPatch("TextBox1", width: 385),
+                new ControlPatch("Button1", left: 395),
+                new ControlPatch("CheckBox8", left: 300, width: 100),
+                new ControlPatch("Label3", width: 220),
+                new ControlPatch("TableLayoutPanel1", left: 320, width: 490),
+                new ControlPatch("Save_Failed", text: "Не сохран."),
+                new ControlPatch("Save_Changed", text: "Изменённые"),
+            },
+            ["Frmexportbom"] = new[]
+            {
+                new ControlPatch("GroupBox5", width: 300),
+                new ControlPatch("bomsettinglist", width: 282),
+                new ControlPatch("TableLayoutPanel2", width: 284),
+                new ControlPatch("add", text: "Доб."),
+                new ControlPatch("edit", text: "Имя"),
+                new ControlPatch("del", text: "Уд."),
+                new ControlPatch("Label1", left: 320, width: 150),
+                new ControlPatch("ComboBox1", left: 470, width: 520),
+                new ControlPatch("GroupBox1", left: 320, width: 160),
+                new ControlPatch("RadioButton3", width: 140),
+                new ControlPatch("RadioButton4", width: 130),
+                new ControlPatch("GroupBox4", left: 495, width: 220),
+                new ControlPatch("Propertyvalue", width: 180),
+                new ControlPatch("Propertylink", width: 180),
+                new ControlPatch("includetop", width: 160),
+                new ControlPatch("GroupBox2", left: 710, width: 310),
+                new ControlPatch("RuleList", width: 324),
+                new ControlPatch("GroupBox3", left: 320, width: 390),
+                new ControlPatch("lockratio", width: 250),
+                new ControlPatch("ByRuler", left: 710, width: 78),
+                new ControlPatch("ByFilter", left: 800, width: 78),
+            },
+            ["Frmmapping"] = new[]
+            {
+                new ControlPatch("DGV1", width: 760, height: 360),
+                new ControlPatch("Label1", top: 380, width: 760, height: 80),
+            },
+            ["FrmFilterrules"] = new[]
+            {
+                new ControlPatch("GroupBox1", width: 220),
+                new ControlPatch("RuleNameList", width: 202),
+                new ControlPatch("TableLayoutPanel2", width: 204),
+                new ControlPatch("add", text: "Доб."),
+                new ControlPatch("edit", text: "Изм."),
+                new ControlPatch("del", text: "Удал."),
+                new ControlPatch("GroupBox2", left: 250, width: 560),
+                new ControlPatch("DGV1", width: 540),
+                new ControlPatch("Label1", width: 540),
+            },
+            ["FrmSWUnit"] = new[]
+            {
+                new ControlPatch("GroupBox1", width: 600),
+                new ControlPatch("Unit_MMKS", width: 200, text: "MMKS (мм, кг, с)"),
+                new ControlPatch("Unit_MMGS", left: 330, width: 150),
+                new ControlPatch("Unit_IPS", left: 330, width: 180),
+                new ControlPatch("Unit_Custom", left: 330, width: 180),
+                new ControlPatch("GroupBox2", width: 500),
+                new ControlPatch("GroupBox3", width: 500),
+                new ControlPatch("GroupBox4", width: 500),
+                new ControlPatch("Label3", width: 100, text: "Двойной размер"),
+                new ControlPatch("Label7", width: 80, text: "Объём"),
+            },
+            ["FrmOptions"] = new[]
+            {
+                new ControlPatch("TabControl1", width: 760, height: 500),
+                new ControlPatch("Label3", width: 120, text: "Подсветка строк:"),
+                new ControlPatch("Label1", width: 100, text: "Версия SW:"),
+                new ControlPatch("macrolist", width: 590),
+                new ControlPatch("Panel3", left: 600, width: 150),
+                new ControlPatch("Button8", width: 130),
+                new ControlPatch("Button9", width: 130),
+            },
+        };
+
+    private static bool IsSizeCtor(Instruction ins) =>
+        (ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Newobj)
+        && ins.Operand is IMethod ctor
+        && ctor.Name == ".ctor"
+        && ctor.DeclaringType != null
+        && ctor.DeclaringType.Name == "Size";
+
+    private static (int width, int height)? TryReadClientSize(MethodDef init)
+    {
+        if (init?.Body == null) return null;
+        var ins = init.Body.Instructions;
+        for (int i = 0; i < ins.Count; i++)
+        {
+            if (!(ins[i].Operand is IMethod m) || m.Name != "set_ClientSize") continue;
+            for (int j = i - 1; j >= 2 && j >= i - 20; j--)
+            {
+                if (IsSizeCtor(ins[j]) && ins[j - 2].IsLdcI4() && ins[j - 1].IsLdcI4())
+                    return (ins[j - 2].GetLdcI4Value(), ins[j - 1].GetLdcI4Value());
+            }
+        }
+        return null;
+    }
+
+    private static bool HasFixedDialogBorder(MethodDef init)
+    {
+        if (init?.Body == null) return false;
+        var ins = init.Body.Instructions;
+        for (int i = 1; i < ins.Count; i++)
+        {
+            if (!(ins[i].Operand is IMethod m) || m.Name != "set_FormBorderStyle") continue;
+            if (ins[i - 1].IsLdcI4())
+            {
+                int v = ins[i - 1].GetLdcI4Value();
+                if (v == 1 || v == 2 || v == 3) return true; // FixedSingle/3D/FixedDialog
+            }
+        }
+        return false;
+    }
+
+    private static IMethod FindMethodRef(ModuleDefMD mod, string name, string declaringTypeName, int? paramCount = null)
+    {
+        return mod.GetTypes()
+            .SelectMany(t => t.Methods)
+            .Where(m => m.Body != null)
+            .SelectMany(m => m.Body.Instructions)
+            .Select(i => i.Operand as IMethod)
+            .FirstOrDefault(m => m != null
+                && m.Name == name
+                && (declaringTypeName == null || m.DeclaringType?.Name == declaringTypeName)
+                && (paramCount == null || m.MethodSig?.Params.Count == paramCount.Value));
+    }
+
+    private static AssemblyRef FindAssemblyRef(ModuleDefMD mod, string name) =>
+        mod.GetAssemblyRefs().FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.Ordinal));
+
+    private static MemberRefUser MakeWinFormsSetter(ModuleDefMD mod, string declaringTypeName, string setterName, TypeSig paramType)
+    {
+        var asm = FindAssemblyRef(mod, "System.Windows.Forms");
+        if (asm == null) return null;
+        var type = new TypeRefUser(mod, "System.Windows.Forms", declaringTypeName, asm);
+        return new MemberRefUser(mod, setterName, MethodSig.CreateInstance(mod.CorLibTypes.Void, paramType), type);
+    }
+
+    private static TypeRefUser MakeControlType(ModuleDefMD mod)
+    {
+        var asm = FindAssemblyRef(mod, "System.Windows.Forms");
+        return asm == null ? null : new TypeRefUser(mod, "System.Windows.Forms", "Control", asm);
+    }
+
+    private static TypeRefUser MakeControlCollectionType(ModuleDefMD mod, TypeRefUser controlType) =>
+        controlType == null ? null : new TypeRefUser(mod, "", "ControlCollection", controlType);
+
+    private static MemberRefUser MakeControlGetter(ModuleDefMD mod, TypeRefUser controlType, TypeRefUser collectionType) =>
+        new MemberRefUser(
+            mod,
+            "get_Controls",
+            MethodSig.CreateInstance(new ClassSig(collectionType)),
+            controlType);
+
+    private static MemberRefUser MakeControlCollectionFind(ModuleDefMD mod, TypeRefUser controlType, TypeRefUser collectionType) =>
+        new MemberRefUser(
+            mod,
+            "Find",
+            MethodSig.CreateInstance(new SZArraySig(new ClassSig(controlType)), mod.CorLibTypes.String, mod.CorLibTypes.Boolean),
+            collectionType);
+
+    private static MemberRefUser MakeControlIntSetter(ModuleDefMD mod, TypeRefUser controlType, string setterName) =>
+        new MemberRefUser(
+            mod,
+            setterName,
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Int32),
+            controlType);
+
+    private static MemberRefUser MakeControlTextSetter(ModuleDefMD mod, TypeRefUser controlType) =>
+        new MemberRefUser(
+            mod,
+            "set_Text",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String),
+            controlType);
+
+    private static void AddFindControl(List<Instruction> add, IMethod getControls, IMethod findControl, string controlName)
+    {
+        add.Add(Instruction.Create(OpCodes.Ldarg_0));
+        add.Add(Instruction.Create(OpCodes.Callvirt, getControls));
+        add.Add(Instruction.Create(OpCodes.Ldstr, controlName));
+        add.Add(Instruction.CreateLdcI4(1));
+        add.Add(Instruction.Create(OpCodes.Callvirt, findControl));
+        add.Add(Instruction.CreateLdcI4(0));
+        add.Add(Instruction.Create(OpCodes.Ldelem_Ref));
+    }
+
+    private static int AddControlLayoutInstructions(
+        ModuleDefMD mod,
+        string formName,
+        List<Instruction> add,
+        IMethod getControls,
+        IMethod findControl,
+        IMethod setLeft,
+        IMethod setTop,
+        IMethod setWidth,
+        IMethod setHeight,
+        IMethod setText)
+    {
+        if (!ControlLayoutPatches.TryGetValue(formName, out var patches)) return 0;
+        int edits = 0;
+        foreach (var patch in patches)
+        {
+            if (patch.Left.HasValue)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Left.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setLeft));
+                edits += 8;
+            }
+            if (patch.Top.HasValue)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Top.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setTop));
+                edits += 8;
+            }
+            if (patch.Width.HasValue)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Width.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setWidth));
+                edits += 8;
+            }
+            if (patch.Height.HasValue)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Height.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setHeight));
+                edits += 8;
+            }
+            if (patch.Text != null)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.Create(OpCodes.Ldstr, patch.Text));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setText));
+                edits += 8;
+            }
+        }
+        return edits;
+    }
+
+    private static MemberRefUser MakeMinimumSizeSetter(ModuleDefMD mod)
+    {
+        var formsAsm = FindAssemblyRef(mod, "System.Windows.Forms");
+        var drawingAsm = FindAssemblyRef(mod, "System.Drawing");
+        if (formsAsm == null || drawingAsm == null) return null;
+        var controlType = new TypeRefUser(mod, "System.Windows.Forms", "Control", formsAsm);
+        var sizeType = new TypeRefUser(mod, "System.Drawing", "Size", drawingAsm);
+        return new MemberRefUser(
+            mod,
+            "set_MinimumSize",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, new ValueTypeSig(sizeType)),
+            controlType);
+    }
+
+    private static int InsertBeforeRet(MethodDef method, IEnumerable<Instruction> additions)
+    {
+        var body = method?.Body;
+        if (body == null) return 0;
+        var ret = body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+        if (ret == null) return 0;
+        int index = body.Instructions.IndexOf(ret);
+        int count = 0;
+        foreach (var ins in additions)
+        {
+            body.Instructions.Insert(index++, ins);
+            count++;
+        }
+        return count;
+    }
+
+    private static int NormalizeLongRussianUiStrings(ModuleDefMD mod)
+    {
+        var replacements = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["-Если имя сопоставления пустое или совпадает с заголовком столбца, сопоставление для столбца не применяется;\r\n-Имя сопоставления должно совпадать с пользовательским именем в шаблоне Excel;\r\n-Сопоставление заголовков нужно в основном для решения проблем синтаксиса пользовательских имён в шаблоне Excel,\r\nа также путаницы в данных спецификации из-за повторяющихся заголовков столбцов;"] =
+                "Пустое имя или имя, совпадающее с заголовком, не применяется.\r\nИмя должно совпадать с пользовательским именем в Excel-шаблоне.\r\nИспользуйте сопоставление для повторяющихся или проблемных заголовков.",
+            ["Выберите заголовок строки и нажмите Del для удаления всей строки;\r\nнесколько значений можно разделять латинской точкой с запятой;"] =
+                "Del на заголовке строки удаляет всю строку.\r\nНесколько значений разделяйте латинской точкой с запятой.",
+            ["Сохранять только изменённые"] = "Только изменённые",
+            ["Только изменённые"] = "Изменённые",
+            ["Сохранять только несохранённые"] = "Несохранённые",
+            ["Только несохранённые"] = "Несохранённые",
+            ["Исходное расположение (новое свойство в каждую конфигурацию)"] = "Исходное расположение",
+            ["Исходное расположение (новое свойство в «Настраиваемые»)"] = "Исходное (настраиваемые)",
+            ["Исходное расположение (новое свойство в «Конфигурация»)"] = "Исходное (конфигурация)",
+            ["Автосохранение после изменения свойств"] = "Автосохранение после изменений",
+            ["Сохранять свойства с пустым значением"] = "Сохранять пустые свойства",
+            ["и удалить лишние свойства из следующего расположения"] = "и удалить лишние свойства",
+            ["Перезаписывать файлы с тем же именем (осторожно)"] = "Перезаписывать файлы",
+            ["Пропускать файлы только для чтения"] = "Пропускать read-only файлы",
+            ["После переименования старые файлы переместить в"] = "После переименования старые файлы:",
+            ["Сохранять пропорции (исходное соотношение)"] = "Сохранять пропорции",
+            ["Сохранять пропорции (исходное соотношение 4:3)"] = "Сохранять пропорции (4:3)",
+            ["Только верхний уровень"] = "Только верхний",
+            ["Включая самый верхний уровень"] = "Включая верхний",
+            ["Выводить значения свойств"] = "Значения свойств",
+            ["Выводить выражения свойств"] = "Выражения свойств",
+            ["Отмечать элементы без чертежей"] = "Без чертежей",
+            ["Автоширина столбцов"] = "Автоширина",
+            ["Включить правило"] = "Правило",
+            ["Включить фильтр"] = "Фильтр",
+            ["Обрабатываемые детали"] = "Обрабат. детали",
+            ["Без обработки поверхности"] = "Без обработки",
+            ["Недостающие обязательные свойства"] = "Нет обязат. свойств",
+            ["Включая подпапки"] = "Подпапки",
+            ["Перейти к настройкам"] = "Настройки",
+            ["Перейти к настройке"] = "Настройки",
+            ["Длина (двойной размер)"] = "Двойной размер",
+            ["Единица объёма"] = "Объём",
+            ["MKS (метр, килограмм, секунда)"] = "MKS (м, кг, с)",
+            ["MMGS (миллиметр, грамм, секунда)"] = "MMGS (мм, г, с)",
+            ["MMKS (миллиметр, килограмм, секунда)"] = "MMKS (мм, кг, с)",
+            ["CGS (сантиметр, грамм, секунда)"] = "CGS (см, г, с)",
+            ["IPS (дюйм, фунт, секунда)"] = "IPS (дюйм, фунт, с)",
+            ["Читать свойства каждой конфигурации (только для деталей)"] = "Читать свойства всех конфигураций (детали)",
+            ["Двойной щелчок по значку — открыть компонент или чертёж в SOLIDWORKS"] = "Двойной щелчок по значку открывает файл в SOLIDWORKS",
+            ["Скрывать интерфейс SolidWorks при работе пакетных инструментов"] = "Скрывать SolidWorks при пакетной обработке",
+            ["Включать предпросмотр файлов в пакетных инструментах"] = "Предпросмотр файлов в пакетных инструментах",
+        };
+
+        int ldstr = 0;
+        foreach (var t in mod.GetTypes())
+            foreach (var m in t.Methods)
+            {
+                if (m.Body == null) continue;
+                foreach (var ins in m.Body.Instructions)
+                {
+                    if (ins.OpCode.Code == Code.Ldstr
+                        && ins.Operand is string s
+                        && replacements.TryGetValue(s, out var shorter)
+                        && s != shorter)
+                    {
+                        ins.Operand = shorter;
+                        ldstr++;
+                    }
+                }
+            }
+
+        int res = RewriteResources(mod, replacements);
+        Console.WriteLine($"  UI text: shortened long Russian captions (ldstr={ldstr}, resources={res})");
+        return ldstr + res;
+    }
+
+    private static int PatchDialogReadabilityLayout(ModuleDefMD mod)
+    {
+        var setFormBorderStyle = FindMethodRef(mod, "set_FormBorderStyle", "Form", 1);
+        var setMaximizeBox = FindMethodRef(mod, "set_MaximizeBox", "Form", 1);
+        var setMinimizeBox = FindMethodRef(mod, "set_MinimizeBox", "Form", 1);
+        var setClientSize = FindMethodRef(mod, "set_ClientSize", "Form", 1);
+        var sizeCtor = FindMethodRef(mod, ".ctor", "Size", 2);
+        var setMinimumSize = MakeMinimumSizeSetter(mod);
+        var setAutoScroll = MakeWinFormsSetter(mod, "ScrollableControl", "set_AutoScroll", mod.CorLibTypes.Boolean);
+        var controlType = MakeControlType(mod);
+        var controlCollectionType = MakeControlCollectionType(mod, controlType);
+        var getControls = controlType != null && controlCollectionType != null ? MakeControlGetter(mod, controlType, controlCollectionType) : null;
+        var findControl = controlType != null && controlCollectionType != null ? MakeControlCollectionFind(mod, controlType, controlCollectionType) : null;
+        var setLeft = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Left") : null;
+        var setTop = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Top") : null;
+        var setWidth = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Width") : null;
+        var setHeight = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Height") : null;
+        var setText = controlType != null ? MakeControlTextSetter(mod, controlType) : null;
+
+        if (setFormBorderStyle == null || setClientSize == null || sizeCtor == null || setMinimumSize == null)
+        {
+            Console.WriteLine("  dialog layout: skipped (WinForms layout refs missing)");
+            return 0;
+        }
+
+        int forms = 0, edits = 0;
+        foreach (var form in mod.GetTypes().Where(t => t.BaseType?.FullName == "System.Windows.Forms.Form"))
+        {
+            var init = form.FindMethod("InitializeComponent");
+            if (init?.Body == null) continue;
+
+            var size = TryReadClientSize(init);
+            bool hasOverride = DialogLayoutOverrides.TryGetValue(form.Name, out var layout);
+            if (!hasOverride && !HasFixedDialogBorder(init)) continue;
+
+            int targetW = hasOverride ? layout.Width : (size?.width ?? 0);
+            int targetH = hasOverride ? layout.Height : (size?.height ?? 0);
+            if (targetW <= 0 || targetH <= 0) continue;
+
+            var add = new List<Instruction>();
+            if (setAutoScroll != null)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.CreateLdcI4(1));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setAutoScroll));
+            }
+
+            add.Add(Instruction.Create(OpCodes.Ldarg_0));
+            add.Add(Instruction.CreateLdcI4(4)); // FormBorderStyle.Sizable
+            add.Add(Instruction.Create(OpCodes.Callvirt, setFormBorderStyle));
+            if (setMaximizeBox != null)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.CreateLdcI4(1));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setMaximizeBox));
+            }
+            if (setMinimizeBox != null)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.CreateLdcI4(1));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setMinimizeBox));
+            }
+
+            if (hasOverride)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.CreateLdcI4(layout.Width));
+                add.Add(Instruction.CreateLdcI4(layout.Height));
+                add.Add(Instruction.Create(OpCodes.Newobj, sizeCtor));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setClientSize));
+            }
+
+            add.Add(Instruction.Create(OpCodes.Ldarg_0));
+            add.Add(Instruction.CreateLdcI4(targetW));
+            add.Add(Instruction.CreateLdcI4(targetH));
+            add.Add(Instruction.Create(OpCodes.Newobj, sizeCtor));
+            add.Add(Instruction.Create(OpCodes.Callvirt, setMinimumSize));
+
+            int controlEdits = 0;
+            if (getControls != null && findControl != null && setLeft != null && setTop != null && setWidth != null && setHeight != null && setText != null)
+            {
+                controlEdits = AddControlLayoutInstructions(
+                    mod,
+                    form.Name,
+                    add,
+                    getControls,
+                    findControl,
+                    setLeft,
+                    setTop,
+                    setWidth,
+                    setHeight,
+                    setText);
+            }
+
+            int inserted = InsertBeforeRet(init, add);
+            if (inserted > 0)
+            {
+                forms++;
+                edits += inserted;
+                string old = size.HasValue ? $"{size.Value.width}x{size.Value.height}" : "resource";
+                string reason = hasOverride ? $"default {old}->{targetW}x{targetH}" : $"minimum {targetW}x{targetH}";
+                string detail = controlEdits > 0 ? $", control-edits={controlEdits}" : "";
+                Console.WriteLine($"  dialog layout: {form.Name} resizable, {reason}, inserted={inserted}{detail}");
+            }
+        }
+
+        Console.WriteLine($"  dialog layout: patched forms={forms}, il edits={edits}");
+        return edits;
+    }
+
+    private static (ushort major, ushort minor, ushort build, ushort revision, string display) ParseFileVersion(string version)
+    {
+        var parts = (version ?? "")
+            .Split(new[] { '.', '-', '+', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(p => p.All(char.IsDigit))
+            .Select(p => int.TryParse(p, out var n) ? Math.Max(0, Math.Min(65535, n)) : 0)
+            .ToList();
+        while (parts.Count < 4) parts.Add(0);
+        string display = $"{parts[0]}.{parts[1]}.{parts[2]}";
+        return ((ushort)parts[0], (ushort)parts[1], (ushort)parts[2], (ushort)parts[3], display);
+    }
+
+    // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report
+    // the release train instead of the vendor's leftover 3.8.4.0. This does not touch
+    // the managed assembly identity/Application.ProductVersion used by licensing.
+    private static int NormalizeWin32Version(string exePath, string releaseVersion)
+    {
+        var parsed = ParseFileVersion(releaseVersion);
         byte[] b = System.IO.File.ReadAllBytes(exePath);
         int edits = 0;
 
         // 1) VS_FIXEDFILEINFO (signature 0xFEEF04BD): patch only the block whose file+product
-        //    version is exactly 3.8.4.0 (MS=0x00030008, LS=0x00040000) -> 1.0.0.0.
+        //    version is exactly 3.8.4.0 (MS=0x00030008, LS=0x00040000).
         for (int i = 0; i <= b.Length - 24; i++)
         {
             if (b[i] == 0xBD && b[i + 1] == 0x04 && b[i + 2] == 0xEF && b[i + 3] == 0xFE)
@@ -474,23 +1004,29 @@ internal static class Program
                 uint prodLS = BitConverter.ToUInt32(b, i + 20);
                 if (fileMS == 0x00030008 && fileLS == 0x00040000 && prodMS == 0x00030008 && prodLS == 0x00040000)
                 {
-                    BitConverter.GetBytes((uint)0x00010000).CopyTo(b, i + 8);   // fileMS = 1.0
-                    BitConverter.GetBytes((uint)0x00000000).CopyTo(b, i + 12);  // fileLS = 0.0
-                    BitConverter.GetBytes((uint)0x00010000).CopyTo(b, i + 16);  // prodMS = 1.0
-                    BitConverter.GetBytes((uint)0x00000000).CopyTo(b, i + 20);  // prodLS = 0.0
+                    uint ms = (uint)((parsed.major << 16) | parsed.minor);
+                    uint ls = (uint)((parsed.build << 16) | parsed.revision);
+                    BitConverter.GetBytes(ms).CopyTo(b, i + 8);
+                    BitConverter.GetBytes(ls).CopyTo(b, i + 12);
+                    BitConverter.GetBytes(ms).CopyTo(b, i + 16);
+                    BitConverter.GetBytes(ls).CopyTo(b, i + 20);
                     edits++;
                 }
             }
         }
 
-        // 2) StringFileInfo "FileVersion"/"ProductVersion" values: "3.8.4" -> "1.0.0" (same length).
+        // 2) StringFileInfo "FileVersion"/"ProductVersion" values. Keep the PE resource
+        // length stable; for the 1.x.x train this remains the same five UTF-16 chars as "3.8.4".
         byte[] from = Encoding.Unicode.GetBytes("3.8.4");
-        byte[] to = Encoding.Unicode.GetBytes("1.0.0");
-        for (int i = 0; i <= b.Length - from.Length; i++)
+        byte[] to = Encoding.Unicode.GetBytes(parsed.display);
+        if (to.Length == from.Length)
         {
-            bool m = true;
-            for (int j = 0; j < from.Length; j++) if (b[i + j] != from[j]) { m = false; break; }
-            if (m) { Array.Copy(to, 0, b, i, to.Length); edits++; i += from.Length - 1; }
+            for (int i = 0; i <= b.Length - from.Length; i++)
+            {
+                bool m = true;
+                for (int j = 0; j < from.Length; j++) if (b[i + j] != from[j]) { m = false; break; }
+                if (m) { Array.Copy(to, 0, b, i, to.Length); edits++; i += from.Length - 1; }
+            }
         }
 
         if (edits > 0) System.IO.File.WriteAllBytes(exePath, b);
@@ -503,7 +1039,7 @@ internal static class Program
         if (args.Length < 1)
         {
             Console.WriteLine("usage: localize --scan <exe>");
-            Console.WriteLine("       localize <inExe> <outExe>   (apply localization map)");
+            Console.WriteLine("       localize <inExe> <outExe> [translations.tsv] [release-version]");
             return 2;
         }
 
@@ -682,6 +1218,7 @@ internal static class Program
         {
             string inExe = args[0], outExe = args[1];
             string tablePath = args.Length >= 3 ? args[2] : System.IO.Path.Combine(AppContext.BaseDirectory, "translations.tsv");
+            string releaseVersion = args.Length >= 4 ? args[3] : "1.0.0";
             if (!System.IO.File.Exists(tablePath))
             {
                 Console.WriteLine($"ERROR: translation table not found: {tablePath}");
@@ -727,6 +1264,8 @@ internal static class Program
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
+            int uiTextChanges = NormalizeLongRussianUiStrings(mod);
+            int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -745,10 +1284,9 @@ internal static class Program
             mod.Write(outExe, wopts);
             // dnlib preserves the vendor's Win32 VS_VERSIONINFO (FileVersion/ProductVersion = 3.8.4.0,
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
-            // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only - but we
-            // normalize it to 1.0.0 so the file's reported version matches.
-            int win32Ver = NormalizeWin32Version(outExe);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
+            int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");

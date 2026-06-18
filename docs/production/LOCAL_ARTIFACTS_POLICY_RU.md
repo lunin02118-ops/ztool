@@ -2,9 +2,14 @@
 
 ## Назначение
 
-Все локальные артефакты разработки релизов ZTool должны храниться только в:
+Все локальные временные артефакты разработки ZTool должны храниться только в:
 
 `D:\Development\ztool\_local_artifacts`
+
+Готовые release packages и установщики для ручного теста/выдачи хранятся в
+корневой папке:
+
+`D:\Development\ztool\releases\<version>`
 
 Нельзя создавать рабочие ZTool-папки в:
 
@@ -16,8 +21,10 @@
 
 ## Структура
 
-- `_local_artifacts\releases\`
-  - текущие и исторические release packages, client installers, package manifests.
+- `releases\<version>\`
+  - готовый versioned release: installer, package, package manifest, SHA256SUMS.
+- `releases\<version>\package\ZTool-<version>\`
+  - распакованный package input для installer.
 - `_local_artifacts\secrets\licenses\`
   - локальные копии activation keys и другие секреты. Не печатать значения в чат, отчеты или git diff.
 - `_local_artifacts\evidence\`
@@ -31,18 +38,19 @@
 
 ## Git policy
 
-`_local_artifacts/` должен быть в `.gitignore`.
+`_local_artifacts/` и `releases/` должны быть исключены из git.
 
 Перед staging/push обязательно проверить:
 
 ```powershell
-git status --short --ignored -- _local_artifacts
+git status --short --ignored -- _local_artifacts releases
 ```
 
 Нормальный результат:
 
 ```text
 !! _local_artifacts/
+!! releases/
 ```
 
 В git можно пушить только исходники, build scripts и документацию, например:
@@ -55,14 +63,18 @@ git status --short --ignored -- _local_artifacts
 В git нельзя пушить:
 
 - `_local_artifacts/`
+- `releases/`
 - `.exe/.msi` installers
 - activation keys
 - server secrets
 - raw logs, screenshots, registry exports и временные diagnostics
 
-## Current manual activation artifact
+## Current release layout
 
+- version source of truth: `D:\Development\ztool\VERSION`
+- package:
+  `D:\Development\ztool\releases\<version>\package\ZTool-<version>`
 - installer:
-  `D:\Development\ztool\_local_artifacts\releases\2026-06-17-prod-clean\release\client-installer\ZTool-1.0.0-20260617-135653-Setup.exe`
-- activation key:
-  `D:\Development\ztool\_local_artifacts\secrets\licenses\ztool-manual-activation-key-id-41.txt`
+  `D:\Development\ztool\releases\<version>\ZTool-<version>-Setup.exe`
+- activation keys and secrets:
+  `D:\Development\ztool\_local_artifacts\secrets\licenses\`

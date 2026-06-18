@@ -8,8 +8,8 @@
   -SolidWorksToolsDll; dry-runs can use -AllowMissingSolidWorksTools.
 #>
 param(
-    [string]$Version = "1.0.0",
-    [string]$OutputRoot = (Join-Path $PSScriptRoot '..\release'),
+    [string]$Version = "",
+    [string]$OutputRoot = "",
     [string]$ClientExe = (Join-Path $PSScriptRoot '..\ZTool.exe'),
     [string]$AddinDll = (Join-Path $PSScriptRoot '..\ZTool.dll'),
     [string]$SolidWorksToolsDll = "",
@@ -18,8 +18,19 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-$stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
-$packageName = "ZTool-$Version-$stamp"
+
+function Get-ReleaseVersion {
+    $versionPath = Join-Path $repoRoot 'VERSION'
+    if (Test-Path -LiteralPath $versionPath -PathType Leaf) {
+        $v = (Get-Content -LiteralPath $versionPath -Encoding UTF8 -Raw).Trim()
+        if ($v) { return $v }
+    }
+    return '1.0.0'
+}
+
+if (-not $Version) { $Version = Get-ReleaseVersion }
+if (-not $OutputRoot) { $OutputRoot = Join-Path $repoRoot "releases\$Version\package" }
+$packageName = "ZTool-$Version"
 $outputRootPath = [System.IO.Path]::GetFullPath($OutputRoot)
 $packageRoot = Join-Path $outputRootPath $packageName
 $runtimeDir = Join-Path $packageRoot 'runtime'
@@ -75,6 +86,8 @@ $copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool.settings') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool Updater.exe') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool.bmp') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'help_ru.chm') $runtimeDir 'help.CHM'
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'Ribbon.dll') $runtimeDir
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'ExpandableGridView.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ICSharpCode.SharpZipLib.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'itextsharp.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'NPOI.dll') $runtimeDir

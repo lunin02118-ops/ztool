@@ -10,8 +10,10 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PackageRoot,
 
-    [string]$ExpectedClientExeSha256 = "7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd",
+    [string]$ExpectedClientExeSha256 = "d3625742baf02dc7ab4c3c1f3b0657645d04c58cf625d7676465492614c3c23c",
     [string]$ExpectedAddinDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9",
+    [string]$ExpectedRibbonSha256 = "57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e",
+    [string]$ExpectedExpandableGridViewSha256 = "89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0",
 
     [switch]$RequireSolidWorksTools,
     [switch]$AllowDirtyManifest
@@ -139,6 +141,8 @@ foreach ($entry in $manifestFiles) {
 $clientExe = Join-Path $runtimeDir 'ZTool.exe'
 $addinDll = Join-Path $runtimeDir 'ZTool.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
+$ribbonDll = Join-Path $runtimeDir 'Ribbon.dll'
+$expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
 $settingsPath = Join-Path $runtimeDir 'ZTool.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
 
@@ -164,6 +168,8 @@ Get-ChildItem -LiteralPath $root -Recurse -Force | ForEach-Object {
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
+Assert-Hash $ribbonDll $ExpectedRibbonSha256
+Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
 Assert-File $settingsPath
 Assert-File $materialLibrary
 
@@ -205,6 +211,8 @@ $summary = [ordered]@{
     manifest_files = @($manifestFiles).Count
     runtime_ztool_exe = Get-Sha256 $clientExe
     runtime_ztool_dll = Get-Sha256 $addinDll
+    runtime_ribbon_dll = Get-Sha256 $ribbonDll
+    runtime_expandable_grid_dll = Get-Sha256 $expandableGridViewDll
 }
 
 Write-Host 'release package verification: PASS' -ForegroundColor Green

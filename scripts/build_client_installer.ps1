@@ -12,7 +12,7 @@
 
 .EXAMPLE
   ./scripts/build_client_installer.ps1 `
-    -PackageRoot ./release/ZTool-1.0.0-20260617-135653
+    -PackageRoot ./releases/1.1.0-alfa/package/ZTool-1.1.0-alfa
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -68,7 +68,12 @@ if (-not $ProductVersion) {
     $ProductVersion = if ($manifest.version) { [string]$manifest.version } else { '1.0.0' }
 }
 if (-not $OutputDir) {
-    $OutputDir = Join-Path (Split-Path -Parent $root) 'client-installer'
+    $packageParent = Split-Path -Parent $root
+    if ((Split-Path -Leaf $packageParent) -eq 'package') {
+        $OutputDir = Split-Path -Parent $packageParent
+    } else {
+        $OutputDir = Join-Path $packageParent 'client-installer'
+    }
 }
 
 $runtimeExe = Join-Path $runtimeDir 'ZTool.exe'

@@ -68,7 +68,7 @@ param(
 
     [switch]$CleanLicenseState,
 
-    [string]$ExpectedExeSha256 = "7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd",
+    [string]$ExpectedExeSha256 = "d3625742baf02dc7ab4c3c1f3b0657645d04c58cf625d7676465492614c3c23c",
     [string]$ExpectedDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9"
 )
 
