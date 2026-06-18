@@ -779,8 +779,9 @@ Excel будет явно восстановлен как требование.
 |----|----------|----------|
 | LOC-01 | `tools/Localizer`/`localization_scan.py` | `unclassified_han=0` (нет «потерянных» иероглифов) |
 | LOC-02 | Все формы/меню/сообщения | На русском; шрифт читаемый (Arial), без «кракозябр», CJK=0 |
-| LOC-03 | `UI_SCREENSHOT_CHECKLIST_RU.md` | Чек-лист скриншотов пройден |
+| LOC-03 | `MANUAL_SCREENSHOTS_CHECKLIST_RU.md` + `tools/chm-i18n/compare_manual_screenshots.py` | Скриншоты help_ru.chm сравнены файл-в-файл с оригиналом; `manual_screenshot_compare.md` без `FAIL`; contact sheet просмотрен |
 | LOC-04 | Русская справка `help_ru.chm` | Содержание/индекс/темы на русском |
+| LOC-05 | Диалог `Параметры` → вкладка `Эскиз` (`FrmOptions`) | Подписи, combo и кнопки не перекрываются; окно можно увеличить; скриншот сохранён в evidence |
 
 ---
 

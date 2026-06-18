@@ -80,7 +80,7 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256 = '4ae10b1782f8c5711a0fd4c8356df84ab7cf503e61f8ea8026395c1c9b0a9c44'
+        client_exe_sha256 = 'fa9195400976e7996eb0a3ac853a369cc2718c4dc0f87eb3f77430d223bbd753'
         addin_dll_sha256  = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
     }
     $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
