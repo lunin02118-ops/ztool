@@ -622,6 +622,55 @@ class LicenseDB:
         self._commit_if_needed()
         return True, ""
 
+    def delete_revoked_license(self, code: str) -> Tuple[bool, str]:
+        """Physically delete a revoked license code and its related bindings.
+
+        Active codes are intentionally rejected: operators must revoke first,
+        then delete. The audit log is retained because it has no FK dependency
+        and is needed for support/history.
+        """
+        with self.transaction():
+            row = self._conn.execute(
+                "SELECT is_active FROM license_codes WHERE code = ?",
+                (code,),
+            ).fetchone()
+            if row is None:
+                return False, "license code not found"
+            if row["is_active"]:
+                return False, "license code is active; revoke it before deleting"
+
+            pending_activations = self._conn.execute(
+                "DELETE FROM pending_activations WHERE code = ?",
+                (code,),
+            ).rowcount
+            pending_transfers = self._conn.execute(
+                "DELETE FROM pending_transfers WHERE code = ?",
+                (code,),
+            ).rowcount
+            activations = self._conn.execute(
+                "DELETE FROM activations WHERE code = ?",
+                (code,),
+            ).rowcount
+            deleted = self._conn.execute(
+                "DELETE FROM license_codes WHERE code = ? AND is_active = 0",
+                (code,),
+            ).rowcount
+            if deleted != 1:
+                raise RuntimeError("revoked license delete failed")
+
+            details = (
+                f"activations={activations}; "
+                f"pending_activations={pending_activations}; "
+                f"pending_transfers={pending_transfers}"
+            )
+            self._conn.execute(
+                "INSERT INTO audit_log (action, code, result, details) "
+                "VALUES (?, ?, ?, ?)",
+                ("delete_revoked_license", code, "success", details),
+            )
+
+        return True, f"deleted revoked license code: {code}"
+
     def purge_invalid_activations(self) -> int:
         """Deactivate every active binding whose machine_code is not a genuine
         hardware fingerprint (empty or non-GUID).
