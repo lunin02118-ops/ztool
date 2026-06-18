@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -232,7 +234,23 @@ public class TCPClient
 					if (sR2.IsReg2("来生缘。。。", ref use_date, ref text))
 					{
 						MessageBox.Show("Регистрация выполнена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-						Application.Restart();
+						string executablePath = Application.ExecutablePath;
+						try
+						{
+							if (!string.IsNullOrWhiteSpace(executablePath) && File.Exists(executablePath))
+							{
+								Process.Start(new ProcessStartInfo(executablePath)
+								{
+									UseShellExecute = true,
+									WorkingDirectory = Path.GetDirectoryName(executablePath) ?? ""
+								});
+							}
+						}
+						catch (Exception ex)
+						{
+							logopathlist.WriteLog($"Restart after activation failed: {ex.GetType().Name}\r\n{ex.Message}\r\n{ex.StackTrace}");
+						}
+						Environment.Exit(0);
 					}
 					else
 					{
@@ -360,4 +378,5 @@ public class TCPClient
 			return array3;
 		}
 	}
+
 }

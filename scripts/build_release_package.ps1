@@ -88,6 +88,7 @@ $copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool.bmp') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'help_ru.chm') $runtimeDir 'help.CHM'
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'Ribbon.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ExpandableGridView.dll') $runtimeDir
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'client-core\ref\ZTool_rsa.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ICSharpCode.SharpZipLib.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'itextsharp.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'NPOI.dll') $runtimeDir

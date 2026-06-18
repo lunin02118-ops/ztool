@@ -78,8 +78,10 @@ if (-not $OutputDir) {
 
 $runtimeExe = Join-Path $runtimeDir 'ZTool.exe'
 $runtimeDll = Join-Path $runtimeDir 'ZTool.dll'
+$runtimeRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
 if (-not (Test-Path -LiteralPath $runtimeExe -PathType Leaf)) { Fail "ZTool.exe missing: $runtimeExe" }
 if (-not (Test-Path -LiteralPath $runtimeDll -PathType Leaf)) { Fail "ZTool.dll missing: $runtimeDll" }
+if (-not (Test-Path -LiteralPath $runtimeRsaDll -PathType Leaf)) { Fail "ZTool_rsa.dll missing: $runtimeRsaDll" }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $outputDirPath = (Resolve-Path -LiteralPath $OutputDir).Path
@@ -135,6 +137,7 @@ $installerManifest = [ordered]@{
         total_size_bytes = ($runtimeFiles | Measure-Object -Property Length -Sum).Sum
         ztool_exe_sha256 = Get-Sha256 $runtimeExe
         ztool_dll_sha256 = Get-Sha256 $runtimeDll
+        ztool_rsa_dll_sha256 = Get-Sha256 $runtimeRsaDll
     }
     installer_behavior = [ordered]@{
         install_dir = '%ProgramFiles%\ZTool'

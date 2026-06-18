@@ -10,10 +10,11 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PackageRoot,
 
-    [string]$ExpectedClientExeSha256 = "d3625742baf02dc7ab4c3c1f3b0657645d04c58cf625d7676465492614c3c23c",
+    [string]$ExpectedClientExeSha256 = "4ae10b1782f8c5711a0fd4c8356df84ab7cf503e61f8ea8026395c1c9b0a9c44",
     [string]$ExpectedAddinDllSha256 = "d053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9",
     [string]$ExpectedRibbonSha256 = "57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e",
     [string]$ExpectedExpandableGridViewSha256 = "89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0",
+    [string]$ExpectedZToolRsaSha256 = "274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90",
 
     [switch]$RequireSolidWorksTools,
     [switch]$AllowDirtyManifest
@@ -42,6 +43,7 @@ function Assert-Dir([string]$Path) {
 }
 
 function Assert-Hash([string]$Path, [string]$Expected) {
+    Assert-File $Path
     $actual = Get-Sha256 $Path
     if ($actual -ne $Expected.ToLowerInvariant()) {
         Fail "hash mismatch for $Path; expected $Expected, got $actual"
@@ -143,6 +145,7 @@ $addinDll = Join-Path $runtimeDir 'ZTool.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
 $ribbonDll = Join-Path $runtimeDir 'Ribbon.dll'
 $expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
+$ztoolRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
 $settingsPath = Join-Path $runtimeDir 'ZTool.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
 
@@ -170,6 +173,7 @@ Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
 Assert-Hash $ribbonDll $ExpectedRibbonSha256
 Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
+Assert-Hash $ztoolRsaDll $ExpectedZToolRsaSha256
 Assert-File $settingsPath
 Assert-File $materialLibrary
 
@@ -213,6 +217,7 @@ $summary = [ordered]@{
     runtime_ztool_dll = Get-Sha256 $addinDll
     runtime_ribbon_dll = Get-Sha256 $ribbonDll
     runtime_expandable_grid_dll = Get-Sha256 $expandableGridViewDll
+    runtime_ztool_rsa_dll = Get-Sha256 $ztoolRsaDll
 }
 
 Write-Host 'release package verification: PASS' -ForegroundColor Green

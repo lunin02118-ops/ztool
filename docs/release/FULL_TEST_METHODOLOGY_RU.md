@@ -68,10 +68,12 @@ registry pre-flight: parent-value `AddInsStartup`, cached CommandManager tabs,
 - **SolidWorks:** 2025 (обязательно), опционально 2024/2023 smoke.
 - **Тестовая модель:** `TestModel/0614-A00.SLDASM` (29 поз., полный комплект в `TestModel/`).
 - **Релиз-пакет:** `runtime/ZTool.exe`, `runtime/ZTool.dll`, `runtime/SolidWorksTools.dll`,
-  `SolidWorksTemplates/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
-  принятыми. Для ветки PR #33 рекомендуемая связка:
-  `ZTool.exe`=`7688EA399F3EA38672966043EDBE5F3F0102048369706882F4A35EB009A5D8FD`,
-  `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`.
+  `runtime/ZTool_rsa.dll`, `SolidWorksTemplates/MyMaterials.sldmat`,
+  `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с принятыми. Для
+  `1.1.0-alfa` обязательная связка:
+  `ZTool.exe`=`4AE10B1782F8C5711A0FD4C8356DF84AB7CF503E61F8EA8026395C1C9B0A9C44`,
+  `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`,
+  `ZTool_rsa.dll`=`274A33F35B98437D57F7EADCE21CFE855D5285E9012C1C33733A3AB1F0EC2A90`.
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
   → PASS; `manifest.git.dirty=false`; в пакете нет приватных ключей/БД/дампов/логов.
 - **Конфиг:** `ZTool.settings` с `materialpath` → существующий `MyMaterials.sldmat`,
@@ -349,6 +351,24 @@ UIA/WinForms/SolidWorks COM-локаторы по имени окна, `Automati
 действие через `Invoke-ZToolButtonByText ... -Async`, чтобы тестовый runner не
 зависал на UI thread и мог продолжить сбор evidence.
 
+**Инцидент 2026-06-18: `SetWindowText` запрещён для ввода activation gate.**
+Native `SetWindowText`/`GetWindowText` на WinForms `TextBox` может показать в
+окне и в Win32 read-back правильные сегменты ключа, но managed
+`TextBox.Text` остаётся старым; сервер в этом случае получает прежний код. Такой
+прогон считается ложным PASS и должен быть забракован. Для ввода ключа
+засчитываются только:
+
+- ручной copy/paste пользователем с последующим server audit;
+- UIA `ValuePattern.SetValue` с UIA `CurrentValue` read-back для каждого
+  сегмента;
+- настоящий клавиатурный paste в сфокусированный control с read-back через UIA
+  или подтверждением по server audit.
+
+Для masked password field `ValuePattern.SetValue` может быть недоступен. Тогда
+пароль вводится вручную copy/paste, либо acceptance-код создаётся без пароля, а
+password-protected activation проверяется отдельным ручным gate. Полный ключ и
+пароль запрещено писать в отчёт: только маска, длина и SHA12.
+
 Обязательный порядок:
 
 1. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
@@ -401,6 +421,8 @@ $r = New-Object WinRect+RECT
   `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Активация онлайн' -Async`.
   Evidence: `hwnd` кнопки, `window-tree` до/после, server row state, старый/new
   process id после restart. Координатный клик по кнопке активации не засчитывать.
+  Формат актуального кода клиента: 5 сегментов `8-5-5-5-9`, всего 36 символов
+  с дефисами; старые ключи `8-5-5-5-8` для этой сборки невалидны.
 
 | Действие | Locator | Ожидаемо |
 |----------|---------|----------|
@@ -481,9 +503,31 @@ $r = New-Object WinRect+RECT
 | LIC-08 | Повтор подтверждения (replay) | Отклонён |
 | LIC-09 | Сервер недоступен | Корректное сообщение **RU**, без краша |
 | LIC-10 | x86 и x64 ветки регистрации | Регистрация в правильной ветке реестра (b0–b3); MNum-привязка по железу |
+| LIC-11 | Нажать `OK` в сообщении `Регистрация выполнена` | Старый PID завершается, стартует новый PID ZTool, окно регистрации не появляется |
 
 Паритет: тексты диалогов локализованы (RU) — это намеренное отличие; **логика**
 активации/переноса/привязки должна совпадать с оригиналом 1:1.
+
+Контрольные условия для лицензирования:
+
+- Source of truth на боевом сервере — backend из `ZTOOL_DB_BACKEND`. Для текущего
+  production `ztool-tcp-server.service` это MySQL-таблица `license_keys`; старый
+  `/opt/ztool-tcp-server/licenses.db` может быть stale и не доказывает состояние
+  лицензии.
+- Нельзя деплоить локальный checkout поверх production, пока production-only
+  backend/adapters не синхронизированы в репозиторий или не зафиксированы в
+  отдельном deployment plan.
+- Нельзя выводить `systemctl show ... -p Environment` в лог/чат: там могут быть
+  DB passwords и ключевые пути. Скрипты должны читать environment внутри
+  процесса и печатать только redacted status.
+- После успешной активации недостаточно увидеть modal `Регистрация выполнена`.
+  Обязателен PID-restart: старый процесс должен выйти, новый процесс должен
+  подняться уже активированным. `Application.Restart()` без явного запуска нового
+  процесса считается запрещённой реализацией для этого gate, потому что уже
+  ловился Ribbon COM `E_NOINTERFACE` и зависание на старом процессе.
+- Если правка делается через IL-reinjector, помнить ограничение: текущий
+  reinjector заменяет существующие методы и не добавляет новые. Restart-логику
+  встраивать в существующий метод или сначала расширять reinjector.
 
 ---
 

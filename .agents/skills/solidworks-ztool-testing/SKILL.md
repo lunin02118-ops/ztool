@@ -43,6 +43,24 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    helper `scripts\ztool_acceptance_ui.ps1` (`pid` + class + visible text +
    `BM_CLICK`) when legacy WinForms controls are not exposed through UIA.
 
+5. **False activation input from `SetWindowText`.** Native `SetWindowText` /
+   `GetWindowText` can make WinForms edit boxes look correct while the managed
+   `TextBox.Text` value sent to the license server remains stale. Fix: enter
+   activation codes by manual copy/paste or UIA `ValuePattern.SetValue`, then
+   prove it with UIA read-back plus server audit. Never count `SetWindowText` as
+   activation evidence.
+
+6. **Wrong license database checked.** Production `ztool-tcp-server.service` may
+   use `ZTOOL_DB_BACKEND=mysql`; old SQLite files in the service directory can be
+   stale. Fix: read/reset license rows through the configured backend, and do not
+   deploy a local checkout over production until backend-specific adapters are
+   accounted for.
+
+7. **Secrets printed from service environment.** `systemctl show ... -p
+   Environment` can expose DB passwords in logs. Fix: load service environment
+   inside the reset/deploy script and print only redacted status, masks, lengths
+   and hashes.
+
 ## Procedure
 
 1. **Get a clean checkout** (if cloning): `GIT_LFS_SKIP_SMUDGE=1 git clone ...`.
@@ -83,14 +101,27 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    into the report folder. Coordinate clicks are diagnostic only and never count
    as passed evidence.
 
+6. **For licensing gates**, verify the current code shape (`8-5-5-5-9`), enter
+   the segments by copy/paste or UIA `ValuePattern`, redact the full key/password
+   in evidence, and after `Регистрация выполнена` confirm old PID exit + new PID
+   start. Seeing the success modal alone is not a pass.
+
 ## Do / don't
 
 - DO take a registry backup before any registry change (the pre-flight does this).
 - DO record the running ZTool.exe path + hash in the test report.
 - DO use object locators (`AutomationElement`, WinForms control, SolidWorks COM,
   or `scripts\ztool_acceptance_ui.ps1`) for every gate action.
+- DO treat production MySQL as the license source of truth when
+  `ZTOOL_DB_BACKEND=mysql`.
+- DO keep service environment output redacted; never paste DB passwords into
+  evidence or chat.
 - DON'T launch SolidWorks/ZTool from a shell with empty `WINDIR`.
 - DON'T mark a UI action as passed when it only used hardcoded screen
   coordinates.
+- DON'T fill activation fields with native `SetWindowText`; it can pass visual
+  read-back while sending stale values.
+- DON'T log full activation codes or license passwords; use mask, length and
+  SHA12 only.
 - DON'T mark `FULL PASS` from offline/pre-flight checks alone — a live SolidWorks
   run with the §15 journal filled in is required.
