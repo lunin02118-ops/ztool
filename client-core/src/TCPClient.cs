@@ -232,6 +232,7 @@ public class TCPClient
 					if (sR2.IsReg2("来生缘。。。", ref use_date, ref text))
 					{
 						MessageBox.Show("Регистрация выполнена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						Application.Restart();
 					}
 					else
 					{
