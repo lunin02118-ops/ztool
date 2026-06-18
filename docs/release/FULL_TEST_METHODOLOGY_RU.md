@@ -71,7 +71,7 @@ registry pre-flight: parent-value `AddInsStartup`, cached CommandManager tabs,
   `runtime/ZTool_rsa.dll`, `SolidWorksTemplates/MyMaterials.sldmat`,
   `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с принятыми. Для
   `1.1.0-alfa` обязательная связка:
-  `ZTool.exe`=`4AE10B1782F8C5711A0FD4C8356DF84AB7CF503E61F8EA8026395C1C9B0A9C44`,
+  `ZTool.exe`=`96E737515B42A6741663234591DEB008DD0864E8B537665E225FE38556E79503`,
   `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`,
   `ZTool_rsa.dll`=`274A33F35B98437D57F7EADCE21CFE855D5285E9012C1C33733A3AB1F0EC2A90`.
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`

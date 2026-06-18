@@ -52,7 +52,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify_release_packa
   -RequireSolidWorksTools
 ```
 DoD: вывод `release package verification: PASS`. Ожидаемые хеши берутся из
-`scripts\expected_release_hashes.json` (`ZTool.exe 7688EA39…`, `ZTool.dll D0535425…`).
+`scripts\expected_release_hashes.json` (`ZTool.exe 96E73751…`, `ZTool.dll D0535425…`).
 Если хеши не сходятся — не продолжать: пересобрать (A1) или сверить билд.
 **`-AllowDirtyManifest` НЕ использовать** — иначе R1.2 не закрыт.
 
