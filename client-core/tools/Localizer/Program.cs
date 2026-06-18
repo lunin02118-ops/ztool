@@ -291,6 +291,245 @@ internal static class Program
         return changes;
     }
 
+    private static bool IsMethodOperand(Instruction ins, string name, string declaringTypeName = null)
+    {
+        return ins?.Operand is IMethod m
+            && m.Name == name
+            && (declaringTypeName == null || m.DeclaringType?.Name == declaringTypeName);
+    }
+
+    private static Local GetLocalOperand(MethodDef method, Instruction ins)
+    {
+        if (method?.Body == null || ins == null) return null;
+        switch (ins.OpCode.Code)
+        {
+            case Code.Ldloc_0:
+            case Code.Stloc_0:
+                return method.Body.Variables.Count > 0 ? method.Body.Variables[0] : null;
+            case Code.Ldloc_1:
+            case Code.Stloc_1:
+                return method.Body.Variables.Count > 1 ? method.Body.Variables[1] : null;
+            case Code.Ldloc_2:
+            case Code.Stloc_2:
+                return method.Body.Variables.Count > 2 ? method.Body.Variables[2] : null;
+            case Code.Ldloc_3:
+            case Code.Stloc_3:
+                return method.Body.Variables.Count > 3 ? method.Body.Variables[3] : null;
+            case Code.Ldloc:
+            case Code.Ldloc_S:
+            case Code.Stloc:
+            case Code.Stloc_S:
+                return ins.Operand as Local;
+            default:
+                return null;
+        }
+    }
+
+    private static bool LoadsLocal(MethodDef method, Instruction ins, Local local)
+    {
+        return local != null
+            && (ins.OpCode.Code == Code.Ldloc
+                || ins.OpCode.Code == Code.Ldloc_S
+                || ins.OpCode.Code == Code.Ldloc_0
+                || ins.OpCode.Code == Code.Ldloc_1
+                || ins.OpCode.Code == Code.Ldloc_2
+                || ins.OpCode.Code == Code.Ldloc_3)
+            && GetLocalOperand(method, ins) == local;
+    }
+
+    private static bool StoresLocal(MethodDef method, Instruction ins)
+    {
+        return GetLocalOperand(method, ins) != null
+            && (ins.OpCode.Code == Code.Stloc
+                || ins.OpCode.Code == Code.Stloc_S
+                || ins.OpCode.Code == Code.Stloc_0
+                || ins.OpCode.Code == Code.Stloc_1
+                || ins.OpCode.Code == Code.Stloc_2
+                || ins.OpCode.Code == Code.Stloc_3);
+    }
+
+    private static Instruction CloneInstruction(Instruction ins)
+    {
+        if (ins.Operand == null) return Instruction.Create(ins.OpCode);
+        return new Instruction(ins.OpCode, ins.Operand);
+    }
+
+    private static IEnumerable<Instruction> LoadFrmmainColumnName(
+        IMethod getForms,
+        IMethod getFrmmain,
+        IMethod getDgv1,
+        IMethod getColumns,
+        Local columnIndexLocal,
+        IMethod getItem,
+        IMethod getName)
+    {
+        yield return Instruction.Create(OpCodes.Call, getForms);
+        yield return Instruction.Create(OpCodes.Callvirt, getFrmmain);
+        yield return Instruction.Create(OpCodes.Callvirt, getDgv1);
+        yield return Instruction.Create(OpCodes.Callvirt, getColumns);
+        yield return Instruction.Create(OpCodes.Ldloc, columnIndexLocal);
+        yield return Instruction.Create(OpCodes.Callvirt, getItem);
+        yield return Instruction.Create(OpCodes.Callvirt, getName);
+    }
+
+    // BOM export originally applies namemappinglist only to PropVal_ /
+    // PropResolvedVal_ columns. Computed service columns such as Col_Weight and
+    // Col_bound have Excel-invalid headers ("Масса ед._кг",
+    // "Габаритные размеры"), so they need the same mapping fallback by
+    // DataGridViewColumn.Name. Also let Frmmapping display only those two
+    // calculated columns in addition to normal PropVal_* rows.
+    private static int PatchBomCalculatedColumnMapping(ModuleDefMD mod)
+    {
+        int changes = 0;
+        var frmmain = mod.Find("ZTool.Frmmain", false);
+        if (frmmain != null)
+        {
+            foreach (var methodName in new[] { "ExportBom_xls1", "ExportBom_xls2", "ExportBom_xls3", "ExportBom_xls4" })
+            {
+                var method = frmmain.FindMethod(methodName);
+                if (method?.Body == null) continue;
+                var ins = method.Body.Instructions;
+
+                int lookupStart = -1, lookupEnd = -1;
+                Local mappingLocal = null;
+                for (int i = 0; i < ins.Count - 1; i++)
+                {
+                    if (IsMethodOperand(ins[i], "get_Config", "CConfigMng")
+                        && IsMethodOperand(ins[i + 1], "get_namemappinglist", "CConfigDO"))
+                    {
+                        lookupStart = i;
+                        for (int j = i + 2; j < Math.Min(i + 12, ins.Count); j++)
+                        {
+                            if (IsMethodOperand(ins[j], "Find") && j + 1 < ins.Count && StoresLocal(method, ins[j + 1]))
+                            {
+                                lookupEnd = j + 1;
+                                mappingLocal = GetLocalOperand(method, ins[j + 1]);
+                                break;
+                            }
+                        }
+                        if (lookupEnd >= 0) break;
+                    }
+                }
+                if (lookupStart < 0 || lookupEnd < 0 || mappingLocal == null) continue;
+
+                int nullCheck = -1;
+                IMethod isNothing = null;
+                for (int i = lookupEnd + 1; i < ins.Count - 1; i++)
+                {
+                    if (LoadsLocal(method, ins[i], mappingLocal)
+                        && IsMethodOperand(ins[i + 1], "IsNothing", "Information"))
+                    {
+                        nullCheck = i;
+                        isNothing = (IMethod)ins[i + 1].Operand;
+                        break;
+                    }
+                }
+                if (nullCheck < 0 || isNothing == null) continue;
+
+                var skipFallback = Instruction.Create(OpCodes.Nop);
+                var add = new List<Instruction>
+                {
+                    Instruction.Create(OpCodes.Ldloc, mappingLocal),
+                    Instruction.Create(OpCodes.Call, isNothing),
+                    Instruction.Create(OpCodes.Brfalse, skipFallback),
+                };
+                for (int i = lookupStart; i <= lookupEnd; i++)
+                    add.Add(CloneInstruction(ins[i]));
+                add.Add(skipFallback);
+
+                for (int i = 0; i < add.Count; i++)
+                    ins.Insert(nullCheck + i, add[i]);
+                changes++;
+            }
+        }
+
+        var mappingForm = mod.Find("ZTool.Frmmapping", false);
+        var load = mappingForm?.FindMethod("Frmmapping_Load");
+        if (load?.Body != null)
+        {
+            var ins = load.Body.Instructions;
+            int stlocBool = -1;
+            for (int i = 0; i < ins.Count - 4; i++)
+            {
+                if (ins[i].OpCode.Code == Code.Ldstr
+                    && (ins[i].Operand as string) == "PropVal_"
+                    && IsMethodOperand(ins[i + 1], "Contains", "String")
+                    && ins[i + 2].OpCode.Code == Code.Ldc_I4_0
+                    && ins[i + 3].OpCode.Code == Code.Ceq
+                    && StoresLocal(load, ins[i + 4]))
+                {
+                    stlocBool = i + 4;
+                    break;
+                }
+            }
+
+            if (stlocBool >= 0)
+            {
+                var skipLocal = GetLocalOperand(load, ins[stlocBool]);
+                IMethod getForms = null, getFrmmain = null, getDgv1 = null, getColumns = null, getItem = null, getName = null;
+                Local columnIndexLocal = null;
+                for (int i = Math.Max(0, stlocBool - 20); i < stlocBool; i++)
+                {
+                    if (IsMethodOperand(ins[i], "get_Forms")) getForms = (IMethod)ins[i].Operand;
+                    else if (IsMethodOperand(ins[i], "get_Frmmain")) getFrmmain = (IMethod)ins[i].Operand;
+                    else if (IsMethodOperand(ins[i], "get_DGV1")) getDgv1 = (IMethod)ins[i].Operand;
+                    else if (IsMethodOperand(ins[i], "get_Columns")) getColumns = (IMethod)ins[i].Operand;
+                    else if (IsMethodOperand(ins[i], "get_Item") && i > 0)
+                    {
+                        getItem = (IMethod)ins[i].Operand;
+                        columnIndexLocal = GetLocalOperand(load, ins[i - 1]);
+                    }
+                    else if (IsMethodOperand(ins[i], "get_Name")) getName = (IMethod)ins[i].Operand;
+                }
+
+                var stringEquals = mod.GetTypes()
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.Body != null)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Select(i => i.Operand as IMethod)
+                    .FirstOrDefault(m => m != null
+                        && m.Name == "Equals"
+                        && m.DeclaringType?.FullName == "System.String"
+                        && m.MethodSig?.Params.Count == 2);
+
+                if (skipLocal != null && getForms != null && getFrmmain != null
+                    && getDgv1 != null && getColumns != null && getItem != null
+                    && getName != null && columnIndexLocal != null && stringEquals != null)
+                {
+                    var allow = Instruction.Create(OpCodes.Nop);
+                    var after = Instruction.Create(OpCodes.Nop);
+                    var add = new List<Instruction>
+                    {
+                        Instruction.Create(OpCodes.Ldloc, skipLocal),
+                        Instruction.Create(OpCodes.Brfalse, after),
+                    };
+                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
+                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_Weight"));
+                    add.Add(Instruction.CreateLdcI4(5)); // StringComparison.OrdinalIgnoreCase
+                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
+                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
+                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
+                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_bound"));
+                    add.Add(Instruction.CreateLdcI4(5));
+                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
+                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
+                    add.Add(Instruction.Create(OpCodes.Br, after));
+                    add.Add(allow);
+                    add.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                    add.Add(Instruction.Create(OpCodes.Stloc, skipLocal));
+                    add.Add(after);
+
+                    for (int i = 0; i < add.Count; i++)
+                        ins.Insert(stlocBool + 1 + i, add[i]);
+                    changes++;
+                }
+            }
+        }
+
+        Console.WriteLine($"  BOM mapping: enabled calculated columns Col_Weight/Col_bound in mapping/export (edits={changes})");
+        return changes;
+    }
+
     // The original split-column dialog lets users add mapping rows, but it has
     // no explicit delete button. WinForms users naturally press Delete on the
     // selected grid row; make that path work for the three rule grids without
@@ -1275,6 +1514,7 @@ internal static class Program
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
+            int bomMappingChanges = PatchBomCalculatedColumnMapping(mod);
             int uiTextChanges = NormalizeLongRussianUiStrings(mod);
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
@@ -1297,7 +1537,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");

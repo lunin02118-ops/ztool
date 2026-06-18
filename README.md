@@ -23,7 +23,7 @@ gates ожидают следующие runtime-хеши; полный productio
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
-| `ZTool.exe` | главное приложение (`binderfix` + UI layout fixes) | `96E73751…56E79503` |
+| `ZTool.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | `C7AB1491…86FCF37F` |
 | `ZTool.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
 
 Что внесено в PR #8:

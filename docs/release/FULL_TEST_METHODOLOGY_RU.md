@@ -71,7 +71,7 @@ registry pre-flight: parent-value `AddInsStartup`, cached CommandManager tabs,
   `runtime/ZTool_rsa.dll`, `SolidWorksTemplates/MyMaterials.sldmat`,
   `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с принятыми. Для
   `1.1.0-alfa` обязательная связка:
-  `ZTool.exe`=`96E737515B42A6741663234591DEB008DD0864E8B537665E225FE38556E79503`,
+  `ZTool.exe`=`C7AB14910003D1F23E330B29D2E53F2B2BFF8ADA6BB29D27D80DC37786FCF37F`,
   `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`,
   `ZTool_rsa.dll`=`274A33F35B98437D57F7EADCE21CFE855D5285E9012C1C33733A3AB1F0EC2A90`.
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
@@ -428,7 +428,7 @@ $r = New-Object WinRect+RECT
 |----------|---------|----------|
 | `Подключить SW` | UIA text `Подключить SW`; чаще `SplitButton` under tab `Главная` | Status содержит `Подключение завершено`, таблица `DGV1` содержит 29 строк |
 | `Сохранить в SW` | UIA text `Сохранить в SW`; чаще верхний `SplitButton`, не generic `Button` | После повторного `Подключить SW` значения вернулись из SolidWorks |
-| `Задать имя свойства` | UIA Button text `Задать имя свойства`; dialog `Frmsetpropname`; grid `DGV1` | В строках есть `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`, `Обработка поверхности`, `Дата разработки`, `Масса` |
+| `Задать имя свойства` | UIA Button text `Задать имя свойства`; dialog `Frmsetpropname`; grid `DGV1` | В строках есть `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`, `Обработка поверхности`, `Дата разработки`, `Масса`; расчетные колонки `Масса ед._кг` и `Габаритные размеры` проверяются отдельно через сопоставление BOM |
 | `PropSwitch` | `StatusStrip1`: text `Вычисленное значение`/`Выражение свойства`; rightmost empty status `Button` before that text | Для записи свойств включён режим `Выражение свойства`, то есть видимы editable `PropVal_*`, а не read-only `PropResolvedVal_*` |
 | `Столбец заполнения` | UIA Button text `Столбец заполнения`; dialog `FrmFilling`; `ComboBox1`, `TextBox1`, `OK_Button` | `ComboBox1` содержит и выбирает нужный столбец, `TextBox1` содержит marker, после `OK` ячейки изменились |
 | BOM export | UIA tab `Спецификация`, menu item by visible text / exported file path | Создан `.xlsx`, валидатор и Excel read-back PASS |
@@ -577,15 +577,17 @@ $r = New-Object WinRect+RECT
 
 **Критерии PASS (каждый режим):** Excel создан без ошибок; № п/п последователен;
 «Количество» — числа > 0 и **= сумме** одинаковых поз. (служебная вычисляемая
-колонка, не свойство); набор/порядок колонок = шаблон; эскизы присутствуют для
-эскизных режимов. **Паритет:** число строк, разбивка количеств и состав колонок
-совпадают с оригиналом.
+колонка, не свойство); `Масса ед. кг` и `Габаритные размеры` заполнены из
+расчетных колонок ZTool, а не из пользовательских свойств; набор/порядок
+колонок = шаблон; эскизы присутствуют для эскизных режимов. **Паритет:** число
+строк, разбивка количеств и состав колонок совпадают с оригиналом.
 
 ### 6.2 Область D — Свойства и маппинг
 
 | ID | Шаги | Ожидаемо |
 |----|------|----------|
 | PROP-01 | Сверить русские `propname`/видимые колонки с legacy `mappingname` anchors шаблона | Колонки `Наименование/Обозначение/Материал/Тип/Версия/Обработка поверхности/Масса` читают русские свойства модели, а `mappingname` указывает на существующие anchors `零件名称/图号/材质/类型/版本/表面处理/重量` |
+| PROP-01A | Сверить постоянные расчетные BOM-колонки в окне сопоставления и шаблоне | В `FrmMapping` видны `Масса ед._кг` и `Габаритные размеры`; в `ZTool.settings` есть `Col_Weight -> МассаЕдКг` и `Col_bound -> ГабаритныеРазмеры`; в Excel Name Manager anchors указывают на `J6` и `P6` |
 | PROP-02 | Модель с заполненными русскими свойствами | Значения попадают в соответствующие колонки |
 | PROP-03 | Модель без свойства | Пустая ячейка, без ошибки/сдвига колонок |
 | PROP-04 | `Материал`/`Масса` как ссылки SW (`SW-Material@`,`SW-Mass@`) | Резолвятся в значения (resolved value) |
@@ -604,7 +606,8 @@ $r = New-Object WinRect+RECT
    а не проверка ZTool-write.
 3. `Подключить SW`: подтвердить 29 строк и считать через UIA/COM/Excel
    значения `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`,
-   `Обработка поверхности`, `Дата разработки`, `Масса`.
+   `Обработка поверхности`, `Дата разработки`, `Масса`, а в окне сопоставления
+   BOM отдельно подтвердить расчетные `Масса ед._кг` и `Габаритные размеры`.
 4. Экспортировать BOM через ZTool UI и проверить Excel read-back. Для строгого
    `BOM-07/08` `Тип` должен быть непустым и попадать в `FilterRulesList`.
 
@@ -830,6 +833,8 @@ Excel будет явно восстановлен как требование.
 - `Get-FileHash .\ZTool.dll -Algorithm SHA256`
 - `python client-core/tools/check_bom_template.py ZTool.settings`
 - `python client-core/tools/check_bom_template.py client-core/dist/ZTool.settings`
+- `check_bom_template.py` обязан подтвердить anchors `МассаЕдКг` (`J6`) и
+  `ГабаритныеРазмеры` (`P6`); отсутствие этих расчетных колонок блокирует релиз.
 - `scripts/verify_release_package.ps1 -PackageRoot <pkg> -RequireSolidWorksTools`
   (падает при отсутствии библиотеки материалов или `usematerialcolor=false`)
 - `powershell -NoProfile -ExecutionPolicy Bypass -File client-core/build.ps1`

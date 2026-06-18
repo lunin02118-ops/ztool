@@ -8,8 +8,9 @@ Usage:
 
 The script looks for .xlsx files in the directory and validates:
 - Row count (data rows present)
-- Service columns: № п/п (A), Кол-во (G), Путь (O)
-- Property columns: C, D, E, H, I, J, N (if model has matching propnames)
+- Service/calculated columns: № п/п (A), Кол-во (G), Масса ед. кг (J),
+  Путь (O), Габаритные размеры (P)
+- Property columns: C, D, E, H, I, N (if model has matching propnames)
 - Mode-specific behavior (type 0/1/2/3, images, filters)
 
 Requires: openpyxl (pip install openpyxl)
@@ -57,13 +58,15 @@ MODES = [
      "desc": "Filtered: only purchased/standard parts"},
 ]
 
-# Column mapping (1-indexed): A=1, B=2, ..., O=15
+# Column mapping (1-indexed): A=1, B=2, ..., P=16
 COL_NUM = 1      # A - № п/п (service)
 COL_QTY = 7      # G - Кол-во (service)
+COL_WEIGHT = 10  # J - Масса ед. кг (calculated)
 COL_PATH = 15    # O - Путь (service)
+COL_DIMS = 16    # P - Габаритные размеры (calculated)
 COL_IMAGE = 13   # M - Эскиз (service)
-# Property columns (C=3, D=4, E=5, H=8, I=9, J=10, N=14)
-PROP_COLS = [3, 4, 5, 8, 9, 10, 14]
+# Property columns (C=3, D=4, E=5, H=8, I=9, N=14)
+PROP_COLS = [3, 4, 5, 8, 9, 14]
 
 DATA_START_ROW = 7  # Data starts at row 7 (row 6 is header anchor row)
 
@@ -78,7 +81,9 @@ def analyze_xlsx(filepath):
         "total_rows": 0,
         "num_filled": 0,
         "qty_filled": 0,
+        "weight_filled": 0,
         "path_filled": 0,
+        "dims_filled": 0,
         "prop_filled": 0,
         "has_images": False,
         "max_row": ws.max_row,
@@ -92,9 +97,9 @@ def analyze_xlsx(filepath):
     # Determine the ACTUAL last data row: scan from the bottom for the last row
     # that has ANY meaningful content in service/property columns. This avoids
     # counting formatted-but-empty rows (template pre-formats rows down to 75).
-    # A row counts as "data" if № (A), Кол-во (G), Путь (O), or any property
-    # column has a non-empty value.
-    significant_cols = [COL_NUM, COL_QTY, COL_PATH] + PROP_COLS
+    # A row counts as "data" if № (A), Кол-во (G), calculated values,
+    # Путь (O), or any property column has a non-empty value.
+    significant_cols = [COL_NUM, COL_QTY, COL_WEIGHT, COL_PATH, COL_DIMS] + PROP_COLS
     last_data_row = DATA_START_ROW - 1
     for row in range(DATA_START_ROW, ws.max_row + 1):
         for col in significant_cols:
@@ -114,7 +119,9 @@ def analyze_xlsx(filepath):
 
     num_count = 0
     qty_count = 0
+    weight_count = 0
     path_count = 0
+    dims_count = 0
     prop_count = 0
     prop_total = 0
 
@@ -130,10 +137,20 @@ def analyze_xlsx(filepath):
         if v is not None and str(v).strip():
             qty_count += 1
 
+        # Масса ед. кг
+        v = ws.cell(row=row, column=COL_WEIGHT).value
+        if v is not None and str(v).strip():
+            weight_count += 1
+
         # Путь
         v = ws.cell(row=row, column=COL_PATH).value
         if v is not None and str(v).strip():
             path_count += 1
+
+        # Габаритные размеры
+        v = ws.cell(row=row, column=COL_DIMS).value
+        if v is not None and str(v).strip():
+            dims_count += 1
 
         # Property columns
         for col in PROP_COLS:
@@ -144,7 +161,9 @@ def analyze_xlsx(filepath):
 
     results["num_filled"] = num_count
     results["qty_filled"] = qty_count
+    results["weight_filled"] = weight_count
     results["path_filled"] = path_count
+    results["dims_filled"] = dims_count
     results["prop_filled"] = prop_count
     results["prop_total"] = prop_total
 
@@ -168,8 +187,20 @@ def analyze_xlsx(filepath):
         results["issues"].append(
             "Кол-во partially filled: %d/%d" % (qty_count, data_rows))
 
+    if weight_count == 0:
+        results["issues"].append("Масса ед. кг (col J) is EMPTY")
+    elif weight_count < data_rows:
+        results["issues"].append(
+            "Масса ед. кг partially filled: %d/%d" % (weight_count, data_rows))
+
     if path_count == 0:
         results["issues"].append("Путь (col O) is EMPTY")
+
+    if dims_count == 0:
+        results["issues"].append("Габаритные размеры (col P) is EMPTY")
+    elif dims_count < data_rows:
+        results["issues"].append(
+            "Габаритные размеры partially filled: %d/%d" % (dims_count, data_rows))
 
     wb.close()
     return results
@@ -217,10 +248,12 @@ def print_report(all_results, mode_assignment=None):
 
         print("[%s] %s%s" % (status, r["file"], mode_info))
         print("  Строк данных: %d" % r["total_rows"])
-        print("  № п/п: %d/%d | Кол-во: %d/%d | Путь: %d/%d" % (
+        print("  № п/п: %d/%d | Кол-во: %d/%d | Масса: %d/%d | Путь: %d/%d | Габариты: %d/%d" % (
             r["num_filled"], r["total_rows"],
             r["qty_filled"], r["total_rows"],
-            r["path_filled"], r["total_rows"]))
+            r["weight_filled"], r["total_rows"],
+            r["path_filled"], r["total_rows"],
+            r["dims_filled"], r["total_rows"]))
         print("  Свойства: %d/%d ячеек заполнено" % (
             r["prop_filled"], r.get("prop_total", 0)))
         if r["has_images"]:

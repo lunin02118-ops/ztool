@@ -9,7 +9,8 @@ mutually consistent so that a real export inside SolidWorks can succeed:
      resolved against the process CWD = ...\\Documents under SolidWorks and fail).
   2. Every non-empty <mappingname> in <namemappinglist> exists as a defined name
      (named range) in the template workbook - otherwise that column is silently
-     left unfilled on export.
+     left unfilled on export. The shipped runtime also requires explicit
+     mappings for calculated columns whose UI headers are not valid Excel names.
   3. Reports the column -> header(propname) -> template-anchor wiring and the
      preset table (name / type / thumbnails / filters) for a human cross-check.
   4. Checks that the default material library referenced by <materialpath> is
@@ -234,8 +235,9 @@ def main():
             problems += 1
         print("  %-14s | %-22s | anchor=%-6s %s"
               % (mp["col"], mp["header"] or "", anc, status))
+    problems += check_calculated_mappings(mappings, names)
 
-    # --- 4. service columns (NOT in namemappinglist) ---
+    # --- 4. service columns (header-bound, NOT in namemappinglist) ---
     # ZTool's export (ExportBom_xls4/_xls2) resolves SERVICE columns (the auto
     # number, the computed quantity, path, sketch, disk file name) by the
     # column's runtime HeaderText: it calls workbook.GetName(HeaderText) and
@@ -300,6 +302,15 @@ SERVICE_HEADERS = [
 # of a hard failure (the column simply stays empty until its header is renamed).
 DEFERRED_SERVICE = {"Col_FileName"}
 
+# Calculated service columns with user-visible headers that cannot be used as
+# Excel names directly. The localized exporter patches these through
+# namemappinglist by DataGridViewColumn.Name, so the release profile and template
+# must keep this contract in sync.
+REQUIRED_CALCULATED_MAPPINGS = {
+    "Col_Weight": ("Масса ед._кг", "МассаЕдКг"),
+    "Col_bound": ("Габаритные размеры", "ГабаритныеРазмеры"),
+}
+
 
 def valid_excel_name(s):
     """True if s can be an Excel/OOXML defined name (so an anchor CAN exist)."""
@@ -329,6 +340,40 @@ def check_service_columns(names):
             problems += 1
         print("  %-14s | header=%-24r %-18s | %s"
               % (col, header, "(%s)" % desc, status))
+    return problems
+
+
+def check_calculated_mappings(mappings, names):
+    print("\n[3b] Calculated columns (mapped by column name):")
+    problems = 0
+    by_col = {mp["col"]: mp for mp in mappings}
+    for col, (header, anchor) in REQUIRED_CALCULATED_MAPPINGS.items():
+        mp = by_col.get(col)
+        if not mp:
+            print("  ** ERROR: missing mapping for %s (%s -> %s)" %
+                  (col, header, anchor))
+            problems += 1
+            continue
+        actual_header = mp.get("header") or ""
+        actual_anchor = mp.get("anchor") or ""
+        ok = True
+        if actual_header != header:
+            print("  ** ERROR: %s header mismatch: expected %r, got %r" %
+                  (col, header, actual_header))
+            ok = False
+        if actual_anchor != anchor:
+            print("  ** ERROR: %s anchor mismatch: expected %r, got %r" %
+                  (col, anchor, actual_anchor))
+            ok = False
+        if actual_anchor not in names:
+            print("  ** ERROR: %s anchor %r missing in template" %
+                  (col, actual_anchor))
+            ok = False
+        if ok:
+            print("    - %-12s | %-20s -> %-20s OK" %
+                  (col, actual_header, actual_anchor))
+        else:
+            problems += 1
     return problems
 
 

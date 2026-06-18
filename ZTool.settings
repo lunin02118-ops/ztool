@@ -620,6 +620,18 @@ True</string>
       <text>Масса</text>
       <mappingname>重量</mappingname>
     </columnnamemapping>
+    <columnnamemapping>
+      <name>Col_Weight</name>
+      <name2 />
+      <text>Масса ед._кг</text>
+      <mappingname>МассаЕдКг</mappingname>
+    </columnnamemapping>
+    <columnnamemapping>
+      <name>Col_bound</name>
+      <name2 />
+      <text>Габаритные размеры</text>
+      <mappingname>ГабаритныеРазмеры</mappingname>
+    </columnnamemapping>
   </namemappinglist>
   <usenpoi>true</usenpoi>
   <frmsortcfg />
