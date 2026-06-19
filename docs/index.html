@@ -9,7 +9,7 @@
   <meta property="og:description" content="Автоматизация спецификаций, свойств и Excel-выгрузок для SolidWorks.">
   <meta property="og:type" content="website">
   <title>swtools - инструменты для SolidWorks</title>
-  <link rel="icon" href="assets/swtools-logo.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/swtools-logo.png" type="image/png">
   <style>
     :root {
       --ink: #0d1b2a;
@@ -52,7 +52,8 @@
     }
 
     .nav {
-      height: 76px;
+      min-height: 108px;
+      padding: 10px 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -68,7 +69,7 @@
     }
 
     .brand img {
-      width: 164px;
+      width: 112px;
       height: auto;
     }
 
@@ -551,6 +552,63 @@
       text-decoration: none;
     }
 
+    .phone-list {
+      display: grid;
+      gap: 12px;
+      margin: 10px 0 14px;
+    }
+
+    .phone-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      color: var(--ink);
+      font-size: 22px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .flag {
+      position: relative;
+      flex: 0 0 auto;
+      width: 30px;
+      height: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(13, 27, 42, .22);
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.34);
+    }
+
+    .flag.kz {
+      background: #00a3dd;
+    }
+
+    .flag.kz::before {
+      content: "";
+      position: absolute;
+      left: 11px;
+      top: 6px;
+      width: 7px;
+      height: 7px;
+      background: #ffd34f;
+      border-radius: 50%;
+    }
+
+    .flag.kz::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 2px;
+      height: 16px;
+      background: #ffd34f;
+    }
+
+    .flag.ru {
+      background: linear-gradient(to bottom, #ffffff 0 33.33%, #2457a7 33.33% 66.66%, #d52b1e 66.66% 100%);
+    }
+
     .qr {
       display: grid;
       gap: 16px;
@@ -585,7 +643,7 @@
     .footer img { width: 136px; }
 
     @media (max-width: 980px) {
-      .nav { height: auto; padding: 16px 0; align-items: flex-start; }
+      .nav { min-height: 96px; padding: 10px 0; align-items: center; }
       .nav-links { display: none; }
       .hero { padding-top: 58px; }
       .hero-grid,
@@ -604,7 +662,7 @@
 
     @media (max-width: 640px) {
       .container { width: min(calc(100% - 28px), 1180px); }
-      .brand img { width: 140px; }
+      .brand img { width: 96px; }
       .nav > .btn { display: none; }
       .hero-facts,
       .cards,
@@ -619,7 +677,8 @@
       .section { padding: 62px 0; }
       .workflow-copy { padding: 24px; }
       .workflow-copy h2 { font-size: 32px; }
-      .contact-link { font-size: 20px; }
+      .contact-link,
+      .phone-link { font-size: 20px; }
     }
   </style>
 </head>
@@ -627,7 +686,7 @@
   <header class="site-header">
     <div class="container nav">
       <a class="brand" href="#top" aria-label="swtools">
-        <img src="assets/swtools-logo.svg" alt="swtools">
+        <img src="assets/swtools-logo.png" alt="swtools">
       </a>
       <nav class="nav-links" aria-label="Основная навигация">
         <a href="#features">Возможности</a>
@@ -757,9 +816,12 @@
             <p>Для вопросов по демонстрации, лицензии и тестовому внедрению.</p>
           </article>
           <article class="contact-card">
-            <h3>Телефон</h3>
-            <a class="contact-link" href="tel:+77058030863">+7 705 803 0863</a>
-            <p>Номер указан как рабочий контакт, используемый в MAX-карточке проекта.</p>
+            <h3>Телефоны</h3>
+            <div class="phone-list">
+              <a class="phone-link" href="tel:+77058030863"><span class="flag kz" aria-hidden="true"></span><span>+7 705 803 08 63</span></a>
+              <a class="phone-link" href="tel:+79828801822"><span class="flag ru" aria-hidden="true"></span><span>+7 982 880 18 22</span></a>
+            </div>
+            <p>Контакты для Казахстана и России.</p>
           </article>
           <aside class="contact-card qr">
             <h3>MAX</h3>
@@ -773,7 +835,7 @@
 
   <footer class="footer">
     <div class="container footer-row">
-      <img src="assets/swtools-logo.svg" alt="swtools">
+      <img src="assets/swtools-logo.png" alt="swtools">
       <span>© 2026 swtools. Инструменты для SolidWorks.</span>
     </div>
   </footer>
