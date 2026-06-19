@@ -757,6 +757,7 @@ internal static class Program
         var addItem = new MemberRefUser(mod, "Add", MethodSig.CreateInstance(mod.CorLibTypes.Int32, new ClassSig(trToolStripItem)), trToolStripItemColl);
         var showPoint = new MemberRefUser(mod, "Show", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trToolStripDropDown);
         var closeMenu = new MemberRefUser(mod, "Close", MethodSig.CreateInstance(mod.CorLibTypes.Void), trToolStripDropDown);
+        var disposeMenu = new MemberRefUser(mod, "Dispose", MethodSig.CreateInstance(mod.CorLibTypes.Void), trControl);
         var getMousePos = new MemberRefUser(mod, "get_MousePosition", MethodSig.CreateStatic(sigPoint), trControl);
         var getButton = new MemberRefUser(mod, "get_Button", MethodSig.CreateInstance(new ValueTypeSig(trMouseButtons)), trMouseEventArgs);
         var ehCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trEventHandler);
@@ -818,10 +819,14 @@ internal static class Program
         doneClick.Body = new CilBody { InitLocals = true };
         {
             var dc = doneClick.Body.Instructions;
+            var dret = Instruction.Create(OpCodes.Ret);
+            dc.Add(Instruction.Create(OpCodes.Ldarg_0));
+            dc.Add(Instruction.Create(OpCodes.Ldfld, menuField));
+            dc.Add(Instruction.Create(OpCodes.Brfalse, dret));
             dc.Add(Instruction.Create(OpCodes.Ldarg_0));
             dc.Add(Instruction.Create(OpCodes.Ldfld, menuField));
             dc.Add(Instruction.Create(OpCodes.Callvirt, closeMenu));
-            dc.Add(Instruction.Create(OpCodes.Ret));
+            dc.Add(dret);
         }
         form.Methods.Add(doneClick);
 
@@ -849,8 +854,17 @@ internal static class Program
             var lCond = Instruction.Create(OpCodes.Ldloc, locI);
             var lBody = Instruction.Create(OpCodes.Ldarg_0);
             var lInc = Instruction.Create(OpCodes.Ldloc, locI);
+            var newMenuStart = Instruction.Create(OpCodes.Newobj, ctxCtor);
 
-            b.Add(Instruction.Create(OpCodes.Newobj, ctxCtor));
+            // dispose any menu still open from a previous right-click so menus
+            // don't stack (AutoClose=false) and "Готово" always targets the live one
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Ldfld, menuField));
+            b.Add(Instruction.Create(OpCodes.Brfalse, newMenuStart));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Ldfld, menuField));
+            b.Add(Instruction.Create(OpCodes.Callvirt, disposeMenu));
+            b.Add(newMenuStart);
             b.Add(Instruction.Create(OpCodes.Stloc, locMenu));
             b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
             b.Add(Instruction.Create(OpCodes.Ldc_I4_0));
