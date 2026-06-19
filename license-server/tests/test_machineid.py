@@ -2,7 +2,7 @@
 
 import pytest
 
-from ztool_license_server.machineid import (
+from swtools_license_server.machineid import (
     parse_machine_code,
     binding_id,
     is_valid_machine_code,

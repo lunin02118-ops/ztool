@@ -1,6 +1,6 @@
 # English BOM export modes (future localization)
 # This is the reference file for the English version.
-# To activate: replace names in ZTool.settings with these English equivalents.
+# To activate: replace names in SWTools.settings with these English equivalents.
 
 modes:
   - id: summary
@@ -96,16 +96,16 @@ filter_rules:
         operator: "equals"
         value: ""
 
-# Operator mapping: abstract code (above) -> the localized string ZTool.exe
+# Operator mapping: abstract code (above) -> the localized string SWTools.exe
 # expects in the serialized rule (field array[1]). For an EN build the
-# operator strings must be the EN-localized forms ZTool.exe ships with
+# operator strings must be the EN-localized forms SWTools.exe ships with
 # (verify against the binary's localized resources before use), e.g.:
 #   contains      -> "Contains"            not_contains   -> "Does not contain"
 #   equals        -> "Equal"               not_equals     -> "Not equal"
 #   starts_with   -> "Starts with"         not_starts     -> "Does not start with"
 #   ends_with     -> "Ends with"           not_ends       -> "Does not end with"
 #
-# Serialization in ZTool.settings (exactly three fields, separator = TAB + |@#$%|):
+# Serialization in SWTools.settings (exactly three fields, separator = TAB + |@#$%|):
 #   $Type$<TAB>|@#$%|Contains<TAB>|@#$%|Machining;Sheet Metal
 # Using spaces instead of the TAB separator makes the rule silently ignored
 # (the BOM exports unfiltered). Run check_bom_template.py to validate format.

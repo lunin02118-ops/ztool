@@ -2,7 +2,7 @@
 Tests for license blob generation.
 
 The key test is ``emulate_isreg1`` — a faithful Python re-implementation of the
-client's SR.IsReg1 (decompiled from the de-obfuscated ZTool binary). It mirrors
+client's SR.IsReg1 (decompiled from the de-obfuscated SWTools binary). It mirrors
 the exact Right/Left/Substring recovery, the AES/RSA layering, the "\\n"/"\\t"
 splits and every comparison IsReg1 makes. We assert that a server-generated
 blob passes this validator and yields the expected machine code / reg-time.
@@ -14,11 +14,11 @@ still requires a hardware test bench and is documented as pending.
 
 import pytest
 
-from ztool_license_server.crypto.keygen import generate_keypair
-from ztool_license_server.crypto.rsa_ztool import decrypt_string
-from ztool_license_server.crypto import aes_security_center as aes
-from ztool_license_server.crypto import des_offline
-from ztool_license_server.license_blob import (
+from swtools_license_server.crypto.keygen import generate_keypair
+from swtools_license_server.crypto.rsa_swtools import decrypt_string
+from swtools_license_server.crypto import aes_security_center as aes
+from swtools_license_server.crypto import des_offline
+from swtools_license_server.license_blob import (
     build_registry_branches,
     build_transport_payload,
     generate_license_blob,
@@ -219,8 +219,8 @@ def _make_pp(first_len: int) -> str:
 # Register-confirm (result 12) — IsReg2 validation.
 # ---------------------------------------------------------------------------
 
-from ztool_license_server.crypto.rsa_ztool import encrypt_string
-from ztool_license_server.license_blob import (
+from swtools_license_server.crypto.rsa_swtools import encrypt_string
+from swtools_license_server.license_blob import (
     build_confirm_transport,
     parse_apply_branches,
 )

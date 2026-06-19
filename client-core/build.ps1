@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-  Build the editable licensing core from C# source and reinject it into ZTool.exe.
+  Build the editable licensing core from C# source and reinject it into SWTools.exe.
 
 .DESCRIPTION
   Pipeline:
-    1. (optional) Publicize the base ZTool-base.exe -> ref/ZTool.public.dll  (compile-time reference)
+    1. (optional) Publicize the base SWTools-base.exe -> ref/ZTool.public.dll  (compile-time reference)
     2. Compile src/*.cs                          -> bin/Release/net48/ZTool.Core.dll
-    3. Reinject Core.dll method bodies into a fresh copy of ZTool.exe -> <OutExe>
+    3. Reinject Core.dll method bodies into a fresh copy of SWTools.exe -> <OutExe>
     4. Localize remaining user-visible Chinese strings (forms) -> Russian
     5. Verify the output exe has no dangling references into our build scaffolding
 
@@ -19,10 +19,10 @@
   ./build.ps1 -Publicize
 
 .EXAMPLE
-  ./build.ps1 -BaseExe 'C:\path\ZTool-base.exe' -OutExe 'C:\path\out\ZTool.exe'
+  ./build.ps1 -BaseExe 'C:\path\SWTools-base.exe' -OutExe 'C:\path\out\SWTools.exe'
 #>
 param(
-    [string]$BaseExe = (Join-Path $PSScriptRoot '..\ZTool-base.exe'),
+    [string]$BaseExe = (Join-Path $PSScriptRoot '..\SWTools-base.exe'),
     [string]$OutExe  = (Join-Path $PSScriptRoot 'out\SWTools.exe'),
     [switch]$Publicize,
     [switch]$AllowUnknownInputs
@@ -85,7 +85,7 @@ function Assert-BuildInputs {
         }
     }
 
-    $defaultBase = (Resolve-Path (Join-Path $repoRoot 'ZTool-base.exe')).Path
+    $defaultBase = (Resolve-Path (Join-Path $repoRoot 'SWTools-base.exe')).Path
     $actualBase = (Resolve-Path -LiteralPath $BaseExe).Path
     if (-not $actualBase.Equals($defaultBase, [StringComparison]::OrdinalIgnoreCase) -and -not $AllowUnknownInputs) {
         throw "custom BaseExe requires -AllowUnknownInputs: $BaseExe"
@@ -174,7 +174,7 @@ Invoke-Checked 'core compile'
 $dll = Join-Path $core 'bin\Release\net48\ZTool.Core.dll'
 if (-not (Test-Path $dll)) { throw "core build produced no dll: $dll" }
 
-Write-Host '== [3/5] reinject method bodies into a fresh ZTool.exe ==' -ForegroundColor Cyan
+Write-Host '== [3/5] reinject method bodies into a fresh SWTools.exe ==' -ForegroundColor Cyan
 New-Item -ItemType Directory -Force -Path (Split-Path $OutExe) | Out-Null
 dotnet run -c Release --project (Join-Path $core 'tools\Reinjector') -- `
     $BaseExe $dll $OutExe
@@ -215,4 +215,4 @@ Write-OutputManifest ($verifyOutput -join "`n") $verifyExit
 
 Write-Host ""
 Write-Host "DONE -> $OutExe" -ForegroundColor Green
-Write-Host "Copy it over the ZTool.exe in a full runtime folder (with the other DLLs) to run." -ForegroundColor Green
+Write-Host "Copy it over the SWTools.exe in a full runtime folder (with the other DLLs) to run." -ForegroundColor Green

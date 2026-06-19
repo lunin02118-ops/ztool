@@ -2,7 +2,7 @@
 
 import pytest
 
-from ztool_license_server.db import LicenseDB
+from swtools_license_server.db import LicenseDB
 
 
 def test_transaction_rolls_back_code_and_audit(tmp_path):

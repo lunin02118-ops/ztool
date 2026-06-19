@@ -1,12 +1,12 @@
 """
-Command-line interface for ZTool license server management.
+Command-line interface for SWTools license server management.
 
 Usage:
-    python -m ztool_license_server.cli keygen [--dir keys/]
-    python -m ztool_license_server.cli add-code <CODE> [--limit 1] [--expires 2027-01-01]
-    python -m ztool_license_server.cli list-codes
-    python -m ztool_license_server.cli list-activations
-    python -m ztool_license_server.cli offline-activate <MACHINE_CODE> [--out file.lic]
+    python -m swtools_license_server.cli keygen [--dir keys/]
+    python -m swtools_license_server.cli add-code <CODE> [--limit 1] [--expires 2027-01-01]
+    python -m swtools_license_server.cli list-codes
+    python -m swtools_license_server.cli list-activations
+    python -m swtools_license_server.cli offline-activate <MACHINE_CODE> [--out file.lic]
 """
 
 import argparse
@@ -22,7 +22,7 @@ from .crypto.keygen import (
     save_keypair_files,
     verify_keypair,
 )
-from .crypto.rsa_ztool import decrypt_string, encrypt_string
+from .crypto.rsa_swtools import decrypt_string, encrypt_string
 from .license_blob import generate_offline_activation
 from .machineid import is_valid_machine_code
 from .db import LATEST_SCHEMA_VERSION, LicenseDB
@@ -277,14 +277,14 @@ def cmd_offline_activate(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ZTool License Server CLI")
+    parser = argparse.ArgumentParser(description="SWTools License Server CLI")
     parser.add_argument('--db', default=None, help='Database path')
     sub = parser.add_subparsers(dest='command')
 
     # keygen
     p_keygen = sub.add_parser('keygen', help='Generate RSA key pair')
     p_keygen.add_argument('--dir', default=None,
-                          help='Output directory (overrides ZTOOL_KEYS_DIR / explicit key files)')
+                          help='Output directory (overrides SWTOOLS_KEYS_DIR / explicit key files)')
     p_keygen.add_argument('--keys-dir', default=None,
                           help='Output directory, same as --dir (kept for config symmetry)')
     p_keygen.add_argument('--private-key-file', default=None,

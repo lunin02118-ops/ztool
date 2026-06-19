@@ -3,7 +3,7 @@
 import os
 import tempfile
 import pytest
-from ztool_license_server.db import LicenseDB
+from swtools_license_server.db import LicenseDB
 
 
 @pytest.fixture

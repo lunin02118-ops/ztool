@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Build a ZTool release package with manifest and SHA256SUMS.
+  Build a SWTools release package with manifest and SHA256SUMS.
 
 .DESCRIPTION
   This script packages the live-tested runtime artifacts without private keys,
@@ -10,8 +10,8 @@
 param(
     [string]$Version = "",
     [string]$OutputRoot = "",
-    [string]$ClientExe = (Join-Path $PSScriptRoot '..\ZTool.exe'),
-    [string]$AddinDll = (Join-Path $PSScriptRoot '..\ZTool.dll'),
+    [string]$ClientExe = (Join-Path $PSScriptRoot '..\SWTools.exe'),
+    [string]$AddinDll = (Join-Path $PSScriptRoot '..\SWTools.dll'),
     [string]$SolidWorksToolsDll = "",
     [switch]$AllowMissingSolidWorksTools
 )
@@ -30,7 +30,7 @@ function Get-ReleaseVersion {
 
 if (-not $Version) { $Version = Get-ReleaseVersion }
 if (-not $OutputRoot) { $OutputRoot = Join-Path $repoRoot "releases\$Version\package" }
-$packageName = "ZTool-$Version"
+$packageName = "SWTools-$Version"
 $outputRootPath = [System.IO.Path]::GetFullPath($OutputRoot)
 $packageRoot = Join-Path $outputRootPath $packageName
 $runtimeDir = Join-Path $packageRoot 'runtime'
@@ -79,12 +79,12 @@ if (Test-Path -LiteralPath $packageRoot) { throw "package output already exists:
 New-Item -ItemType Directory -Force -Path $runtimeDir, $serverDir, $docsDir | Out-Null
 
 $copied = @()
-$copied += Copy-RequiredFile $ClientExe $runtimeDir 'ZTool.exe'
-$copied += Copy-RequiredFile $AddinDll $runtimeDir 'ZTool.dll'
-$copied += Copy-RequiredFile (Join-Path $repoRoot 'ZToolARM.dll') $runtimeDir
-$copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool.settings') $runtimeDir
-$copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool Updater.exe') $runtimeDir
-$copied += Copy-RequiredFile (Join-Path $repoRoot 'ZTool.bmp') $runtimeDir
+$copied += Copy-RequiredFile $ClientExe $runtimeDir 'SWTools.exe'
+$copied += Copy-RequiredFile $AddinDll $runtimeDir 'SWTools.dll'
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'SWToolsARM.dll') $runtimeDir
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'SWTools.settings') $runtimeDir
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'SWTools Updater.exe') $runtimeDir
+$copied += Copy-RequiredFile (Join-Path $repoRoot 'SWTools.bmp') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'help_ru.chm') $runtimeDir 'help.CHM'
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'Ribbon.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'ExpandableGridView.dll') $runtimeDir
@@ -102,7 +102,7 @@ Copy-TreeFiltered (Join-Path $repoRoot $specTemplatesDirName) (Join-Path $runtim
 Copy-TreeFiltered (Join-Path $repoRoot 'SolidWorksTemplates') (Join-Path $runtimeDir 'SolidWorksTemplates')
 & (Join-Path $repoRoot 'client-core\tools\set_bom_template_path.ps1') `
     -Folder $runtimeDir `
-    -Settings (Join-Path $runtimeDir 'ZTool.settings')
+    -Settings (Join-Path $runtimeDir 'SWTools.settings')
 Copy-TreeFiltered (Join-Path $repoRoot 'license-server') $serverDir
 Copy-TreeFiltered (Join-Path $repoRoot 'deploy') (Join-Path $packageRoot 'deploy')
 Copy-TreeFiltered (Join-Path $repoRoot 'docs') $docsDir

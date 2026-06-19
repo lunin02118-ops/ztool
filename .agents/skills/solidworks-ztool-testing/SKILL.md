@@ -119,6 +119,44 @@ in `docs/release/FULL_TEST_METHODOLOGY_RU.md` (§2.1 registry pre-flight,
    in evidence, and after `Регистрация выполнена` confirm old PID exit + new PID
    start. Seeing the success modal alone is not a pass.
 
+## Testing standalone ZTool.exe UI patches (no SolidWorks)
+
+Some `Localizer` IL patches change `Frmmain` UI that can be exercised without
+SolidWorks — e.g. the right-click column-header show/hide menu
+(`PatchColumnVisibilityMenu` / `zt_BuildColMenu`). For these:
+
+1. Build the patcher and apply it:
+   ```bash
+   export PATH="/c/Program Files/dotnet:$PATH"; export DOTNET_ROLL_FORWARD=Major
+   cd client-core && dotnet build -c Release tools/Localizer/Localizer.csproj
+   rm -rf out && powershell -ExecutionPolicy Bypass -Command "\$env:DOTNET_ROLL_FORWARD='Major'; ./build.ps1"
+   ```
+   The build prints `VERIFY: PASS` and `dangling typerefs = 0` when the patch is
+   wired in. Copy `client-core/out/ZTool.exe` to a writable run dir (e.g.
+   `C:\Users\Administrator\ztool_test_run\`) so `ZTool.settings` is persisted there.
+
+2. Launch standalone and click **«Проба»** on the "Действующая лицензия не
+   обнаружена" dialog to enter trial mode — the ribbon and DataGridView are live.
+   **Trial mode has a ~3-minute countdown in the title bar (`осталось NN секунд`)
+   and the app auto-closes when it hits 0.** If a window/menu vanishes, check
+   whether the trial just expired before treating it as a feature bug; just
+   relaunch. Work in short bursts.
+
+3. **Verify colour-based UI state with pixel sampling, not the eye.** The light
+   blue highlight (`RGB 204,232,255`) vs plain (`~253,253,253`) is subtle and
+   easy to misread on a screenshot. Sample the saved PNG with PIL, and sample at
+   the **right edge** of menu rows (clear of text glyphs) and with the **mouse
+   moved away** (the ToolStripProfessionalRenderer hover band masks BackColor):
+   ```python
+   from PIL import Image; im=Image.open('shot.png').convert('RGB'); print(im.getpixel((x,y)))
+   ```
+   Note: computer-tool click coords are 1024x768 but saved screenshots are
+   1280x720 — scale by 1.25 (x) / 0.9375 (y) when mapping click coords to pixels.
+
+4. Persistence: toggling calls `SaveColumnInfo()` which writes `<Visible>` into
+   `ZTool.settings` in the working dir; relaunch and re-open the menu to confirm
+   the state survived.
+
 ## Do / don't
 
 - DO take a registry backup before any registry change (the pre-flight does this).

@@ -8,8 +8,8 @@ on:
       - "docs/localization/**"
       - "build_ru_bom_template.py"
       - "BOM表模板/**"
-      - "ZTool-base.exe"
-      - "ZTool.exe"
+      - "SWTools-base.exe"
+      - "SWTools.exe"
       - ".github/workflows/client-core-windows.yml"
   push:
     branches:
@@ -21,8 +21,8 @@ on:
       - "docs/localization/**"
       - "build_ru_bom_template.py"
       - "BOM表模板/**"
-      - "ZTool-base.exe"
-      - "ZTool.exe"
+      - "SWTools-base.exe"
+      - "SWTools.exe"
       - ".github/workflows/client-core-windows.yml"
 
 jobs:
@@ -50,12 +50,12 @@ jobs:
           ./build.ps1
 
       - name: Verify reinjected output
-        run: dotnet run -c Release --project client-core/tools/Reinjector -- --verify client-core/out/ZTool.exe
+        run: dotnet run -c Release --project client-core/tools/Reinjector -- --verify client-core/out/SWTools.exe
 
       - name: Localization scan
         run: |
           python client-core/tools/localization_scan.py `
-            --exe client-core/out/ZTool.exe `
+            --exe client-core/out/SWTools.exe `
             --translations client-core/tools/Localizer/translations.tsv `
             --whitelist-dir localization `
             --report client-core/out/localization-report.json `

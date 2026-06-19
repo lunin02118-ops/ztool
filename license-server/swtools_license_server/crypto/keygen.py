@@ -1,5 +1,5 @@
 """
-RSA-1024 key pair generation in ZTool ComponentKey format.
+RSA-1024 key pair generation in SWTools ComponentKey format.
 
 Generates a new key pair where:
 - Public key: used to embed in the re-built client (ComponentKey format)
@@ -10,7 +10,7 @@ import json
 import os
 from Crypto.PublicKey import RSA
 
-from .rsa_ztool import make_component_key, resolve_key
+from .rsa_swtools import make_component_key, resolve_key
 
 
 def generate_keypair(bits: int = 1024, e: int = 65537) -> dict:
@@ -131,7 +131,7 @@ def load_keypair(directory: str) -> dict:
 
 def verify_keypair(keypair: dict) -> bool:
     """Verify that the key pair works (encrypt with public, decrypt with private)."""
-    from .rsa_ztool import encrypt_string, decrypt_string
+    from .rsa_swtools import encrypt_string, decrypt_string
 
     test_msg = "Hello123"
     encrypted = encrypt_string(test_msg, keypair["public_component_key"], encoding='utf-8')
@@ -146,7 +146,7 @@ def verify_keypair(keypair: dict) -> bool:
 
 
 if __name__ == "__main__":
-    print("Generating RSA-1024 key pair for ZTool license server...")
+    print("Generating RSA-1024 key pair for SWTools license server...")
     kp = generate_keypair()
     print(f"\nPublic ComponentKey:\n{kp['public_component_key']}\n")
     print("Private ComponentKey: written to private_key.txt (not printed)\n")

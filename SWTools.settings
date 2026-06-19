@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SWver>0</SWver>
-  <materialpath>D:\ZTool\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
+  <materialpath>D:\SWTools\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
   <rowcolor>66</rowcolor>
   <colorselrow>false</colorselrow>
   <propname>
@@ -35,7 +35,7 @@
     <string>18</string>
     <string>90</string>
   </Preview_Hotkey>
-  <bompath>D:\ZTool\Шаблоны спецификации</bompath>
+  <bompath>D:\SWTools\Шаблоны спецификации</bompath>
   <image_size>
     <Width>64</Width>
     <Height>64</Height>
@@ -428,7 +428,7 @@ True</string>
   <bomsettings>
     <bomsetting>
       <name>Экспорт сводной спецификации</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -444,7 +444,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт иерархической спецификации</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -460,7 +460,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт спецификации верхнего уровня</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>2</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -476,7 +476,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт сводной спецификации деталей</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>3</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -492,7 +492,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт сводной спецификации (с эскизами)</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>true</insertimagebool>
       <lockratio>true</lockratio>
@@ -508,7 +508,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Экспорт иерархической спецификации (с эскизами)</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>true</insertimagebool>
       <lockratio>true</lockratio>
@@ -524,7 +524,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Обрабатываемые детали</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -542,7 +542,7 @@ True</string>
     </bomsetting>
     <bomsetting>
       <name>Покупные изделия</name>
-      <bomname>D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\SWTools\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>

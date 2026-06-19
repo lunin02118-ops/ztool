@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ztool_license_server.cli import (
+from swtools_license_server.cli import (
     cmd_add_code,
     cmd_backup,
     cmd_delete_revoked_code,
@@ -13,8 +13,8 @@ from ztool_license_server.cli import (
     cmd_list_codes,
     cmd_verify_backup,
 )
-from ztool_license_server.crypto.keygen import generate_keypair, save_keypair
-from ztool_license_server.db import LicenseDB
+from swtools_license_server.crypto.keygen import generate_keypair, save_keypair
+from swtools_license_server.db import LicenseDB
 
 
 def _make_args(db_path, keys_dir=None, **kwargs):
@@ -39,8 +39,8 @@ def _create_keys(path):
 
 
 def test_healthcheck_passes_with_valid_db_and_keys(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("ZTOOL_RUNTIME_ENV", "production")
-    monkeypatch.setenv("ZTOOL_LOG_LEVEL", "INFO")
+    monkeypatch.setenv("SWTOOLS_RUNTIME_ENV", "production")
+    monkeypatch.setenv("SWTOOLS_LOG_LEVEL", "INFO")
     db_path = tmp_path / "licenses.db"
     keys_dir = tmp_path / "keys"
     _create_db(db_path)
@@ -93,7 +93,7 @@ def test_license_code_cli_uses_env_db_path(tmp_path, monkeypatch, capsys):
     wrong_db = tmp_path / "cwd" / "licenses.db"
     wrong_db.parent.mkdir()
     monkeypatch.chdir(wrong_db.parent)
-    monkeypatch.setenv("ZTOOL_DB_PATH", str(env_db))
+    monkeypatch.setenv("SWTOOLS_DB_PATH", str(env_db))
 
     cmd_add_code(SimpleNamespace(
         db=None,
@@ -164,8 +164,8 @@ def test_delete_revoked_code_cli_rejects_active_license(tmp_path, capsys):
 def test_keygen_uses_explicit_env_key_files(tmp_path, monkeypatch, capsys):
     public_key = tmp_path / "conf" / "public_key.txt"
     private_key = tmp_path / "secure" / "private_key.txt"
-    monkeypatch.setenv("ZTOOL_PUBLIC_KEY_FILE", str(public_key))
-    monkeypatch.setenv("ZTOOL_PRIVATE_KEY_FILE", str(private_key))
+    monkeypatch.setenv("SWTOOLS_PUBLIC_KEY_FILE", str(public_key))
+    monkeypatch.setenv("SWTOOLS_PRIVATE_KEY_FILE", str(private_key))
 
     cmd_keygen(SimpleNamespace(
         dir=None,

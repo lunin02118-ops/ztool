@@ -1,4 +1,4 @@
-# ZTool license server alerts
+# SWTools license server alerts
 
 Минимальные production alerts до появления полноценного metrics endpoint.
 
@@ -7,19 +7,19 @@
 - `systemd` service inactive/failed:
 
 ```bash
-systemctl is-active --quiet ztool-license-server
+systemctl is-active --quiet swtools-license-server
 ```
 
 - `healthcheck` не проходит:
 
 ```bash
-/opt/ztool-license-server/.venv/bin/python -m ztool_license_server.cli healthcheck
+/opt/swtools-license-server/.venv/bin/python -m swtools_license_server.cli healthcheck
 ```
 
 - Backup старше 24 часов:
 
 ```bash
-find /var/backups/ztool-license-server -name 'licenses-*.db' -mtime -1 | grep -q .
+find /var/backups/swtools-license-server -name 'licenses-*.db' -mtime -1 | grep -q .
 ```
 
 ## Warning
@@ -32,7 +32,7 @@ find /var/backups/ztool-license-server -name 'licenses-*.db' -mtime -1 | grep -q
 
 ## Первичная реакция
 
-1. Проверить `journalctl -u ztool-license-server -n 200`.
+1. Проверить `journalctl -u swtools-license-server -n 200`.
 2. Проверить DB healthcheck и свободное место на диске.
 3. При всплеске protocol errors включить firewall/fail2ban на источник.
 4. При проблемах confirm/transfer не чистить БД вручную - сначала снять backup.

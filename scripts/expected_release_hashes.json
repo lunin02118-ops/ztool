@@ -1,5 +1,5 @@
 {
-  "_comment": "Single source of truth for the accepted ZTool runtime artifact hashes. Current accepted package: releases/1.1.1/ZTool-1.1.1-Setup.exe, setup sha256 c300eb21caf28e18705e0e2c5a5f384d51f1e77498e9f510ca3562bd8782b410. Both scripts/verify_release_package.ps1 and scripts/sw_test_preflight.ps1 load their default expected hashes from this file. Update here when the accepted build changes.",
+  "_comment": "Single source of truth for the accepted SWTools runtime artifact hashes. Current accepted package: releases/1.1.1/SWTools-1.1.1-Setup.exe, setup sha256 c300eb21caf28e18705e0e2c5a5f384d51f1e77498e9f510ca3562bd8782b410. Both scripts/verify_release_package.ps1 and scripts/sw_test_preflight.ps1 load their default expected hashes from this file. Update here when the accepted build changes.",
   "version": "1.1.1",
   "setup_sha256": "c300eb21caf28e18705e0e2c5a5f384d51f1e77498e9f510ca3562bd8782b410",
   "client_exe_sha256": "c2270792767919c836540bedf420e536afc5dd433eb29f96aac128091db2afa1",

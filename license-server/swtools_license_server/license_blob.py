@@ -1,5 +1,5 @@
 """
-License blob generation — produces the exact payload that the ZTool client's
+License blob generation — produces the exact payload that the SWTools client's
 FrmRg.rg() consumes and that SR.IsReg1 / SR.IsReg2 validate.
 
 This layout was reverse-engineered from the (de-obfuscated) client IL of
@@ -57,7 +57,7 @@ import string
 from datetime import datetime
 from typing import List, Optional, Sequence, Tuple
 
-from .crypto.rsa_ztool import sign_string, decrypt_string
+from .crypto.rsa_swtools import sign_string, decrypt_string
 from .crypto import aes_security_center as aes
 from .crypto import des_offline
 

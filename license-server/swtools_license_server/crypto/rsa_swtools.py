@@ -118,7 +118,7 @@ def sign_string(plaintext: str, private_component_key: str, encoding: str = 'cp9
     return encrypt_string(plaintext, private_component_key, encoding)
 
 
-# Original embedded public key from ZTool (for reference)
+# Original embedded public key from SWTools (for reference)
 ORIGINAL_PUBLIC_KEY = (
     "AwEAAZ5qj1uplH7vvTuWxvXhT/eJcVyJYSl0KehsVQDCTG6IPI+Sb4kOyay4Gq4opHz4NflA6Lvo"
     "mma3wV9WcgzsINJg6hCHuaJ6yONm/zDfZwVPxWWVWJJOxcQcfWkcawp65kGOy31cCH1mL6VDHDgc"

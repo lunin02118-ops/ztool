@@ -1,4 +1,4 @@
-# ZTool license server monitoring
+# SWTools license server monitoring
 
 На этой фазе метрики считаются log/audit-derived: сервер уже пишет audit rows в
 SQLite и безопасные application logs без plaintext payload. До отдельного
@@ -22,14 +22,14 @@ Prometheus endpoint минимальный набор снимается SQL-з�
 
 ## Минимальные counters
 
-- `ztool_activation_apply_total{result}`
-- `ztool_activation_confirm_total{result}`
-- `ztool_transfer_apply_total{result}`
-- `ztool_transfer_confirm_total{result}`
-- `ztool_invalid_frame_total{reason}`
-- `ztool_wrong_password_total`
-- `ztool_invalid_machine_total`
-- `ztool_license_db_errors_total`
+- `swtools_activation_apply_total{result}`
+- `swtools_activation_confirm_total{result}`
+- `swtools_transfer_apply_total{result}`
+- `swtools_transfer_confirm_total{result}`
+- `swtools_invalid_frame_total{reason}`
+- `swtools_wrong_password_total`
+- `swtools_invalid_machine_total`
+- `swtools_license_db_errors_total`
 
 ## SQL examples
 
@@ -51,7 +51,7 @@ WHERE result = 'wrong_password'
 ## Healthcheck
 
 ```bash
-/opt/ztool-license-server/.venv/bin/python -m ztool_license_server.cli healthcheck
+/opt/swtools-license-server/.venv/bin/python -m swtools_license_server.cli healthcheck
 ```
 
 `HEALTHCHECK OK` - зелёный. Любой non-zero exit - аварийный сигнал.

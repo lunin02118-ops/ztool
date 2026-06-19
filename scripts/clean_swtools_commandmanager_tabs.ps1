@@ -1,23 +1,23 @@
 <#
 .SYNOPSIS
-  Remove stale ZTool CommandManager tabs (including anonymous "blank tab" clones)
+  Remove stale SWTools CommandManager tabs (including anonymous "blank tab" clones)
   and Custom API Flyouts from the SolidWorks user profile.
 
 .DESCRIPTION
-  Addresses finding F-14 / refactoring-plan R1.1: SolidWorks persists ZTool
-  CommandManager tabs in the per-user registry. Besides the obvious named ZTool
+  Addresses finding F-14 / refactoring-plan R1.1: SolidWorks persists SWTools
+  CommandManager tabs in the per-user registry. Besides the obvious named SWTools
   tabs, it can keep an *anonymous* clone that has no ModuleName/RefName but still
-  carries the ZTool button set (Tab Props = 0,1,1,-1; buttons include 2,59425 and
-  41658..41675). A cleanup that searches only for "ZTool"/the add-in GUID misses
-  this clone, which then shows up as a second, blank ZTool tab.
+  carries the SWTools button set (Tab Props = 0,1,1,-1; buttons include 2,59425 and
+  41658..41675). A cleanup that searches only for "SWTools"/the add-in GUID misses
+  this clone, which then shows up as a second, blank SWTools tab.
 
   This script is meant to be called by the installer/uninstaller (and is also a
   standalone pre-flight helper). It:
     1. Enumerates the targeted SolidWorks version(s) under HKCU.
     2. Backs up the affected registry branches (reg export) before any change.
-    3. Finds named ZTool tabs AND anonymous ZTool clones under
+    3. Finds named SWTools tabs AND anonymous SWTools clones under
        CommandManager\{AssyContext,PartContext,DrwContext}\Tab*.
-    4. Finds Custom API Flyouts referencing ZTool / the add-in GUID.
+    4. Finds Custom API Flyouts referencing SWTools / the add-in GUID.
     5. With -IncludeAddInsStartup, zeroes the AddInsStartup parent value + subkey
        (uninstall hygiene; stops auto-loading the old add-in).
 
@@ -29,7 +29,7 @@
   "SOLIDWORKS <year>" profile found under HKCU\SOFTWARE\SolidWorks is processed.
 
 .PARAMETER AddinGuid
-  ZTool add-in COM GUID. Default {59959DFA-3229-4B86-852E-52ABF2BDB8C0}.
+  SWTools add-in COM GUID. Default {59959DFA-3229-4B86-852E-52ABF2BDB8C0}.
 
 .PARAMETER Apply
   Actually delete matching keys / write AddInsStartup zeros. Without it the
@@ -45,15 +45,15 @@
 
 .EXAMPLE
   # Dry run (default) against all detected SolidWorks profiles:
-  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_ztool_commandmanager_tabs.ps1
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_swtools_commandmanager_tabs.ps1
 
 .EXAMPLE
   # Real cleanup for the live-test pre-flight (one version):
-  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_ztool_commandmanager_tabs.ps1 -SwVersion "SOLIDWORKS 2025" -Apply
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_swtools_commandmanager_tabs.ps1 -SwVersion "SOLIDWORKS 2025" -Apply
 
 .EXAMPLE
   # Full uninstall hygiene (tabs + flyouts + AddInsStartup zeros):
-  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_ztool_commandmanager_tabs.ps1 -Apply -IncludeAddInsStartup
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\clean_swtools_commandmanager_tabs.ps1 -Apply -IncludeAddInsStartup
 #>
 param(
     [string]$SwVersion,
@@ -95,7 +95,7 @@ function Invoke-Reg([string[]]$RegArgs) {
 
 $guidCore = $AddinGuid.Trim('{', '}')
 # -match is case-insensitive by default; this catches the GUID or the literal name.
-$guidRe = "$([regex]::Escape($guidCore))|ZTool"
+$guidRe = "$([regex]::Escape($guidCore))|SWTools"
 
 # --- 1. Resolve targeted SolidWorks version(s) -----------------------------
 $swRoot = 'HKCU:\SOFTWARE\SolidWorks'
@@ -177,10 +177,10 @@ foreach ($ver in $versions) {
                 $buttons = Get-RegButtons $children
                 $buttonText = $buttons -join ';'
 
-                $isNamedZTool = ($text -match $guidRe) -or
+                $isNamedSWTools = ($text -match $guidRe) -or
                     ($props.ModuleName -eq $AddinGuid) -or
-                    ($props.RefName -eq 'ZTool') -or
-                    ($props.'Tab Props' -like 'ZTool,*')
+                    ($props.RefName -eq 'SWTools') -or
+                    ($props.'Tab Props' -like 'SWTools,*')
 
                 $isAnonymousClone = (-not $props.ModuleName) -and
                     (-not $props.RefName) -and
@@ -189,9 +189,9 @@ foreach ($ver in $versions) {
                     ($buttonText -match '41658') -and
                     ($buttonText -match '41675')
 
-                if ($isNamedZTool -or $isAnonymousClone) {
+                if ($isNamedSWTools -or $isAnonymousClone) {
                     $regPath = ($tabPath -replace '^Microsoft\.PowerShell\.Core\\Registry::', '')
-                    $kind = if ($isNamedZTool) { 'named-ztool' } else { 'anonymous-clone' }
+                    $kind = if ($isNamedSWTools) { 'named-swtools' } else { 'anonymous-clone' }
                     $script:Found += [ordered]@{ type = 'commandmanager-tab'; kind = $kind; version = $ver; context = $ctx; key = $regPath }
                     Step "match ($kind): $regPath"
                     if ($Apply) {
@@ -214,8 +214,8 @@ foreach ($ver in $versions) {
                         ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue | Out-String }) -join "`n"
                 if ((($self, $childText) -join "`n") -match $guidRe) {
                     $regPath = ($foPath -replace '^Microsoft\.PowerShell\.Core\\Registry::', '')
-                    $script:Found += [ordered]@{ type = 'custom-api-flyout'; kind = 'ztool-flyout'; version = $ver; context = 'Custom API Flyouts'; key = $regPath }
-                    Step "match (ztool-flyout): $regPath"
+                    $script:Found += [ordered]@{ type = 'custom-api-flyout'; kind = 'swtools-flyout'; version = $ver; context = 'Custom API Flyouts'; key = $regPath }
+                    Step "match (swtools-flyout): $regPath"
                     if ($Apply) {
                         Remove-Item -LiteralPath $foPath -Recurse -Force
                         $script:Removed += $regPath
@@ -272,9 +272,9 @@ $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $reportPath -Encodi
 Step "report written: $reportPath"
 
 if (-not $Apply -and $Found.Count -gt 0) {
-    Write-Host "DRY RUN: $($Found.Count) ZTool CommandManager/flyout/startup match(es). Re-run with -Apply to remove." -ForegroundColor Yellow
+    Write-Host "DRY RUN: $($Found.Count) SWTools CommandManager/flyout/startup match(es). Re-run with -Apply to remove." -ForegroundColor Yellow
 } elseif ($Found.Count -eq 0) {
-    Write-Host 'CommandManager cleanup: CLEAN (no ZTool tabs/flyouts found).' -ForegroundColor Green
+    Write-Host 'CommandManager cleanup: CLEAN (no SWTools tabs/flyouts found).' -ForegroundColor Green
 } else {
     Write-Host "CommandManager cleanup: removed $($Removed.Count) item(s)." -ForegroundColor Green
 }

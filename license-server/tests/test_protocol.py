@@ -1,12 +1,12 @@
 """Tests for the TCP protocol framing."""
 
 import pytest
-from ztool_license_server.protocol.framing import (
+from swtools_license_server.protocol.framing import (
     encode_int_field, decode_int_field, build_frame,
     build_response_frame, FrameParser, FrameTooLarge, HEADER_FIELD_SIZE,
     InvalidFrame,
 )
-from ztool_license_server.protocol.dispatcher import Sendtype
+from swtools_license_server.protocol.dispatcher import Sendtype
 
 
 class TestIntEncoding:

@@ -4,16 +4,16 @@ import asyncio
 
 import pytest
 
-from ztool_license_server.config import ServerConfig
-from ztool_license_server.crypto.keygen import generate_keypair, save_keypair
-from ztool_license_server.protocol.dispatcher import Result
-from ztool_license_server.protocol.framing import (
+from swtools_license_server.config import ServerConfig
+from swtools_license_server.crypto.keygen import generate_keypair, save_keypair
+from swtools_license_server.protocol.dispatcher import Result
+from swtools_license_server.protocol.framing import (
     HEADER_FIELD_SIZE,
     FrameParser,
     build_frame,
     encode_int_field,
 )
-from ztool_license_server.server import LicenseServer
+from swtools_license_server.server import LicenseServer
 
 
 async def _start_server(tmp_path, **config_overrides):

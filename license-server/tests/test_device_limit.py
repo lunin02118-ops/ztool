@@ -1,6 +1,6 @@
 """Device-limit policy tests."""
 
-from ztool_license_server.db import LicenseDB
+from swtools_license_server.db import LicenseDB
 
 
 def test_device_limit_two_allows_two_distinct_machines(tmp_path):

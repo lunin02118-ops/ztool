@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CConfigDO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SWver>0</SWver>
-  <materialpath>D:\ztool-pr8-test\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
+  <materialpath>D:\swtools-pr8-test\SolidWorksTemplates\MyMaterials.sldmat</materialpath>
   <rowcolor>73</rowcolor>
   <colorselrow>false</colorselrow>
   <propname>
@@ -650,7 +650,7 @@ False</string>
   <bomsettings>
     <bomsetting>
       <name>汇总BOM</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -666,7 +666,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>汇总BOM（带缩略图）</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>true</insertimagebool>
       <lockratio>true</lockratio>
@@ -682,7 +682,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>缩进BOM</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -698,7 +698,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>缩进BOM（带缩略图）</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>1</type>
       <insertimagebool>true</insertimagebool>
       <lockratio>true</lockratio>
@@ -714,7 +714,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>加工件</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -732,7 +732,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>外购件</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>0</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -750,7 +750,7 @@ False</string>
     </bomsetting>
     <bomsetting>
       <name>顶层BOM</name>
-      <bomname>D:\ztool-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
+      <bomname>D:\swtools-pr8-test\Шаблоны спецификации\bom_шаблон.xlsx</bomname>
       <type>2</type>
       <insertimagebool>false</insertimagebool>
       <lockratio>true</lockratio>
@@ -776,7 +776,7 @@ False</string>
 0</string>
   </K3code>
   <macrolist>
-    <string>D:\ZTool\LegacyMacros\save-isometric-view.swp</string>
+    <string>D:\SWTools\LegacyMacros\save-isometric-view.swp</string>
   </macrolist>
   <checkupdata>true</checkupdata>
   <IsCollpased>false</IsCollpased>

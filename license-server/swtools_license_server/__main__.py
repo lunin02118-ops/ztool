@@ -1,4 +1,4 @@
-"""Entry point for `python -m ztool_license_server`."""
+"""Entry point for `python -m swtools_license_server`."""
 
 import asyncio
 from .server import main

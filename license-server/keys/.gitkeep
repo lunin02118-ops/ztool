@@ -1,4 +1,4 @@
 # This directory holds RSA keys.
-# Run `python -m ztool_license_server.cli keygen --dir keys/` to generate.
+# Run `python -m swtools_license_server.cli keygen --dir keys/` to generate.
 # NEVER commit private_key.txt or keypair_info.json!
 # Only public_key.txt is safe to distribute.

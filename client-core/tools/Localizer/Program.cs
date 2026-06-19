@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using dnlib.W32Resources;
+using dnlib.IO;
 
 // ZTool.exe localizer: surgically replaces user-visible Chinese ldstr operands
 // with Russian via an explicit whitelist map. Protocol keys / log strings are
@@ -1372,6 +1374,153 @@ internal static class Program
         return edits;
     }
 
+    // ---- Win32 VS_VERSIONINFO brand rewrite (ProductName/CompanyName/Internal/Original ----
+    // The managed ModuleWriter copies the vendor's Win32 RT_VERSION resource verbatim, so its
+    // StringFileInfo still reports "ZTool" in Explorer -> Properties -> Details. Because the
+    // brand strings change length ("ZTool" -> "SWTools"), we cannot byte-patch in place; we
+    // parse the VS_VERSIONINFO tree, rewrite the target String values, and re-serialize with
+    // correct wLength/wValueLength. This runs on mod.Win32Resources BEFORE mod.Write so dnlib
+    // re-lays-out the .rsrc section. Only the genuine RT_VERSION blob is touched (embedded
+    // component version strings live in managed resources, not here).
+    private sealed class VNode
+    {
+        public ushort Type;
+        public string Key = "";
+        public byte[] Value = Array.Empty<byte>();
+        public ushort ValueLen;
+        public List<VNode> Children = new List<VNode>();
+    }
+
+    private static readonly HashSet<string> _verBrandKeys = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "ProductName", "CompanyName", "InternalName", "OriginalFilename"
+    };
+
+    private static int Align4(int x) => (x + 3) & ~3;
+
+    private static VNode ParseVNode(byte[] b, int pos, out int end)
+    {
+        ushort wLength = BitConverter.ToUInt16(b, pos);
+        ushort wValueLength = BitConverter.ToUInt16(b, pos + 2);
+        ushort wType = BitConverter.ToUInt16(b, pos + 4);
+        int p = pos + 6;
+        int ks = p;
+        while (BitConverter.ToUInt16(b, p) != 0) p += 2;
+        string key = Encoding.Unicode.GetString(b, ks, p - ks);
+        p += 2;
+        p = Align4(p);
+        int valBytes = (wType == 1) ? wValueLength * 2 : wValueLength;
+        byte[] val = new byte[valBytes];
+        Array.Copy(b, p, val, 0, valBytes);
+        p += valBytes;
+        var node = new VNode { Type = wType, Key = key, Value = val, ValueLen = wValueLength };
+        int nodeEnd = pos + wLength;
+        p = Align4(p);
+        while (p < nodeEnd)
+        {
+            var child = ParseVNode(b, p, out int cEnd);
+            node.Children.Add(child);
+            p = Align4(cEnd);
+        }
+        end = nodeEnd;
+        return node;
+    }
+
+    private static byte[] SerializeVNode(VNode n)
+    {
+        var ms = new System.IO.MemoryStream();
+        void w16(ushort v) { ms.WriteByte((byte)(v & 0xff)); ms.WriteByte((byte)((v >> 8) & 0xff)); }
+        void pad() { while ((ms.Length & 3) != 0) ms.WriteByte(0); }
+        w16(0); // wLength placeholder
+        w16(n.ValueLen);
+        w16(n.Type);
+        byte[] kb = Encoding.Unicode.GetBytes(n.Key);
+        ms.Write(kb, 0, kb.Length);
+        w16(0); // key terminator
+        pad();
+        if (n.Value != null && n.Value.Length > 0) ms.Write(n.Value, 0, n.Value.Length);
+        long leafLen = ms.Length;
+        long wLength;
+        if (n.Children.Count > 0)
+        {
+            pad();
+            for (int i = 0; i < n.Children.Count; i++)
+            {
+                byte[] cb = SerializeVNode(n.Children[i]);
+                ms.Write(cb, 0, cb.Length);
+                if (i < n.Children.Count - 1) pad();
+            }
+            wLength = ms.Length;
+        }
+        else wLength = leafLen;
+        byte[] arr = ms.ToArray();
+        arr[0] = (byte)(wLength & 0xff);
+        arr[1] = (byte)((wLength >> 8) & 0xff);
+        return arr;
+    }
+
+    private static int RebrandVTree(VNode n)
+    {
+        int c = 0;
+        if (n.Type == 1 && n.Children.Count == 0 &&
+            (_verBrandKeys.Contains(n.Key) || n.Key == "FileDescription"))
+        {
+            string val = Encoding.Unicode.GetString(n.Value);
+            int z = val.IndexOf('\0');
+            if (z >= 0) val = val.Substring(0, z);
+            string nv = (n.Key == "FileDescription")
+                ? "SWTools — надстройка SolidWorks"
+                : val.Replace("ZTool", "SWTools");
+            if (nv != val)
+            {
+                n.Value = Encoding.Unicode.GetBytes(nv + "\0");
+                n.ValueLen = (ushort)(nv.Length + 1);
+                c++;
+            }
+        }
+        foreach (var ch in n.Children) c += RebrandVTree(ch);
+        return c;
+    }
+
+    private static byte[] RebuildVersionBlob(byte[] b, out int count)
+    {
+        count = 0;
+        try
+        {
+            var root = ParseVNode(b, 0, out _);
+            count = RebrandVTree(root);
+            return count == 0 ? b : SerializeVNode(root);
+        }
+        catch { count = 0; return b; }
+    }
+
+    private static int RebrandWin32VersionStrings(ModuleDefMD mod)
+    {
+        var res = mod.Win32Resources;
+        if (res == null || res.Root == null) return 0;
+        int total = 0;
+        foreach (var typeDir in res.Root.Directories)
+        {
+            if (!typeDir.Name.HasId || typeDir.Name.Id != 16) continue; // RT_VERSION
+            foreach (var nameDir in typeDir.Directories)
+            {
+                for (int i = 0; i < nameDir.Data.Count; i++)
+                {
+                    var data = nameDir.Data[i];
+                    byte[] blob = data.CreateReader().ToArray();
+                    byte[] nb = RebuildVersionBlob(blob, out int cnt);
+                    if (cnt > 0)
+                    {
+                        var factory = ByteArrayDataReaderFactory.Create(nb, null);
+                        nameDir.Data[i] = new ResourceData(data.Name, factory, 0, (uint)nb.Length);
+                        total += cnt;
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
     private static int Main(string[] args)
     {
         try { Console.OutputEncoding = new UTF8Encoding(false); } catch { /* redirected console may reject */ }
@@ -1623,6 +1772,7 @@ internal static class Program
             // and the add-in launcher then opens no window). This mirrors the working vendor base.exe
             // (StrongNameSigned set + public key f08fc7047657204e).
             int snStripped = StripStrongName(mod);
+            int win32Brand = RebrandWin32VersionStrings(mod);
             var wopts = new dnlib.DotNet.Writer.ModuleWriterOptions(mod);
             var curFlags = mod.Metadata.ImageCor20Header.Flags;
             wopts.Cor20HeaderOptions.Flags = curFlags | dnlib.DotNet.MD.ComImageFlags.StrongNameSigned;
@@ -1631,7 +1781,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");

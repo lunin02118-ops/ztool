@@ -1,5 +1,5 @@
 services:
-  ztool-license-server:
+  swtools-license-server:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile
@@ -8,6 +8,6 @@ services:
     ports:
       - "58000:58000"
     volumes:
-      - ./data:/var/lib/ztool-license-server
-      - ./keys:/etc/ztool-license-server:ro
+      - ./data:/var/lib/swtools-license-server
+      - ./keys:/etc/swtools-license-server:ro
     restart: unless-stopped

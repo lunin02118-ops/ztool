@@ -30,7 +30,7 @@ SENSITIVE_SUFFIXES = {
 }
 EXEMPT_BASENAMES = {
     ".env.example",
-    "ztool-license-server.env.example",
+    "swtools-license-server.env.example",
 }
 BINARY_SUFFIXES = {
     ".bmp",

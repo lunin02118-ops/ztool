@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Verify a ZTool release package before manual acceptance testing.
+  Verify a SWTools release package before manual acceptance testing.
 
 .DESCRIPTION
   Checks manifest/SHA256SUMS consistency, expected runtime artifact hashes and
@@ -171,13 +171,13 @@ foreach ($entry in $manifestFiles) {
     }
 }
 
-$clientExe = Join-Path $runtimeDir 'ZTool.exe'
-$addinDll = Join-Path $runtimeDir 'ZTool.dll'
+$clientExe = Join-Path $runtimeDir 'SWTools.exe'
+$addinDll = Join-Path $runtimeDir 'SWTools.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
 $ribbonDll = Join-Path $runtimeDir 'Ribbon.dll'
 $expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
 $ztoolRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
-$settingsPath = Join-Path $runtimeDir 'ZTool.settings'
+$settingsPath = Join-Path $runtimeDir 'SWTools.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
 
 function Test-HasCjk {
@@ -212,10 +212,10 @@ Assert-File $materialLibrary
 $settingsMaterialPath = Get-XmlText $settingsXml 'materialpath'
 $useMaterialColor = Get-XmlText $settingsXml 'usematerialcolor'
 if ([string]::IsNullOrWhiteSpace($settingsMaterialPath)) {
-    Fail 'runtime/ZTool.settings materialpath is empty'
+    Fail 'runtime/SWTools.settings materialpath is empty'
 }
 if ($useMaterialColor -ne 'true') {
-    Fail "runtime/ZTool.settings usematerialcolor must be true, got '$useMaterialColor'"
+    Fail "runtime/SWTools.settings usematerialcolor must be true, got '$useMaterialColor'"
 }
 $resolvedMaterialPath = if ([System.IO.Path]::IsPathRooted($settingsMaterialPath)) {
     $settingsMaterialPath
@@ -224,7 +224,7 @@ $resolvedMaterialPath = if ([System.IO.Path]::IsPathRooted($settingsMaterialPath
 }
 Assert-File $resolvedMaterialPath
 if ((Resolve-Path -LiteralPath $resolvedMaterialPath).Path -ne (Resolve-Path -LiteralPath $materialLibrary).Path) {
-    Fail "runtime/ZTool.settings materialpath must point to runtime/SolidWorksTemplates/MyMaterials.sldmat, got $settingsMaterialPath"
+    Fail "runtime/SWTools.settings materialpath must point to runtime/SolidWorksTemplates/MyMaterials.sldmat, got $settingsMaterialPath"
 }
 
 if ($RequireSolidWorksTools) {
@@ -244,8 +244,8 @@ $summary = [ordered]@{
     material_library = $settingsMaterialPath
     sha256sums_entries = $verifiedSums
     manifest_files = @($manifestFiles).Count
-    runtime_ztool_exe = Get-Sha256 $clientExe
-    runtime_ztool_dll = Get-Sha256 $addinDll
+    runtime_swtools_exe = Get-Sha256 $clientExe
+    runtime_swtools_dll = Get-Sha256 $addinDll
     runtime_ribbon_dll = Get-Sha256 $ribbonDll
     runtime_expandable_grid_dll = Get-Sha256 $expandableGridViewDll
     runtime_ztool_rsa_dll = Get-Sha256 $ztoolRsaDll

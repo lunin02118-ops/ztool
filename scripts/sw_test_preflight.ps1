@@ -1,27 +1,27 @@
 <#
 .SYNOPSIS
-  Prepare a clean, reproducible environment for a live SolidWorks/ZTool test run.
+  Prepare a clean, reproducible environment for a live SolidWorks/SWTools test run.
 
 .DESCRIPTION
   Automates the manual pre-flight that the executor previously had to run by hand
   (see docs/release/FULL_TEST_METHODOLOGY_RU.md sections 2.1 / 2.2). It addresses
-  the three failure modes that break ZTool testing from an automation/agent shell:
+  the three failure modes that break SWTools testing from an automation/agent shell:
 
-    1. Broken launch environment. When SolidWorks/ZTool are started from a shell
+    1. Broken launch environment. When SolidWorks/SWTools are started from a shell
        whose WINDIR/SystemRoot are empty, SolidWorks throws a false
        "Failed to load Microsoft .NET Framework" error or hangs on the splash,
        even though launching via the desktop shortcut works. This script
        normalizes WINDIR/SystemRoot/ComSpec and verifies RegAsm is reachable.
 
     2. Dirty registry / wrong DLL. Stale RegAsm CodeBase, SolidWorks AddIn keys
-       or HKCU\SOFTWARE\ZTool from a previous test can make SolidWorks load a
-       different ZTool.dll/ZTool.exe than the one under test. This script backs
-       up the affected registry branches, reports stale ZTool references,
-       (optionally) re-registers the current runtime ZTool.dll via RegAsm
+       or HKCU\SOFTWARE\SWTools from a previous test can make SolidWorks load a
+       different SWTools.dll/SWTools.exe than the one under test. This script backs
+       up the affected registry branches, reports stale SWTools references,
+       (optionally) re-registers the current runtime SWTools.dll via RegAsm
        /codebase, and verifies the live CodeBase points at the runtime folder.
 
     3. Wrong artifact under test. Optionally verifies the SHA256 of the runtime
-       ZTool.exe / ZTool.dll against the accepted hashes so a run cannot silently
+       SWTools.exe / SWTools.dll against the accepted hashes so a run cannot silently
        use the wrong binary.
 
   The script is idempotent and read-mostly: it only writes to the registry when
@@ -30,7 +30,7 @@
   object-based UI automation remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
 
 .PARAMETER RuntimeDir
-  Folder that contains the ZTool.exe / ZTool.dll under test (e.g. the release
+  Folder that contains the SWTools.exe / SWTools.dll under test (e.g. the release
   package 'runtime' folder, or client-core\dist).
 
 .PARAMETER ReportDir
@@ -38,19 +38,19 @@
   Defaults to manual-test-reports\preflight-<timestamp>.
 
 .PARAMETER Register
-  Re-register RuntimeDir\ZTool.dll via RegAsm /codebase (writes registry).
+  Re-register RuntimeDir\SWTools.dll via RegAsm /codebase (writes registry).
 
 .PARAMETER CleanLicenseState
-  Also delete ZTool license-state keys. Only needed for clean-license scenarios;
+  Also delete SWTools license-state keys. Only needed for clean-license scenarios;
   do NOT use for ordinary BOM/color/export runs. Writes registry.
 
 .PARAMETER ExpectedExeSha256
-  Optional expected SHA256 of RuntimeDir\ZTool.exe. Default is loaded from
+  Optional expected SHA256 of RuntimeDir\SWTools.exe. Default is loaded from
   scripts/expected_release_hashes.json (single source of truth, shared with
   verify_release_package.ps1).
 
 .PARAMETER ExpectedDllSha256
-  Optional expected SHA256 of RuntimeDir\ZTool.dll (default = accepted hash).
+  Optional expected SHA256 of RuntimeDir\SWTools.dll (default = accepted hash).
 
 .EXAMPLE
   # Inspect-only pre-flight (no registry writes), verify hashes:
@@ -169,28 +169,28 @@ Step "RegAsm available: $regAsm"
 
 # --- 2. Resolve and verify the artifacts under test ------------------------
 $runtime = (Resolve-Path -LiteralPath $RuntimeDir).Path
-$exePath = Join-Path $runtime 'ZTool.exe'
-$dllPath = Join-Path $runtime 'ZTool.dll'
-if (-not (Test-Path -LiteralPath $exePath)) { Fail "ZTool.exe not found in $runtime" }
-if (-not (Test-Path -LiteralPath $dllPath)) { Fail "ZTool.dll not found in $runtime" }
+$exePath = Join-Path $runtime 'SWTools.exe'
+$dllPath = Join-Path $runtime 'SWTools.dll'
+if (-not (Test-Path -LiteralPath $exePath)) { Fail "SWTools.exe not found in $runtime" }
+if (-not (Test-Path -LiteralPath $dllPath)) { Fail "SWTools.dll not found in $runtime" }
 $runtimeNeedles = Get-RegistryPathNeedles $runtime
 $dllPathNeedles = Get-RegistryPathNeedles $dllPath
 
 $exeHash = Get-Sha256 $exePath
 $dllHash = Get-Sha256 $dllPath
-Step "runtime ZTool.exe sha256 = $exeHash"
-Step "runtime ZTool.dll sha256 = $dllHash"
+Step "runtime SWTools.exe sha256 = $exeHash"
+Step "runtime SWTools.dll sha256 = $dllHash"
 
 if ($ExpectedExeSha256 -and $exeHash -ne $ExpectedExeSha256.ToLowerInvariant()) {
-    Warn "ZTool.exe hash does not match expected ($ExpectedExeSha256). Confirm this is the intended build before trusting parity results."
+    Warn "SWTools.exe hash does not match expected ($ExpectedExeSha256). Confirm this is the intended build before trusting parity results."
 }
 if ($ExpectedDllSha256 -and $dllHash -ne $ExpectedDllSha256.ToLowerInvariant()) {
-    Warn "ZTool.dll hash does not match expected ($ExpectedDllSha256). Confirm this is the intended build before trusting parity results."
+    Warn "SWTools.dll hash does not match expected ($ExpectedDllSha256). Confirm this is the intended build before trusting parity results."
 }
 
-# --- 3. Stop any running SolidWorks / ZTool --------------------------------
-Step "stopping SLDWORKS/ZTool processes (if any)"
-Get-Process SLDWORKS, ZTool -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+# --- 3. Stop any running SolidWorks / SWTools --------------------------------
+Step "stopping SLDWORKS/SWTools processes (if any)"
+Get-Process SLDWORKS, SWTools -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
 # --- 4. Backup affected registry branches ----------------------------------
 if (-not $ReportDir) {
@@ -202,10 +202,10 @@ $ReportDir = (Resolve-Path -LiteralPath $ReportDir).Path
 Step "registry backup -> $ReportDir"
 
 $backupTargets = @(
-    @{ Key = 'HKCU\SOFTWARE\ZTool'; File = 'HKCU_ZTool.reg' },
+    @{ Key = 'HKCU\SOFTWARE\SWTools'; File = 'HKCU_SWTools.reg' },
     @{ Key = 'HKLM\SOFTWARE\SolidWorks'; File = 'HKLM_SolidWorks.reg' },
     @{ Key = 'HKCU\SOFTWARE\SolidWorks'; File = 'HKCU_SolidWorks.reg' },
-    @{ Key = 'HKLM\SOFTWARE\Classes\ZTool.SwAddin'; File = 'HKLM_Classes_ZTool.SwAddin.reg' },
+    @{ Key = 'HKLM\SOFTWARE\Classes\SWTools.SwAddin'; File = 'HKLM_Classes_SWTools.SwAddin.reg' },
     # license-state keys that -CleanLicenseState (step 7) deletes; backed up here
     # so deletion is always preceded by a backup
     @{ Key = 'HKLM\SOFTWARE\SolURxxCfNU'; File = 'HKLM_SolURxxCfNU.reg' },
@@ -217,9 +217,9 @@ foreach ($t in $backupTargets) {
     # absent keys simply produce no file; that is fine for a backup
 }
 
-# --- 5. Detect stale ZTool references --------------------------------------
-Step "scanning registry for stale ZTool CodeBase / AddIn references"
-$classesHits = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool', '/s', '/reg:64')
+# --- 5. Detect stale SWTools references --------------------------------------
+Step "scanning registry for stale SWTools CodeBase / AddIn references"
+$classesHits = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'SWTools', '/s', '/reg:64')
 $codeBaseLines = $classesHits | Where-Object { $_ -match 'CodeBase' }
 foreach ($line in $codeBaseLines) {
     if (-not (Test-RegistryLineReferencesPath $line $runtimeNeedles)) {
@@ -245,7 +245,7 @@ if ($Register) {
     }
 
     Step "verifying CodeBase now points at the runtime DLL"
-    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool.dll', '/s', '/reg:64')
+    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'SWTools.dll', '/s', '/reg:64')
     $verifyCodeBaseLines = @($verify | Where-Object { $_ -match 'CodeBase' })
     if (-not ($verifyCodeBaseLines | Where-Object { Test-RegistryLineReferencesPath $_ $dllPathNeedles })) {
         Fail "after RegAsm, no HKLM\SOFTWARE\Classes CodeBase references $dllPath; SolidWorks may still load a stale DLL"
@@ -261,8 +261,8 @@ else {
 
 # --- 7. Optionally clean license state -------------------------------------
 if ($CleanLicenseState) {
-    Warn "CleanLicenseState requested: deleting ZTool license-state keys (clean-license scenario only)"
-    foreach ($k in @('HKCU\SOFTWARE\ZTool', 'HKLM\SOFTWARE\SolURxxCfNU', 'HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ')) {
+    Warn "CleanLicenseState requested: deleting SWTools license-state keys (clean-license scenario only)"
+    foreach ($k in @('HKCU\SOFTWARE\SWTools', 'HKLM\SOFTWARE\SolURxxCfNU', 'HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ')) {
         Invoke-Reg @('delete', $k, '/f') | Out-Null
     }
 }
@@ -273,8 +273,8 @@ $report = [ordered]@{
     timestamp           = (Get-Date).ToString('o')
     status              = $status
     runtimeDir          = $runtime
-    ztoolExe            = @{ path = $exePath; sha256 = $exeHash; expected = $ExpectedExeSha256.ToLowerInvariant() }
-    ztoolDll            = @{ path = $dllPath; sha256 = $dllHash; expected = $ExpectedDllSha256.ToLowerInvariant() }
+    swtoolsExe            = @{ path = $exePath; sha256 = $exeHash; expected = $ExpectedExeSha256.ToLowerInvariant() }
+    swtoolsDll            = @{ path = $dllPath; sha256 = $dllHash; expected = $ExpectedDllSha256.ToLowerInvariant() }
     registered          = [bool]$Register
     licenseStateCleaned = [bool]$CleanLicenseState
     windir              = $env:WINDIR
@@ -291,4 +291,4 @@ if ($script:Warnings.Count -gt 0) {
     Write-Host "[preflight] warnings:"
     $script:Warnings | ForEach-Object { Write-Host "  - $_" }
 }
-Write-Host "[preflight] next: open TestModel\0614-A00.SLDASM via Explorer, maximize SolidWorks, start ZTool from the ribbon, then follow FULL_TEST_METHODOLOGY_RU.md sec 2.2."
+Write-Host "[preflight] next: open TestModel\0614-A00.SLDASM via Explorer, maximize SolidWorks, start SWTools from the ribbon, then follow FULL_TEST_METHODOLOGY_RU.md sec 2.2."

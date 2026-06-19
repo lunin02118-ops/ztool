@@ -5,22 +5,22 @@ import os
 
 import pytest
 
-from ztool_license_server.config import ServerConfig
-from ztool_license_server.crypto.aes_security_center import encrypt_message_body
-from ztool_license_server.crypto.keygen import generate_keypair, load_keypair, save_keypair
-from ztool_license_server.key_provider import KeyProvider
-from ztool_license_server.logging_utils import assert_safe_log_config
-from ztool_license_server.server import LicenseServer
+from swtools_license_server.config import ServerConfig
+from swtools_license_server.crypto.aes_security_center import encrypt_message_body
+from swtools_license_server.crypto.keygen import generate_keypair, load_keypair, save_keypair
+from swtools_license_server.key_provider import KeyProvider
+from swtools_license_server.logging_utils import assert_safe_log_config
+from swtools_license_server.server import LicenseServer
 
 
 def test_config_reads_explicit_key_files_from_env(monkeypatch, tmp_path):
     private_key = tmp_path / "server-private.txt"
     public_key = tmp_path / "server-public.txt"
 
-    monkeypatch.setenv("ZTOOL_PRIVATE_KEY_FILE", str(private_key))
-    monkeypatch.setenv("ZTOOL_PUBLIC_KEY_FILE", str(public_key))
-    monkeypatch.setenv("ZTOOL_RUNTIME_ENV", "production")
-    monkeypatch.setenv("ZTOOL_LOG_LEVEL", "INFO")
+    monkeypatch.setenv("SWTOOLS_PRIVATE_KEY_FILE", str(private_key))
+    monkeypatch.setenv("SWTOOLS_PUBLIC_KEY_FILE", str(public_key))
+    monkeypatch.setenv("SWTOOLS_RUNTIME_ENV", "production")
+    monkeypatch.setenv("SWTOOLS_LOG_LEVEL", "INFO")
 
     config = ServerConfig.from_env()
 
@@ -125,7 +125,7 @@ async def test_process_message_debug_log_does_not_include_plaintext(caplog, tmp_
     sendtype = 999
     body = encrypt_message_body(plaintext, sendtype).encode("utf-8")
 
-    with caplog.at_level(logging.DEBUG, logger="ztool_license_server.server"):
+    with caplog.at_level(logging.DEBUG, logger="swtools_license_server.server"):
         await server._process_message(sendtype, body)
 
     assert "SECRET-CODE-12345" not in caplog.text
