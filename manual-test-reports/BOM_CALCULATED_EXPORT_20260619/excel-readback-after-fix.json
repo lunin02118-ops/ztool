@@ -1,0 +1,80 @@
+{
+  "file": "D:\\Development\\ztool\\manual-test-reports\\BOM_CALCULATED_EXPORT_20260619\\bom-exports-after-fix\\01_summary_after_fix_0614-A00_20260619-090810.xlsx",
+  "max_row": 104,
+  "sample": [
+    {
+      "row": 6,
+      "A": "№\nп/п",
+      "G": "Кол-во",
+      "J_mass_kg": "Масса ед. кг",
+      "O_path": "Путь",
+      "P_bounds": "Габаритные размеры"
+    },
+    {
+      "row": 7,
+      "A": 1,
+      "G": 1,
+      "J_mass_kg": "0,2148",
+      "O_path": "D:\\Development\\ztool\\TestModel\\0614-A00.SLDASM",
+      "P_bounds": "206,9×111,5×225,3"
+    },
+    {
+      "row": 8,
+      "A": 2,
+      "G": 1,
+      "J_mass_kg": "0,0574",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-017.SLDASM",
+      "P_bounds": "86,8×84,5×99,6"
+    },
+    {
+      "row": 9,
+      "A": 3,
+      "G": 6,
+      "J_mass_kg": "0,0004",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-003.SLDPRT",
+      "P_bounds": "18×8×8"
+    },
+    {
+      "row": 10,
+      "A": 4,
+      "G": 6,
+      "J_mass_kg": "0,0000",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-010.SLDPRT",
+      "P_bounds": "1×8×8"
+    },
+    {
+      "row": 11,
+      "A": 5,
+      "G": 1,
+      "J_mass_kg": "0,0001",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-023.SLDPRT",
+      "P_bounds": "20×3×3"
+    },
+    {
+      "row": 12,
+      "A": 6,
+      "G": 1,
+      "J_mass_kg": "0,0001",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-024.SLDPRT",
+      "P_bounds": "10×8×8"
+    },
+    {
+      "row": 13,
+      "A": 7,
+      "G": 3,
+      "J_mass_kg": "0,0021",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-018.SLDPRT",
+      "P_bounds": "31×11×12"
+    },
+    {
+      "row": 14,
+      "A": 8,
+      "G": 1,
+      "J_mass_kg": "0,0394",
+      "O_path": "D:\\Development\\ztool\\TestModel\\PArt-021.SLDPRT",
+      "P_bounds": "71×24×71"
+    }
+  ],
+  "non_empty_mass_col_J": 29,
+  "non_empty_bounds_col_P": 29
+}

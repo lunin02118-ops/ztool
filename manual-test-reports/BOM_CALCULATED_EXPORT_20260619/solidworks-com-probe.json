@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-06-19T08:29:57+0500",
+  "got_sw": true,
+  "frame_title_error": "AttributeError('SldWorks.Application.FrameTitle')",
+  "got_doc": true,
+  "active_path_error": "TypeError(\"'str' object is not callable\")",
+  "runtime_dll": "D:\\Development\\ztool\\releases\\1.1.0-alfa\\package\\ZTool-1.1.0-alfa\\runtime\\ZTool.dll",
+  "load_addin_rc": 2,
+  "got_addin": true,
+  "addin_type": "<class 'win32com.client.CDispatch'>",
+  "open_method": "openZtool",
+  "open_invoked": true
+}

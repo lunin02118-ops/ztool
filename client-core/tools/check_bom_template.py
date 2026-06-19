@@ -118,15 +118,28 @@ VALID_OPERATORS = {
 def template_defined_names(path):
     wb = openpyxl.load_workbook(path, data_only=False)
     names = set()
+    name_dests = {}
     dn = wb.defined_names
-    # openpyxl 3.x: defined_names is a dict-like of DefinedName
+
+    # openpyxl 3.1: defined_names is a dict-like of DefinedName.
+    # openpyxl 3.0: it exposes a definedName list.
+    items = []
     try:
-        keys = list(dn.keys())
+        items = list(dn.items())
     except AttributeError:
-        keys = [d.name for d in dn.definedName]
-    for k in keys:
-        names.add(k)
-    return names, wb.sheetnames
+        items = [(d.name, d) for d in dn.definedName]
+
+    for name, defined_name in items:
+        names.add(name)
+        destinations = set()
+        try:
+            for sheet, coord in defined_name.destinations:
+                destinations.add((sheet.strip("'"), coord.replace("$", "").upper()))
+        except Exception:
+            destinations = set()
+        if destinations:
+            name_dests[name] = destinations
+    return names, wb.sheetnames, name_dests
 
 
 def main():
@@ -217,7 +230,7 @@ def main():
         problems += 1
         return finish(problems)
 
-    names, sheets = template_defined_names(local_tmpl)
+    names, sheets, name_dests = template_defined_names(local_tmpl)
     print("\n[2] Template:", local_tmpl)
     print("    sheets:", sheets)
     print("    defined names (%d): %s" % (len(names), sorted(names)))
@@ -235,7 +248,7 @@ def main():
             problems += 1
         print("  %-14s | %-22s | anchor=%-6s %s"
               % (mp["col"], mp["header"] or "", anc, status))
-    problems += check_calculated_mappings(mappings, names)
+    problems += check_calculated_mappings(mappings, names, name_dests)
 
     # --- 4. service columns (header-bound, NOT in namemappinglist) ---
     # ZTool's export (ExportBom_xls4/_xls2) resolves SERVICE columns (the auto
@@ -343,7 +356,7 @@ def check_service_columns(names):
     return problems
 
 
-def check_calculated_mappings(mappings, names):
+def check_calculated_mappings(mappings, names, name_dests):
     print("\n[3b] Calculated columns (mapped by column name):")
     problems = 0
     by_col = {mp["col"]: mp for mp in mappings}
@@ -374,6 +387,21 @@ def check_calculated_mappings(mappings, names):
                   (col, actual_header, actual_anchor))
         else:
             problems += 1
+
+        calc_dests = name_dests.get(anchor, set())
+        for other in mappings:
+            other_col = other.get("col") or ""
+            other_anchor = other.get("anchor") or ""
+            if other_col == col or not other_anchor or other_anchor == anchor:
+                continue
+            overlap = calc_dests & name_dests.get(other_anchor, set())
+            if overlap:
+                cells = ", ".join("%s!%s" % dest for dest in sorted(overlap))
+                print("  ** ERROR: %s anchor %r shares template cell(s) %s "
+                      "with calculated %s anchor %r; empty custom properties "
+                      "can overwrite computed export values." %
+                      (other_col, other_anchor, cells, col, anchor))
+                problems += 1
     return problems
 
 

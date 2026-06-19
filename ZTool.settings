@@ -618,7 +618,7 @@ True</string>
       <name>PropVal_8</name>
       <name2>PropResolvedVal_8</name2>
       <text>Масса</text>
-      <mappingname>重量</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>Col_Weight</name>
