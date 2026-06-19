@@ -25,6 +25,7 @@ IMAGE_EXTS = {".gif", ".jpg", ".jpeg", ".png"}
 DEFAULT_ALLOW_UNCHANGED = {
     "basic/connect-sw.files/image005.png",
     "basic/material-library.files/image003.png",
+    "basic/material-library.files/image004.jpg",
 }
 
 
@@ -111,6 +112,31 @@ def compare_sets(
     all_rels = sorted(set(original) | set(candidate))
     results: list[CompareResult] = []
 
+    # Detect candidate frames whose pixels were reused for several manual slots.
+    # The geometry checks below pass such frames as long as the dimensions line
+    # up, so a single screenshot copy-pasted across distinct manual sections
+    # would otherwise be reported as PASS even though its content is wrong for
+    # all but (at most) one slot. Reuse is only legitimate when the ORIGINAL
+    # CHM also shipped the same byte-identical image in those slots, so we flag
+    # a duplicate only when the matching originals differ from each other.
+    by_cand_sha: dict[str, list[str]] = {}
+    for rel in all_rels:
+        c = candidate.get(rel)
+        if c is not None:
+            by_cand_sha.setdefault(c.sha256, []).append(rel)
+    dup_partners: dict[str, list[str]] = {}
+    for rels in by_cand_sha.values():
+        if len(rels) < 2:
+            continue
+        orig_tokens = {
+            original[r].sha256 if r in original else f"__missing__:{r}"
+            for r in rels
+        }
+        if len(orig_tokens) <= 1:
+            continue  # originals identical too -> reuse mirrors the original
+        for rel in rels:
+            dup_partners[rel] = sorted(x for x in rels if x != rel)
+
     for rel in all_rels:
         o = original.get(rel)
         c = candidate.get(rel)
@@ -144,6 +170,13 @@ def compare_sets(
                 issues.append(f"area_ratio={area_ratio:.2f}")
                 if status == "PASS":
                     status = "WARN"
+
+            if rel in dup_partners:
+                issues.append(
+                    "duplicate_candidate_shares_content_with="
+                    + ",".join(dup_partners[rel])
+                )
+                status = "FAIL"
 
         results.append(CompareResult(rel, o, c, status, issues, aspect_delta))
 
