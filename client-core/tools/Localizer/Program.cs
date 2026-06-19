@@ -692,20 +692,27 @@ internal static class Program
         return changes;
     }
 
-    // Right-click a DataGridView column header -> persistent list of all
-    // columns (ContextMenuStrip, AutoClose=false). The set of columns and the
-    // visible-state styling mirror the native ribbon gallery (cmd 1033): the
-    // same PropVal_/PropResolvedVal_ filter (so a header isn't listed twice)
-    // keyed off PropSwitch, the preview column and empty headers excluded, and
-    // visible columns shown by a colour highlight rather than a check glyph.
-    // Toggling an item flips that column's Visible and calls SaveColumnInfo();
-    // the menu stays open so several columns can be hidden/shown in a row, and
-    // closes via the "Готово" item. The ribbon gallery itself is left untouched.
+    // Make the ribbon "Скрыть/показать столбцы" gallery (cmd 1033) behave exactly
+    // like the original -- same drop position (under the ribbon button), same
+    // column set and colour-highlight styling -- with one difference: it stays
+    // open so several columns can be hidden/shown in a row. The native ribbon
+    // gallery cannot be kept open (the Windows Ribbon framework collapses it on
+    // every pick), so when the user opens it we instead show our own list
+    // (ContextMenuStrip, AutoClose=false) at the cursor (which is on the ribbon
+    // button, so it drops from the same place) and skip populating the native
+    // gallery. The set of columns and the visible-state styling mirror the
+    // gallery: the same PropVal_/PropResolvedVal_ filter (so a header isn't
+    // listed twice) keyed off PropSwitch, the preview column and empty headers
+    // excluded, and visible columns shown by a colour highlight rather than a
+    // check glyph. Toggling an item flips that column's Visible and calls
+    // SaveColumnInfo(); the menu closes via the "Готово" item. The programmatic
+    // (sender == null) ItemsSourceReady refresh calls keep the original native
+    // population so keytip navigation is unaffected.
     private static int PatchColumnVisibilityMenu(ModuleDefMD mod)
     {
         var form = mod.Find("ZTool.Frmmain", false);
-        var header = form?.FindMethod("DGV1_ColumnHeaderMouseClick");
-        if (form == null || header?.Body == null) return 0;
+        var itemsReady = form?.FindMethod("_cmdButtonHidecol_ItemsSourceReady");
+        if (form == null || itemsReady?.Body == null) return 0;
         if (form.FindMethod("zt_BuildColMenu") != null) return 0;   // idempotent
 
         var winforms = FindAssemblyRef(mod, "System.Windows.Forms");
@@ -733,8 +740,6 @@ internal static class Program
         var trDgvColumn = WF("DataGridViewColumn");
         var trBaseCollection = WF("BaseCollection");
         var trControl = WF("Control");
-        var trMouseButtons = WF("MouseButtons");
-        var trMouseEventArgs = WF("MouseEventArgs");
         var trToolStripButton = WF("ToolStripButton");
         var trPoint = new TypeRefUser(mod, "System.Drawing", "Point", drawing);
         var trColor = new TypeRefUser(mod, "System.Drawing", "Color", drawing);
@@ -775,7 +780,6 @@ internal static class Program
         var strContains = new MemberRefUser(mod, "Contains", MethodSig.CreateInstance(mod.CorLibTypes.Boolean, mod.CorLibTypes.String), stringType);
         var getPropChecked = new MemberRefUser(mod, "get_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trToolStripButton);
         var getMousePos = new MemberRefUser(mod, "get_MousePosition", MethodSig.CreateStatic(sigPoint), trControl);
-        var getButton = new MemberRefUser(mod, "get_Button", MethodSig.CreateInstance(new ValueTypeSig(trMouseButtons)), trMouseEventArgs);
         var ehCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trEventHandler);
         var isNullOrEmpty = new MemberRefUser(mod, "IsNullOrEmpty", MethodSig.CreateStatic(mod.CorLibTypes.Boolean, mod.CorLibTypes.String), stringType);
         var exceptionType = mod.CorLibTypes.GetTypeRef("System", "Exception");
@@ -895,7 +899,7 @@ internal static class Program
             var lInc = Instruction.Create(OpCodes.Ldloc, locI);
             var newMenuStart = Instruction.Create(OpCodes.Newobj, ctxCtor);
 
-            // dispose any menu still open from a previous right-click so menus
+            // dispose any menu still open from a previous open so menus
             // don't stack (AutoClose=false) and "Готово" always targets the live one
             b.Add(Instruction.Create(OpCodes.Ldarg_0));
             b.Add(Instruction.Create(OpCodes.Ldfld, menuField));
@@ -1031,22 +1035,24 @@ internal static class Program
         }
         form.Methods.Add(build);
 
-        // ---- wire: right-click header -> zt_BuildColMenu(); return ----
-        var origFirst = header.Body.Instructions[0];
+        // ---- wire: opening the ribbon gallery -> our persistent menu, dropped
+        // at the cursor (which is on the ribbon button). When the framework
+        // raises ItemsSourceReady on a real open it passes the gallery as
+        // sender; the manual refresh calls pass (null, null) and fall through to
+        // the original native population (keytip support). ----
+        var origFirst = itemsReady.Body.Instructions[0];
         var inj = new[]
         {
-            Instruction.Create(OpCodes.Ldarg_2),                    // e
-            Instruction.Create(OpCodes.Callvirt, getButton),
-            Instruction.CreateLdcI4(2097152),                       // MouseButtons.Right
-            Instruction.Create(OpCodes.Bne_Un, origFirst),
+            Instruction.Create(OpCodes.Ldarg_1),                    // sender
+            Instruction.Create(OpCodes.Brfalse, origFirst),         // null -> original
             Instruction.Create(OpCodes.Ldarg_0),
             Instruction.Create(OpCodes.Call, build),
             Instruction.Create(OpCodes.Ret),
         };
         for (int k = inj.Length - 1; k >= 0; k--)
-            header.Body.Instructions.Insert(0, inj[k]);
+            itemsReady.Body.Instructions.Insert(0, inj[k]);
 
-        Console.WriteLine("  Frmmain: right-click column header -> persistent show/hide-columns checklist (edits=1)");
+        Console.WriteLine("  Frmmain: ribbon show/hide-columns gallery -> persistent stay-open checklist (edits=1)");
         return 1;
     }
 
