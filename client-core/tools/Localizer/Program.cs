@@ -2285,19 +2285,19 @@ internal static class Program
         // website hyperlink
         E(Instruction.Create(OpCodes.Newobj, linkCtor), Instruction.Create(OpCodes.Stloc, locLink));
         E(LdL(locLink), I4(0), Instruction.Create(OpCodes.Callvirt, linkAutoSize));
-        CSetText(locLink, "Купить / перейти на сайт");
+        CSetText(locLink, "Перейти на сайт");
         CSetFont(locLink, 9.75f, 1); // Bold
         E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
-        CSetLoc(locLink, 20, 86);
+        CSetLoc(locLink, 20, 84);
         CSetSize(locLink, 320, 26);
         E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, webClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
         CAdd(locLink);
 
-        // phone #1 (KZ flag + number)
+        // phone #1 (KZ flag + number) — placed at the bottom, below the QR card
         E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
         E(LdL(locPic), Instruction.Create(OpCodes.Ldstr, kzRes), Instruction.Create(OpCodes.Call, imgHelper), Instruction.Create(OpCodes.Callvirt, setImage));
         E(LdL(locPic), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
-        CSetLoc(locPic, 96, 124);
+        CSetLoc(locPic, 96, 300);
         CSetSize(locPic, 30, 20);
         CAdd(locPic);
         E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
@@ -2305,15 +2305,15 @@ internal static class Program
         CSetText(locLabel, "+7 705 803 0863");
         CSetFont(locLabel, 11f, 0);
         E(LdL(locLabel), I4(MidL), Instruction.Create(OpCodes.Callvirt, labTextAlign));
-        CSetLoc(locLabel, 134, 121);
+        CSetLoc(locLabel, 134, 297);
         CSetSize(locLabel, 190, 26);
         CAdd(locLabel);
 
-        // phone #2 (RU flag + number)
+        // phone #2 (RU flag + number) — placed at the bottom, below the QR card
         E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
         E(LdL(locPic), Instruction.Create(OpCodes.Ldstr, ruRes), Instruction.Create(OpCodes.Call, imgHelper), Instruction.Create(OpCodes.Callvirt, setImage));
         E(LdL(locPic), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
-        CSetLoc(locPic, 96, 152);
+        CSetLoc(locPic, 96, 328);
         CSetSize(locPic, 30, 20);
         CAdd(locPic);
         E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
@@ -2321,7 +2321,7 @@ internal static class Program
         CSetText(locLabel, "+7 982 880 1822");
         CSetFont(locLabel, 11f, 0);
         E(LdL(locLabel), I4(MidL), Instruction.Create(OpCodes.Callvirt, labTextAlign));
-        CSetLoc(locLabel, 134, 149);
+        CSetLoc(locLabel, 134, 325);
         CSetSize(locLabel, 190, 26);
         CAdd(locLabel);
 
@@ -2331,7 +2331,7 @@ internal static class Program
         CSetText(locLabel, "Email: lunin021189@gmail.com");
         CSetFont(locLabel, 9.75f, 0);
         E(LdL(locLabel), I4(MidC), Instruction.Create(OpCodes.Callvirt, labTextAlign));
-        CSetLoc(locLabel, 20, 184);
+        CSetLoc(locLabel, 20, 116);
         CSetSize(locLabel, 320, 24);
         CAdd(locLabel);
 
@@ -2341,7 +2341,7 @@ internal static class Program
         CSetText(locLink, "Связаться в MAX");
         CSetFont(locLink, 9.75f, 1);
         E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
-        CSetLoc(locLink, 20, 214);
+        CSetLoc(locLink, 20, 144);
         CSetSize(locLink, 320, 26);
         E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, maxClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
         CAdd(locLink);
@@ -2350,8 +2350,8 @@ internal static class Program
         // anchor first, otherwise the layout pass stretches it to the form width.
         E(Ld0(), Instruction.Create(OpCodes.Callvirt, getPic2), I4(5), Instruction.Create(OpCodes.Callvirt, setAnchor)); // AnchorStyles.Top|Left
         E(Ld0(), Instruction.Create(OpCodes.Callvirt, getPic2), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
-        GLoc(getPic2, 30, 248);
-        GSize(getPic2, 300, 120);
+        GLoc(getPic2, 30, 172);
+        GSize(getPic2, 300, 118);
 
         // OK button reposition (keep)
         GLoc(getOk, 268, 392);
