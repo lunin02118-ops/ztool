@@ -14,6 +14,11 @@
 - `frame-compare/` — машинное покадровое сравнение с китайским backup:
   markdown, JSON и contact sheet.
 - `contact-sheets/` — обзорные листы для ручной проверки всего набора.
+- `retake-checklist/manual_screenshot_retake_checklist.pdf` — сравнительная
+  таблица 20 кадров для ручной досъемки: оригинал слева, текущий RU-кадр
+  справа, причина пересъемки сверху.
+- `retake-checklist/manual_screenshot_retake_list.md|csv|json` — тот же список
+  в текстовом и машинно-читаемом виде.
 - `SCREENSHOTS_CAPTURE_STATUS_RU.md` — ручная сводка: какие кадры годятся,
   какие требуют досъемки.
 - `ru-change-summary.json` и `ru-normalization-log.json` — hash/размеры и лог
@@ -26,6 +31,7 @@
 - Оставлены без изменений: 3 нейтральных кадра/иконки.
 - Frame compare: 49 PASS, 2 WARN, 17 FAIL.
 - Ручная досъемка перед финальным CHM: 20 кадров.
+- PDF для исполнителя: `retake-checklist/manual_screenshot_retake_checklist.pdf`
 
 Итог: набор пригоден для ревью и промежуточной сборки справки, но финальную
 пересборку `help_ru.chm` нельзя считать закрытой, пока не исправлены FAIL/WARN
