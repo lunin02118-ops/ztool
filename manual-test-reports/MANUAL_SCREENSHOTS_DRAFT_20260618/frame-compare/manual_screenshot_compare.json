@@ -3,7 +3,8 @@
     "path": "activation.files/image001.png",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.272"
+      "aspect_delta=0.272",
+      "duplicate_candidate_shares_content_with=activation.files/image003.png"
     ],
     "aspect_delta": 0.272442137140385,
     "original": {
@@ -37,8 +38,10 @@
   },
   {
     "path": "activation.files/image003.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=activation.files/image001.png"
+    ],
     "aspect_delta": 0.06722546778426897,
     "original": {
       "sha256": "c0964946204f8b6f9e6917361811c6a091f9b5a3bd87aee794399540bbcc2505",
@@ -101,8 +104,10 @@
   },
   {
     "path": "activation.files/image007.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=installation.files/image002.png"
+    ],
     "aspect_delta": 0.002597402597402576,
     "original": {
       "sha256": "59329834b35c3f45dfb993ba4baf88b6c09a9fbc2aa26b71e335eb0e204ff73d",
@@ -235,7 +240,8 @@
     "status": "FAIL",
     "issues": [
       "aspect_delta=0.183",
-      "area_ratio=0.18"
+      "area_ratio=0.18",
+      "duplicate_candidate_shares_content_with=advanced/bom-template.files/image010.png"
     ],
     "aspect_delta": 0.18256052945287135,
     "original": {
@@ -267,8 +273,10 @@
   },
   {
     "path": "advanced/bom-template.files/image007.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/thumbnails.files/image003.png,basic/connect-sw.files/image006.png"
+    ],
     "aspect_delta": 0.11558916514843008,
     "original": {
       "sha256": "adb44b5c18eecab7b4f109579b0c0db6c0180942b548e2aad661b896e735c3c8",
@@ -317,8 +325,10 @@
   },
   {
     "path": "advanced/bom-template.files/image010.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/bom-template.files/image005.png"
+    ],
     "aspect_delta": 0.13378711885996342,
     "original": {
       "sha256": "02425b8c49a80533e0600df23580fa773b2864a31b6328731c37919ce078aae8",
@@ -349,8 +359,10 @@
   },
   {
     "path": "advanced/dropdown.files/image002.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/dropdown.files/image003.png"
+    ],
     "aspect_delta": 0.06855567176951599,
     "original": {
       "sha256": "557ac886d7f20556ecd21c5003b8e85581ce5b13fbfe9ccea97b97fff92bf868",
@@ -365,8 +377,10 @@
   },
   {
     "path": "advanced/dropdown.files/image003.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/dropdown.files/image002.png"
+    ],
     "aspect_delta": 0.06739149444719734,
     "original": {
       "sha256": "2f7354d078d2f7400597863e03a3bad233c7ee390d214753c7d2743ab352d992",
@@ -447,8 +461,10 @@
   },
   {
     "path": "advanced/thumbnails.files/image003.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/bom-template.files/image007.png,basic/connect-sw.files/image006.png"
+    ],
     "aspect_delta": 0.014960153560038547,
     "original": {
       "sha256": "d22f13dd3e2ab74710ef286106cfc7b31c3ac9d68a20d5b9f06c605f888a9efd",
@@ -546,8 +562,10 @@
   },
   {
     "path": "basic/connect-sw.files/image006.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=advanced/bom-template.files/image007.png,advanced/thumbnails.files/image003.png"
+    ],
     "aspect_delta": 0.013243291300546856,
     "original": {
       "sha256": "adba699e54d7181b68179a43f00df45945f208a645477286eb5b907892c8e528",
@@ -610,10 +628,8 @@
   },
   {
     "path": "basic/material-library.files/image004.jpg",
-    "status": "FAIL",
-    "issues": [
-      "unchanged_not_allowlisted"
-    ],
+    "status": "PASS",
+    "issues": [],
     "aspect_delta": 0.0,
     "original": {
       "sha256": "47bd5e4ca1339192ba9d783b75cfc78a01b00cf9e4d44d38af3d6a356ae9b8a6",
@@ -628,8 +644,10 @@
   },
   {
     "path": "basic/material-library.files/image005.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=basic/material-library.files/image007.png"
+    ],
     "aspect_delta": 0.086622807017544,
     "original": {
       "sha256": "3b9e0edf5f445288175d2c6ac5fe31ef71f67793e63f3fd03a276996bb55bca5",
@@ -646,7 +664,8 @@
     "path": "basic/material-library.files/image006.gif",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.156"
+      "aspect_delta=0.156",
+      "duplicate_candidate_shares_content_with=basic/material-library.files/image008.gif"
     ],
     "aspect_delta": 0.15627036953469714,
     "original": {
@@ -664,7 +683,8 @@
     "path": "basic/material-library.files/image007.png",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.285"
+      "aspect_delta=0.285",
+      "duplicate_candidate_shares_content_with=basic/material-library.files/image005.png"
     ],
     "aspect_delta": 0.28514647565187207,
     "original": {
@@ -682,7 +702,8 @@
     "path": "basic/material-library.files/image008.gif",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.285"
+      "aspect_delta=0.285",
+      "duplicate_candidate_shares_content_with=basic/material-library.files/image006.gif"
     ],
     "aspect_delta": 0.28488318404284785,
     "original": {
@@ -778,8 +799,10 @@
   },
   {
     "path": "basic/property-names.files/image004.jpg",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image006.jpg"
+    ],
     "aspect_delta": 0.00940170940170935,
     "original": {
       "sha256": "7f8fe74051cfdd21bf62f9e9a393503c8df85d2e6ad1b1b8b6d6eb770dcebcd1",
@@ -828,7 +851,8 @@
     "path": "basic/save-to-sw.files/image003.png",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.162"
+      "aspect_delta=0.162",
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image009.png,basic/save-to-sw.files/image011.png"
     ],
     "aspect_delta": 0.1620028394888921,
     "original": {
@@ -846,7 +870,8 @@
     "path": "basic/save-to-sw.files/image004.gif",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.162"
+      "aspect_delta=0.162",
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image010.gif,basic/save-to-sw.files/image012.gif"
     ],
     "aspect_delta": 0.16223063291693104,
     "original": {
@@ -878,8 +903,10 @@
   },
   {
     "path": "basic/save-to-sw.files/image006.jpg",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=basic/property-names.files/image004.jpg"
+    ],
     "aspect_delta": 0.00940170940170935,
     "original": {
       "sha256": "b92895dd903f1659cea34caf5e9b392411e8cac2e42bfa261afeb9ed7fabb47f",
@@ -929,8 +956,10 @@
   },
   {
     "path": "basic/save-to-sw.files/image009.png",
-    "status": "PASS",
-    "issues": [],
+    "status": "FAIL",
+    "issues": [
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image003.png,basic/save-to-sw.files/image011.png"
+    ],
     "aspect_delta": 0.05257085755813959,
     "original": {
       "sha256": "d5e67ad848fc87d51fadace0fb3ac34f92db2c55398aa0dd0910f44332855e17",
@@ -945,9 +974,10 @@
   },
   {
     "path": "basic/save-to-sw.files/image010.gif",
-    "status": "WARN",
+    "status": "FAIL",
     "issues": [
-      "area_ratio=4.91"
+      "area_ratio=4.91",
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image004.gif,basic/save-to-sw.files/image012.gif"
     ],
     "aspect_delta": 0.052159468438538276,
     "original": {
@@ -965,7 +995,8 @@
     "path": "basic/save-to-sw.files/image011.png",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.334"
+      "aspect_delta=0.334",
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image003.png,basic/save-to-sw.files/image009.png"
     ],
     "aspect_delta": 0.3337353868992392,
     "original": {
@@ -984,7 +1015,8 @@
     "status": "FAIL",
     "issues": [
       "aspect_delta=0.333",
-      "area_ratio=7.76"
+      "area_ratio=7.76",
+      "duplicate_candidate_shares_content_with=basic/save-to-sw.files/image004.gif,basic/save-to-sw.files/image010.gif"
     ],
     "aspect_delta": 0.3325321716488909,
     "original": {
@@ -1084,7 +1116,8 @@
     "path": "installation.files/image002.png",
     "status": "FAIL",
     "issues": [
-      "aspect_delta=0.335"
+      "aspect_delta=0.335",
+      "duplicate_candidate_shares_content_with=activation.files/image007.png"
     ],
     "aspect_delta": 0.335016835016835,
     "original": {
