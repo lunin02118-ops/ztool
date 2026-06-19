@@ -11,6 +11,7 @@
 | `runs.json`   | 256 исходных китайских текстовых сегментов (порядок «от длинного к короткому») |
 | `ru.json`     | их русские переводы, строго один-к-одному по индексу с `runs.json`    |
 | `build_ru.py` | сборщик: перевод HTML-тем, навигации (HHC/HHK), генерация `.hhp`       |
+| `compare_manual_screenshots.py` | gate перед сборкой: покадровое сравнение оригинальных и RU-скриншотов |
 
 ## Как пересобрать
 
@@ -23,10 +24,13 @@
 # 2. перевести (создаёт _chm_build/ с HTML, картинками, toc.hhc, index.hhk, help_ru.hhp)
 python build_ru.py            # пути можно переопределить через CHM_SRC / CHM_OUT
 
-# 3. скомпилировать CHM (hhc.exe возвращает 1 даже при успехе — проверяйте сам файл)
+# 3. перед компиляцией сравнить заменённые картинки с оригиналом
+python compare_manual_screenshots.py --original _chm_src --candidate _chm_build --out _frame_compare
+
+# 4. скомпилировать CHM (hhc.exe возвращает 1 даже при успехе — проверяйте сам файл)
 "/c/Program Files (x86)/HTML Help Workshop/hhc.exe" _chm_build/help_ru.hhp
 
-# 4. забрать результат
+# 5. забрать результат
 cp _chm_build/help_ru.chm ../../help_ru.chm
 ```
 

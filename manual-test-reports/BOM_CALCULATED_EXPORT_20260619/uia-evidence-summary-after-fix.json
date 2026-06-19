@@ -1,0 +1,237 @@
+{
+  "connect_status": [
+    {
+      "name": "Подключение завершено, затрачено 0,2 сек, всего 29 поз.",
+      "control_type": "Hyperlink",
+      "automation_id": "",
+      "class_name": "",
+      "rect": [
+        1,
+        1379,
+        251,
+        1397
+      ]
+    }
+  ],
+  "export_menu_items": [
+    {
+      "scope": "ztool",
+      "name": "Экспорт сводной спецификации",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        119,
+        301,
+        140
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Экспорт иерархической спецификации",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        140,
+        301,
+        161
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Экспорт спецификации верхнего уровня",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        161,
+        301,
+        182
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Экспорт сводной спецификации деталей",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        182,
+        301,
+        203
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Экспорт сводной спецификации (с эскизами)",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        203,
+        301,
+        224
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Экспорт иерархической спецификации (с эскизами)",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        224,
+        301,
+        245
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Обрабатываемые детали",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        245,
+        301,
+        266
+      ]
+    },
+    {
+      "scope": "ztool",
+      "name": "Покупные изделия",
+      "control_type": "MenuItem",
+      "class_name": "",
+      "rect": [
+        8,
+        266,
+        301,
+        287
+      ]
+    }
+  ],
+  "save_dialog_key_controls": [
+    {
+      "name": "Сохранение",
+      "control_type": "Window",
+      "automation_id": "",
+      "class_name": "#32770",
+      "rect": [
+        0,
+        0,
+        664,
+        510
+      ]
+    },
+    {
+      "name": "0614-A00-20260618-2112.xlsx",
+      "control_type": "ListItem",
+      "automation_id": "1",
+      "class_name": "UIItem",
+      "rect": [
+        261,
+        103,
+        335,
+        207
+      ]
+    },
+    {
+      "name": "0614-A00-20260618-2113.xlsx",
+      "control_type": "ListItem",
+      "automation_id": "2",
+      "class_name": "UIItem",
+      "rect": [
+        340,
+        103,
+        414,
+        207
+      ]
+    },
+    {
+      "name": "Имя файла:",
+      "control_type": "Text",
+      "automation_id": "SaveDialogLabel",
+      "class_name": "CIDLabel",
+      "rect": [
+        18,
+        396,
+        133,
+        419
+      ]
+    },
+    {
+      "name": "Имя файла:",
+      "control_type": "ComboBox",
+      "automation_id": "FileNameControlHost",
+      "class_name": "AppControlHost",
+      "rect": [
+        133,
+        396,
+        651,
+        419
+      ]
+    },
+    {
+      "name": "Имя файла:",
+      "control_type": "Edit",
+      "automation_id": "1001",
+      "class_name": "Edit",
+      "rect": [
+        136,
+        399,
+        631,
+        416
+      ]
+    },
+    {
+      "name": "Сохранить",
+      "control_type": "Button",
+      "automation_id": "1",
+      "class_name": "Button",
+      "rect": [
+        440,
+        464,
+        539,
+        490
+      ]
+    },
+    {
+      "name": "Отмена",
+      "control_type": "Button",
+      "automation_id": "2",
+      "class_name": "Button",
+      "rect": [
+        551,
+        464,
+        639,
+        490
+      ]
+    },
+    {
+      "name": "Адрес: Рабочий стол",
+      "control_type": "ToolBar",
+      "automation_id": "1001",
+      "class_name": "ToolbarWindow32",
+      "rect": [
+        115,
+        37,
+        389,
+        59
+      ]
+    },
+    {
+      "name": "1",
+      "control_type": "Edit",
+      "automation_id": "1",
+      "class_name": "RICHEDIT50W",
+      "rect": [
+        267,
+        99,
+        293,
+        114
+      ]
+    }
+  ],
+  "object_locator_note": "Evidence was collected through UIA/Win32 object locators: names, control types, automation ids, and process-owned windows; no hardcoded screen coordinates are used as pass criteria."
+}

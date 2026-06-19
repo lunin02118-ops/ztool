@@ -34,25 +34,27 @@ DoD: `build.ps1` PASS; `Reinjector --verify` PASS (`dangling typerefs = 0`);
 python client-core\tools\check_bom_template.py ZTool.settings
 python client-core\tools\check_bom_template.py client-core\dist\ZTool.settings
 ```
-DoD: оба PASS; 8 BOM-пресетов на месте; `Тип` непустой (BOM-07/08).
+DoD: оба PASS; 8 BOM-пресетов на месте; `Тип` непустой (BOM-07/08);
+расчетные mapping anchors `МассаЕдКг` (`Col_Weight`) и
+`ГабаритныеРазмеры` (`Col_bound`) присутствуют.
 
 ### A3. Сборка релиз-пакета (production — с SolidWorksTools.dll)
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build_release_package.ps1 `
-  -Version 1.0.0 `
+  -Version 1.1.0-alfa `
   -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll"
 # путь к SolidWorksTools.dll — из вашей установки SW 2025
 ```
-Пакет появится в `release\ZTool-1.0.0-<stamp>\`.
+Пакет появится в `releases\1.1.0-alfa\package\ZTool-1.1.0-alfa\`.
 
 ### A4. Верификация пакета — БЕЗ `-AllowDirtyManifest` (это и есть R1.2)
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify_release_package.ps1 `
-  -PackageRoot release\ZTool-1.0.0-<stamp> `
+  -PackageRoot releases\1.1.0-alfa\package\ZTool-1.1.0-alfa `
   -RequireSolidWorksTools
 ```
 DoD: вывод `release package verification: PASS`. Ожидаемые хеши берутся из
-`scripts\expected_release_hashes.json` (`ZTool.exe 7688EA39…`, `ZTool.dll D0535425…`).
+`scripts\expected_release_hashes.json` (`ZTool.exe C7AB1491…`, `ZTool.dll D0535425…`).
 Если хеши не сходятся — не продолжать: пересобрать (A1) или сверить билд.
 **`-AllowDirtyManifest` НЕ использовать** — иначе R1.2 не закрыт.
 
@@ -89,7 +91,7 @@ DoD: статус `PASS` (или `PASS_WITH_WARNINGS`, если осознанн
 - Подтвердить, что запущен нужный бинарь:
 ```powershell
 Get-Process ZTool | Select-Object Id, Path, MainWindowTitle
-Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256   # = 7688EA39…
+Get-FileHash (Get-Process ZTool).Path -Algorithm SHA256   # = C7AB1491…
 ```
 
 ### B4. Функциональные проверки (приёмка)

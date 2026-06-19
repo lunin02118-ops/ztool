@@ -5,15 +5,20 @@ Reformat bom_шаблон.xlsx for professional Russian appearance:
 3. Proper column widths
 4. Proper row heights (especially for thumbnails)
 5. Header formatting (bold, centered, borders)
-6. Update defined names to reference new sheet name
-7. Fix alignment and number formats
+6. Add stable Russian anchors for calculated ZTool columns
+7. Update defined names to reference new sheet name
+8. Fix alignment and number formats
 """
 import os
 import re
+import sys
 import zipfile
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.workbook.defined_name import DefinedName
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # Resolve the template relative to the repo root so the script works no matter
 # what the current working directory is.
@@ -23,6 +28,7 @@ OUTPUT = TEMPLATE
 
 OLD_SHEET = "图明1"
 NEW_SHEET = "Спецификация"
+LEGACY_SHEET_NAMES = (OLD_SHEET, "图纸明细1")
 
 # Re-run safe: also treat an already-renamed sheet as the source.
 SONG = "宋"  # leftover vendor CJK font (SimSun) that must be purged everywhere
@@ -65,7 +71,10 @@ COL_WIDTHS = {
     "M": 12.0,   # Эскиз (for thumbnails)
     "N": 14.0,   # Материал
     "O": 35.0,   # Путь
+    "P": 18.0,   # Габаритные размеры
 }
+
+DATA_COLS = 16
 
 # Data row height
 DATA_ROW_HEIGHT = 20.0
@@ -114,8 +123,10 @@ def main():
     names_to_update = {}
     for name, defn in list(wb.defined_names.items()):
         old_ref = defn.attr_text
-        if OLD_SHEET in old_ref:
-            new_ref = old_ref.replace(OLD_SHEET, NEW_SHEET)
+        new_ref = old_ref
+        for legacy_sheet in LEGACY_SHEET_NAMES:
+            new_ref = new_ref.replace(legacy_sheet, NEW_SHEET)
+        if new_ref != old_ref:
             names_to_update[name] = new_ref
 
     for name, new_ref in names_to_update.items():
@@ -124,13 +135,33 @@ def main():
         wb.defined_names.add(new_defn)
         print(f"  Updated name: {name} → {new_ref}")
 
+    # 2b. Add/normalize release-specific calculated columns and aliases.
+    # The original workbook has no column for ZTool's computed bounding-box
+    # values. Appending it avoids shifting existing legacy anchors.
+    ws["J6"] = "Масса ед. кг"
+    ws["P6"] = "Габаритные размеры"
+    calculated_names = {
+        "Номер": f"'{NEW_SHEET}'!$A$6",
+        "Количество": f"'{NEW_SHEET}'!$G$6",
+        "Путь": f"'{NEW_SHEET}'!$O$6",
+        "Эскиз": f"'{NEW_SHEET}'!$M$6",
+        "МассаЕдКг": f"'{NEW_SHEET}'!$J$6",
+        "ГабаритныеРазмеры": f"'{NEW_SHEET}'!$P$6",
+        "ЕдИзм": f"'{NEW_SHEET}'!$F$6",
+    }
+    for name, ref in calculated_names.items():
+        if name in wb.defined_names:
+            del wb.defined_names[name]
+        wb.defined_names.add(DefinedName(name=name, attr_text=ref))
+    print("[1c] Service/calculated anchors added: Номер, Количество, Путь, Эскиз, МассаЕдКг, ГабаритныеРазмеры, ЕдИзм")
+
     # 3. Set column widths
     for col, width in COL_WIDTHS.items():
         ws.column_dimensions[col].width = width
     print("[2] Column widths set")
 
     # 4. Format title row (row 1)
-    for col in range(1, 16):
+    for col in range(1, DATA_COLS + 1):
         cell = ws.cell(row=1, column=col)
         cell.font = FONT_TITLE
         cell.alignment = ALIGN_CENTER
@@ -140,7 +171,7 @@ def main():
     # 5. Format metadata rows (rows 2-5)
     for row in range(2, 6):
         ws.row_dimensions[row].height = 16.0
-        for col in range(1, 16):
+        for col in range(1, DATA_COLS + 1):
             cell = ws.cell(row=row, column=col)
             cell.font = FONT_META
             cell.alignment = ALIGN_LEFT
@@ -148,7 +179,7 @@ def main():
 
     # 6. Format header row (row 6) — bold, centered, with borders and fill
     ws.row_dimensions[6].height = 30.0
-    for col in range(1, 16):
+    for col in range(1, DATA_COLS + 1):
         cell = ws.cell(row=6, column=col)
         cell.font = FONT_HEADER
         cell.alignment = ALIGN_CENTER
@@ -159,7 +190,7 @@ def main():
     # 7. Format data rows (7 onwards) — borders, proper font, alignment
     for row in range(7, ws.max_row + 1):
         ws.row_dimensions[row].height = DATA_ROW_HEIGHT
-        for col in range(1, 16):  # noqa: data columns A..O carry borders
+        for col in range(1, DATA_COLS + 1):  # noqa: data columns A..P carry borders
             cell = ws.cell(row=row, column=col)
             cell.font = FONT_DATA
             cell.border = THIN_BORDER
@@ -171,6 +202,8 @@ def main():
                 cell.alignment = ALIGN_CENTER
             elif col == 15:  # Путь — left, no wrap
                 cell.alignment = ALIGN_LEFT
+            elif col == 16:  # Габаритные размеры — center-ish but keep wrap
+                cell.alignment = ALIGN_LEFT_WRAP
             else:
                 cell.alignment = ALIGN_LEFT_WRAP
     print(f"[6] Data rows 7-{ws.max_row} formatted")
@@ -190,14 +223,14 @@ def main():
 
     # 9b. Page setup: the vendor template printed only A1:K40 (cut off columns
     # L..O and most rows). Make the printout professional: landscape, fit all
-    # 15 columns to one page wide, repeat the title+header rows on every page.
-    ws.print_area = "A1:O75"
+    # data columns to one page wide, repeat the title+header rows on every page.
+    ws.print_area = "A1:P75"
     ws.page_setup.orientation = "landscape"
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 0
     ws.sheet_properties.pageSetUpPr.fitToPage = True
     ws.print_title_rows = "$1:$6"
-    print("[9] Page setup: landscape, fit-to-width, print area A1:O75")
+    print("[9] Page setup: landscape, fit-to-width, print area A1:P75")
 
     # 10. Save
     wb.save(OUTPUT)

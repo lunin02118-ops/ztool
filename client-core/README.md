@@ -173,10 +173,10 @@ backing fields (`_SWver`, …) would duplicate every element.
 
 ## Scope / limitations
 
-- **GUI stays in the binary.** Only the four licensing classes are source-editable; forms and
-  resources are left untouched in the exe.
-- The exe reports version **1.0** and talks to **<LICENSE_SERVER_IP>:58000** with our server key
-  (these come from the already-rekeyed base `ZTool-base.exe`).
+- **GUI stays in the binary.** Licensing classes are source-editable; localized forms/resources
+  are patched reproducibly by `tools/Localizer` during `build.ps1`.
+- The managed exe identity stays on the vendor assembly version for licensing compatibility, while
+  Win32 FileVersion/ProductVersion are normalized from root `VERSION`.
 
 ### Base vs. deliverable (repo layout)
 
@@ -186,7 +186,7 @@ are separate files at the repo root:
 | file | what it is | version / signing |
 |------|------------|-------------------|
 | `../ZTool-base.exe` | pristine rekeyed **build input** (publicize + reinject target) | Win32 `3.8.4`, strong-named (vendor PKT) |
-| `../ZTool.exe`      | **final deliverable** produced by `build.ps1` (= `out/ZTool.exe`) | Win32 `1.0.0`, RU-localized, MAX QR, auto-update off, **strong-name stripped** |
+| `../ZTool.exe`      | **final deliverable** produced by `build.ps1` (= `out/ZTool.exe`) | Win32 version from `../VERSION`, RU-localized, MAX QR removed, auto-update off, vendor public key token preserved |
 
 Run / redistribute `../ZTool.exe` together with `dist/ZTool.settings` (`<SWver>0</SWver>`) and the
 runtime DLLs. Never run `ZTool-base.exe` directly — it is only the un-localized 3.8.4 input.

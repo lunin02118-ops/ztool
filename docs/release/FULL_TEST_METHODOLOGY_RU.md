@@ -68,10 +68,12 @@ registry pre-flight: parent-value `AddInsStartup`, cached CommandManager tabs,
 - **SolidWorks:** 2025 (обязательно), опционально 2024/2023 smoke.
 - **Тестовая модель:** `TestModel/0614-A00.SLDASM` (29 поз., полный комплект в `TestModel/`).
 - **Релиз-пакет:** `runtime/ZTool.exe`, `runtime/ZTool.dll`, `runtime/SolidWorksTools.dll`,
-  `SolidWorksTemplates/MyMaterials.sldmat`, `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с
-  принятыми. Для ветки PR #33 рекомендуемая связка:
-  `ZTool.exe`=`7688EA399F3EA38672966043EDBE5F3F0102048369706882F4A35EB009A5D8FD`,
-  `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`.
+  `runtime/ZTool_rsa.dll`, `SolidWorksTemplates/MyMaterials.sldmat`,
+  `Шаблоны спецификации/`. Хеши `runtime/*` совпадают с принятыми. Для
+  `1.1.0-alfa` обязательная связка:
+  `ZTool.exe`=`C7AB14910003D1F23E330B29D2E53F2B2BFF8ADA6BB29D27D80DC37786FCF37F`,
+  `ZTool.dll`=`D053542521A6D869B2208D8C5A45D894F0FB6786CAB8A78F9AF7762D0E492EB9`,
+  `ZTool_rsa.dll`=`274A33F35B98437D57F7EADCE21CFE855D5285E9012C1C33733A3AB1F0EC2A90`.
 - **Пакет pre-flight:** `scripts/verify_release_package.ps1 -RequireSolidWorksTools`
   → PASS; `manifest.git.dirty=false`; в пакете нет приватных ключей/БД/дампов/логов.
 - **Конфиг:** `ZTool.settings` с `materialpath` → существующий `MyMaterials.sldmat`,
@@ -331,15 +333,41 @@ UIA/WinForms/SolidWorks COM-локаторы по имени окна, `Automati
 кнопки/заголовка, process path/hash и значениям ячеек. Скриншоты нужны как
 артефакты, но сами по себе не являются доказательством прохождения gate.
 
-Жёсткое правило: координатная карта допустима только как диагностический
-fallback и только если в отчёте рядом есть объектное подтверждение:
+Жёсткое правило: координатные клики **запрещены для зачёта acceptance-gate**.
+Координата может использоваться только как временная диагностика для скриншота
+или локализации проблемы, но такой шаг не считается прохождением теста.
+Засчитывается только объектное действие, где в отчёте есть:
 
 - какой процесс/окно управлялись (`pid`, `Path`, `SHA256`);
 - какой UIA/WinForms control найден (`AutomationId`/text/class/rect);
 - значение до действия и после действия (`ValuePattern`, Excel/COM read-back);
 - скриншот контрольной точки.
 
-Если gate пройден только hardcoded координатами без read-back, это `NO-GO`.
+Если контрол не найден объектно, результат gate — `FAIL/NO-GO`, а не попытка
+кликнуть "примерно туда". Для legacy WinForms, где UIA не видит вложенные
+контролы, использовать Win32 child-window locator (`pid` + class + visible text)
+и `BM_CLICK`; reusable helper: `scripts/ztool_acceptance_ui.ps1`. Для кнопок,
+которые выполняют сеть, запись лицензии или открывают модальные окна, запускать
+действие через `Invoke-ZToolButtonByText ... -Async`, чтобы тестовый runner не
+зависал на UI thread и мог продолжить сбор evidence.
+
+**Инцидент 2026-06-18: `SetWindowText` запрещён для ввода activation gate.**
+Native `SetWindowText`/`GetWindowText` на WinForms `TextBox` может показать в
+окне и в Win32 read-back правильные сегменты ключа, но managed
+`TextBox.Text` остаётся старым; сервер в этом случае получает прежний код. Такой
+прогон считается ложным PASS и должен быть забракован. Для ввода ключа
+засчитываются только:
+
+- ручной copy/paste пользователем с последующим server audit;
+- UIA `ValuePattern.SetValue` с UIA `CurrentValue` read-back для каждого
+  сегмента;
+- настоящий клавиатурный paste в сфокусированный control с read-back через UIA
+  или подтверждением по server audit.
+
+Для masked password field `ValuePattern.SetValue` может быть недоступен. Тогда
+пароль вводится вручную copy/paste, либо acceptance-код создаётся без пароля, а
+password-protected activation проверяется отдельным ручным gate. Полный ключ и
+пароль запрещено писать в отчёт: только маска, длина и SHA12.
 
 Обязательный порядок:
 
@@ -348,9 +376,10 @@ fallback и только если в отчёте рядом есть объек
 3. Запустить ZTool только кнопкой ленты SolidWorks (`Управление файлами`).
 4. Развернуть окно `ZTool 1.0(x64)`.
 5. Проверить, что ZTool видит 29 строк после `Подключить SW`.
-6. Управлять ZTool через UIA/WinForms locator. Для ribbon-кнопок, где
-   `InvokePattern` объявлен, но не исполняет действие, допустим
-   object-located click по найденному элементу, а не координата из таблицы.
+6. Управлять ZTool через UIA/WinForms/Win32 locator. Для ribbon-кнопок, где
+   `InvokePattern` объявлен, но не исполняет действие, допустим только
+   object-located action по найденному элементу (`AutomationElement` или
+   `HWND`/text/class), а не координата из таблицы.
 7. После каждого критического шага сохранять JSON/TXT dump и скриншот в папку
    отчёта:
    `01-sw-open.png`, `02-ztool-connected.png`, `03-export-menu.png`,
@@ -382,11 +411,24 @@ $r = New-Object WinRect+RECT
 
 Минимальные объектные локаторы ZTool:
 
+- No-license gate:
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Проба'` из
+  `scripts/ztool_acceptance_ui.ps1`; evidence должен содержать
+  `window-tree.txt`, `hwnd`, title countdown и факт выхода процесса.
+- Online activation gate:
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Регистрация'`, затем ввод
+  ключа/пароля только в найденные `EDIT` controls с сохранением `window-tree`;
+  `Invoke-ZToolButtonByText -ProcessId <pid> -Text 'Активация онлайн' -Async`.
+  Evidence: `hwnd` кнопки, `window-tree` до/после, server row state, старый/new
+  process id после restart. Координатный клик по кнопке активации не засчитывать.
+  Формат актуального кода клиента: 5 сегментов `8-5-5-5-9`, всего 36 символов
+  с дефисами; старые ключи `8-5-5-5-8` для этой сборки невалидны.
+
 | Действие | Locator | Ожидаемо |
 |----------|---------|----------|
 | `Подключить SW` | UIA text `Подключить SW`; чаще `SplitButton` under tab `Главная` | Status содержит `Подключение завершено`, таблица `DGV1` содержит 29 строк |
 | `Сохранить в SW` | UIA text `Сохранить в SW`; чаще верхний `SplitButton`, не generic `Button` | После повторного `Подключить SW` значения вернулись из SolidWorks |
-| `Задать имя свойства` | UIA Button text `Задать имя свойства`; dialog `Frmsetpropname`; grid `DGV1` | В строках есть `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`, `Обработка поверхности`, `Дата разработки`, `Масса` |
+| `Задать имя свойства` | UIA Button text `Задать имя свойства`; dialog `Frmsetpropname`; grid `DGV1` | В строках есть `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`, `Обработка поверхности`, `Дата разработки`, `Масса`; расчетные колонки `Масса ед._кг` и `Габаритные размеры` проверяются отдельно через сопоставление BOM |
 | `PropSwitch` | `StatusStrip1`: text `Вычисленное значение`/`Выражение свойства`; rightmost empty status `Button` before that text | Для записи свойств включён режим `Выражение свойства`, то есть видимы editable `PropVal_*`, а не read-only `PropResolvedVal_*` |
 | `Столбец заполнения` | UIA Button text `Столбец заполнения`; dialog `FrmFilling`; `ComboBox1`, `TextBox1`, `OK_Button` | `ComboBox1` содержит и выбирает нужный столбец, `TextBox1` содержит marker, после `OK` ячейки изменились |
 | BOM export | UIA tab `Спецификация`, menu item by visible text / exported file path | Создан `.xlsx`, валидатор и Excel read-back PASS |
@@ -461,9 +503,31 @@ $r = New-Object WinRect+RECT
 | LIC-08 | Повтор подтверждения (replay) | Отклонён |
 | LIC-09 | Сервер недоступен | Корректное сообщение **RU**, без краша |
 | LIC-10 | x86 и x64 ветки регистрации | Регистрация в правильной ветке реестра (b0–b3); MNum-привязка по железу |
+| LIC-11 | Нажать `OK` в сообщении `Регистрация выполнена` | Старый PID завершается, стартует новый PID ZTool, окно регистрации не появляется |
 
 Паритет: тексты диалогов локализованы (RU) — это намеренное отличие; **логика**
 активации/переноса/привязки должна совпадать с оригиналом 1:1.
+
+Контрольные условия для лицензирования:
+
+- Source of truth на боевом сервере — backend из `ZTOOL_DB_BACKEND`. Для текущего
+  production `ztool-tcp-server.service` это MySQL-таблица `license_keys`; старый
+  `/opt/ztool-tcp-server/licenses.db` может быть stale и не доказывает состояние
+  лицензии.
+- Нельзя деплоить локальный checkout поверх production, пока production-only
+  backend/adapters не синхронизированы в репозиторий или не зафиксированы в
+  отдельном deployment plan.
+- Нельзя выводить `systemctl show ... -p Environment` в лог/чат: там могут быть
+  DB passwords и ключевые пути. Скрипты должны читать environment внутри
+  процесса и печатать только redacted status.
+- После успешной активации недостаточно увидеть modal `Регистрация выполнена`.
+  Обязателен PID-restart: старый процесс должен выйти, новый процесс должен
+  подняться уже активированным. `Application.Restart()` без явного запуска нового
+  процесса считается запрещённой реализацией для этого gate, потому что уже
+  ловился Ribbon COM `E_NOINTERFACE` и зависание на старом процессе.
+- Если правка делается через IL-reinjector, помнить ограничение: текущий
+  reinjector заменяет существующие методы и не добавляет новые. Restart-логику
+  встраивать в существующий метод или сначала расширять reinjector.
 
 ---
 
@@ -513,15 +577,17 @@ $r = New-Object WinRect+RECT
 
 **Критерии PASS (каждый режим):** Excel создан без ошибок; № п/п последователен;
 «Количество» — числа > 0 и **= сумме** одинаковых поз. (служебная вычисляемая
-колонка, не свойство); набор/порядок колонок = шаблон; эскизы присутствуют для
-эскизных режимов. **Паритет:** число строк, разбивка количеств и состав колонок
-совпадают с оригиналом.
+колонка, не свойство); `Масса ед. кг` и `Габаритные размеры` заполнены из
+расчетных колонок ZTool, а не из пользовательских свойств; набор/порядок
+колонок = шаблон; эскизы присутствуют для эскизных режимов. **Паритет:** число
+строк, разбивка количеств и состав колонок совпадают с оригиналом.
 
 ### 6.2 Область D — Свойства и маппинг
 
 | ID | Шаги | Ожидаемо |
 |----|------|----------|
 | PROP-01 | Сверить русские `propname`/видимые колонки с legacy `mappingname` anchors шаблона | Колонки `Наименование/Обозначение/Материал/Тип/Версия/Обработка поверхности/Масса` читают русские свойства модели, а `mappingname` указывает на существующие anchors `零件名称/图号/材质/类型/版本/表面处理/重量` |
+| PROP-01A | Сверить постоянные расчетные BOM-колонки в окне сопоставления и шаблоне | В `FrmMapping` видны `Масса ед._кг` и `Габаритные размеры`; в `ZTool.settings` есть `Col_Weight -> МассаЕдКг` и `Col_bound -> ГабаритныеРазмеры`; в Excel Name Manager anchors указывают на `J6` и `P6` |
 | PROP-02 | Модель с заполненными русскими свойствами | Значения попадают в соответствующие колонки |
 | PROP-03 | Модель без свойства | Пустая ячейка, без ошибки/сдвига колонок |
 | PROP-04 | `Материал`/`Масса` как ссылки SW (`SW-Material@`,`SW-Mass@`) | Резолвятся в значения (resolved value) |
@@ -540,7 +606,8 @@ $r = New-Object WinRect+RECT
    а не проверка ZTool-write.
 3. `Подключить SW`: подтвердить 29 строк и считать через UIA/COM/Excel
    значения `Наименование`, `Обозначение`, `Материал`, `Тип`, `Версия`,
-   `Обработка поверхности`, `Дата разработки`, `Масса`.
+   `Обработка поверхности`, `Дата разработки`, `Масса`, а в окне сопоставления
+   BOM отдельно подтвердить расчетные `Масса ед._кг` и `Габаритные размеры`.
 4. Экспортировать BOM через ZTool UI и проверить Excel read-back. Для строгого
    `BOM-07/08` `Тип` должен быть непустым и попадать в `FilterRulesList`.
 
@@ -715,8 +782,9 @@ Excel будет явно восстановлен как требование.
 |----|----------|----------|
 | LOC-01 | `tools/Localizer`/`localization_scan.py` | `unclassified_han=0` (нет «потерянных» иероглифов) |
 | LOC-02 | Все формы/меню/сообщения | На русском; шрифт читаемый (Arial), без «кракозябр», CJK=0 |
-| LOC-03 | `UI_SCREENSHOT_CHECKLIST_RU.md` | Чек-лист скриншотов пройден |
+| LOC-03 | `MANUAL_SCREENSHOTS_CHECKLIST_RU.md` + `tools/chm-i18n/compare_manual_screenshots.py` | Скриншоты help_ru.chm сравнены файл-в-файл с оригиналом; `manual_screenshot_compare.md` без `FAIL`; contact sheet просмотрен |
 | LOC-04 | Русская справка `help_ru.chm` | Содержание/индекс/темы на русском |
+| LOC-05 | Диалог `Параметры` → вкладка `Эскиз` (`FrmOptions`) | Подписи, combo и кнопки не перекрываются; окно можно увеличить; скриншот сохранён в evidence |
 
 ---
 
@@ -765,6 +833,8 @@ Excel будет явно восстановлен как требование.
 - `Get-FileHash .\ZTool.dll -Algorithm SHA256`
 - `python client-core/tools/check_bom_template.py ZTool.settings`
 - `python client-core/tools/check_bom_template.py client-core/dist/ZTool.settings`
+- `check_bom_template.py` обязан подтвердить anchors `МассаЕдКг` (`J6`) и
+  `ГабаритныеРазмеры` (`P6`); отсутствие этих расчетных колонок блокирует релиз.
 - `scripts/verify_release_package.ps1 -PackageRoot <pkg> -RequireSolidWorksTools`
   (падает при отсутствии библиотеки материалов или `usematerialcolor=false`)
 - `powershell -NoProfile -ExecutionPolicy Bypass -File client-core/build.ps1`

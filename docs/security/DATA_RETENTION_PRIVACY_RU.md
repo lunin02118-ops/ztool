@@ -56,6 +56,17 @@ UPDATE license_codes SET is_active = 0, note = 'revoked/deleted' WHERE code = '<
 UPDATE activations SET is_active = 0 WHERE code = '<CODE>';
 ```
 
+Для штатного физического удаления уже отозванного ключа используйте CLI после
+backup:
+
+```powershell
+python -m ztool_license_server.cli --db <licenses.db> delete-revoked-code <CODE>
+```
+
+Команда удаляет только `is_active = 0` license code, связанные `activations`,
+`pending_activations` и `pending_transfers`. Активный ключ команда не удаляет;
+`audit_log` сохраняется для истории поддержки.
+
 Не удаляйте строки физически без причины: audit trail помогает поддержке и
 расследованиям. Если требуется полное удаление по юридической причине, сначала
 экспортируйте anonymized incident note.

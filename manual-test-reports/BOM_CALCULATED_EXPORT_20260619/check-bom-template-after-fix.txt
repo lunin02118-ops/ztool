@@ -1,0 +1,72 @@
+======================================================================
+BOM export pre-flight check
+settings: D:\Development\ztool\ZTool.settings
+======================================================================
+
+[1] Presets (report types): 8 mode(s)
+  - type=0 img=false ByRuler=false ByFilter=true  [OK ] Экспорт сводной спецификации
+  - type=1 img=false ByRuler=false ByFilter=true  [OK ] Экспорт иерархической спецификации
+  - type=2 img=false ByRuler=false ByFilter=true  [OK ] Экспорт спецификации верхнего уровня
+  - type=3 img=false ByRuler=false ByFilter=true  [OK ] Экспорт сводной спецификации деталей
+  - type=0 img=true  ByRuler=false ByFilter=true  [OK ] Экспорт сводной спецификации (с эскизами)
+  - type=1 img=true  ByRuler=false ByFilter=true  [OK ] Экспорт иерархической спецификации (с эскизами)
+  - type=0 img=false ByRuler=true  ByFilter=false [OK ] Обрабатываемые детали rules=['Обрабатываемые детали']
+  - type=0 img=false ByRuler=true  ByFilter=false [OK ] Покупные изделия rules=['Покупные изделия']
+  template path: D:\ZTool\Шаблоны спецификации\bom_шаблон.xlsx
+
+[1b] FilterRulesList: 5 rule(s) defined
+    - Без обработки поверхности
+    - Недостающие обязательные свойства
+    - Обрабатываемые детали
+    - Покупные изделия
+    - С обработкой поверхности
+
+[1c] Rule-string format (separator + operator):
+    - Без обработки поверхности: prop=$Тип$ op=Содержит OK
+    - Без обработки поверхности: prop=$Обработка поверхности$ op=Равно OK
+    - Недостающие обязательные свойства: prop=$Тип$ op=Равно OK
+    - Недостающие обязательные свойства: prop=$Номер чертежа$ op=Равно OK
+    - Недостающие обязательные свойства: prop=$Материал$ op=Равно OK
+    - Недостающие обязательные свойства: prop=$Масса$ op=Равно OK
+    - Недостающие обязательные свойства: prop=$Имя детали$ op=Равно OK
+    - Обрабатываемые детали: prop=$Тип$ op=Содержит OK
+    - Покупные изделия: prop=$Тип$ op=Содержит OK
+    - С обработкой поверхности: prop=$Тип$ op=Содержит OK
+    - С обработкой поверхности: prop=$Обработка поверхности$ op=Не равно OK
+
+[2] Template: Шаблоны спецификации\bom_шаблон.xlsx
+    sheets: ['Спецификация']
+    defined names (19): ['ГабаритныеРазмеры', 'ЕдИзм', 'Количество', 'МассаЕдКг', 'Номер', 'Путь', 'Эскиз', '图号', '序号', '材质', '版本', '磁盘文件名', '类型', '统计数量', '缩略图', '表面处理', '路径', '重量', '零件名称']
+
+[3] Column -> header(propname) -> template anchor:
+  PropVal_0      | Разработал             | anchor=       (no anchor - column header only)
+  PropVal_1      | Наименование           | anchor=零件名称   anchor OK
+  PropVal_2      | Обозначение            | anchor=图号     anchor OK
+  PropVal_3      | Материал               | anchor=材质     anchor OK
+  PropVal_4      | Тип                    | anchor=类型     anchor OK
+  PropVal_5      | Версия                 | anchor=版本     anchor OK
+  PropVal_6      | Обработка поверхности  | anchor=表面处理   anchor OK
+  PropVal_7      | Дата разработки        | anchor=       (no anchor - column header only)
+  PropVal_8      | Масса                  | anchor=       (no anchor - column header only)
+  Col_Weight     | Масса ед._кг           | anchor=МассаЕдКг anchor OK
+  Col_bound      | Габаритные размеры     | anchor=ГабаритныеРазмеры anchor OK
+
+[3b] Calculated columns (mapped by column name):
+    - Col_Weight   | Масса ед._кг         -> МассаЕдКг            OK
+    - Col_bound    | Габаритные размеры   -> ГабаритныеРазмеры    OK
+
+[4] Service columns (auto, bound by HeaderText -> defined name):
+  Col_Number     | header='Номер'                  (auto row number)  | anchor OK
+  Col_Quantity   | header='Количество'             (computed quantity) | anchor OK
+  Col_Path       | header='Путь'                   (document path)    | anchor OK
+  Col_Preview    | header='Эскиз'                  (thumbnail image)  | anchor OK
+  Col_FileName   | header='Имя файла на диске'     (disk file name)   | DEFERRED - unbindable header (space); rename deferred by request, column stays empty until renamed
+
+[5] Material library / material color defaults:
+    usematerialcolor: true
+    materialpath: D:\ZTool\SolidWorksTemplates\MyMaterials.sldmat [OK: D:\Development\ztool\SolidWorksTemplates\MyMaterials.sldmat]
+
+======================================================================
+RESULT: PASS - settings/template are consistent for export.
+Note: data population still must be verified in SolidWorks on a
+model whose custom-property names match the headers above.

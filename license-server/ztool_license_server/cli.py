@@ -127,6 +127,21 @@ def cmd_cleanup_pending(args):
     db.close()
 
 
+def cmd_delete_revoked_code(args):
+    """Delete a revoked license code and its related bindings."""
+    config = _config_from_args(args)
+    db = LicenseDB(config.db_path)
+    try:
+        success, message = db.delete_revoked_license(args.code)
+    finally:
+        db.close()
+
+    if not success:
+        print(f"ERROR: {message}", file=sys.stderr)
+        sys.exit(1)
+    print(message)
+
+
 def _config_from_args(args) -> ServerConfig:
     config = ServerConfig.from_env()
     if getattr(args, "db", None):
@@ -304,6 +319,13 @@ def main():
     sub.add_parser('cleanup-pending',
                    help='Expire stale pending activation/transfer rows')
 
+    # delete-revoked-code
+    p_delete = sub.add_parser(
+        'delete-revoked-code',
+        help='Delete a revoked license code and its related bindings',
+    )
+    p_delete.add_argument('code', help='Revoked license code to delete')
+
     # healthcheck
     p_health = sub.add_parser('healthcheck', help='Check DB, keys and config')
     p_health.add_argument('--keys-dir', default=None, help='Directory with public/private keys')
@@ -344,6 +366,8 @@ def main():
         cmd_purge_invalid(args)
     elif args.command == 'cleanup-pending':
         cmd_cleanup_pending(args)
+    elif args.command == 'delete-revoked-code':
+        cmd_delete_revoked_code(args)
     elif args.command == 'healthcheck':
         cmd_healthcheck(args)
     elif args.command == 'backup':

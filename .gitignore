@@ -31,6 +31,8 @@ tools/chm-i18n/_chm_src/
 tools/chm-i18n/_chm_build/
 
 # --- local scratch / artifacts ---
+_local_artifacts/
+releases/
 *.log
 *.tmp
 *.bak

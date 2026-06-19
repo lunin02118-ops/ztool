@@ -55,6 +55,15 @@ function Get-RelativePathForManifest([string]$Path) {
     return $resolved
 }
 
+function Get-ReleaseVersion {
+    $versionPath = Join-Path $repoRoot 'VERSION'
+    if (Test-Path -LiteralPath $versionPath -PathType Leaf) {
+        $v = (Get-Content -LiteralPath $versionPath -Encoding UTF8 -Raw).Trim()
+        if ($v) { return $v }
+    }
+    return '1.0.0'
+}
+
 function Assert-BuildInputs {
     $manifestPath = Join-Path $core 'build-inputs.json'
     if (-not (Test-Path $manifestPath)) { throw "build input manifest missing: $manifestPath" }
@@ -103,9 +112,11 @@ function Write-OutputManifest([string]$VerifyOutput, [int]$ReinjectExitCode) {
     $gitBranch = (& git -C $repoRoot rev-parse --abbrev-ref HEAD 2>$null)
     $gitDirty = [bool](& git -C $repoRoot status --porcelain 2>$null)
     $versionInfo = (Get-Item -LiteralPath $OutExe).VersionInfo
+    $releaseVersion = Get-ReleaseVersion
 
     $manifest = [ordered]@{
         generated_at = (Get-Date).ToUniversalTime().ToString('o')
+        release_version = $releaseVersion
         git = [ordered]@{
             commit = $gitCommit
             branch = $gitBranch
@@ -172,8 +183,9 @@ Invoke-Checked 'reinject'
 Write-Host '== [4/6] localize user-visible Chinese strings (forms) -> Russian ==' -ForegroundColor Cyan
 $locTmp = "$OutExe.loc.tmp"
 $locTable = Join-Path $core 'tools\Localizer\translations.tsv'
+$releaseVersion = Get-ReleaseVersion
 dotnet run -c Release --project (Join-Path $core 'tools\Localizer') -- `
-    $OutExe $locTmp $locTable
+    $OutExe $locTmp $locTable $releaseVersion
 Invoke-Checked 'localize'
 Move-Item -Force $locTmp $OutExe
 

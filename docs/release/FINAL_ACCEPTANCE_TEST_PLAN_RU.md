@@ -9,6 +9,7 @@
 - `manifest.git.dirty=false`.
 - `runtime/ZTool.exe` hash matches accepted release hash.
 - `runtime/ZTool.dll` hash matches accepted release hash.
+- `runtime/ZTool_rsa.dll` is present and hash matches accepted release hash.
 - `runtime/SolidWorksTools.dll` is present.
 - `runtime/SolidWorksTemplates/MyMaterials.sldmat` is present.
 - `runtime/ZTool.settings` points `materialpath` at packaged
@@ -21,6 +22,8 @@
 - Fresh install на staging VPS.
 - Migration from previous DB backup.
 - Key load через `ZTOOL_PRIVATE_KEY_FILE` / `ZTOOL_PUBLIC_KEY_FILE`.
+- Database source of truth matches `ZTOOL_DB_BACKEND`. On production this is
+  MySQL `license_keys`; stale SQLite files are not valid evidence.
 - `python -m ztool_license_server.cli healthcheck` PASS.
 - `backup` + `verify-backup` PASS.
 - Valid online activation PASS.
@@ -38,10 +41,20 @@
 - Clean Windows VM / clean test folder.
 - Old registry/license traces cleared.
 - `RegAsm ZTool.dll /codebase` PASS.
-- Trial starts.
+- Trial starts and closes only after object-located `Проба` action
+  (`AutomationElement` or Win32 `HWND`/text/class); coordinate clicks do not
+  count as evidence.
 - Activation dialog RU.
-- Online activation succeeds.
-- App restart remains licensed.
+- Online activation button is invoked by object locator (`Активация онлайн`,
+  `HWND`/text/class, async post); coordinate clicks do not count as evidence.
+- Activation code format is verified as `8-5-5-5-9` segments. Full code/password
+  are never written to logs; only mask, length and SHA12 are allowed.
+- Activation field input is manual copy/paste or UIA `ValuePattern.SetValue`
+  with read-back. Native `SetWindowText` / `GetWindowText` does not count because
+  it can leave managed WinForms `TextBox.Text` stale.
+- Online activation succeeds and server audit shows the expected license row.
+- Success `OK` closes the activation dialog, old PID exits, new PID starts, and
+  the restarted app remains licensed without showing the registration dialog.
 - Transfer via UI succeeds.
 - Reactivation after transfer succeeds.
 - Invalid code message RU.

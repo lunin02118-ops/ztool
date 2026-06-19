@@ -12,6 +12,9 @@ param(
 
     [string]$ExpectedClientExeSha256,
     [string]$ExpectedAddinDllSha256,
+    [string]$ExpectedRibbonSha256,
+    [string]$ExpectedExpandableGridViewSha256,
+    [string]$ExpectedZToolRsaSha256,
 
     [switch]$RequireSolidWorksTools,
     [switch]$AllowDirtyManifest
@@ -23,15 +26,21 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256 = '7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd'
-        addin_dll_sha256  = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+        client_exe_sha256             = 'c7ab14910003d1f23e330b29d2e53f2b2bff8ada6bb29d27d80dc37786fcf37f'
+        addin_dll_sha256              = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+        ribbon_dll_sha256             = '57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e'
+        expandable_grid_view_sha256   = '89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0'
+        ztool_rsa_dll_sha256          = '274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90'
     }
     $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
     if (Test-Path -LiteralPath $path) {
         $json = Get-Content -LiteralPath $path -Encoding UTF8 -Raw | ConvertFrom-Json
         return [ordered]@{
-            client_exe_sha256 = if ($json.client_exe_sha256) { [string]$json.client_exe_sha256 } else { $fallback.client_exe_sha256 }
-            addin_dll_sha256  = if ($json.addin_dll_sha256)  { [string]$json.addin_dll_sha256 }  else { $fallback.addin_dll_sha256 }
+            client_exe_sha256             = if ($json.client_exe_sha256) { [string]$json.client_exe_sha256 } else { $fallback.client_exe_sha256 }
+            addin_dll_sha256              = if ($json.addin_dll_sha256) { [string]$json.addin_dll_sha256 } else { $fallback.addin_dll_sha256 }
+            ribbon_dll_sha256             = if ($json.ribbon_dll_sha256) { [string]$json.ribbon_dll_sha256 } else { $fallback.ribbon_dll_sha256 }
+            expandable_grid_view_sha256   = if ($json.expandable_grid_view_sha256) { [string]$json.expandable_grid_view_sha256 } else { $fallback.expandable_grid_view_sha256 }
+            ztool_rsa_dll_sha256          = if ($json.ztool_rsa_dll_sha256) { [string]$json.ztool_rsa_dll_sha256 } else { $fallback.ztool_rsa_dll_sha256 }
         }
     }
     return $fallback
@@ -39,7 +48,10 @@ function Get-ExpectedHashes {
 
 $expectedHashes = Get-ExpectedHashes
 if (-not $ExpectedClientExeSha256) { $ExpectedClientExeSha256 = $expectedHashes.client_exe_sha256 }
-if (-not $ExpectedAddinDllSha256)  { $ExpectedAddinDllSha256  = $expectedHashes.addin_dll_sha256 }
+if (-not $ExpectedAddinDllSha256) { $ExpectedAddinDllSha256 = $expectedHashes.addin_dll_sha256 }
+if (-not $ExpectedRibbonSha256) { $ExpectedRibbonSha256 = $expectedHashes.ribbon_dll_sha256 }
+if (-not $ExpectedExpandableGridViewSha256) { $ExpectedExpandableGridViewSha256 = $expectedHashes.expandable_grid_view_sha256 }
+if (-not $ExpectedZToolRsaSha256) { $ExpectedZToolRsaSha256 = $expectedHashes.ztool_rsa_dll_sha256 }
 
 function Fail([string]$Message) {
     throw "release package verification failed: $Message"
@@ -62,6 +74,7 @@ function Assert-Dir([string]$Path) {
 }
 
 function Assert-Hash([string]$Path, [string]$Expected) {
+    Assert-File $Path
     $actual = Get-Sha256 $Path
     if ($actual -ne $Expected.ToLowerInvariant()) {
         Fail "hash mismatch for $Path; expected $Expected, got $actual"
@@ -161,6 +174,9 @@ foreach ($entry in $manifestFiles) {
 $clientExe = Join-Path $runtimeDir 'ZTool.exe'
 $addinDll = Join-Path $runtimeDir 'ZTool.dll'
 $solidWorksTools = Join-Path $runtimeDir 'SolidWorksTools.dll'
+$ribbonDll = Join-Path $runtimeDir 'Ribbon.dll'
+$expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
+$ztoolRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
 $settingsPath = Join-Path $runtimeDir 'ZTool.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
 
@@ -186,6 +202,9 @@ Get-ChildItem -LiteralPath $root -Recurse -Force | ForEach-Object {
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
+Assert-Hash $ribbonDll $ExpectedRibbonSha256
+Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
+Assert-Hash $ztoolRsaDll $ExpectedZToolRsaSha256
 Assert-File $settingsPath
 Assert-File $materialLibrary
 
@@ -227,6 +246,9 @@ $summary = [ordered]@{
     manifest_files = @($manifestFiles).Count
     runtime_ztool_exe = Get-Sha256 $clientExe
     runtime_ztool_dll = Get-Sha256 $addinDll
+    runtime_ribbon_dll = Get-Sha256 $ribbonDll
+    runtime_expandable_grid_dll = Get-Sha256 $expandableGridViewDll
+    runtime_ztool_rsa_dll = Get-Sha256 $ztoolRsaDll
 }
 
 Write-Host 'release package verification: PASS' -ForegroundColor Green

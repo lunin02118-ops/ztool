@@ -7,6 +7,7 @@ import pytest
 from ztool_license_server.cli import (
     cmd_add_code,
     cmd_backup,
+    cmd_delete_revoked_code,
     cmd_keygen,
     cmd_healthcheck,
     cmd_list_codes,
@@ -108,6 +109,56 @@ def test_license_code_cli_uses_env_db_path(tmp_path, monkeypatch, capsys):
     assert "ENV00-TEST0-CODE0-00000-00001" in out
     assert env_db.exists()
     assert not wrong_db.exists()
+
+
+def test_delete_revoked_code_cli_removes_revoked_license(tmp_path, capsys):
+    db_path = tmp_path / "licenses.db"
+    code = "OPS00-DEL00-REVOK-CODE0-00001"
+    db = LicenseDB(str(db_path))
+    db.add_license_code(code)
+    db._conn.execute(
+        "UPDATE license_codes SET is_active = 0 WHERE code = ?",
+        (code,),
+    )
+    db._conn.commit()
+    db.close()
+
+    cmd_delete_revoked_code(_make_args(db_path, code=code))
+
+    out = capsys.readouterr().out
+    assert f"deleted revoked license code: {code}" in out
+    db = LicenseDB(str(db_path))
+    try:
+        row = db._conn.execute(
+            "SELECT code FROM license_codes WHERE code = ?",
+            (code,),
+        ).fetchone()
+        assert row is None
+    finally:
+        db.close()
+
+
+def test_delete_revoked_code_cli_rejects_active_license(tmp_path, capsys):
+    db_path = tmp_path / "licenses.db"
+    code = "OPS00-DEL00-ACTIV-CODE0-00001"
+    db = LicenseDB(str(db_path))
+    db.add_license_code(code)
+    db.close()
+
+    with pytest.raises(SystemExit) as exc:
+        cmd_delete_revoked_code(_make_args(db_path, code=code))
+
+    assert exc.value.code == 1
+    assert "revoke it before deleting" in capsys.readouterr().err
+    db = LicenseDB(str(db_path))
+    try:
+        row = db._conn.execute(
+            "SELECT is_active FROM license_codes WHERE code = ?",
+            (code,),
+        ).fetchone()
+        assert row["is_active"] == 1
+    finally:
+        db.close()
 
 
 def test_keygen_uses_explicit_env_key_files(tmp_path, monkeypatch, capsys):

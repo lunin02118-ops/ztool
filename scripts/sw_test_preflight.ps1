@@ -27,7 +27,7 @@
   The script is idempotent and read-mostly: it only writes to the registry when
   -Register (RegAsm) or -CleanLicenseState is passed, and always takes a backup
   first. It does NOT launch SolidWorks or drive the UI; window normalization and
-  the coordinate map remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
+  object-based UI automation remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
 
 .PARAMETER RuntimeDir
   Folder that contains the ZTool.exe / ZTool.dll under test (e.g. the release
@@ -80,7 +80,7 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256 = '7688ea399f3ea38672966043edbe5f3f0102048369706882f4a35eb009a5d8fd'
+        client_exe_sha256 = 'c7ab14910003d1f23e330b29d2e53f2b2bff8ada6bb29d27d80dc37786fcf37f'
         addin_dll_sha256  = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
     }
     $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
@@ -134,6 +134,27 @@ function Invoke-Reg([string[]]$RegArgs) {
     }
 }
 
+function Get-RegistryPathNeedles([string]$Path) {
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $uri = ([Uri]$resolved).AbsoluteUri
+    return @(
+        $resolved,
+        ($resolved -replace '\\', '/'),
+        $uri,
+        [Uri]::UnescapeDataString($uri)
+    ) | ForEach-Object { $_.ToLowerInvariant() } | Select-Object -Unique
+}
+
+function Test-RegistryLineReferencesPath([string]$Line, [string[]]$Needles) {
+    $normalized = ($Line -replace '\\', '/').ToLowerInvariant()
+    foreach ($needle in $Needles) {
+        if ($normalized.Contains(($needle -replace '\\', '/'))) {
+            return $true
+        }
+    }
+    return $false
+}
+
 # --- 1. Normalize the launch environment ----------------------------------
 Step "normalizing process environment (WINDIR/SystemRoot/ComSpec)"
 if (-not $env:WINDIR) { $env:WINDIR = 'C:\Windows' }
@@ -152,6 +173,8 @@ $exePath = Join-Path $runtime 'ZTool.exe'
 $dllPath = Join-Path $runtime 'ZTool.dll'
 if (-not (Test-Path -LiteralPath $exePath)) { Fail "ZTool.exe not found in $runtime" }
 if (-not (Test-Path -LiteralPath $dllPath)) { Fail "ZTool.dll not found in $runtime" }
+$runtimeNeedles = Get-RegistryPathNeedles $runtime
+$dllPathNeedles = Get-RegistryPathNeedles $dllPath
 
 $exeHash = Get-Sha256 $exePath
 $dllHash = Get-Sha256 $dllPath
@@ -199,8 +222,13 @@ Step "scanning registry for stale ZTool CodeBase / AddIn references"
 $classesHits = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool', '/s', '/reg:64')
 $codeBaseLines = $classesHits | Where-Object { $_ -match 'CodeBase' }
 foreach ($line in $codeBaseLines) {
-    if ($line -notmatch [Regex]::Escape($runtime)) {
-        Warn "registry CodeBase does not point at the runtime under test: $($line.Trim())"
+    if (-not (Test-RegistryLineReferencesPath $line $runtimeNeedles)) {
+        if ($Register) {
+            Step "stale CodeBase before RegAsm: $($line.Trim())"
+        }
+        else {
+            Warn "registry CodeBase does not point at the runtime under test: $($line.Trim())"
+        }
     }
 }
 
@@ -217,9 +245,14 @@ if ($Register) {
     }
 
     Step "verifying CodeBase now points at the runtime DLL"
-    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', $dllPath, '/s', '/reg:64')
-    if (-not ($verify | Where-Object { $_ -match [Regex]::Escape($runtime) })) {
+    $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'ZTool.dll', '/s', '/reg:64')
+    $verifyCodeBaseLines = @($verify | Where-Object { $_ -match 'CodeBase' })
+    if (-not ($verifyCodeBaseLines | Where-Object { Test-RegistryLineReferencesPath $_ $dllPathNeedles })) {
         Fail "after RegAsm, no HKLM\SOFTWARE\Classes CodeBase references $dllPath; SolidWorks may still load a stale DLL"
+    }
+    $staleAfterRegister = @($verifyCodeBaseLines | Where-Object { -not (Test-RegistryLineReferencesPath $_ $runtimeNeedles) })
+    if ($staleAfterRegister.Count -gt 0) {
+        Fail "after RegAsm, stale HKLM\SOFTWARE\Classes CodeBase still exists: $($staleAfterRegister[0].Trim())"
     }
 }
 else {

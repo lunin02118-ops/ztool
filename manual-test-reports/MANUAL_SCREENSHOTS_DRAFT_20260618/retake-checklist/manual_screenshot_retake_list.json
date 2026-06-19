@@ -1,0 +1,222 @@
+[
+  {
+    "path": "activation.files/image002.jpg",
+    "retake_reason": "перекадрировать окно no-license: текущий кадр взят из evidence, но обрезан неидеально и содержит реальные контакты/QR",
+    "id": 1,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\activation.files\\image002.jpg",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\activation.files\\image002.jpg",
+    "frame_compare_status": "FAIL",
+    "frame_compare_issues": "aspect_delta=0.412",
+    "original_size": "804x434",
+    "candidate_size": "416x382"
+  },
+  {
+    "path": "activation.files/image007.png",
+    "retake_reason": "нужен фактический пункт меню Регистрация; текущий кадр показывает меню Файл без нужного пункта",
+    "id": 2,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\activation.files\\image007.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\activation.files\\image007.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "128x77",
+    "candidate_size": "250x150"
+  },
+  {
+    "path": "activation.files/image008.gif",
+    "retake_reason": "то же: нужен фактический пункт Регистрация",
+    "id": 3,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\activation.files\\image008.gif",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\activation.files\\image008.gif",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "128x77",
+    "candidate_size": "250x150"
+  },
+  {
+    "path": "advanced/bom-template.files/image001.png",
+    "retake_reason": "нужен русский Excel: Диспетчер имен на BOM-шаблоне",
+    "id": 4,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\advanced\\bom-template.files\\image001.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\advanced\\bom-template.files\\image001.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "1542x1198",
+    "candidate_size": "1542x1198"
+  },
+  {
+    "path": "advanced/bom-template.files/image003.png",
+    "retake_reason": "нужен русский Excel: Создание имени",
+    "id": 5,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\advanced\\bom-template.files\\image003.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\advanced\\bom-template.files\\image003.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "1149x924",
+    "candidate_size": "1149x924"
+  },
+  {
+    "path": "advanced/bom-template.files/image010.png",
+    "retake_reason": "нужен реальный диалог Экспорт выполнен / Открыть файл?",
+    "id": 6,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\advanced\\bom-template.files\\image010.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\advanced\\bom-template.files\\image010.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "470x316",
+    "candidate_size": "795x463"
+  },
+  {
+    "path": "advanced/dropdown.files/image004.png",
+    "retake_reason": "нужен реальный выпадающий список в ячейке с RU-именами",
+    "id": 7,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\advanced\\dropdown.files\\image004.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\advanced\\dropdown.files\\image004.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "912x884",
+    "candidate_size": "912x884"
+  },
+  {
+    "path": "advanced/dropdown.files/image005.png",
+    "retake_reason": "нужен реальный выпадающий список Тип: Механообработка / Листовой металл / Покупное",
+    "id": 8,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\advanced\\dropdown.files\\image005.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\advanced\\dropdown.files\\image005.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "981x917",
+    "candidate_size": "981x917"
+  },
+  {
+    "path": "basic/connect-sw.files/image002.png",
+    "retake_reason": "нужен родной диалог SolidWorks Свойства конфигурации на русском",
+    "id": 9,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\connect-sw.files\\image002.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\connect-sw.files\\image002.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "268x595",
+    "candidate_size": "268x595"
+  },
+  {
+    "path": "basic/connect-sw.files/image004.png",
+    "retake_reason": "нужно окно Список файлов для чтения в режиме чтения из файла",
+    "id": 10,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\connect-sw.files\\image004.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\connect-sw.files\\image004.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "1180x654",
+    "candidate_size": "1180x654"
+  },
+  {
+    "path": "basic/material-library.files/image009.png",
+    "retake_reason": "нужен SolidWorks: Параметры системы / Расположение файлов / база материалов",
+    "id": 11,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\material-library.files\\image009.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\material-library.files\\image009.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "1560x1314",
+    "candidate_size": "1560x1314"
+  },
+  {
+    "path": "basic/material-library.files/image010.gif",
+    "retake_reason": "дубликат предыдущего SolidWorks-кадра",
+    "id": 12,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\material-library.files\\image010.gif",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\material-library.files\\image010.gif",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "1347x1134",
+    "candidate_size": "1347x1134"
+  },
+  {
+    "path": "basic/save-to-sw.files/image009.png",
+    "retake_reason": "нужно реальное окно завершения сохранения, текущий кадр временно показывает параметры сохранения",
+    "id": 13,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image009.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image009.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "512x329",
+    "candidate_size": "634x430"
+  },
+  {
+    "path": "basic/save-to-sw.files/image010.gif",
+    "retake_reason": "дубликат: нужно реальное окно завершения сохранения",
+    "id": 14,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image010.gif",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image010.gif",
+    "frame_compare_status": "WARN",
+    "frame_compare_issues": "area_ratio=4.91",
+    "original_size": "294x189",
+    "candidate_size": "634x430"
+  },
+  {
+    "path": "basic/save-to-sw.files/image011.png",
+    "retake_reason": "нужно реальное уведомление о несохранённых элементах",
+    "id": 15,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image011.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image011.png",
+    "frame_compare_status": "FAIL",
+    "frame_compare_issues": "aspect_delta=0.334",
+    "original_size": "334x340",
+    "candidate_size": "634x430"
+  },
+  {
+    "path": "basic/save-to-sw.files/image012.gif",
+    "retake_reason": "дубликат уведомления о несохранённых элементах",
+    "id": 16,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image012.gif",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image012.gif",
+    "frame_compare_status": "FAIL",
+    "frame_compare_issues": "aspect_delta=0.333; area_ratio=7.76",
+    "original_size": "186x189",
+    "candidate_size": "634x430"
+  },
+  {
+    "path": "basic/save-to-sw.files/image015.png",
+    "retake_reason": "нужен значок ошибки в строке после Save to SW",
+    "id": 17,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image015.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image015.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "288x166",
+    "candidate_size": "288x166"
+  },
+  {
+    "path": "basic/save-to-sw.files/image016.gif",
+    "retake_reason": "нужна подсказка ошибки по Дата проектирования",
+    "id": 18,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\basic\\save-to-sw.files\\image016.gif",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\basic\\save-to-sw.files\\image016.gif",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "262x151",
+    "candidate_size": "262x151"
+  },
+  {
+    "path": "installation.files/image003.png",
+    "retake_reason": "нужно окно Проверить обновления / новая версия",
+    "id": 19,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\installation.files\\image003.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\installation.files\\image003.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "760x720",
+    "candidate_size": "760x720"
+  },
+  {
+    "path": "installation.files/image004.png",
+    "retake_reason": "нужен диалог Загрузка завершена / Установить обновление?",
+    "id": 20,
+    "original_file": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\source-backup-before-ru\\installation.files\\image004.png",
+    "candidate_file": "D:\\Development\\ztool\\manual-test-reports\\MANUAL_SCREENSHOTS_DRAFT_20260618\\clean-screenshots\\installation.files\\image004.png",
+    "frame_compare_status": "PASS",
+    "frame_compare_issues": "",
+    "original_size": "862x316",
+    "candidate_size": "862x316"
+  }
+]

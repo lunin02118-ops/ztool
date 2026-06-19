@@ -1,0 +1,34 @@
+{
+  "requested_path": "D:\\Development\\ztool\\manual-test-reports\\BOM_CALCULATED_EXPORT_20260619\\bom-exports-after-fix\\01_summary_after_fix_0614-A00_20260619-090810.xlsx",
+  "filename_edit_readback": "Имя файла:",
+  "exists": true,
+  "size": 14764,
+  "last_write": "2026-06-19T09:08:11.312486",
+  "modal_log_tail": [
+    {
+      "title": "ZTool 1.0(x64)",
+      "texts": [
+        "Вопрос",
+        "Да",
+        "Нет",
+        "Экспорт выполнен! Открыть?",
+        "Закрыть",
+        "UIRibbonDockTop",
+        "Ribbon",
+        "Ribbon",
+        "Ribbon",
+        "1",
+        "Панель быстрого доступа",
+        "Настройка панели быстрого доступа",
+        "Меню приложения",
+        "Вкладки ленты",
+        "Главная",
+        "Спецификация",
+        "Упаковка",
+        "Инструменты",
+        "Свернуть ленту",
+        "Справка"
+      ]
+    }
+  ]
+}

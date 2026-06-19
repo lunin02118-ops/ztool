@@ -107,6 +107,74 @@ class TestLicenseDB:
         assert not success
         assert "无需转出" in error
 
+    def test_delete_revoked_license_removes_code_bindings_and_pending(self, db):
+        """A revoked code can be physically deleted with all dependent rows."""
+        code = "DELET-REVOK-TESTS-CODE0-00001"
+        db.add_license_code(code, device_limit=2)
+        db.activate(code, "MACHINE_A")
+        db._conn.execute(
+            "INSERT INTO pending_activations (code, machine_code, nonce, status) "
+            "VALUES (?, ?, ?, 'pending')",
+            (code, "MACHINE_B", "nonce-a"),
+        )
+        db._conn.execute(
+            "INSERT INTO pending_transfers (code, machine_code, nonce, status) "
+            "VALUES (?, ?, ?, 'pending')",
+            (code, "MACHINE_A", "nonce-t"),
+        )
+        db._conn.execute(
+            "UPDATE license_codes SET is_active = 0 WHERE code = ?",
+            (code,),
+        )
+        db._conn.commit()
+
+        success, message = db.delete_revoked_license(code)
+
+        assert success
+        assert message == f"deleted revoked license code: {code}"
+        for table in (
+            "license_codes",
+            "activations",
+            "pending_activations",
+            "pending_transfers",
+        ):
+            row = db._conn.execute(
+                f"SELECT COUNT(*) AS cnt FROM {table} WHERE code = ?",
+                (code,),
+            ).fetchone()
+            assert row["cnt"] == 0
+        audit = db._conn.execute(
+            "SELECT * FROM audit_log WHERE action = ? AND code = ?",
+            ("delete_revoked_license", code),
+        ).fetchone()
+        assert audit is not None
+        assert audit["result"] == "success"
+        assert "activations=1" in audit["details"]
+        assert "pending_activations=1" in audit["details"]
+        assert "pending_transfers=1" in audit["details"]
+
+    def test_delete_revoked_license_rejects_active_code(self, db):
+        """Active licenses must be explicitly revoked before deletion."""
+        code = "DELET-ACTIV-TESTS-CODE0-00001"
+        db.add_license_code(code)
+
+        success, error = db.delete_revoked_license(code)
+
+        assert not success
+        assert "active" in error
+        row = db._conn.execute(
+            "SELECT is_active FROM license_codes WHERE code = ?",
+            (code,),
+        ).fetchone()
+        assert row["is_active"] == 1
+
+    def test_delete_revoked_license_missing_code(self, db):
+        """Deleting an unknown code reports a clean operator error."""
+        success, error = db.delete_revoked_license("MISSING-CODE")
+
+        assert not success
+        assert error == "license code not found"
+
     def test_password_check(self, db):
         """Test password validation."""
         code = "PASSW-ORD00-TESTS-CODE0-00001"

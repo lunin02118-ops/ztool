@@ -1,0 +1,557 @@
+[
+  {
+    "rel": "activation.files/image001.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\evidence\\release-1.1.0-alfa\\clean-install-20260618-190659\\08-registration-window-front.png",
+    "crop": null,
+    "redacts": [
+      [
+        22,
+        58,
+        600,
+        228
+      ]
+    ],
+    "note": "registration window redacted",
+    "size": [
+      620,
+      460
+    ]
+  },
+  {
+    "rel": "activation.files/image003.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\evidence\\release-1.1.0-alfa\\clean-install-20260618-190659\\08-registration-window-front.png",
+    "crop": null,
+    "redacts": [
+      [
+        22,
+        58,
+        600,
+        228
+      ]
+    ],
+    "note": "registration window redacted",
+    "size": [
+      620,
+      460
+    ]
+  },
+  {
+    "rel": "activation.files/image004.jpg",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\evidence\\release-1.1.0-alfa\\clean-install-20260618-190659\\08-registration-window-front.png",
+    "crop": null,
+    "redacts": [
+      [
+        22,
+        58,
+        600,
+        228
+      ]
+    ],
+    "note": "registration window redacted",
+    "size": [
+      620,
+      460
+    ]
+  },
+  {
+    "rel": "activation.files/image002.jpg",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\evidence\\release-1.1.0-alfa\\acceptance-20260618-173928\\screenshots\\no-license-0s.png",
+    "crop": [
+      1070,
+      520,
+      1486,
+      902
+    ],
+    "redacts": [],
+    "note": "no-license modal crop",
+    "size": [
+      416,
+      382
+    ]
+  },
+  {
+    "rel": "activation.files/image009.png",
+    "src": "C:\\Temp\\codex-clipboard-647a9b09-5d91-4c32-9165-6a111000e876.png",
+    "crop": null,
+    "redacts": [
+      [
+        37,
+        83,
+        486,
+        257
+      ],
+      [
+        35,
+        294,
+        445,
+        319
+      ],
+      [
+        35,
+        346,
+        274,
+        369
+      ]
+    ],
+    "note": "activation success redacted",
+    "size": [
+      514,
+      438
+    ]
+  },
+  {
+    "rel": "activation.files/image010.jpg",
+    "src": "C:\\Temp\\codex-clipboard-647a9b09-5d91-4c32-9165-6a111000e876.png",
+    "crop": null,
+    "redacts": [
+      [
+        37,
+        83,
+        486,
+        257
+      ],
+      [
+        35,
+        294,
+        445,
+        319
+      ],
+      [
+        35,
+        346,
+        274,
+        369
+      ]
+    ],
+    "note": "activation success redacted",
+    "size": [
+      514,
+      438
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image003.png",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image004.gif",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image009.png",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image010.gif",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image011.png",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image012.gif",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "save options dialog",
+    "size": [
+      634,
+      430
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image007.png",
+    "src": "C:\\Temp\\codex-clipboard-a946b03f-9417-44a9-8aaf-cca921c7e6f3.png",
+    "crop": [
+      350,
+      365,
+      625,
+      415
+    ],
+    "redacts": [],
+    "note": "RU save buttons crop",
+    "size": [
+      275,
+      50
+    ]
+  },
+  {
+    "rel": "advanced/bom-template.files/image002.png",
+    "src": "C:\\Temp\\codex-clipboard-cbbb2b56-d995-4387-9e4c-23164876e7d3.png",
+    "crop": null,
+    "redacts": [],
+    "note": "column mapping dialog",
+    "size": [
+      514,
+      510
+    ]
+  },
+  {
+    "rel": "advanced/bom-template.files/image005.png",
+    "src": "C:\\Temp\\codex-clipboard-c9cf905e-9184-41a3-826c-982866d663dc.png",
+    "crop": null,
+    "redacts": [],
+    "note": "BOM scheme dialog",
+    "size": [
+      795,
+      463
+    ]
+  },
+  {
+    "rel": "advanced/bom-template.files/image010.png",
+    "src": "C:\\Temp\\codex-clipboard-c9cf905e-9184-41a3-826c-982866d663dc.png",
+    "crop": null,
+    "redacts": [],
+    "note": "BOM scheme placeholder until export-success modal is captured",
+    "size": [
+      795,
+      463
+    ]
+  },
+  {
+    "rel": "advanced/dropdown.files/image002.png",
+    "src": "C:\\Temp\\codex-clipboard-8d32fd80-2f8e-46a2-9e41-1d5ed7692f9d.png",
+    "crop": null,
+    "redacts": [],
+    "note": "settings user-list tab",
+    "size": [
+      507,
+      474
+    ]
+  },
+  {
+    "rel": "advanced/dropdown.files/image003.png",
+    "src": "C:\\Temp\\codex-clipboard-8d32fd80-2f8e-46a2-9e41-1d5ed7692f9d.png",
+    "crop": null,
+    "redacts": [],
+    "note": "settings user-list tab",
+    "size": [
+      507,
+      474
+    ]
+  },
+  {
+    "rel": "basic/material-library.files/image005.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-settings-material-foreground.png",
+    "crop": [
+      900,
+      345,
+      1668,
+      940
+    ],
+    "redacts": [],
+    "note": "material tab dialog crop",
+    "size": [
+      768,
+      595
+    ]
+  },
+  {
+    "rel": "basic/material-library.files/image006.gif",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-settings-material-foreground.png",
+    "crop": [
+      900,
+      345,
+      1668,
+      940
+    ],
+    "redacts": [],
+    "note": "material tab dialog crop",
+    "size": [
+      768,
+      595
+    ]
+  },
+  {
+    "rel": "basic/material-library.files/image007.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-settings-material-foreground.png",
+    "crop": [
+      900,
+      345,
+      1668,
+      940
+    ],
+    "redacts": [],
+    "note": "material tab dialog crop",
+    "size": [
+      768,
+      595
+    ]
+  },
+  {
+    "rel": "basic/material-library.files/image008.gif",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-settings-material-foreground.png",
+    "crop": [
+      900,
+      345,
+      1668,
+      940
+    ],
+    "redacts": [],
+    "note": "material tab dialog crop",
+    "size": [
+      768,
+      595
+    ]
+  },
+  {
+    "rel": "advanced/thumbnails.files/image002.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-settings-thumbnail-foreground.png",
+    "crop": [
+      900,
+      345,
+      1668,
+      940
+    ],
+    "redacts": [],
+    "note": "thumbnail tab dialog crop",
+    "size": [
+      768,
+      595
+    ]
+  },
+  {
+    "rel": "basic/property-names.files/image003.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-property-names-valid.png",
+    "crop": [
+      1110,
+      470,
+      1452,
+      925
+    ],
+    "redacts": [],
+    "note": "property names dialog crop",
+    "size": [
+      342,
+      455
+    ]
+  },
+  {
+    "rel": "basic/property-names.files/image004.jpg",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-property-names-valid.png",
+    "crop": [
+      1110,
+      470,
+      1452,
+      925
+    ],
+    "redacts": [],
+    "note": "property names dialog crop",
+    "size": [
+      342,
+      455
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image005.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-property-names-valid.png",
+    "crop": [
+      1110,
+      470,
+      1452,
+      925
+    ],
+    "redacts": [],
+    "note": "property names dialog crop",
+    "size": [
+      342,
+      455
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image006.jpg",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dialog-property-names-valid.png",
+    "crop": [
+      1110,
+      470,
+      1452,
+      925
+    ],
+    "redacts": [],
+    "note": "property names dialog crop",
+    "size": [
+      342,
+      455
+    ]
+  },
+  {
+    "rel": "basic/connect-sw.files/image006.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\ztool-restarted-connected.png",
+    "crop": [
+      0,
+      0,
+      1085,
+      765
+    ],
+    "redacts": [],
+    "note": "main connected ZTool crop",
+    "size": [
+      1085,
+      765
+    ]
+  },
+  {
+    "rel": "advanced/thumbnails.files/image003.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\ztool-restarted-connected.png",
+    "crop": [
+      0,
+      0,
+      1085,
+      765
+    ],
+    "redacts": [],
+    "note": "main connected ZTool crop",
+    "size": [
+      1085,
+      765
+    ]
+  },
+  {
+    "rel": "advanced/bom-template.files/image007.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\ztool-restarted-connected.png",
+    "crop": [
+      0,
+      0,
+      1085,
+      765
+    ],
+    "redacts": [],
+    "note": "main connected ZTool crop",
+    "size": [
+      1085,
+      765
+    ]
+  },
+  {
+    "rel": "installation.files/image002.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\menu-file.png",
+    "crop": [
+      0,
+      0,
+      250,
+      150
+    ],
+    "redacts": [],
+    "note": "file menu update item crop",
+    "size": [
+      250,
+      150
+    ]
+  },
+  {
+    "rel": "activation.files/image007.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\menu-file.png",
+    "crop": [
+      0,
+      0,
+      250,
+      150
+    ],
+    "redacts": [],
+    "note": "file menu registration item crop",
+    "size": [
+      250,
+      150
+    ]
+  },
+  {
+    "rel": "activation.files/image008.gif",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\menu-file.png",
+    "crop": [
+      0,
+      0,
+      250,
+      150
+    ],
+    "redacts": [],
+    "note": "file menu registration item crop",
+    "size": [
+      250,
+      150
+    ]
+  },
+  {
+    "rel": "basic/connect-sw.files/image003.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dropdown-connect-sw.png",
+    "crop": [
+      0,
+      0,
+      250,
+      190
+    ],
+    "redacts": [],
+    "note": "connect dropdown crop",
+    "size": [
+      250,
+      190
+    ]
+  },
+  {
+    "rel": "basic/save-to-sw.files/image014.gif",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dropdown-quick-filter.png",
+    "crop": [
+      170,
+      80,
+      500,
+      250
+    ],
+    "redacts": [],
+    "note": "quick filter dropdown crop",
+    "size": [
+      330,
+      170
+    ]
+  },
+  {
+    "rel": "advanced/bom-template.files/image009.png",
+    "src": "D:\\Development\\ztool\\_local_artifacts\\scratch\\manual-screenshots-20260617\\captures\\dropdown-export-spec.png",
+    "crop": [
+      0,
+      0,
+      360,
+      250
+    ],
+    "redacts": [],
+    "note": "export spec dropdown crop",
+    "size": [
+      360,
+      250
+    ]
+  }
+]
