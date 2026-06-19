@@ -1,0 +1,38 @@
+{
+  "source": "D:\\Development\\ztool\\_local_artifacts\\frmfilling-layout-test\\screenshots",
+  "contact_sheet": "D:\\Development\\ztool\\manual-test-reports\\FRMFILLING_LAYOUT_20260619\\frmfilling-layout-contact-sheet.jpg",
+  "frames": [
+    {
+      "file": "frmfilling-default-tab1.png",
+      "label": "default 760x540 / user-fill"
+    },
+    {
+      "file": "frmfilling-default-tab2.png",
+      "label": "default 760x540 / rule-fill"
+    },
+    {
+      "file": "frmfilling-default-tab3.png",
+      "label": "default 760x540 / search-fill"
+    },
+    {
+      "file": "frmfilling-default-tab4.png",
+      "label": "default 760x540 / linked-fill"
+    },
+    {
+      "file": "frmfilling-large-direct-tab1.png",
+      "label": "large 980x700 / user-fill"
+    },
+    {
+      "file": "frmfilling-large-direct-tab2.png",
+      "label": "large 980x700 / rule-fill"
+    },
+    {
+      "file": "frmfilling-large-direct-tab3.png",
+      "label": "large 980x700 / search-fill"
+    },
+    {
+      "file": "frmfilling-large-direct-tab4.png",
+      "label": "large 980x700 / linked-fill"
+    }
+  ]
+}

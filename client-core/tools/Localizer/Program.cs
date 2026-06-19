@@ -711,13 +711,22 @@ internal static class Program
             ["Frmexportbom"] = new DialogLayout(1160, 560),
             ["Frmmapping"] = new DialogLayout(780, 520),
             ["FrmFilterrules"] = new DialogLayout(920, 560),
+            ["FrmFilling"] = new DialogLayout(760, 540),
             ["FrmSWUnit"] = new DialogLayout(640, 650),
             ["FrmOptions"] = new DialogLayout(760, 560),
         };
 
     private sealed class ControlPatch
     {
-        public ControlPatch(string name, int? left = null, int? top = null, int? width = null, int? height = null, string text = null)
+        public ControlPatch(
+            string name,
+            int? left = null,
+            int? top = null,
+            int? width = null,
+            int? height = null,
+            string text = null,
+            int? anchor = null,
+            int? dock = null)
         {
             Name = name;
             Left = left;
@@ -725,6 +734,8 @@ internal static class Program
             Width = width;
             Height = height;
             Text = text;
+            Anchor = anchor;
+            Dock = dock;
         }
 
         public string Name { get; }
@@ -733,6 +744,8 @@ internal static class Program
         public int? Width { get; }
         public int? Height { get; }
         public string Text { get; }
+        public int? Anchor { get; }
+        public int? Dock { get; }
     }
 
     private static readonly Dictionary<string, ControlPatch[]> ControlLayoutPatches =
@@ -810,6 +823,55 @@ internal static class Program
                 new ControlPatch("GroupBox2", left: 250, width: 560),
                 new ControlPatch("DGV1", width: 540),
                 new ControlPatch("Label1", width: 540),
+            },
+            ["FrmFilling"] = new[]
+            {
+                new ControlPatch("TabControl1", left: 0, top: 0, width: 760, height: 492, anchor: 15, dock: 0),
+                new ControlPatch("TableLayoutPanel2", left: 560, top: 500, width: 190, anchor: 10),
+
+                new ControlPatch("Label1", width: 230),
+                new ControlPatch("ComboBox1", width: 630, anchor: 13),
+                new ControlPatch("TextBox1", width: 510, height: 76, anchor: 5),
+                new ControlPatch("Label3", top: 68, width: 160),
+                new ControlPatch("Label6", left: 545, top: 68, width: 90),
+                new ControlPatch("NumericUpDown1", left: 635, top: 66),
+                new ControlPatch("Button1", left: 545, top: 120, width: 130, text: "Вставить ссылку"),
+                new ControlPatch("GroupBox1", top: 180, width: 720, height: 270, anchor: 15),
+                new ControlPatch("Label5", left: 280, width: 430, height: 105),
+                new ControlPatch("Label7", width: 280),
+
+                new ControlPatch("GroupBox5", left: 8, top: 8, width: 270, height: 420, anchor: 7),
+                new ControlPatch("fillsettinglist", width: 250, height: 340, anchor: 15, dock: 0),
+                new ControlPatch("TableLayoutPanel1", top: 378, width: 250, anchor: 6),
+                new ControlPatch("add", width: 72, text: "Доб."),
+                new ControlPatch("edit", width: 86, text: "Переим."),
+                new ControlPatch("del", width: 72, text: "Удал."),
+                new ControlPatch("GroupBox2", left: 295, top: 8, width: 430, height: 185, anchor: 13),
+                new ControlPatch("RuleList", width: 410, height: 138),
+                new ControlPatch("GroupBox3", left: 295, top: 210, width: 430, height: 170, anchor: 13),
+                new ControlPatch("Label2", width: 220),
+                new ControlPatch("ComboBox2", width: 395, anchor: 13),
+                new ControlPatch("TextBox3", width: 395, anchor: 13),
+
+                new ControlPatch("GroupBox4", left: 8, top: 8, width: 720, height: 120, anchor: 13),
+                new ControlPatch("datasource", width: 610, anchor: 13),
+                new ControlPatch("Button3", left: 682, width: 36, anchor: 9),
+                new ControlPatch("Label11", width: 120),
+                new ControlPatch("srownumer", left: 135),
+                new ControlPatch("Label15", left: 250, width: 95),
+                new ControlPatch("datacount", left: 350, width: 40),
+                new ControlPatch("Button2", left: 430, width: 150, text: "Обновить данные"),
+                new ControlPatch("GroupBox6", left: 8, top: 145, width: 720, height: 155, anchor: 13),
+                new ControlPatch("Label12", left: 130, width: 95),
+                new ControlPatch("ComboBox3", left: 235, width: 460, anchor: 13),
+                new ControlPatch("Label13", width: 55),
+                new ControlPatch("rcolnumer2", left: 70),
+                new ControlPatch("Label14", left: 145, width: 90),
+                new ControlPatch("ComboBox4", left: 235, width: 460, anchor: 13),
+
+                new ControlPatch("DGV1", dock: 5),
+                new ControlPatch("Panel1", dock: 2),
+                new ControlPatch("Label16", text: "Двойной щелчок по строке — записать в главное окно; Del — удалить строку."),
             },
             ["FrmSWUnit"] = new[]
             {
@@ -963,12 +1025,21 @@ internal static class Program
         IMethod setTop,
         IMethod setWidth,
         IMethod setHeight,
-        IMethod setText)
+        IMethod setText,
+        IMethod setAnchor,
+        IMethod setDock)
     {
         if (!ControlLayoutPatches.TryGetValue(formName, out var patches)) return 0;
         int edits = 0;
         foreach (var patch in patches)
         {
+            if (patch.Dock.HasValue && setDock != null)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Dock.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setDock));
+                edits += 8;
+            }
             if (patch.Left.HasValue)
             {
                 AddFindControl(add, getControls, findControl, patch.Name);
@@ -1002,6 +1073,13 @@ internal static class Program
                 AddFindControl(add, getControls, findControl, patch.Name);
                 add.Add(Instruction.Create(OpCodes.Ldstr, patch.Text));
                 add.Add(Instruction.Create(OpCodes.Callvirt, setText));
+                edits += 8;
+            }
+            if (patch.Anchor.HasValue && setAnchor != null)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.Anchor.Value));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setAnchor));
                 edits += 8;
             }
         }
@@ -1075,6 +1153,13 @@ internal static class Program
             ["Включая подпапки"] = "Подпапки",
             ["Перейти к настройкам"] = "Настройки",
             ["Перейти к настройке"] = "Настройки",
+            ["Заполнять элементы, удовлетворяющие пользовательскому правилу"] = "Заполнять строки по правилу",
+            ["Описание:\r\n{ } — начальное значение инкремента;\r\n$ИмяСвойства$ — значение свойства\r\n%ИмяСвойства% — выражение свойства\r\n<ЗаголовокСтолбца> — значение из другого столбца\r\n"] =
+                "Описание:\r\n{ } — шаг инкремента\r\n$ИмяСвойства$ — значение свойства\r\n%ИмяСвойства% — выражение\r\n<Заголовок> — значение столбца",
+            ["Объём кэшируемых данных:"] = "Кэш данных:",
+            ["-го столбца искать"] = "столбца искать",
+            ["-й столбец"] = "строка",
+            ["записать данные в"] = "записать в",
             ["Длина (двойной размер)"] = "Двойной размер",
             ["Единица объёма"] = "Объём",
             ["MKS (метр, килограмм, секунда)"] = "MKS (м, кг, с)",
@@ -1129,6 +1214,8 @@ internal static class Program
         var setWidth = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Width") : null;
         var setHeight = controlType != null ? MakeControlIntSetter(mod, controlType, "set_Height") : null;
         var setText = controlType != null ? MakeControlTextSetter(mod, controlType) : null;
+        var setAnchor = FindMethodRef(mod, "set_Anchor", "Control", 1);
+        var setDock = FindMethodRef(mod, "set_Dock", "Control", 1);
 
         if (setFormBorderStyle == null || setClientSize == null || sizeCtor == null || setMinimumSize == null)
         {
@@ -1202,7 +1289,9 @@ internal static class Program
                     setTop,
                     setWidth,
                     setHeight,
-                    setText);
+                    setText,
+                    setAnchor,
+                    setDock);
             }
 
             int inserted = InsertBeforeRet(init, add);
