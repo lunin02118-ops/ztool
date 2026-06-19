@@ -1747,6 +1747,7 @@ internal static class Program
             string qrPng = System.IO.Path.Combine(assetDir, "max_qr.png");
             int maxQrChanges = InjectMaxQr(mod, qrPng);
             int frmRgChanges = TuneFrmRg(mod);
+            int verifyChanges = PatchVerifyContacts(mod);
             int aboutTitleChanges = FixAboutTitle(mod);
             int updateChanges = DisableUpdateCheck(mod);
             int pktChanges = PatchHandshakePkt(mod);
@@ -1782,7 +1783,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -2570,6 +2571,206 @@ internal static class Program
         load.Body.Instructions.Insert(insertAt + 1, Instruction.Create(OpCodes.Call, setup));
 
         Console.WriteLine("  FrmAbout: rebuilt About box (site link, email, MAX QR; removed phones/QQ/version/OS/desc/log)");
+        return 1;
+    }
+
+    // Redesigns the trial / "license not found" window (FrmRverify) to match the
+    // rebuilt About box: the vendor contact grids — TableLayoutPanel3 (QQ /
+    // Группа QQ / Email rows) and TableLayoutPanel4 (the Сайт: row) — are hidden,
+    // and a clean centered e-mail line plus a clickable "Перейти на сайт"
+    // hyperlink are dropped into the freed space above the MAX QR card. The red
+    // "license not found" banner (TableLayoutPanel2), the phone-free MAX QR
+    // (PictureBox1) and the Проба / Регистр / Отмена buttons (TableLayoutPanel1)
+    // are left untouched. Same pattern as PatchAboutBox: an injected instance
+    // helper zt_VerifySetup() is called at the end of InitializeComponent so the
+    // controls always exist, and the website link opens via explorer.exe (a child
+    // process) so a broken default-browser association can never fault the host.
+    private static int PatchVerifyContacts(ModuleDefMD mod)
+    {
+        var frm = mod.Find("ZTool.FrmRverify", false);
+        var init = frm?.FindMethod("InitializeComponent");
+        if (frm == null || init?.Body == null)
+        {
+            Console.WriteLine("  FrmRverify: contact patch skipped (form/InitializeComponent not found)");
+            return 0;
+        }
+        if (frm.FindMethod("zt_VerifySetup") != null) return 0; // idempotent
+
+        var wf = FindAssemblyRef(mod, "System.Windows.Forms");
+        var dr = FindAssemblyRef(mod, "System.Drawing");
+        if (wf == null || dr == null)
+        {
+            Console.WriteLine("  FrmRverify: contact patch skipped (WinForms/Drawing refs missing)");
+            return 0;
+        }
+        TypeRefUser WF(string n) => new TypeRefUser(mod, "System.Windows.Forms", n, wf);
+        TypeRefUser DR(string n) => new TypeRefUser(mod, "System.Drawing", n, dr);
+
+        var trControl = WF("Control");
+        var trCtrlColl = new TypeRefUser(mod, "", "ControlCollection", trControl);
+        var trLabel = WF("Label");
+        var trLinkLabel = WF("LinkLabel");
+        var trLinkHandler = WF("LinkLabelLinkClickedEventHandler");
+        var trPoint = DR("Point");
+        var trSize = DR("Size");
+        var trFont = DR("Font");
+
+        var sigControl = new ClassSig(trControl);
+        var sigCtrlColl = new ClassSig(trCtrlColl);
+        var sigPoint = new ValueTypeSig(trPoint);
+        var sigSize = new ValueTypeSig(trSize);
+        var sigFont = new ClassSig(trFont);
+        var sigContentAlign = new ValueTypeSig(DR("ContentAlignment"));
+        var sigFontStyle = new ValueTypeSig(DR("FontStyle"));
+        var sigLinkHandler = new ClassSig(trLinkHandler);
+
+        var getControls = new MemberRefUser(mod, "get_Controls", MethodSig.CreateInstance(sigCtrlColl), trControl);
+        var ccAdd = new MemberRefUser(mod, "Add", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigControl), trCtrlColl);
+        var setText = new MemberRefUser(mod, "set_Text", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String), trControl);
+        var setFont = new MemberRefUser(mod, "set_Font", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigFont), trControl);
+        var setLocation = new MemberRefUser(mod, "set_Location", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trControl);
+        var setCtrlSize = new MemberRefUser(mod, "set_Size", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSize), trControl);
+        var setVisible = new MemberRefUser(mod, "set_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trControl);
+
+        var labCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trLabel);
+        var labAutoSize = new MemberRefUser(mod, "set_AutoSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trLabel);
+        var labTextAlign = new MemberRefUser(mod, "set_TextAlign", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigContentAlign), trLabel);
+
+        var linkCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trLinkLabel);
+        var linkAutoSize = new MemberRefUser(mod, "set_AutoSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trLinkLabel);
+        var linkTextAlign = new MemberRefUser(mod, "set_TextAlign", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigContentAlign), trLinkLabel);
+        var addLinkClicked = new MemberRefUser(mod, "add_LinkClicked", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigLinkHandler), trLinkLabel);
+
+        var pointCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32), trPoint);
+        var sizeCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32), trSize);
+        var fontCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String, mod.CorLibTypes.Single, sigFontStyle), trFont);
+        var linkHandlerCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trLinkHandler);
+
+        var getTlp3 = frm.FindMethod("get_TableLayoutPanel3");
+        var getTlp4 = frm.FindMethod("get_TableLayoutPanel4");
+        if (getTlp3 == null || getTlp4 == null)
+        {
+            Console.WriteLine("  FrmRverify: contact patch skipped (TLP accessors missing)");
+            return 0;
+        }
+
+        // Process.Start(string,string): open the URL via explorer.exe so a broken
+        // default-browser association can never raise an uncatchable fault in-process.
+        var procStart = mod.GetTypes().SelectMany(t => t.Methods).Where(m => m.Body != null)
+            .SelectMany(m => m.Body.Instructions).Select(i => i.Operand as IMethod)
+            .FirstOrDefault(m => m != null && m.Name == "Start" && m.DeclaringType?.Name == "Process"
+                && m.MethodSig?.Params.Count == 1);
+        if (procStart == null)
+        {
+            Console.WriteLine("  FrmRverify: contact patch skipped (Process.Start ref missing)");
+            return 0;
+        }
+        var procParent = (procStart as MemberRef)?.Class;
+        var procStart2 = procParent == null ? null : new MemberRefUser(mod, "Start",
+            MethodSig.CreateStatic(procStart.MethodSig.RetType, mod.CorLibTypes.String, mod.CorLibTypes.String), procParent);
+
+        // --- inject the website link-click handler ---
+        var linkArgs = new ClassSig(WF("LinkLabelLinkClickedEventArgs"));
+        var exceptionRef = new TypeRefUser(mod, "System", "Exception", mod.CorLibTypes.AssemblyRef);
+        var webClick = new MethodDefUser("zt_VerifyWeb_Click",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, linkArgs),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        webClick.Body = new CilBody();
+        {
+            var ins = webClick.Body.Instructions;
+            var ret = Instruction.Create(OpCodes.Ret);
+            var tryStart = (procStart2 != null)
+                ? Instruction.Create(OpCodes.Ldstr, "explorer.exe")
+                : Instruction.Create(OpCodes.Ldstr, SiteUrl);
+            ins.Add(tryStart);
+            if (procStart2 != null)
+            {
+                ins.Add(Instruction.Create(OpCodes.Ldstr, SiteUrl));
+                ins.Add(Instruction.Create(OpCodes.Call, procStart2));
+            }
+            else
+            {
+                ins.Add(Instruction.Create(OpCodes.Call, procStart));
+            }
+            ins.Add(Instruction.Create(OpCodes.Pop));
+            ins.Add(Instruction.Create(OpCodes.Leave_S, ret));
+            var handlerStart = Instruction.Create(OpCodes.Pop);
+            ins.Add(handlerStart);
+            ins.Add(Instruction.Create(OpCodes.Leave_S, ret));
+            ins.Add(ret);
+            webClick.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
+            {
+                TryStart = tryStart,
+                TryEnd = handlerStart,
+                HandlerStart = handlerStart,
+                HandlerEnd = ret,
+                CatchType = exceptionRef,
+            });
+        }
+        frm.Methods.Add(webClick);
+
+        // --- inject the layout builder zt_VerifySetup() ---
+        var setup = new MethodDefUser("zt_VerifySetup",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        setup.Body = new CilBody { InitLocals = true };
+        var locLink = new Local(new ClassSig(trLinkLabel));
+        var locLabel = new Local(new ClassSig(trLabel));
+        setup.Body.Variables.Add(locLink);
+        setup.Body.Variables.Add(locLabel);
+        var S = setup.Body.Instructions;
+
+        Instruction Ld0() => Instruction.Create(OpCodes.Ldarg_0);
+        Instruction LdL(Local l) => Instruction.Create(OpCodes.Ldloc, l);
+        Instruction I4(int n) => Instruction.CreateLdcI4(n);
+        void E(params Instruction[] xs) { foreach (var x in xs) S.Add(x); }
+        void CSetLoc(Local l, int x, int y) => E(LdL(l), I4(x), I4(y), Instruction.Create(OpCodes.Newobj, pointCtor), Instruction.Create(OpCodes.Callvirt, setLocation));
+        void CSetSize(Local l, int w, int h) => E(LdL(l), I4(w), I4(h), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setCtrlSize));
+        void CSetText(Local l, string s) => E(LdL(l), Instruction.Create(OpCodes.Ldstr, s), Instruction.Create(OpCodes.Callvirt, setText));
+        void CSetFont(Local l, float sz, int style) => E(LdL(l), Instruction.Create(OpCodes.Ldstr, "Segoe UI"), Instruction.Create(OpCodes.Ldc_R4, sz), I4(style), Instruction.Create(OpCodes.Newobj, fontCtor), Instruction.Create(OpCodes.Callvirt, setFont));
+        void CAdd(Local l) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, getControls), LdL(l), Instruction.Create(OpCodes.Callvirt, ccAdd));
+        void GVisible(MethodDef g, bool v) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(v ? 1 : 0), Instruction.Create(OpCodes.Callvirt, setVisible));
+
+        const int MidC = 32; // ContentAlignment.MiddleCenter
+
+        // hide both vendor contact grids (QQ / Группа QQ / Email + Сайт rows).
+        GVisible(getTlp3, false);
+        GVisible(getTlp4, false);
+
+        // e-mail line, centered in the space freed above the MAX QR card (y=200).
+        E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
+        E(LdL(locLabel), I4(0), Instruction.Create(OpCodes.Callvirt, labAutoSize));
+        CSetText(locLabel, "Email: lunin021189@gmail.com");
+        CSetFont(locLabel, 9.75f, 0);
+        E(LdL(locLabel), I4(MidC), Instruction.Create(OpCodes.Callvirt, labTextAlign));
+        CSetLoc(locLabel, 11, 104);
+        CSetSize(locLabel, 380, 24);
+        CAdd(locLabel);
+
+        // website hyperlink "Перейти на сайт".
+        E(Instruction.Create(OpCodes.Newobj, linkCtor), Instruction.Create(OpCodes.Stloc, locLink));
+        E(LdL(locLink), I4(0), Instruction.Create(OpCodes.Callvirt, linkAutoSize));
+        CSetText(locLink, "Перейти на сайт");
+        CSetFont(locLink, 9.75f, 1); // Bold
+        E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
+        CSetLoc(locLink, 11, 136);
+        CSetSize(locLink, 380, 26);
+        E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, webClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
+        CAdd(locLink);
+
+        S.Add(Instruction.Create(OpCodes.Ret));
+        frm.Methods.Add(setup);
+
+        // call zt_VerifySetup() at the very end of InitializeComponent (after the
+        // controls are created, so they always exist when we hide/add them).
+        var retIns = init.Body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+        int insertAt = retIns != null ? init.Body.Instructions.IndexOf(retIns) : init.Body.Instructions.Count;
+        init.Body.Instructions.Insert(insertAt, Instruction.Create(OpCodes.Ldarg_0));
+        init.Body.Instructions.Insert(insertAt + 1, Instruction.Create(OpCodes.Call, setup));
+
+        Console.WriteLine("  FrmRverify: redesigned contacts (hid QQ/Группа QQ/Email + Сайт grids; added email + 'Перейти на сайт' link; kept red banner + MAX QR + buttons)");
         return 1;
     }
 
