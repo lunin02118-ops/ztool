@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="swtools - инструменты для автоматизации SolidWorks: спецификации, свойства, Excel-экспорт, пакетная обработка и контроль данных.">
+  <meta name="theme-color" content="#0d1b2a">
+  <meta property="og:title" content="swtools - инструменты для SolidWorks">
+  <meta property="og:description" content="Автоматизация спецификаций, свойств и Excel-выгрузок для SolidWorks.">
+  <meta property="og:type" content="website">
+  <title>swtools - инструменты для SolidWorks</title>
+  <link rel="icon" href="assets/swtools-logo.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --ink: #0d1b2a;
+      --accent: #00b8c8;
+      --paper: #f7fbfc;
+      --white: #ffffff;
+      --muted: #536572;
+      --line: #d7e4ea;
+      --soft: #eaf6f8;
+      --shadow: 0 24px 70px rgba(13, 27, 42, .16);
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    .container {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(247, 251, 252, .92);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      min-width: 190px;
+    }
+
+    .brand img {
+      width: 164px;
+      height: auto;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      padding: 10px 0;
+    }
+
+    .nav-links a:hover { color: var(--ink); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 20px;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .btn.secondary {
+      background: var(--white);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .hero {
+      position: relative;
+      min-height: 690px;
+      padding: 86px 0 70px;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(13, 27, 42, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 27, 42, .06) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(90deg, transparent 0%, black 46%, black 100%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 520px) minmax(480px, 1fr);
+      align-items: center;
+      gap: 64px;
+    }
+
+    .hero-grid > * {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 680px;
+      font-size: clamp(48px, 8vw, 88px);
+      line-height: .94;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      margin: 26px 0 0;
+      max-width: min(640px, 100%);
+      font-size: 20px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .hero-facts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+      max-width: 610px;
+    }
+
+    .fact {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.76);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .fact strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .fact span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .product-visual {
+      position: relative;
+      min-height: 470px;
+    }
+
+    .app-window {
+      position: absolute;
+      right: -8px;
+      top: 0;
+      width: min(760px, 100%);
+      min-height: 470px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .window-top {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f3f7f9;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .window-buttons {
+      display: flex;
+      gap: 7px;
+    }
+
+    .window-buttons i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--line);
+    }
+
+    .ribbon {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(82px, 1fr));
+      gap: 1px;
+      padding: 12px;
+      background: #edf3f6;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tool {
+      min-height: 56px;
+      padding: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tool b {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .table-preview {
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 70px 180px 160px 130px 130px 140px;
+      border: 1px solid var(--line);
+      min-width: 810px;
+    }
+
+    .cell {
+      min-height: 36px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .head {
+      background: #dceaf1;
+      font-weight: 700;
+    }
+
+    .alt { background: #f6fbfd; }
+    .mark { background: #dff8fa; }
+
+    .section {
+      padding: 86px 0;
+    }
+
+    .section.dark {
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    .section-head {
+      max-width: 760px;
+      margin-bottom: 38px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      overflow-wrap: anywhere;
+    }
+
+    .dark .section-head p { color: rgba(255,255,255,.7); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      min-height: 230px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 8px;
+    }
+
+    .card .num {
+      color: var(--accent);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .card h3 {
+      margin: 28px 0 12px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .workflow-copy {
+      padding: 34px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 8px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .workflow-copy h2 {
+      margin: 0 0 18px;
+      font-size: 42px;
+      line-height: 1.08;
+    }
+
+    .workflow-copy p {
+      margin: 0;
+      color: rgba(255,255,255,.72);
+      font-size: 18px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 8px;
+      background: rgba(255,255,255,.05);
+    }
+
+    .steps span {
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .video-featured {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, .7fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .video-frame,
+    .video-copy,
+    .video-card {
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .video-frame {
+      aspect-ratio: 16 / 9;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(13,27,42,.92), rgba(13,27,42,.74)),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 38px);
+      color: var(--white);
+    }
+
+    .play {
+      width: 78px;
+      height: 78px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(0,184,200,.12);
+    }
+
+    .play::before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+      border-left: 22px solid var(--accent);
+      margin-left: 5px;
+    }
+
+    .video-copy {
+      padding: 26px;
+    }
+
+    .video-copy strong,
+    .video-meta strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .video-copy p,
+    .video-meta p {
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .video-card .video-frame {
+      border: 0;
+      border-radius: 0;
+    }
+
+    .video-card .play {
+      width: 52px;
+      height: 52px;
+    }
+
+    .video-card .play::before {
+      border-top-width: 10px;
+      border-bottom-width: 10px;
+      border-left-width: 15px;
+    }
+
+    .video-meta {
+      padding: 18px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr minmax(260px, .75fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .contact-card {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .contact-card h3 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+
+    .contact-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .contact-link {
+      display: inline-block;
+      margin: 8px 0 12px;
+      color: var(--ink);
+      font-size: 24px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .qr {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .qr img {
+      width: 190px;
+      height: 190px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .footer {
+      padding: 36px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--white);
+    }
+
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer img { width: 136px; }
+
+    @media (max-width: 980px) {
+      .nav { height: auto; padding: 16px 0; align-items: flex-start; }
+      .nav-links { display: none; }
+      .hero { padding-top: 58px; }
+      .hero-grid,
+      .workflow,
+      .video-featured,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+      .product-visual { min-height: 420px; }
+      .app-window { right: auto; left: 0; }
+      .cards,
+      .video-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(calc(100% - 28px), 1180px); }
+      .brand img { width: 140px; }
+      .nav > .btn { display: none; }
+      .hero-facts,
+      .cards,
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-actions .btn { width: 100%; }
+      .product-visual { min-height: 340px; }
+      .app-window { min-height: 330px; }
+      .ribbon { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tool:nth-child(n+5) { display: none; }
+      .section { padding: 62px 0; }
+      .workflow-copy { padding: 24px; }
+      .workflow-copy h2 { font-size: 32px; }
+      .contact-link { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="swtools">
+        <img src="assets/swtools-logo.svg" alt="swtools">
+      </a>
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a href="#features">Возможности</a>
+        <a href="#workflow">Сценарий</a>
+        <a href="#videos">Видео</a>
+        <a href="#contact">Контакты</a>
+      </nav>
+      <a class="btn secondary" href="#contact">Связаться</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">SolidWorks automation</p>
+          <h1 id="hero-title">swtools</h1>
+          <p class="hero-copy">
+            Набор инструментов для инженеров SolidWorks: спецификации, свойства,
+            пакетная обработка, расчётные поля и Excel-выгрузки без ручной рутины.
+          </p>
+          <div class="hero-actions">
+            <a class="btn" href="#contact">Запросить демонстрацию</a>
+            <a class="btn secondary" href="#videos">Смотреть видео</a>
+          </div>
+          <div class="hero-facts" aria-label="Ключевые акценты">
+            <div class="fact"><strong>BOM</strong><span>экспорт и шаблоны спецификаций</span></div>
+            <div class="fact"><strong>Excel</strong><span>таблицы с расчётными свойствами</span></div>
+            <div class="fact"><strong>SW</strong><span>интеграция в рабочее окно</span></div>
+          </div>
+        </div>
+
+        <div class="product-visual" aria-hidden="true">
+          <div class="app-window">
+            <div class="window-top">
+              <span>swtools 1.1 - спецификация сборки</span>
+              <div class="window-buttons"><i></i><i></i><i></i></div>
+            </div>
+            <div class="ribbon">
+              <div class="tool"><b>Подключить SW</b>Модель и свойства</div>
+              <div class="tool"><b>Заполнить</b>Имя файла</div>
+              <div class="tool"><b>Разделить</b>Столбец</div>
+              <div class="tool"><b>Сравнить</b>Столбцы</div>
+              <div class="tool"><b>Экспорт</b>Excel BOM</div>
+              <div class="tool"><b>Настройки</b>Шаблоны</div>
+            </div>
+            <div class="table-preview">
+              <div class="grid">
+                <div class="cell head">N</div><div class="cell head">Имя файла</div><div class="cell head">Номер детали</div><div class="cell head">Материал</div><div class="cell head">Масса ед., кг</div><div class="cell head">Габариты</div>
+                <div class="cell">1</div><div class="cell">PArt-022</div><div class="cell">0614-A00-022</div><div class="cell">Сталь</div><div class="cell">0,0574</div><div class="cell">86,8 x 84,5 x 99,6</div>
+                <div class="cell alt">2</div><div class="cell alt">PArt-018</div><div class="cell alt">0614-A00-018</div><div class="cell alt">Алюминий</div><div class="cell alt">0,0394</div><div class="cell alt">71 x 24 x 71</div>
+                <div class="cell">3</div><div class="cell">PArt-010</div><div class="cell">0614-A00-010</div><div class="cell">ABS</div><div class="cell">0,0068</div><div class="cell">66,7 x 23,8 x 12</div>
+                <div class="cell mark">4</div><div class="cell mark">Сборка</div><div class="cell mark">0614-A00</div><div class="cell mark">-</div><div class="cell mark">0,2148</div><div class="cell mark">206,9 x 111,5 x 225,3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Возможности</p>
+          <h2>Работа со спецификациями без ручной пересборки таблиц</h2>
+          <p>swtools помогает держать свойства, шаблоны и выгрузки в одном управляемом процессе.</p>
+        </div>
+        <div class="cards">
+          <article class="card"><span class="num">01</span><h3>Свойства деталей</h3><p>Считывание и сопоставление пользовательских свойств, включая расчётные значения для массы и габаритов.</p></article>
+          <article class="card"><span class="num">02</span><h3>Шаблоны BOM</h3><p>Настраиваемые схемы спецификаций, фильтры, правила и экспорт в Excel по принятому формату предприятия.</p></article>
+          <article class="card"><span class="num">03</span><h3>Пакетные операции</h3><p>Переименование, сохранение, обновление ссылок и подготовка набора файлов для передачи или архива.</p></article>
+          <article class="card"><span class="num">04</span><h3>Контроль данных</h3><p>Сравнение столбцов, поиск расхождений и быстрая проверка перед выпуском спецификации.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="workflow">
+      <div class="container workflow">
+        <div class="workflow-copy">
+          <p class="eyebrow">Рабочий сценарий</p>
+          <h2>От модели SolidWorks до аккуратной Excel-спецификации</h2>
+          <p>Маршрут повторяемый: подключить сборку, выбрать схему, проверить свойства, выгрузить таблицу и сохранить доказательства выпуска.</p>
+        </div>
+        <ol class="steps">
+          <li><span>01</span><strong>Подключить сборку и считать дерево модели</strong></li>
+          <li><span>02</span><strong>Выбрать шаблон спецификации и правила фильтрации</strong></li>
+          <li><span>03</span><strong>Проверить свойства, массу, единицы и габариты</strong></li>
+          <li><span>04</span><strong>Выгрузить Excel и передать файл в ручной контроль</strong></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="videos">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Видео</p>
+          <h2>Раздел под обучающие ролики и демонстрации</h2>
+          <p>Структура сделана как на RheoLab: один главный ролик и сетка коротких сценариев. Ссылки на реальные видео можно заменить после записи.</p>
+        </div>
+        <div class="video-featured">
+          <div class="video-frame"><span class="play" aria-hidden="true"></span></div>
+          <article class="video-copy">
+            <strong>Обзор swtools</strong>
+            <p>Короткая демонстрация: подключение SolidWorks, заполнение таблицы, работа со свойствами и экспорт спецификации в Excel.</p>
+          </article>
+        </div>
+        <div class="video-grid">
+          <article class="video-card"><div class="video-frame"><span class="play" aria-hidden="true"></span></div><div class="video-meta"><strong>Первый запуск</strong><p>Установка, активация и проверка окружения.</p></div></article>
+          <article class="video-card"><div class="video-frame"><span class="play" aria-hidden="true"></span></div><div class="video-meta"><strong>Шаблон BOM</strong><p>Настройка колонок, правил и фильтров.</p></div></article>
+          <article class="video-card"><div class="video-frame"><span class="play" aria-hidden="true"></span></div><div class="video-meta"><strong>Расчётные свойства</strong><p>Масса, единицы, габариты и пользовательские поля.</p></div></article>
+          <article class="video-card"><div class="video-frame"><span class="play" aria-hidden="true"></span></div><div class="video-meta"><strong>Экспорт Excel</strong><p>Формирование итоговой спецификации.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Контакты</p>
+          <h2>Связаться по внедрению swtools</h2>
+          <p>Пишите, если нужно проверить swtools на вашей сборке, шаблоне спецификации или регламенте Excel-выгрузки.</p>
+        </div>
+        <div class="contact-grid">
+          <article class="contact-card">
+            <h3>Email</h3>
+            <a class="contact-link" href="mailto:lunin021189@gmail.com">lunin021189@gmail.com</a>
+            <p>Для вопросов по демонстрации, лицензии и тестовому внедрению.</p>
+          </article>
+          <article class="contact-card">
+            <h3>Телефон</h3>
+            <a class="contact-link" href="tel:+77058030863">+7 705 803 0863</a>
+            <p>Номер указан как рабочий контакт, используемый в MAX-карточке проекта.</p>
+          </article>
+          <aside class="contact-card qr">
+            <h3>MAX</h3>
+            <img src="assets/max-qr.png" alt="QR-код для связи в MAX">
+            <a class="btn" href="https://max.ru/u/f9LHodD0cOIISUUwQGYGe84r7_JeVeUe6wTTYM2nMaEV8zVloAizFJTxBOs" target="_blank" rel="noopener noreferrer">Открыть MAX</a>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-row">
+      <img src="assets/swtools-logo.svg" alt="swtools">
+      <span>© 2026 swtools. Инструменты для SolidWorks.</span>
+    </div>
+  </footer>
+</body>
+</html>
