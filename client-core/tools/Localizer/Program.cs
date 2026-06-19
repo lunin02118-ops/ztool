@@ -1593,7 +1593,8 @@ internal static class Program
             int resReplaced = RewriteResources(mod, map, blankKeys);
             // The vendor QR panels are no longer hidden; instead InjectMaxQr swaps
             // the QR bitmap for the user's MAX contact code and shows them again.
-            string qrPng = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(tablePath)), "max_qr.png");
+            string assetDir = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(tablePath));
+            string qrPng = System.IO.Path.Combine(assetDir, "max_qr.png");
             int maxQrChanges = InjectMaxQr(mod, qrPng);
             int frmRgChanges = TuneFrmRg(mod);
             int aboutTitleChanges = FixAboutTitle(mod);
@@ -1606,6 +1607,9 @@ internal static class Program
             int bomMappingChanges = PatchBomCalculatedColumnMapping(mod);
             int uiTextChanges = NormalizeLongRussianUiStrings(mod);
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
+            int aboutBoxChanges = PatchAboutBox(mod,
+                System.IO.Path.Combine(assetDir, "kz_flag.png"),
+                System.IO.Path.Combine(assetDir, "ru_flag.png"));
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -1626,7 +1630,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -1984,6 +1988,377 @@ internal static class Program
 
         Console.WriteLine($"  MaxQr: embedded contact QR + clickable 'Max' link (edits={changes})");
         return changes;
+    }
+
+    // The user's public website (clickable hyperlink in the About box).
+    private const string SiteUrl = "https://license.vizbuka.ru/ztool/";
+
+    // Rebuilds the About box (FrmAbout) into a clean, professional layout per the
+    // user's request: vendor logo banner on top, a clickable website hyperlink,
+    // two phone numbers each preceded by its country flag (KZ / RU), the e-mail,
+    // and the existing clickable "MAX" link + QR code. Everything else (QQ group,
+    // version line, "supported OS" line, the red description label and the
+    // "update log" button) is removed. The flags are embedded as plain manifest
+    // resources (decoded at runtime with new Bitmap(stream), as InjectMaxQr does).
+    //
+    // The work is done by an injected instance helper `zt_AboutSetup` which we
+    // call at the very end of AboutBox1_Load (after the original code, so our
+    // texts/positions win). The original TableLayoutPanel content is simply hidden
+    // (Visible=false) and fresh, absolutely-positioned controls are added to the
+    // form, which is switched to a fixed-size, centered dialog.
+    private static int PatchAboutBox(ModuleDefMD mod, string kzFlagPath, string ruFlagPath)
+    {
+        var about = mod.Find("ZTool.FrmAbout", false);
+        var load = about?.FindMethod("AboutBox1_Load");
+        if (about == null || load?.Body == null)
+        {
+            Console.WriteLine("  FrmAbout: layout patch skipped (form/Load not found)");
+            return 0;
+        }
+        if (about.FindMethod("zt_AboutSetup") != null) return 0; // idempotent
+
+        var wf = FindAssemblyRef(mod, "System.Windows.Forms");
+        var dr = FindAssemblyRef(mod, "System.Drawing");
+        if (wf == null || dr == null)
+        {
+            Console.WriteLine("  FrmAbout: layout patch skipped (WinForms/Drawing refs missing)");
+            return 0;
+        }
+
+        var corlib = mod.CorLibTypes.AssemblyRef;
+        TypeRefUser WF(string n) => new TypeRefUser(mod, "System.Windows.Forms", n, wf);
+        TypeRefUser DR(string n) => new TypeRefUser(mod, "System.Drawing", n, dr);
+        TypeRefUser CL(string ns, string n) => new TypeRefUser(mod, ns, n, corlib);
+
+        // --- framework type refs ---
+        var trControl = WF("Control");
+        var trCtrlColl = new TypeRefUser(mod, "", "ControlCollection", trControl); // nested Control.ControlCollection
+        var trLabel = WF("Label");
+        var trLinkLabel = WF("LinkLabel");
+        var trPictureBox = WF("PictureBox");
+        var trForm = WF("Form");
+        var trLinkHandler = WF("LinkLabelLinkClickedEventHandler");
+        var trPoint = DR("Point");
+        var trSize = DR("Size");
+        var trFont = DR("Font");
+        var trImage = DR("Image");
+        var trBitmap = DR("Bitmap");
+
+        var sigControl = new ClassSig(trControl);
+        var sigCtrlColl = new ClassSig(trCtrlColl);
+        var sigImage = new ClassSig(trImage);
+        var sigPoint = new ValueTypeSig(trPoint);
+        var sigSize = new ValueTypeSig(trSize);
+        var sigFont = new ClassSig(trFont);
+        var sigContentAlign = new ValueTypeSig(DR("ContentAlignment"));
+        var sigFontStyle = new ValueTypeSig(DR("FontStyle"));
+        var sigSizeMode = new ValueTypeSig(WF("PictureBoxSizeMode"));
+        var sigImageLayout = new ValueTypeSig(WF("ImageLayout"));
+        var sigFormBorder = new ValueTypeSig(WF("FormBorderStyle"));
+        var sigStartPos = new ValueTypeSig(WF("FormStartPosition"));
+        var sigLinkHandler = new ClassSig(trLinkHandler);
+
+        // --- member refs ---
+        var getControls = new MemberRefUser(mod, "get_Controls", MethodSig.CreateInstance(sigCtrlColl), trControl);
+        var ccAdd = new MemberRefUser(mod, "Add", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigControl), trCtrlColl);
+        var setText = new MemberRefUser(mod, "set_Text", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String), trControl);
+        var setFont = new MemberRefUser(mod, "set_Font", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigFont), trControl);
+        var setLocation = new MemberRefUser(mod, "set_Location", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trControl);
+        var setCtrlSize = new MemberRefUser(mod, "set_Size", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSize), trControl);
+        var setVisible = new MemberRefUser(mod, "set_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trControl);
+        var setBackImage = new MemberRefUser(mod, "set_BackgroundImage", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigImage), trControl);
+        var getBackImage = new MemberRefUser(mod, "get_BackgroundImage", MethodSig.CreateInstance(sigImage), trControl);
+        var setBackLayout = new MemberRefUser(mod, "set_BackgroundImageLayout", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigImageLayout), trControl);
+        var setAnchor = new MemberRefUser(mod, "set_Anchor", MethodSig.CreateInstance(mod.CorLibTypes.Void, new ValueTypeSig(WF("AnchorStyles"))), trControl);
+        var suspendLayout = new MemberRefUser(mod, "SuspendLayout", MethodSig.CreateInstance(mod.CorLibTypes.Void), trControl);
+        var resumeLayout = new MemberRefUser(mod, "ResumeLayout", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trControl);
+
+        var labCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trLabel);
+        var labAutoSize = new MemberRefUser(mod, "set_AutoSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trLabel);
+        var labTextAlign = new MemberRefUser(mod, "set_TextAlign", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigContentAlign), trLabel);
+
+        var linkCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trLinkLabel);
+        var linkAutoSize = new MemberRefUser(mod, "set_AutoSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trLinkLabel);
+        var linkTextAlign = new MemberRefUser(mod, "set_TextAlign", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigContentAlign), trLinkLabel);
+        var addLinkClicked = new MemberRefUser(mod, "add_LinkClicked", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigLinkHandler), trLinkLabel);
+
+        var picCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trPictureBox);
+        var setImage = new MemberRefUser(mod, "set_Image", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigImage), trPictureBox);
+        var setSizeMode = new MemberRefUser(mod, "set_SizeMode", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSizeMode), trPictureBox);
+
+        var setFormBorder = new MemberRefUser(mod, "set_FormBorderStyle", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigFormBorder), trForm);
+        var setMaxBox = new MemberRefUser(mod, "set_MaximizeBox", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trForm);
+        var setClientSize = new MemberRefUser(mod, "set_ClientSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSize), trForm);
+        var setStartPos = new MemberRefUser(mod, "set_StartPosition", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigStartPos), trForm);
+
+        var pointCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32), trPoint);
+        var sizeCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32), trSize);
+        var fontCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String, mod.CorLibTypes.Single, sigFontStyle), trFont);
+        var linkHandlerCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trLinkHandler);
+
+        // FrmAbout property getters (MethodDefs already on the form).
+        var getPic1 = about.FindMethod("get_PictureBox1");
+        var getPic2 = about.FindMethod("get_PictureBox2");
+        var getTlp = about.FindMethod("get_TableLayoutPanel1");
+        var getBtn1 = about.FindMethod("get_Button1");
+        var getOk = about.FindMethod("get_OKButton");
+        if (getPic1 == null || getPic2 == null || getTlp == null || getBtn1 == null || getOk == null)
+        {
+            Console.WriteLine("  FrmAbout: layout patch skipped (control accessors missing)");
+            return 0;
+        }
+
+        // Process.Start(string) — reuse the existing ref from the MAX link handler.
+        var procStart = mod.GetTypes().SelectMany(t => t.Methods).Where(m => m.Body != null)
+            .SelectMany(m => m.Body.Instructions).Select(i => i.Operand as IMethod)
+            .FirstOrDefault(m => m != null && m.Name == "Start" && m.DeclaringType?.Name == "Process"
+                && m.MethodSig?.Params.Count == 1);
+        if (procStart == null)
+        {
+            Console.WriteLine("  FrmAbout: layout patch skipped (Process.Start ref missing)");
+            return 0;
+        }
+
+        // Process.Start(string, string): launch URLs out-of-process via explorer.exe so a
+        // broken or missing default-browser association can never fault the host process.
+        var procParent = (procStart as MemberRef)?.Class;
+        var procStart2 = procParent == null ? null : new MemberRefUser(mod, "Start",
+            MethodSig.CreateStatic(procStart.MethodSig.RetType, mod.CorLibTypes.String, mod.CorLibTypes.String),
+            procParent);
+
+        // refs for the runtime flag-image loader (mirrors InjectMaxQr).
+        var typeRef = CL("System", "Type");
+        var rthRef = CL("System", "RuntimeTypeHandle");
+        var asmRef = CL("System.Reflection", "Assembly");
+        var streamRef = CL("System.IO", "Stream");
+        var streamSig = new ClassSig(streamRef);
+        var mGetTypeFromHandle = new MemberRefUser(mod, "GetTypeFromHandle",
+            MethodSig.CreateStatic(new ClassSig(typeRef), new ValueTypeSig(rthRef)), typeRef);
+        var mGetAssembly = new MemberRefUser(mod, "get_Assembly",
+            MethodSig.CreateInstance(new ClassSig(asmRef)), typeRef);
+        var mGetStream = new MemberRefUser(mod, "GetManifestResourceStream",
+            MethodSig.CreateInstance(streamSig, mod.CorLibTypes.String), asmRef);
+        var mBitmapCtor = new MemberRefUser(mod, ".ctor",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), trBitmap);
+
+        // embed the two flag PNGs as plain manifest resources.
+        void Embed(string resName, string path)
+        {
+            if (System.IO.File.Exists(path) && !mod.Resources.Any(r => r.Name == resName))
+                mod.Resources.Add(new EmbeddedResource(resName, System.IO.File.ReadAllBytes(path), ManifestResourceAttributes.Public));
+        }
+        const string kzRes = "kz_flag.png", ruRes = "ru_flag.png";
+        Embed(kzRes, kzFlagPath);
+        Embed(ruRes, ruFlagPath);
+
+        // --- inject static helper:  Image zt_AboutImg(string name) ---
+        var imgHelper = new MethodDefUser("zt_AboutImg",
+            MethodSig.CreateStatic(sigImage, mod.CorLibTypes.String),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.HideBySig);
+        imgHelper.Body = new CilBody();
+        var ih = imgHelper.Body.Instructions;
+        ih.Add(Instruction.Create(OpCodes.Ldtoken, about));
+        ih.Add(Instruction.Create(OpCodes.Call, mGetTypeFromHandle));
+        ih.Add(Instruction.Create(OpCodes.Callvirt, mGetAssembly));
+        ih.Add(Instruction.Create(OpCodes.Ldarg_0));
+        ih.Add(Instruction.Create(OpCodes.Callvirt, mGetStream));
+        ih.Add(Instruction.Create(OpCodes.Newobj, mBitmapCtor));
+        ih.Add(Instruction.Create(OpCodes.Ret));
+        about.Methods.Add(imgHelper);
+
+        // --- inject the two link-click handlers (object, LinkLabelLinkClickedEventArgs) ---
+        var linkArgs = new ClassSig(WF("LinkLabelLinkClickedEventArgs"));
+        var exceptionRef = new TypeRefUser(mod, "System", "Exception", mod.CorLibTypes.AssemblyRef);
+        MethodDefUser MakeLinkHandler(string name, string url)
+        {
+            var h = new MethodDefUser(name,
+                MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, linkArgs),
+                MethodImplAttributes.IL | MethodImplAttributes.Managed,
+                MethodAttributes.Private | MethodAttributes.HideBySig);
+            h.Body = new CilBody();
+            var ins = h.Body.Instructions;
+            // try { Process.Start("explorer.exe", url); } catch { }
+            // Open the URL through explorer.exe (a child process) rather than an in-process
+            // ShellExecute. A misconfigured / missing default-browser association must never
+            // crash the host app: an in-process Process.Start(url) can raise an
+            // AccessViolationException from the Windows shell — a corrupted-state exception a
+            // managed catch cannot trap — whereas delegating to a child process keeps any such
+            // fault out of ZTool. The catch still swallows ordinary launch failures.
+            var ret = Instruction.Create(OpCodes.Ret);
+            var tryStart = (procStart2 != null)
+                ? Instruction.Create(OpCodes.Ldstr, "explorer.exe")
+                : Instruction.Create(OpCodes.Ldstr, url);
+            ins.Add(tryStart);
+            if (procStart2 != null)
+            {
+                ins.Add(Instruction.Create(OpCodes.Ldstr, url));
+                ins.Add(Instruction.Create(OpCodes.Call, procStart2));
+            }
+            else
+            {
+                ins.Add(Instruction.Create(OpCodes.Call, procStart));
+            }
+            ins.Add(Instruction.Create(OpCodes.Pop));
+            ins.Add(Instruction.Create(OpCodes.Leave_S, ret));
+            var handlerStart = Instruction.Create(OpCodes.Pop); // discard the caught exception
+            ins.Add(handlerStart);
+            ins.Add(Instruction.Create(OpCodes.Leave_S, ret));
+            ins.Add(ret);
+            h.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
+            {
+                TryStart = tryStart,
+                TryEnd = handlerStart,
+                HandlerStart = handlerStart,
+                HandlerEnd = ret,
+                CatchType = exceptionRef,
+            });
+            about.Methods.Add(h);
+            return h;
+        }
+        var webClick = MakeLinkHandler("zt_AboutWeb_Click", SiteUrl);
+        var maxClick = MakeLinkHandler("zt_AboutMax_Click", MaxUrl);
+
+        // --- inject the layout builder:  void zt_AboutSetup() ---
+        var setup = new MethodDefUser("zt_AboutSetup",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        setup.Body = new CilBody { InitLocals = true };
+        var locLink = new Local(new ClassSig(trLinkLabel));
+        var locLabel = new Local(new ClassSig(trLabel));
+        var locPic = new Local(new ClassSig(trPictureBox));
+        setup.Body.Variables.Add(locLink);
+        setup.Body.Variables.Add(locLabel);
+        setup.Body.Variables.Add(locPic);
+        var S = setup.Body.Instructions;
+
+        Instruction Ld0() => Instruction.Create(OpCodes.Ldarg_0);
+        Instruction LdL(Local l) => Instruction.Create(OpCodes.Ldloc, l);
+        Instruction I4(int n) => Instruction.CreateLdcI4(n);
+        void E(params Instruction[] xs) { foreach (var x in xs) S.Add(x); }
+
+        // common control configuration helpers (operate on a stored local)
+        void CSetLoc(Local l, int x, int y) => E(LdL(l), I4(x), I4(y), Instruction.Create(OpCodes.Newobj, pointCtor), Instruction.Create(OpCodes.Callvirt, setLocation));
+        void CSetSize(Local l, int w, int h) => E(LdL(l), I4(w), I4(h), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setCtrlSize));
+        void CSetText(Local l, string s) => E(LdL(l), Instruction.Create(OpCodes.Ldstr, s), Instruction.Create(OpCodes.Callvirt, setText));
+        void CSetFont(Local l, float sz, int style) => E(LdL(l), Instruction.Create(OpCodes.Ldstr, "Segoe UI"), Instruction.Create(OpCodes.Ldc_R4, sz), I4(style), Instruction.Create(OpCodes.Newobj, fontCtor), Instruction.Create(OpCodes.Callvirt, setFont));
+        void CAdd(Local l) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, getControls), LdL(l), Instruction.Create(OpCodes.Callvirt, ccAdd));
+        // getter-based existing controls
+        void GLoc(MethodDef g, int x, int y) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(x), I4(y), Instruction.Create(OpCodes.Newobj, pointCtor), Instruction.Create(OpCodes.Callvirt, setLocation));
+        void GSize(MethodDef g, int w, int h) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(w), I4(h), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setCtrlSize));
+        void GVisible(MethodDef g, bool v) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(v ? 1 : 0), Instruction.Create(OpCodes.Callvirt, setVisible));
+
+        const int CW = 360, CH = 430;
+        const int MidL = 16, MidC = 32; // ContentAlignment.MiddleLeft / MiddleCenter
+
+        E(Ld0(), Instruction.Create(OpCodes.Callvirt, suspendLayout));
+
+        // form -> fixed, centered dialog
+        E(Ld0(), I4(3), Instruction.Create(OpCodes.Callvirt, setFormBorder)); // FixedDialog
+        E(Ld0(), I4(0), Instruction.Create(OpCodes.Callvirt, setMaxBox));
+        E(Ld0(), I4(1), Instruction.Create(OpCodes.Callvirt, setStartPos)); // CenterScreen
+        E(Ld0(), I4(CW), I4(CH), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setClientSize));
+
+        // hide the original grid layout + the update-log button
+        GVisible(getTlp, false);
+        GVisible(getBtn1, false);
+
+        // logo banner (reuse the original PictureBox1 background image)
+        E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
+        E(LdL(locPic), Ld0(), Instruction.Create(OpCodes.Callvirt, getPic1), Instruction.Create(OpCodes.Callvirt, getBackImage), Instruction.Create(OpCodes.Callvirt, setBackImage));
+        E(LdL(locPic), I4(3), Instruction.Create(OpCodes.Callvirt, setBackLayout)); // ImageLayout.Stretch
+        CSetLoc(locPic, 0, 0);
+        CSetSize(locPic, CW, 72);
+        CAdd(locPic);
+
+        // website hyperlink
+        E(Instruction.Create(OpCodes.Newobj, linkCtor), Instruction.Create(OpCodes.Stloc, locLink));
+        E(LdL(locLink), I4(0), Instruction.Create(OpCodes.Callvirt, linkAutoSize));
+        CSetText(locLink, "Купить / перейти на сайт");
+        CSetFont(locLink, 9.75f, 1); // Bold
+        E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
+        CSetLoc(locLink, 20, 86);
+        CSetSize(locLink, 320, 26);
+        E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, webClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
+        CAdd(locLink);
+
+        // phone #1 (KZ flag + number)
+        E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
+        E(LdL(locPic), Instruction.Create(OpCodes.Ldstr, kzRes), Instruction.Create(OpCodes.Call, imgHelper), Instruction.Create(OpCodes.Callvirt, setImage));
+        E(LdL(locPic), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
+        CSetLoc(locPic, 96, 124);
+        CSetSize(locPic, 30, 20);
+        CAdd(locPic);
+        E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
+        E(LdL(locLabel), I4(0), Instruction.Create(OpCodes.Callvirt, labAutoSize));
+        CSetText(locLabel, "+7 705 803 0863");
+        CSetFont(locLabel, 11f, 0);
+        E(LdL(locLabel), I4(MidL), Instruction.Create(OpCodes.Callvirt, labTextAlign));
+        CSetLoc(locLabel, 134, 121);
+        CSetSize(locLabel, 190, 26);
+        CAdd(locLabel);
+
+        // phone #2 (RU flag + number)
+        E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
+        E(LdL(locPic), Instruction.Create(OpCodes.Ldstr, ruRes), Instruction.Create(OpCodes.Call, imgHelper), Instruction.Create(OpCodes.Callvirt, setImage));
+        E(LdL(locPic), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
+        CSetLoc(locPic, 96, 152);
+        CSetSize(locPic, 30, 20);
+        CAdd(locPic);
+        E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
+        E(LdL(locLabel), I4(0), Instruction.Create(OpCodes.Callvirt, labAutoSize));
+        CSetText(locLabel, "+7 982 880 1822");
+        CSetFont(locLabel, 11f, 0);
+        E(LdL(locLabel), I4(MidL), Instruction.Create(OpCodes.Callvirt, labTextAlign));
+        CSetLoc(locLabel, 134, 149);
+        CSetSize(locLabel, 190, 26);
+        CAdd(locLabel);
+
+        // e-mail
+        E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
+        E(LdL(locLabel), I4(0), Instruction.Create(OpCodes.Callvirt, labAutoSize));
+        CSetText(locLabel, "Email: lunin021189@gmail.com");
+        CSetFont(locLabel, 9.75f, 0);
+        E(LdL(locLabel), I4(MidC), Instruction.Create(OpCodes.Callvirt, labTextAlign));
+        CSetLoc(locLabel, 20, 184);
+        CSetSize(locLabel, 320, 24);
+        CAdd(locLabel);
+
+        // MAX link
+        E(Instruction.Create(OpCodes.Newobj, linkCtor), Instruction.Create(OpCodes.Stloc, locLink));
+        E(LdL(locLink), I4(0), Instruction.Create(OpCodes.Callvirt, linkAutoSize));
+        CSetText(locLink, "Связаться в MAX");
+        CSetFont(locLink, 9.75f, 1);
+        E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
+        CSetLoc(locLink, 20, 214);
+        CSetSize(locLink, 320, 26);
+        E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, maxClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
+        CAdd(locLink);
+
+        // QR code (existing PictureBox2): center it below. Clear its Top|Left|Right
+        // anchor first, otherwise the layout pass stretches it to the form width.
+        E(Ld0(), Instruction.Create(OpCodes.Callvirt, getPic2), I4(5), Instruction.Create(OpCodes.Callvirt, setAnchor)); // AnchorStyles.Top|Left
+        E(Ld0(), Instruction.Create(OpCodes.Callvirt, getPic2), I4(4), Instruction.Create(OpCodes.Callvirt, setSizeMode)); // PictureBoxSizeMode.Zoom
+        GLoc(getPic2, 30, 248);
+        GSize(getPic2, 300, 120);
+
+        // OK button reposition (keep)
+        GLoc(getOk, 268, 392);
+        GSize(getOk, 82, 28);
+
+        E(Ld0(), I4(0), Instruction.Create(OpCodes.Callvirt, resumeLayout));
+        S.Add(Instruction.Create(OpCodes.Ret));
+        about.Methods.Add(setup);
+
+        // call zt_AboutSetup() at the very end of AboutBox1_Load (after original body).
+        var retIns = load.Body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+        int insertAt = retIns != null ? load.Body.Instructions.IndexOf(retIns) : load.Body.Instructions.Count;
+        load.Body.Instructions.Insert(insertAt, Instruction.Create(OpCodes.Ldarg_0));
+        load.Body.Instructions.Insert(insertAt + 1, Instruction.Create(OpCodes.Call, setup));
+
+        Console.WriteLine("  FrmAbout: rebuilt About box (site link, 2 phones+flags, email, MAX QR; removed QQ/version/OS/desc/log)");
+        return 1;
     }
 
     // Fully disables the vendor's online update mechanism (user request). The
