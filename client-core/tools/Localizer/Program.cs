@@ -692,11 +692,15 @@ internal static class Program
         return changes;
     }
 
-    // Right-click a DataGridView column header -> persistent checklist of all
-    // columns (ContextMenuStrip, AutoClose=false). Toggling an item flips that
-    // column's Visible and calls SaveColumnInfo(); the menu stays open so several
-    // columns can be hidden/shown in a row, and closes via the "Готово" item.
-    // The native ribbon gallery (cmd 1033) is left untouched.
+    // Right-click a DataGridView column header -> persistent list of all
+    // columns (ContextMenuStrip, AutoClose=false). The set of columns and the
+    // visible-state styling mirror the native ribbon gallery (cmd 1033): the
+    // same PropVal_/PropResolvedVal_ filter (so a header isn't listed twice)
+    // keyed off PropSwitch, the preview column and empty headers excluded, and
+    // visible columns shown by a colour highlight rather than a check glyph.
+    // Toggling an item flips that column's Visible and calls SaveColumnInfo();
+    // the menu stays open so several columns can be hidden/shown in a row, and
+    // closes via the "Готово" item. The ribbon gallery itself is left untouched.
     private static int PatchColumnVisibilityMenu(ModuleDefMD mod)
     {
         var form = mod.Find("ZTool.Frmmain", false);
@@ -708,7 +712,10 @@ internal static class Program
         var drawing = FindAssemblyRef(mod, "System.Drawing");
         var getDgv1 = form.FindMethod("get_DGV1");
         var saveColumnInfo = form.FindMethod("SaveColumnInfo");
-        if (winforms == null || drawing == null || getDgv1 == null || saveColumnInfo == null)
+        var getPropSwitch = form.FindMethod("get_PropSwitch");
+        var getColPreview = form.FindMethod("get_Col_Preview");
+        if (winforms == null || drawing == null || getDgv1 == null || saveColumnInfo == null
+            || getPropSwitch == null || getColPreview == null)
         {
             Console.WriteLine("  Frmmain: column-visibility menu skipped (refs missing)");
             return 0;
@@ -728,7 +735,10 @@ internal static class Program
         var trControl = WF("Control");
         var trMouseButtons = WF("MouseButtons");
         var trMouseEventArgs = WF("MouseEventArgs");
+        var trToolStripButton = WF("ToolStripButton");
         var trPoint = new TypeRefUser(mod, "System.Drawing", "Point", drawing);
+        var trColor = new TypeRefUser(mod, "System.Drawing", "Color", drawing);
+        var trSystemColors = new TypeRefUser(mod, "System.Drawing", "SystemColors", drawing);
         var trEventHandler = new TypeRefUser(mod, "System", "EventHandler", mod.CorLibTypes.AssemblyRef);
         var trEventArgs = new TypeRefUser(mod, "System", "EventArgs", mod.CorLibTypes.AssemblyRef);
 
@@ -737,6 +747,7 @@ internal static class Program
         var sigDgvColumn = new ClassSig(trDgvColumn);
         var sigEventHandler = new ClassSig(trEventHandler);
         var sigPoint = new ValueTypeSig(trPoint);
+        var sigColor = new ValueTypeSig(trColor);
 
         var ctxCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trContextMenuStrip);
         var setAutoClose = new MemberRefUser(mod, "set_AutoClose", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripDropDown);
@@ -747,9 +758,6 @@ internal static class Program
         var getVisible = new MemberRefUser(mod, "get_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trDgvColumn);
         var setVisible = new MemberRefUser(mod, "set_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trDgvColumn);
         var tsmiCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String), trToolStripMenuItem);
-        var setCheckOnClick = new MemberRefUser(mod, "set_CheckOnClick", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripMenuItem);
-        var setChecked = new MemberRefUser(mod, "set_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripMenuItem);
-        var getChecked = new MemberRefUser(mod, "get_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trToolStripMenuItem);
         var setTag = new MemberRefUser(mod, "set_Tag", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object), trToolStripItem);
         var getTag = new MemberRefUser(mod, "get_Tag", MethodSig.CreateInstance(mod.CorLibTypes.Object), trToolStripItem);
         var addClick = new MemberRefUser(mod, "add_Click", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigEventHandler), trToolStripItem);
@@ -758,10 +766,17 @@ internal static class Program
         var showPoint = new MemberRefUser(mod, "Show", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trToolStripDropDown);
         var closeMenu = new MemberRefUser(mod, "Close", MethodSig.CreateInstance(mod.CorLibTypes.Void), trToolStripDropDown);
         var disposeMenu = new MemberRefUser(mod, "Dispose", MethodSig.CreateInstance(mod.CorLibTypes.Void), trControl);
+        var stringType = mod.CorLibTypes.GetTypeRef("System", "String");
+        var setBackColor = new MemberRefUser(mod, "set_BackColor", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigColor), trToolStripItem);
+        var colorFromArgb = new MemberRefUser(mod, "FromArgb", MethodSig.CreateStatic(sigColor, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32, mod.CorLibTypes.Int32), trColor);
+        var getControlColor = new MemberRefUser(mod, "get_Control", MethodSig.CreateStatic(sigColor), trSystemColors);
+        var getColName = new MemberRefUser(mod, "get_Name", MethodSig.CreateInstance(mod.CorLibTypes.String), trDgvColumn);
+        var getColIndex = new MemberRefUser(mod, "get_Index", MethodSig.CreateInstance(mod.CorLibTypes.Int32), trDgvColumn);
+        var strContains = new MemberRefUser(mod, "Contains", MethodSig.CreateInstance(mod.CorLibTypes.Boolean, mod.CorLibTypes.String), stringType);
+        var getPropChecked = new MemberRefUser(mod, "get_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trToolStripButton);
         var getMousePos = new MemberRefUser(mod, "get_MousePosition", MethodSig.CreateStatic(sigPoint), trControl);
         var getButton = new MemberRefUser(mod, "get_Button", MethodSig.CreateInstance(new ValueTypeSig(trMouseButtons)), trMouseEventArgs);
         var ehCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trEventHandler);
-        var stringType = mod.CorLibTypes.GetTypeRef("System", "String");
         var isNullOrEmpty = new MemberRefUser(mod, "IsNullOrEmpty", MethodSig.CreateStatic(mod.CorLibTypes.Boolean, mod.CorLibTypes.String), stringType);
         var exceptionType = mod.CorLibTypes.GetTypeRef("System", "Exception");
 
@@ -777,9 +792,12 @@ internal static class Program
         itemClick.Body = new CilBody { InitLocals = true };
         itemClick.Body.Variables.Add(new Local(sigDgvColumn));          // V0 col
         itemClick.Body.Variables.Add(new Local(sigToolStripMenuItem));  // V1 item
+        itemClick.Body.Variables.Add(new Local(mod.CorLibTypes.Boolean));// V2 newVisible
         {
             var ret = Instruction.Create(OpCodes.Ret);
             var handlerStart = Instruction.Create(OpCodes.Pop);
+            var setNormal = Instruction.Create(OpCodes.Ldloc_1);
+            var afterColor = Instruction.Create(OpCodes.Ldarg_0);
             var ic = itemClick.Body.Instructions;
             var tryStart = Instruction.Create(OpCodes.Ldarg_1);
             ic.Add(tryStart);
@@ -789,11 +807,30 @@ internal static class Program
             ic.Add(Instruction.Create(OpCodes.Callvirt, getTag));
             ic.Add(Instruction.Create(OpCodes.Castclass, trDgvColumn));
             ic.Add(Instruction.Create(OpCodes.Stloc_0));
+            // newVisible = !col.Visible
             ic.Add(Instruction.Create(OpCodes.Ldloc_0));
-            ic.Add(Instruction.Create(OpCodes.Ldloc_1));
-            ic.Add(Instruction.Create(OpCodes.Callvirt, getChecked));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, getVisible));
+            ic.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            ic.Add(Instruction.Create(OpCodes.Ceq));
+            ic.Add(Instruction.Create(OpCodes.Stloc_2));
+            // col.Visible = newVisible
+            ic.Add(Instruction.Create(OpCodes.Ldloc_0));
+            ic.Add(Instruction.Create(OpCodes.Ldloc_2));
             ic.Add(Instruction.Create(OpCodes.Callvirt, setVisible));
-            ic.Add(Instruction.Create(OpCodes.Ldarg_0));
+            // reflect state with a colour highlight (visible) instead of a check glyph
+            ic.Add(Instruction.Create(OpCodes.Ldloc_2));
+            ic.Add(Instruction.Create(OpCodes.Brfalse, setNormal));
+            ic.Add(Instruction.Create(OpCodes.Ldloc_1));
+            ic.Add(Instruction.CreateLdcI4(204));
+            ic.Add(Instruction.CreateLdcI4(232));
+            ic.Add(Instruction.CreateLdcI4(255));
+            ic.Add(Instruction.Create(OpCodes.Call, colorFromArgb));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, setBackColor));
+            ic.Add(Instruction.Create(OpCodes.Br, afterColor));
+            ic.Add(setNormal);                                  // ldloc.1
+            ic.Add(Instruction.Create(OpCodes.Call, getControlColor));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, setBackColor));
+            ic.Add(afterColor);                                 // ldarg.0
             ic.Add(Instruction.Create(OpCodes.Callvirt, saveColumnInfo));
             ic.Add(Instruction.Create(OpCodes.Leave, ret));
             ic.Add(handlerStart);
@@ -843,12 +880,14 @@ internal static class Program
         var locCol = new Local(sigDgvColumn);               // V3
         var locH = new Local(mod.CorLibTypes.String);       // V4
         var locItem = new Local(sigToolStripMenuItem);      // V5
+        var locName = new Local(mod.CorLibTypes.String);    // V6
         build.Body.Variables.Add(locMenu);
         build.Body.Variables.Add(locN);
         build.Body.Variables.Add(locI);
         build.Body.Variables.Add(locCol);
         build.Body.Variables.Add(locH);
         build.Body.Variables.Add(locItem);
+        build.Body.Variables.Add(locName);
         {
             var b = build.Body.Instructions;
             var lCond = Instruction.Create(OpCodes.Ldloc, locI);
@@ -881,6 +920,11 @@ internal static class Program
             b.Add(Instruction.Create(OpCodes.Stloc, locI));
             b.Add(Instruction.Create(OpCodes.Br, lCond));
             // body
+            var lChkResolved = Instruction.Create(OpCodes.Ldarg_0);
+            var lChkVal = Instruction.Create(OpCodes.Ldarg_0);
+            var lInclude = Instruction.Create(OpCodes.Ldloc, locH);
+            var lSetNormal = Instruction.Create(OpCodes.Ldloc, locItem);
+            var lAfterColor = Instruction.Create(OpCodes.Ldloc, locItem);
             b.Add(lBody);                                   // ldarg.0
             b.Add(Instruction.Create(OpCodes.Callvirt, getDgv1));
             b.Add(Instruction.Create(OpCodes.Callvirt, getColumns));
@@ -888,25 +932,65 @@ internal static class Program
             b.Add(Instruction.Create(OpCodes.Callvirt, getItem));
             b.Add(Instruction.Create(OpCodes.Stloc, locCol));
             b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getColName));
+            b.Add(Instruction.Create(OpCodes.Stloc, locName));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
             b.Add(Instruction.Create(OpCodes.Callvirt, getHeaderText));
             b.Add(Instruction.Create(OpCodes.Stloc, locH));
+            // mirror the native gallery's filter so PropVal_/PropResolvedVal_
+            // pairs don't both show (one header twice); the active half depends
+            // on PropSwitch.Checked
+            b.Add(Instruction.Create(OpCodes.Ldloc, locName));
+            b.Add(Instruction.Create(OpCodes.Ldstr, "PropResolvedVal_"));
+            b.Add(Instruction.Create(OpCodes.Callvirt, strContains));
+            b.Add(Instruction.Create(OpCodes.Brtrue, lChkResolved));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locName));
+            b.Add(Instruction.Create(OpCodes.Ldstr, "PropVal_"));
+            b.Add(Instruction.Create(OpCodes.Callvirt, strContains));
+            b.Add(Instruction.Create(OpCodes.Brtrue, lChkVal));
+            // regular column: skip empty header and the preview column
             b.Add(Instruction.Create(OpCodes.Ldloc, locH));
             b.Add(Instruction.Create(OpCodes.Call, isNullOrEmpty));
             b.Add(Instruction.Create(OpCodes.Brtrue, lInc));
-            b.Add(Instruction.Create(OpCodes.Ldloc, locH));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locI));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getColPreview));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getColIndex));
+            b.Add(Instruction.Create(OpCodes.Beq, lInc));
+            b.Add(Instruction.Create(OpCodes.Br, lInclude));
+            // resolved-expression column: include only when PropSwitch is on
+            b.Add(lChkResolved);                            // ldarg.0
+            b.Add(Instruction.Create(OpCodes.Callvirt, getPropSwitch));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getPropChecked));
+            b.Add(Instruction.Create(OpCodes.Brtrue, lInclude));
+            b.Add(Instruction.Create(OpCodes.Br, lInc));
+            // raw-value column: include only when PropSwitch is off
+            b.Add(lChkVal);                                 // ldarg.0
+            b.Add(Instruction.Create(OpCodes.Callvirt, getPropSwitch));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getPropChecked));
+            b.Add(Instruction.Create(OpCodes.Brtrue, lInc));
+            b.Add(Instruction.Create(OpCodes.Br, lInclude));
+            // ---- include: build a menu item, highlighted when the column is visible ----
+            b.Add(lInclude);                                // ldloc locH
             b.Add(Instruction.Create(OpCodes.Newobj, tsmiCtor));
             b.Add(Instruction.Create(OpCodes.Stloc, locItem));
             b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
-            b.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            b.Add(Instruction.Create(OpCodes.Callvirt, setCheckOnClick));
-            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
-            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
-            b.Add(Instruction.Create(OpCodes.Callvirt, getVisible));
-            b.Add(Instruction.Create(OpCodes.Callvirt, setChecked));
-            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
             b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
             b.Add(Instruction.Create(OpCodes.Callvirt, setTag));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getVisible));
+            b.Add(Instruction.Create(OpCodes.Brfalse, lSetNormal));
             b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.CreateLdcI4(204));
+            b.Add(Instruction.CreateLdcI4(232));
+            b.Add(Instruction.CreateLdcI4(255));
+            b.Add(Instruction.Create(OpCodes.Call, colorFromArgb));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setBackColor));
+            b.Add(Instruction.Create(OpCodes.Br, lAfterColor));
+            b.Add(lSetNormal);                              // ldloc locItem
+            b.Add(Instruction.Create(OpCodes.Call, getControlColor));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setBackColor));
+            b.Add(lAfterColor);                             // ldloc locItem
             b.Add(Instruction.Create(OpCodes.Ldarg_0));
             b.Add(Instruction.Create(OpCodes.Ldftn, itemClick));
             b.Add(Instruction.Create(OpCodes.Newobj, ehCtor));
