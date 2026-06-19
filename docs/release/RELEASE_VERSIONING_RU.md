@@ -8,10 +8,10 @@
 VERSION
 ```
 
-Для текущей ветки стартовая версия:
+Для текущей ветки версия:
 
 ```text
-1.1.0-alfa
+1.1.1
 ```
 
 Дата сборки не является версией продукта. Дату можно смотреть в manifest/log,
@@ -63,7 +63,7 @@ Installer из package по умолчанию пишет setup прямо в `r
 
 ```powershell
 .\scripts\build_client_installer.ps1 `
-  -PackageRoot .\releases\1.1.0-alfa\package\ZTool-1.1.0-alfa
+  -PackageRoot .\releases\1.1.1\package\ZTool-1.1.1
 ```
 
 ## Rules

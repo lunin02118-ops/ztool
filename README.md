@@ -17,13 +17,13 @@
 
 ## Рекомендуемая связка для развёртывания
 
-Актуально для текущей release-candidate ветки 1.1.0-alfa. Offline/release
+Актуально для текущей release-candidate ветки 1.1.1. Offline/release
 gates ожидают следующие runtime-хеши; полный production GO требует живого
 прогона по [`docs/release/FULL_TEST_METHODOLOGY_RU.md`](docs/release/FULL_TEST_METHODOLOGY_RU.md):
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
-| `ZTool.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | `C7AB1491…86FCF37F` |
+| `ZTool.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | см. `scripts/expected_release_hashes.json` |
 | `ZTool.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
 
 Что внесено в PR #8:
