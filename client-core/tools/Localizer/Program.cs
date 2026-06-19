@@ -1393,7 +1393,7 @@ internal static class Program
 
     private static readonly HashSet<string> _verBrandKeys = new HashSet<string>(StringComparer.Ordinal)
     {
-        "ProductName", "CompanyName", "InternalName", "OriginalFilename"
+        "ProductName", "CompanyName", "InternalName", "OriginalFilename", "LegalTrademarks"
     };
 
     private static int Align4(int x) => (x + 3) & ~3;
