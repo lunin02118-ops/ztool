@@ -1463,14 +1463,15 @@ internal static class Program
     {
         int c = 0;
         if (n.Type == 1 && n.Children.Count == 0 &&
-            (_verBrandKeys.Contains(n.Key) || n.Key == "FileDescription"))
+            (_verBrandKeys.Contains(n.Key) || n.Key == "FileDescription" || n.Key == "LegalCopyright"))
         {
             string val = Encoding.Unicode.GetString(n.Value);
             int z = val.IndexOf('\0');
             if (z >= 0) val = val.Substring(0, z);
-            string nv = (n.Key == "FileDescription")
-                ? "SWTools — надстройка SolidWorks"
-                : val.Replace("ZTool", "SWTools");
+            string nv;
+            if (n.Key == "FileDescription") nv = "SWTools — надстройка SolidWorks";
+            else if (n.Key == "LegalCopyright") nv = "© SWTools";
+            else nv = val.Replace("ZTool", "SWTools");
             if (nv != val)
             {
                 n.Value = Encoding.Unicode.GetBytes(nv + "\0");
