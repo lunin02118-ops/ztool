@@ -2017,6 +2017,16 @@ internal static class Program
         }
         if (about.FindMethod("zt_AboutSetup") != null) return 0; // idempotent
 
+        // Both flag PNGs must exist: the injected layout unconditionally loads them at runtime
+        // (zt_AboutImg -> new Bitmap(GetManifestResourceStream(...))), so a missing file would
+        // embed nothing yet still emit the load IL, crashing the About box with a null stream.
+        // Mirror InjectMaxQr's behaviour and skip the whole patch if an asset is absent.
+        if (!System.IO.File.Exists(kzFlagPath) || !System.IO.File.Exists(ruFlagPath))
+        {
+            Console.WriteLine("  FrmAbout: layout patch skipped (flag image(s) missing)");
+            return 0;
+        }
+
         var wf = FindAssemblyRef(mod, "System.Windows.Forms");
         var dr = FindAssemblyRef(mod, "System.Drawing");
         if (wf == null || dr == null)
