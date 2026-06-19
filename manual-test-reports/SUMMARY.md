@@ -10,11 +10,13 @@
 - Черновой набор RU-кадров для пересборки `help_ru.chm` сохранён в
   `manual-test-reports/MANUAL_SCREENSHOTS_DRAFT_20260618/`.
 - `clean-screenshots/` содержит 68 картинок с путями как в CHM.
-- Покадровое сравнение: `49 PASS`, `2 WARN`, `17 FAIL`.
-- Ручная сводка досъёмки: `SCREENSHOTS_CAPTURE_STATUS_RU.md`
-  (`20` кадров требуют пересъёмки перед финальным CHM).
+- Покадровое сравнение после усиления gate в PR #40:
+  `38 PASS`, `1 WARN`, `29 FAIL`.
+- Ручная сводка досъёмки: `SCREENSHOTS_CAPTURE_STATUS_RU.md`;
+  актуальный PDF/MD/CSV/JSON в `retake-checklist/` содержит 29 FAIL-кадров.
 - Статус: пригодно для ревью и промежуточной сборки, не является финальным
-  `FULL PASS`.
+  `FULL PASS`; финальный `help_ru.chm` блокируют FAIL-кадры,
+  загрязнение кадров и BOM `.xlsx` evidence по `Col_Weight`/`Col_bound`.
 
 ## Актуальный live addendum 2026-06-17
 
