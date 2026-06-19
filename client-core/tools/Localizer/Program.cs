@@ -692,6 +692,266 @@ internal static class Program
         return changes;
     }
 
+    // Right-click a DataGridView column header -> persistent checklist of all
+    // columns (ContextMenuStrip, AutoClose=false). Toggling an item flips that
+    // column's Visible and calls SaveColumnInfo(); the menu stays open so several
+    // columns can be hidden/shown in a row, and closes via the "Готово" item.
+    // The native ribbon gallery (cmd 1033) is left untouched.
+    private static int PatchColumnVisibilityMenu(ModuleDefMD mod)
+    {
+        var form = mod.Find("ZTool.Frmmain", false);
+        var header = form?.FindMethod("DGV1_ColumnHeaderMouseClick");
+        if (form == null || header?.Body == null) return 0;
+        if (form.FindMethod("zt_BuildColMenu") != null) return 0;   // idempotent
+
+        var winforms = FindAssemblyRef(mod, "System.Windows.Forms");
+        var drawing = FindAssemblyRef(mod, "System.Drawing");
+        var getDgv1 = form.FindMethod("get_DGV1");
+        var saveColumnInfo = form.FindMethod("SaveColumnInfo");
+        if (winforms == null || drawing == null || getDgv1 == null || saveColumnInfo == null)
+        {
+            Console.WriteLine("  Frmmain: column-visibility menu skipped (refs missing)");
+            return 0;
+        }
+
+        TypeRefUser WF(string n) => new TypeRefUser(mod, "System.Windows.Forms", n, winforms);
+        var trToolStripItem = WF("ToolStripItem");
+        var trToolStripMenuItem = WF("ToolStripMenuItem");
+        var trToolStripItemColl = WF("ToolStripItemCollection");
+        var trToolStripDropDown = WF("ToolStripDropDown");
+        var trToolStrip = WF("ToolStrip");
+        var trContextMenuStrip = WF("ContextMenuStrip");
+        var trDataGridView = WF("DataGridView");
+        var trDgvColumnColl = WF("DataGridViewColumnCollection");
+        var trDgvColumn = WF("DataGridViewColumn");
+        var trBaseCollection = WF("BaseCollection");
+        var trControl = WF("Control");
+        var trMouseButtons = WF("MouseButtons");
+        var trMouseEventArgs = WF("MouseEventArgs");
+        var trPoint = new TypeRefUser(mod, "System.Drawing", "Point", drawing);
+        var trEventHandler = new TypeRefUser(mod, "System", "EventHandler", mod.CorLibTypes.AssemblyRef);
+        var trEventArgs = new TypeRefUser(mod, "System", "EventArgs", mod.CorLibTypes.AssemblyRef);
+
+        var sigContextMenuStrip = new ClassSig(trContextMenuStrip);
+        var sigToolStripMenuItem = new ClassSig(trToolStripMenuItem);
+        var sigDgvColumn = new ClassSig(trDgvColumn);
+        var sigEventHandler = new ClassSig(trEventHandler);
+        var sigPoint = new ValueTypeSig(trPoint);
+
+        var ctxCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trContextMenuStrip);
+        var setAutoClose = new MemberRefUser(mod, "set_AutoClose", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripDropDown);
+        var getColumns = new MemberRefUser(mod, "get_Columns", MethodSig.CreateInstance(new ClassSig(trDgvColumnColl)), trDataGridView);
+        var getCount = new MemberRefUser(mod, "get_Count", MethodSig.CreateInstance(mod.CorLibTypes.Int32), trBaseCollection);
+        var getItem = new MemberRefUser(mod, "get_Item", MethodSig.CreateInstance(sigDgvColumn, mod.CorLibTypes.Int32), trDgvColumnColl);
+        var getHeaderText = new MemberRefUser(mod, "get_HeaderText", MethodSig.CreateInstance(mod.CorLibTypes.String), trDgvColumn);
+        var getVisible = new MemberRefUser(mod, "get_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trDgvColumn);
+        var setVisible = new MemberRefUser(mod, "set_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trDgvColumn);
+        var tsmiCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String), trToolStripMenuItem);
+        var setCheckOnClick = new MemberRefUser(mod, "set_CheckOnClick", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripMenuItem);
+        var setChecked = new MemberRefUser(mod, "set_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trToolStripMenuItem);
+        var getChecked = new MemberRefUser(mod, "get_Checked", MethodSig.CreateInstance(mod.CorLibTypes.Boolean), trToolStripMenuItem);
+        var setTag = new MemberRefUser(mod, "set_Tag", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object), trToolStripItem);
+        var getTag = new MemberRefUser(mod, "get_Tag", MethodSig.CreateInstance(mod.CorLibTypes.Object), trToolStripItem);
+        var addClick = new MemberRefUser(mod, "add_Click", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigEventHandler), trToolStripItem);
+        var getItems = new MemberRefUser(mod, "get_Items", MethodSig.CreateInstance(new ClassSig(trToolStripItemColl)), trToolStrip);
+        var addItem = new MemberRefUser(mod, "Add", MethodSig.CreateInstance(mod.CorLibTypes.Int32, new ClassSig(trToolStripItem)), trToolStripItemColl);
+        var showPoint = new MemberRefUser(mod, "Show", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trToolStripDropDown);
+        var closeMenu = new MemberRefUser(mod, "Close", MethodSig.CreateInstance(mod.CorLibTypes.Void), trToolStripDropDown);
+        var getMousePos = new MemberRefUser(mod, "get_MousePosition", MethodSig.CreateStatic(sigPoint), trControl);
+        var getButton = new MemberRefUser(mod, "get_Button", MethodSig.CreateInstance(new ValueTypeSig(trMouseButtons)), trMouseEventArgs);
+        var ehCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trEventHandler);
+        var stringType = mod.CorLibTypes.GetTypeRef("System", "String");
+        var isNullOrEmpty = new MemberRefUser(mod, "IsNullOrEmpty", MethodSig.CreateStatic(mod.CorLibTypes.Boolean, mod.CorLibTypes.String), stringType);
+        var exceptionType = mod.CorLibTypes.GetTypeRef("System", "Exception");
+
+        var menuField = new FieldDefUser("zt_colMenu", new FieldSig(sigContextMenuStrip), FieldAttributes.Private);
+        form.Fields.Add(menuField);
+
+        // ---- handler: zt_ColItem_Click(object sender, EventArgs e) ----
+        var itemClick = new MethodDefUser(
+            "zt_ColItem_Click",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, new ClassSig(trEventArgs)),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        itemClick.Body = new CilBody { InitLocals = true };
+        itemClick.Body.Variables.Add(new Local(sigDgvColumn));          // V0 col
+        itemClick.Body.Variables.Add(new Local(sigToolStripMenuItem));  // V1 item
+        {
+            var ret = Instruction.Create(OpCodes.Ret);
+            var handlerStart = Instruction.Create(OpCodes.Pop);
+            var ic = itemClick.Body.Instructions;
+            var tryStart = Instruction.Create(OpCodes.Ldarg_1);
+            ic.Add(tryStart);
+            ic.Add(Instruction.Create(OpCodes.Castclass, trToolStripMenuItem));
+            ic.Add(Instruction.Create(OpCodes.Stloc_1));
+            ic.Add(Instruction.Create(OpCodes.Ldloc_1));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, getTag));
+            ic.Add(Instruction.Create(OpCodes.Castclass, trDgvColumn));
+            ic.Add(Instruction.Create(OpCodes.Stloc_0));
+            ic.Add(Instruction.Create(OpCodes.Ldloc_0));
+            ic.Add(Instruction.Create(OpCodes.Ldloc_1));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, getChecked));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, setVisible));
+            ic.Add(Instruction.Create(OpCodes.Ldarg_0));
+            ic.Add(Instruction.Create(OpCodes.Callvirt, saveColumnInfo));
+            ic.Add(Instruction.Create(OpCodes.Leave, ret));
+            ic.Add(handlerStart);
+            ic.Add(Instruction.Create(OpCodes.Leave, ret));
+            ic.Add(ret);
+            itemClick.Body.ExceptionHandlers.Add(new ExceptionHandler(ExceptionHandlerType.Catch)
+            {
+                CatchType = exceptionType,
+                TryStart = tryStart,
+                TryEnd = handlerStart,
+                HandlerStart = handlerStart,
+                HandlerEnd = ret,
+            });
+        }
+        form.Methods.Add(itemClick);
+
+        // ---- handler: zt_ColDone_Click(object sender, EventArgs e) ----
+        var doneClick = new MethodDefUser(
+            "zt_ColDone_Click",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, new ClassSig(trEventArgs)),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        doneClick.Body = new CilBody { InitLocals = true };
+        {
+            var dc = doneClick.Body.Instructions;
+            dc.Add(Instruction.Create(OpCodes.Ldarg_0));
+            dc.Add(Instruction.Create(OpCodes.Ldfld, menuField));
+            dc.Add(Instruction.Create(OpCodes.Callvirt, closeMenu));
+            dc.Add(Instruction.Create(OpCodes.Ret));
+        }
+        form.Methods.Add(doneClick);
+
+        // ---- builder: zt_BuildColMenu() ----
+        var build = new MethodDefUser(
+            "zt_BuildColMenu",
+            MethodSig.CreateInstance(mod.CorLibTypes.Void),
+            MethodImplAttributes.IL | MethodImplAttributes.Managed,
+            MethodAttributes.Private | MethodAttributes.HideBySig);
+        build.Body = new CilBody { InitLocals = true };
+        var locMenu = new Local(sigContextMenuStrip);       // V0
+        var locN = new Local(mod.CorLibTypes.Int32);        // V1
+        var locI = new Local(mod.CorLibTypes.Int32);        // V2
+        var locCol = new Local(sigDgvColumn);               // V3
+        var locH = new Local(mod.CorLibTypes.String);       // V4
+        var locItem = new Local(sigToolStripMenuItem);      // V5
+        build.Body.Variables.Add(locMenu);
+        build.Body.Variables.Add(locN);
+        build.Body.Variables.Add(locI);
+        build.Body.Variables.Add(locCol);
+        build.Body.Variables.Add(locH);
+        build.Body.Variables.Add(locItem);
+        {
+            var b = build.Body.Instructions;
+            var lCond = Instruction.Create(OpCodes.Ldloc, locI);
+            var lBody = Instruction.Create(OpCodes.Ldarg_0);
+            var lInc = Instruction.Create(OpCodes.Ldloc, locI);
+
+            b.Add(Instruction.Create(OpCodes.Newobj, ctxCtor));
+            b.Add(Instruction.Create(OpCodes.Stloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setAutoClose));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Stfld, menuField));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getDgv1));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getColumns));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getCount));
+            b.Add(Instruction.Create(OpCodes.Stloc, locN));
+            b.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            b.Add(Instruction.Create(OpCodes.Stloc, locI));
+            b.Add(Instruction.Create(OpCodes.Br, lCond));
+            // body
+            b.Add(lBody);                                   // ldarg.0
+            b.Add(Instruction.Create(OpCodes.Callvirt, getDgv1));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getColumns));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locI));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getItem));
+            b.Add(Instruction.Create(OpCodes.Stloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getHeaderText));
+            b.Add(Instruction.Create(OpCodes.Stloc, locH));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locH));
+            b.Add(Instruction.Create(OpCodes.Call, isNullOrEmpty));
+            b.Add(Instruction.Create(OpCodes.Brtrue, lInc));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locH));
+            b.Add(Instruction.Create(OpCodes.Newobj, tsmiCtor));
+            b.Add(Instruction.Create(OpCodes.Stloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setCheckOnClick));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getVisible));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setChecked));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locCol));
+            b.Add(Instruction.Create(OpCodes.Callvirt, setTag));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Ldftn, itemClick));
+            b.Add(Instruction.Create(OpCodes.Newobj, ehCtor));
+            b.Add(Instruction.Create(OpCodes.Callvirt, addClick));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getItems));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Callvirt, addItem));
+            b.Add(Instruction.Create(OpCodes.Pop));
+            // increment
+            b.Add(lInc);                                    // ldloc.i
+            b.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            b.Add(Instruction.Create(OpCodes.Add));
+            b.Add(Instruction.Create(OpCodes.Stloc, locI));
+            // condition
+            b.Add(lCond);                                   // ldloc.i
+            b.Add(Instruction.Create(OpCodes.Ldloc, locN));
+            b.Add(Instruction.Create(OpCodes.Blt, lBody));
+            // "Готово" item
+            b.Add(Instruction.Create(OpCodes.Ldstr, "Готово"));
+            b.Add(Instruction.Create(OpCodes.Newobj, tsmiCtor));
+            b.Add(Instruction.Create(OpCodes.Stloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Ldarg_0));
+            b.Add(Instruction.Create(OpCodes.Ldftn, doneClick));
+            b.Add(Instruction.Create(OpCodes.Newobj, ehCtor));
+            b.Add(Instruction.Create(OpCodes.Callvirt, addClick));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Callvirt, getItems));
+            b.Add(Instruction.Create(OpCodes.Ldloc, locItem));
+            b.Add(Instruction.Create(OpCodes.Callvirt, addItem));
+            b.Add(Instruction.Create(OpCodes.Pop));
+            // show at cursor
+            b.Add(Instruction.Create(OpCodes.Ldloc, locMenu));
+            b.Add(Instruction.Create(OpCodes.Call, getMousePos));
+            b.Add(Instruction.Create(OpCodes.Callvirt, showPoint));
+            b.Add(Instruction.Create(OpCodes.Ret));
+        }
+        form.Methods.Add(build);
+
+        // ---- wire: right-click header -> zt_BuildColMenu(); return ----
+        var origFirst = header.Body.Instructions[0];
+        var inj = new[]
+        {
+            Instruction.Create(OpCodes.Ldarg_2),                    // e
+            Instruction.Create(OpCodes.Callvirt, getButton),
+            Instruction.CreateLdcI4(2097152),                       // MouseButtons.Right
+            Instruction.Create(OpCodes.Bne_Un, origFirst),
+            Instruction.Create(OpCodes.Ldarg_0),
+            Instruction.Create(OpCodes.Call, build),
+            Instruction.Create(OpCodes.Ret),
+        };
+        for (int k = inj.Length - 1; k >= 0; k--)
+            header.Body.Instructions.Insert(0, inj[k]);
+
+        Console.WriteLine("  Frmmain: right-click column header -> persistent show/hide-columns checklist (edits=1)");
+        return 1;
+    }
+
     private sealed class DialogLayout
     {
         public DialogLayout(int width, int height)
@@ -1603,6 +1863,7 @@ internal static class Program
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
+            int colMenuChanges = PatchColumnVisibilityMenu(mod);
             int bomMappingChanges = PatchBomCalculatedColumnMapping(mod);
             int uiTextChanges = NormalizeLongRussianUiStrings(mod);
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
