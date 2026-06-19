@@ -1601,6 +1601,8 @@ internal static class Program
             int updateChanges = DisableUpdateCheck(mod);
             int pktChanges = PatchHandshakePkt(mod);
             int nameForced = ForceAssemblyName(mod, "ZTool");
+            int brandAttrChanges = SetBrandAttributes(mod);
+            int brandStrChanges = RebrandClientStrings(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
@@ -1608,8 +1610,7 @@ internal static class Program
             int uiTextChanges = NormalizeLongRussianUiStrings(mod);
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
             int aboutBoxChanges = PatchAboutBox(mod,
-                System.IO.Path.Combine(assetDir, "kz_flag.png"),
-                System.IO.Path.Combine(assetDir, "ru_flag.png"));
+                System.IO.Path.Combine(assetDir, "swtools_logo.png"));
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -1630,7 +1631,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, win32-ver edits={win32Ver}, strongname-stripped={snStripped} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
@@ -1837,6 +1838,83 @@ internal static class Program
         return changes;
     }
 
+    private const string BrandOld = "ZTool", BrandNew = "SWTools";
+
+    // Product rebrand ZTool -> SWTools. The window captions (Frmmain/FrmRg/FrmRverify),
+    // the About-box caption and the settings file name (CConfigMng builds it as
+    // Application.ProductName + ".settings") are ALL derived from
+    // Application.ProductName == AssemblyProductAttribute. Rewriting that attribute (and
+    // AssemblyTitle, which the About caption uses as its "{0}") rebrands every caption and
+    // the settings file in one shot.
+    //
+    // The INTERNAL assembly Name is deliberately left as "ZTool" (see ForceAssemblyName):
+    // the SolidWorks add-in launcher SwAddin.openZtool matches the exe by
+    // AssemblyName.GetAssemblyName(path).Name == "ZTool", and the IPC handshake prefix
+    // "ZToolRequest@001" is assembled inside the obfuscated add-in DLL (it is NOT a plain
+    // string there, so it cannot be rewritten without breaking the protected methods).
+    // Renaming either would break the SolidWorks integration with no user-visible effect,
+    // so both stay as inert internal plumbing.
+    private static int SetBrandAttributes(ModuleDefMD mod)
+    {
+        int n = 0;
+        var sets = new List<IList<CustomAttribute>>();
+        if (mod.Assembly != null) sets.Add(mod.Assembly.CustomAttributes);
+        sets.Add(mod.CustomAttributes);
+        foreach (var attrs in sets)
+            foreach (var ca in attrs)
+            {
+                var tn = ca.AttributeType?.Name ?? "";
+                if (tn != "AssemblyProductAttribute" && tn != "AssemblyTitleAttribute") continue;
+                for (int i = 0; i < ca.ConstructorArguments.Count; i++)
+                {
+                    var arg = ca.ConstructorArguments[i];
+                    if (arg.Value?.ToString() == BrandOld)
+                    {
+                        ca.ConstructorArguments[i] = new CAArgument(arg.Type, new UTF8String(BrandNew));
+                        n++;
+                    }
+                }
+            }
+        Console.WriteLine($"  rebrand: product/title attributes \"{BrandOld}\"->\"{BrandNew}\" (edits={n})");
+        return n;
+    }
+
+    // Rewrite the handful of plain "ZTool" string literals that are user-visible or
+    // brand-bearing: the HKCU\SOFTWARE\ZTool licensing key (3 sites), the desktop-shortcut
+    // display name + file, and the BOM document Author tag. Also retargets the native
+    // dongle P/Invoke module name. Exact whole-operand matches only, so the embedded
+    // resource namespace ("ZTool.Resources", "ZTool.*.bmp") and the handshake prefix
+    // ("ZToolRequest@001") are intentionally untouched.
+    private static int RebrandClientStrings(ModuleDefMD mod)
+    {
+        var exact = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "ZTool", "SWTools" },
+            { "ZTool.lnk", "SWTools.lnk" },
+            { "ZToolARM.dll", "SWToolsARM.dll" },
+            { "«ZToolARM.dll» отсутствует", "«SWToolsARM.dll» отсутствует" },
+            { "ZTool: проверка обновлений", "SWTools: проверка обновлений" },
+            { "ZTool Updater", "SWTools Updater" },
+            { "ZTool Updater\\.exe$", "SWTools Updater\\.exe$" },
+            { "«ZTool Updater.exe» отсутствует! Не удаётся запустить программу обновления!",
+              "«SWTools Updater.exe» отсутствует! Не удаётся запустить программу обновления!" },
+        };
+        int n = 0;
+        foreach (var t in mod.GetTypes())
+            foreach (var m in t.Methods)
+            {
+                if (m.Body == null) continue;
+                foreach (var ins in m.Body.Instructions)
+                    if (ins.OpCode.Code == Code.Ldstr && ins.Operand is string s && exact.TryGetValue(s, out var repl))
+                    { ins.Operand = repl; n++; }
+            }
+        int pinv = 0;
+        foreach (var mr in mod.GetModuleRefs())
+            if (mr.Name == "ZToolARM.dll") { mr.Name = "SWToolsARM.dll"; pinv++; }
+        Console.WriteLine($"  rebrand: ldstr literals (edits={n}), dongle p/invoke module (edits={pinv})");
+        return n + pinv;
+    }
+
     // The About-box window caption is assembled at runtime in FrmAbout.AboutBox1_Load
     // as: "О программе" + ProductName + "--{0}", where {0} is the AssemblyTitle.
     // That glues the words together ("О программеZTool--...") and uses an ASCII
@@ -1991,7 +2069,7 @@ internal static class Program
     }
 
     // The user's public website (clickable hyperlink in the About box).
-    private const string SiteUrl = "https://license.vizbuka.ru/ztool/";
+    private const string SiteUrl = "https://license.vizbuka.ru/swtools/";
 
     // Rebuilds the About box (FrmAbout) into a clean, professional layout per the
     // user's request: vendor logo banner on top, a clickable website hyperlink,
@@ -2006,7 +2084,7 @@ internal static class Program
     // texts/positions win). The original TableLayoutPanel content is simply hidden
     // (Visible=false) and fresh, absolutely-positioned controls are added to the
     // form, which is switched to a fixed-size, centered dialog.
-    private static int PatchAboutBox(ModuleDefMD mod, string kzFlagPath, string ruFlagPath)
+    private static int PatchAboutBox(ModuleDefMD mod, string logoPath)
     {
         var about = mod.Find("ZTool.FrmAbout", false);
         var load = about?.FindMethod("AboutBox1_Load");
@@ -2043,6 +2121,12 @@ internal static class Program
         var trFont = DR("Font");
         var trImage = DR("Image");
         var trBitmap = DR("Bitmap");
+
+        // SWTools logo banner: replaces the vendor "ZTOOL" bitmap. The PNG is embedded
+        // (alongside the QR/asset embedding below) and decoded at runtime via the same
+        // new Bitmap(GetManifestResourceStream(...)) refs used for the other resources.
+        const string logoRes = "SWToolsLogo.png";
+        bool haveLogo = !string.IsNullOrEmpty(logoPath) && System.IO.File.Exists(logoPath);
 
         var sigControl = new ClassSig(trControl);
         var sigCtrlColl = new ClassSig(trCtrlColl);
@@ -2141,15 +2225,13 @@ internal static class Program
         var mBitmapCtor = new MemberRefUser(mod, ".ctor",
             MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), trBitmap);
 
-        // embed the two flag PNGs as plain manifest resources.
+        // embed the SWTools logo PNG as a plain manifest resource.
         void Embed(string resName, string path)
         {
             if (System.IO.File.Exists(path) && !mod.Resources.Any(r => r.Name == resName))
                 mod.Resources.Add(new EmbeddedResource(resName, System.IO.File.ReadAllBytes(path), ManifestResourceAttributes.Public));
         }
-        const string kzRes = "kz_flag.png", ruRes = "ru_flag.png";
-        Embed(kzRes, kzFlagPath);
-        Embed(ruRes, ruFlagPath);
+        if (haveLogo) Embed(logoRes, logoPath);
 
         // --- inject static helper:  Image zt_AboutImg(string name) ---
         var imgHelper = new MethodDefUser("zt_AboutImg",
@@ -2264,9 +2346,20 @@ internal static class Program
         GVisible(getTlp, false);
         GVisible(getBtn1, false);
 
-        // logo banner (reuse the original PictureBox1 background image)
+        // logo banner: load the embedded SWTools logo (falls back to the vendor
+        // PictureBox1 image if the PNG asset is unavailable at build time).
         E(Instruction.Create(OpCodes.Newobj, picCtor), Instruction.Create(OpCodes.Stloc, locPic));
-        E(LdL(locPic), Ld0(), Instruction.Create(OpCodes.Callvirt, getPic1), Instruction.Create(OpCodes.Callvirt, getBackImage), Instruction.Create(OpCodes.Callvirt, setBackImage));
+        if (haveLogo)
+            E(LdL(locPic),
+              Instruction.Create(OpCodes.Ldtoken, (ITypeDefOrRef)about),
+              Instruction.Create(OpCodes.Call, mGetTypeFromHandle),
+              Instruction.Create(OpCodes.Callvirt, mGetAssembly),
+              Instruction.Create(OpCodes.Ldstr, logoRes),
+              Instruction.Create(OpCodes.Callvirt, mGetStream),
+              Instruction.Create(OpCodes.Newobj, mBitmapCtor),
+              Instruction.Create(OpCodes.Callvirt, setBackImage));
+        else
+            E(LdL(locPic), Ld0(), Instruction.Create(OpCodes.Callvirt, getPic1), Instruction.Create(OpCodes.Callvirt, getBackImage), Instruction.Create(OpCodes.Callvirt, setBackImage));
         E(LdL(locPic), I4(3), Instruction.Create(OpCodes.Callvirt, setBackLayout)); // ImageLayout.Stretch
         CSetLoc(locPic, 0, 0);
         CSetSize(locPic, CW, 72);

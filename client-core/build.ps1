@@ -23,7 +23,7 @@
 #>
 param(
     [string]$BaseExe = (Join-Path $PSScriptRoot '..\ZTool-base.exe'),
-    [string]$OutExe  = (Join-Path $PSScriptRoot 'out\ZTool.exe'),
+    [string]$OutExe  = (Join-Path $PSScriptRoot 'out\SWTools.exe'),
     [switch]$Publicize,
     [switch]$AllowUnknownInputs
 )
@@ -103,7 +103,7 @@ function Get-PublicKeyTokenHex([string]$AssemblyPath) {
 }
 
 function Write-OutputManifest([string]$VerifyOutput, [int]$ReinjectExitCode) {
-    $manifestPath = Join-Path (Split-Path $OutExe) 'ZTool.manifest.json'
+    $manifestPath = Join-Path (Split-Path $OutExe) ([IO.Path]::GetFileNameWithoutExtension($OutExe) + '.manifest.json')
     $dangling = $null
     if ($VerifyOutput -match 'dangling typerefs = (?<n>\d+)') {
         $dangling = [int]$Matches['n']
