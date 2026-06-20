@@ -3826,7 +3826,7 @@ public static class code
 	public static void CreatelinkbyVBS()
 	{
 		string text = logopathlist.rootpath + "Shortcut.VBS";
-		string text2 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\ZTool.lnk";
+		string text2 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\SWTools.lnk";
 		try
 		{
 			using (StreamWriter streamWriter = new StreamWriter(text, append: false, Encoding.Unicode))

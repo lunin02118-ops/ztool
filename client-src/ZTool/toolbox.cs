@@ -1217,7 +1217,7 @@ public class toolbox : Form
 		this.Controls.Add(this.ToolStrip1);
 		this.Controls.Add(this.StatusStrip1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-		this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+		this.Icon = ZTool.My.Resources.Resources.ztool_11;
 		this.Name = "toolbox";
 		this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 		this.Tag = "";

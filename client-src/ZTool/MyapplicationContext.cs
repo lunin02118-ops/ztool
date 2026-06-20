@@ -98,7 +98,9 @@ internal class MyapplicationContext : ApplicationContext
 		}
 		else if (Operators.CompareString(startType, Conversions.ToString(120), TextCompare: false) == 0)
 		{
-			MyProject.Forms.CheckUpdate.Show();
+			// Vendor online update disabled (see Phase 3): the dedicated update
+			// process must not open the vendor window; exit immediately instead.
+			Environment.Exit(0);
 		}
 		else if (Operators.CompareString(startType, Conversions.ToString(130), TextCompare: false) == 0)
 		{

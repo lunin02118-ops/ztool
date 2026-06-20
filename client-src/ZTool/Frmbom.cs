@@ -1905,7 +1905,7 @@ public class Frmbom : Form
 				summaryInformation.Subject = "";
 				summaryInformation.Title = "";
 				summaryInformation.ApplicationName = "";
-				summaryInformation.Author = "ZTool";
+				summaryInformation.Author = "SWTools";
 				summaryInformation.LastAuthor = "";
 				summaryInformation.Comments = "";
 				summaryInformation.CreateDateTime = DateTime.Now.AddMonths(-2);

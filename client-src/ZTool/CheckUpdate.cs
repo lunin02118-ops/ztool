@@ -415,8 +415,8 @@ public class CheckUpdate : Form
 		linkLabel2.Size = size;
 		this.LinkLabel1.TabIndex = 6;
 		this.LinkLabel1.TabStop = true;
-		this.LinkLabel1.Tag = "www.z-tool.cn";
-		this.LinkLabel1.Text = "Сайт загрузки: www.z-tool.cn";
+		this.LinkLabel1.Tag = "";
+		this.LinkLabel1.Text = "Сайт загрузки: ";
 		System.Drawing.SizeF sizeF = new System.Drawing.SizeF(96f, 96f);
 		this.AutoScaleDimensions = sizeF;
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
@@ -430,11 +430,11 @@ public class CheckUpdate : Form
 		this.Controls.Add(this.Button2);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-		this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+		this.Icon = ZTool.My.Resources.Resources.ztool_11;
 		this.MaximizeBox = false;
 		this.Name = "CheckUpdate";
 		this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-		this.Text = "ZTool: проверка обновлений";
+		this.Text = "SWTools: проверка обновлений";
 		this.Panel1.ResumeLayout(false);
 		this.Panel1.PerformLayout();
 		this.ResumeLayout(false);
@@ -459,7 +459,7 @@ public class CheckUpdate : Form
 
 	private void Updata_Load(object sender, EventArgs e)
 	{
-		Label1.Text = "Подключение к серверу...";
+		Label1.Text = "Обновления отключены";
 		TextBox1.Visible = false;
 		Button2.Enabled = false;
 		th.Start();
@@ -477,43 +477,9 @@ public class CheckUpdate : Form
 
 	public void getinfo()
 	{
-		try
-		{
-			SecurityCenter securityCenter = new SecurityCenter();
-			RemoteInf = code.GetRemoteinf(securityCenter.DecriptStr("nqi0eG7sRrpI5it9+Thw8wMTW2TQ3vGpzWrnXLNu5zGHCE+ZpbKctzm3ae0j1CDtjKztEf3SNOtuB6aMxBo3Hw==", code.FromHexString("5a546f6f6c2d322e38")) + "AutoUpdate1.xml");
-		}
-		catch (Exception ex)
-		{
-			ProjectData.SetProjectError(ex);
-			Exception _0024VB_0024Local_ex = ex;
-			_Closure_0024__24 closure_0024__ = new _Closure_0024__24();
-			closure_0024__._0024VB_0024Me = this;
-			closure_0024__._0024VB_0024Local_ex = _0024VB_0024Local_ex;
-			findnew = false;
-			ControlExtensions.InvokeOnUiThreadIfRequired(this, closure_0024__._Lambda_0024__53);
-			ProjectData.ClearProjectError();
-			return;
-		}
-		if (Information.IsNothing(RemoteInf))
-		{
-			findnew = false;
-			ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__54);
-			return;
-		}
-		string left = Application.ProductVersion.Replace(".", "").PadRight(4, '0');
-		string right = RemoteInf.latestversion.Replace(".", "").PadRight(4, '0');
-		if (Operators.CompareString(left, right, TextCompare: false) >= 0)
-		{
-			findnew = false;
-			ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__55);
-			return;
-		}
-		findnew = true;
-		ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__56);
-		if ((File.Exists(updatezip) && Operators.CompareString(GetHash(updatezip), RemoteInf.md5, TextCompare: false) == 0) ? true : false)
-		{
-			ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__57);
-		}
+		// Vendor online update disabled (see Phase 3): no fetch to the vendor
+		// AutoUpdate1.xml endpoint; findnew stays false so nothing can download/install.
+		findnew = false;
 	}
 
 	private void Button2_Click(object sender, EventArgs e)
@@ -602,17 +568,7 @@ public class CheckUpdate : Form
 
 	private void LinkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 	{
-		Type typeFromHandle = typeof(Process);
-		object[] array = new object[1];
-		LinkLabel linkLabel = LinkLabel1;
-		array[0] = RuntimeHelpers.GetObjectValue(linkLabel.Tag);
-		object[] array2 = array;
-		bool[] array3 = new bool[1] { true };
-		NewLateBinding.LateCall(null, typeFromHandle, "Start", array2, null, null, array3, IgnoreReturn: true);
-		if (array3[0])
-		{
-			linkLabel.Tag = RuntimeHelpers.GetObjectValue(array2[0]);
-		}
+		// Vendor download-site link disabled (see Phase 3): no browser launch.
 	}
 
 	private void updateprocess()
@@ -675,7 +631,7 @@ public class CheckUpdate : Form
 	public void openupdater()
 	{
 		string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-		string text = Compress(baseDirectory, updatezip, "ZTool Updater\\.exe$");
+		string text = Compress(baseDirectory, updatezip, "SWTools Updater\\.exe$");
 		if (!text.Equals("Success!", StringComparison.OrdinalIgnoreCase))
 		{
 			MessageBox.Show(text, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -705,7 +661,7 @@ public class CheckUpdate : Form
 					try
 					{
 						Assembly assembly = Assembly.LoadFrom(array[num2]);
-						if ((!Information.IsNothing(assembly) && assembly.GetName().Name.Equals("ZTool Updater", StringComparison.OrdinalIgnoreCase)) ? true : false)
+						if ((!Information.IsNothing(assembly) && assembly.GetName().Name.Equals("SWTools Updater", StringComparison.OrdinalIgnoreCase)) ? true : false)
 						{
 							flag = true;
 							break;
@@ -734,7 +690,7 @@ public class CheckUpdate : Form
 			}
 			else
 			{
-				MessageBox.Show("«ZTool Updater.exe» отсутствует! Не удаётся запустить программу обновления!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				MessageBox.Show("«SWTools Updater.exe» отсутствует! Не удаётся запустить программу обновления!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			}
 		}
 	}

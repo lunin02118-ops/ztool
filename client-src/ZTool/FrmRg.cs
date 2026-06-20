@@ -618,10 +618,10 @@ public class FrmRg : Form
 		this.SuspendLayout();
 		this.TableLayoutPanel1.AutoSize = true;
 		this.TableLayoutPanel1.ColumnCount = 4;
-		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20.39474f));
-		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34.86842f));
-		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 24.34211f));
-		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20f));
+		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34f));
+		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 6f));
+		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 38f));
+		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22f));
 		this.TableLayoutPanel1.Controls.Add(this.Cancel_Button, 3, 0);
 		this.TableLayoutPanel1.Controls.Add(this.Button1, 2, 0);
 		this.TableLayoutPanel1.Controls.Add(this.Button2, 0, 0);
@@ -836,7 +836,7 @@ public class FrmRg : Form
 		size = new System.Drawing.Size(343, 17);
 		label14.Size = size;
 		this.Label7.TabIndex = 2;
-		this.Label7.Text = "Пароль защиты лицензии (можно задать при активации; после переноса лицензии очищается автоматически):";
+		this.Label7.Text = "Пароль защиты лицензии (необязательно, задаётся при активации):";
 		this.password.ImeMode = System.Windows.Forms.ImeMode.Disable;
 		System.Windows.Forms.TextBox textBox = this.password;
 		location = new System.Drawing.Point(8, 288);
@@ -1022,7 +1022,7 @@ public class FrmRg : Form
 				}
 				else
 				{
-					RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("ZTool");
+					RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("SWTools");
 					text = Conversions.ToString(registryKey.GetValue("sn"));
 					registryKey.Close();
 				}

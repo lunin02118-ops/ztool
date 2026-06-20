@@ -1306,7 +1306,7 @@ public class FrmSetDrwlist : Form
 		this.Controls.Add(this.StatusStrip1);
 		this.Controls.Add(this.ToolStrip1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+		this.Icon = ZTool.My.Resources.Resources.ztool_11;
 		size = new System.Drawing.Size(700, 490);
 		this.MinimumSize = size;
 		this.Name = "FrmSetDrwlist";

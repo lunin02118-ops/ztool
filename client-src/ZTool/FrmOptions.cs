@@ -2101,7 +2101,7 @@ public class FrmOptions : Form
 	private void menu2_Click(object sender, EventArgs e)
 	{
 		ShortcutHelper shortcutHelper = new ShortcutHelper();
-		shortcutHelper.CreateDesktopShortcut2(Application.ExecutablePath, "ZTool", "Эффективный помощник для SolidWorks\nПакетное переименование, редактирование свойств, печать, конвертация чертежей, создание спецификаций и т. д.");
+		shortcutHelper.CreateDesktopShortcut2(Application.ExecutablePath, "SWTools", "Эффективный помощник для SolidWorks\nПакетное переименование, редактирование свойств, печать, конвертация чертежей, создание спецификаций и т. д.");
 	}
 
 	private void menu3_Click(object sender, EventArgs e)

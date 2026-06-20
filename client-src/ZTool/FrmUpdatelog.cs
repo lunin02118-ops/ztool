@@ -131,7 +131,7 @@ public class FrmUpdatelog : Form
 		this.ClientSize = size;
 		this.Controls.Add(this.TextBox1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+		this.Icon = ZTool.My.Resources.Resources.ztool_11;
 		this.KeyPreview = true;
 		margin = new System.Windows.Forms.Padding(6);
 		this.Margin = margin;

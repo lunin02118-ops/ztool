@@ -4427,7 +4427,7 @@ public class Frmmain : Form
 
 	private void _checkupdate_ExecuteEvent(object sender, ExecuteEventArgs e)
 	{
-		MyProject.Forms.CheckUpdate.Show();
+		// Vendor online update disabled (see Phase 3): ribbon button is inert.
 	}
 
 	private void _regist_ExecuteEvent(object sender, ExecuteEventArgs e)
@@ -15560,54 +15560,9 @@ public class Frmmain : Form
 
 	public bool haveupdate()
 	{
-		code.updateInf updateInf = default(code.updateInf);
-		bool result;
-		try
-		{
-			SecurityCenter securityCenter = new SecurityCenter();
-			updateInf = code.GetRemoteinf(securityCenter.DecriptStr("nqi0eG7sRrpI5it9+Thw8wMTW2TQ3vGpzWrnXLNu5zGHCE+ZpbKctzm3ae0j1CDtjKztEf3SNOtuB6aMxBo3Hw==", code.FromHexString("5a546f6f6c2d322e38")) + "AutoUpdate1.xml");
-		}
-		catch (Exception ex)
-		{
-			ProjectData.SetProjectError(ex);
-			Exception ex2 = ex;
-			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
-			result = false;
-			ProjectData.ClearProjectError();
-			goto IL_014d;
-		}
-		if (Information.IsNothing(updateInf))
-		{
-			result = false;
-		}
-		else
-		{
-			try
-			{
-				string left = Application.ProductVersion.Replace(".", "").PadRight(4, '0');
-				string right = updateInf.latestversion.Replace(".", "").PadRight(4, '0');
-				if (Operators.CompareString(left, right, TextCompare: false) >= 0)
-				{
-					result = false;
-				}
-				else
-				{
-					ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__119);
-					result = true;
-				}
-			}
-			catch (Exception ex3)
-			{
-				ProjectData.SetProjectError(ex3);
-				Exception ex4 = ex3;
-				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
-				result = false;
-				ProjectData.ClearProjectError();
-			}
-		}
-		goto IL_014d;
-		IL_014d:
-		return result;
+		// Vendor online update probe disabled (see Phase 3): never reports an update,
+		// so no startup "new version" notification and no fetch to the vendor endpoint.
+		return false;
 	}
 
 	internal void sendhwndtosw()
@@ -15759,6 +15714,6 @@ public class Frmmain : Form
 	[CompilerGenerated]
 	private static void _Lambda_0024__119()
 	{
-		MyProject.Forms.CheckUpdate.Show();
+		// Vendor online update disabled (see Phase 3): no update window is shown.
 	}
 }

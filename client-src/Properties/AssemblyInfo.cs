@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-[assembly: AssemblyProduct("ZTool")]
+[assembly: AssemblyProduct("SWTools")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2018")]
 [assembly: AssemblyDescription("Подходит для SolidWorks 2012 и выше")]
 [assembly: AssemblyCompany("ZTool")]

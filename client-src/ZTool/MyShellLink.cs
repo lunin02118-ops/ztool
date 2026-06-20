@@ -71,7 +71,7 @@ public class MyShellLink
 		shellLink.SetWorkingDirectory(Application.StartupPath);
 		IPersistFile persistFile = (IPersistFile)shellLink;
 		string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-		string text = Path.Combine(folderPath, "ZTool.lnk");
+		string text = Path.Combine(folderPath, "SWTools.lnk");
 		if (File.Exists(text))
 		{
 			File.Delete(text);

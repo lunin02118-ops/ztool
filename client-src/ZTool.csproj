@@ -20,6 +20,9 @@
     <RootNamespace />
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="app.ico" />
+    <None Remove="MaxQr.png" />
+    <None Remove="SWToolsLogo.png" />
     <None Remove="ZTool.ExpandableGridView.dll" />
     <None Remove="ZTool.ICSharpCode.SharpZipLib.dll" />
     <None Remove="ZTool.ZTool_rsa.dll" />
@@ -32,6 +35,9 @@
     <EmbeddedResource Include="ZTool.zxing.dll" LogicalName="ZTool.zxing.dll" />
     <EmbeddedResource Include="ZTool.RibbonMarkup.ribbon" LogicalName="ZTool.RibbonMarkup.ribbon" />
     <EmbeddedResource Include="ZTool.Ribbon.dll" LogicalName="ZTool.Ribbon.dll" />
+    <EmbeddedResource Include="app.ico" LogicalName="SWToolsApp.ico" />
+    <EmbeddedResource Include="MaxQr.png" LogicalName="MaxQr.png" />
+    <EmbeddedResource Include="SWToolsLogo.png" LogicalName="SWToolsLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />

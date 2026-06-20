@@ -507,7 +507,7 @@ public class FrmAbout : Form
 		this.Controls.Add(this.Button1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-		this.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+		this.Icon = ZTool.My.Resources.Resources.ztool_11;
 		this.KeyPreview = true;
 		this.MaximizeBox = false;
 		this.MinimizeBox = false;
@@ -541,7 +541,7 @@ public class FrmAbout : Form
 	[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 	private void AboutBox1_Load(object sender, EventArgs e)
 	{
-		Text = string.Format(arg0: (Operators.CompareString(MyProject.Application.Info.Title, "", TextCompare: false) == 0) ? Path.GetFileNameWithoutExtension(MyProject.Application.Info.AssemblyName) : MyProject.Application.Info.Title, format: "О программе" + MyProject.Application.Info.ProductName + "--{0}");
+		Text = string.Format(arg0: (Operators.CompareString(MyProject.Application.Info.Title, "", TextCompare: false) == 0) ? Path.GetFileNameWithoutExtension(MyProject.Application.Info.AssemblyName) : MyProject.Application.Info.Title, format: "О программе " + MyProject.Application.Info.ProductName + " — {0}");
 		if (Environment.Is64BitProcess)
 		{
 			LabelVersion.Text = string.Format("Версия :{0}", Application.ProductVersion.ToString() + "(x64)");
@@ -550,14 +550,97 @@ public class FrmAbout : Form
 		{
 			LabelVersion.Text = string.Format("Версия :{0}", Application.ProductVersion.ToString() + "(x86)");
 		}
-		LabelEmail.Text = "Email: mail@z-tool.cn";
-		LabelQQ.Text = "Группа QQ: 823539419";
+		LabelEmail.Text = "Email: ";
+		LabelQQ.Text = "Группа QQ: ";
 		LinkLabel1.Text = Resources.website;
 		Label1.Text = "Поддерживаемые версии ОС: Win7 и выше";
 		LableDescription.Text = MyProject.Application.Info.Description;
 		try
 		{
 			MyProject.Forms.Frmmain.sendhwndtosw();
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			ProjectData.ClearProjectError();
+		}
+		zt_AboutSetup();
+	}
+
+	// Phase 3: rebuilds the About box from source (mirrors the IL-Localizer
+	// PatchAboutBox transform): SWTools logo banner, website + MAX hyperlinks,
+	// e-mail line and the MAX contact QR; the vendor phone/QQ grid, version, OS
+	// and description rows plus the update-log button are hidden.
+	private void zt_AboutSetup()
+	{
+		SuspendLayout();
+		FormBorderStyle = FormBorderStyle.FixedDialog;
+		MaximizeBox = false;
+		StartPosition = FormStartPosition.CenterScreen;
+		ClientSize = new Size(360, 342);
+		TableLayoutPanel1.Visible = false;
+		Button1.Visible = false;
+		PictureBox pictureBox = new PictureBox();
+		pictureBox.BackgroundImage = new Bitmap(typeof(FrmAbout).Assembly.GetManifestResourceStream("SWToolsLogo.png"));
+		pictureBox.BackgroundImageLayout = ImageLayout.Stretch;
+		pictureBox.Location = new Point(0, 0);
+		pictureBox.Size = new Size(360, 72);
+		Controls.Add(pictureBox);
+		LinkLabel linkLabel = new LinkLabel();
+		linkLabel.AutoSize = false;
+		linkLabel.Text = "Перейти на сайт";
+		linkLabel.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
+		linkLabel.TextAlign = ContentAlignment.MiddleCenter;
+		linkLabel.Location = new Point(20, 84);
+		linkLabel.Size = new Size(320, 26);
+		linkLabel.LinkClicked += zt_AboutWeb_Click;
+		Controls.Add(linkLabel);
+		Label label = new Label();
+		label.AutoSize = false;
+		label.Text = "Email: lunin021189@gmail.com";
+		label.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+		label.TextAlign = ContentAlignment.MiddleCenter;
+		label.Location = new Point(20, 116);
+		label.Size = new Size(320, 24);
+		Controls.Add(label);
+		LinkLabel linkLabel2 = new LinkLabel();
+		linkLabel2.AutoSize = false;
+		linkLabel2.Text = "Связаться в MAX";
+		linkLabel2.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
+		linkLabel2.TextAlign = ContentAlignment.MiddleCenter;
+		linkLabel2.Location = new Point(20, 144);
+		linkLabel2.Size = new Size(320, 26);
+		linkLabel2.LinkClicked += zt_AboutMax_Click;
+		Controls.Add(linkLabel2);
+		PictureBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+		PictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+		PictureBox2.Location = new Point(30, 172);
+		PictureBox2.Size = new Size(300, 118);
+		OKButton.Location = new Point(268, 302);
+		OKButton.Size = new Size(82, 28);
+		ResumeLayout(false);
+	}
+
+	private void zt_AboutWeb_Click(object sender, LinkLabelLinkClickedEventArgs e)
+	{
+		try
+		{
+			Process.Start("explorer.exe", "https://license.vizbuka.ru/swtools/");
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			ProjectData.ClearProjectError();
+		}
+	}
+
+	private void zt_AboutMax_Click(object sender, LinkLabelLinkClickedEventArgs e)
+	{
+		try
+		{
+			Process.Start("explorer.exe", "https://max.ru/u/f9LHodD0cOLc5SX8zsbZvz3TMwMzyunwK6GAYYw79SkF1lZ0YUlZknFImsU");
 		}
 		catch (Exception ex)
 		{

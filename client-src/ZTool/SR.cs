@@ -38,13 +38,13 @@ internal class SR
 				return false;
 			}
 			string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-			string armPath = Path.Combine(baseDirectory, "ZToolARM.dll");
+			string armPath = Path.Combine(baseDirectory, "SWToolsARM.dll");
 			if (!File.Exists(armPath))
 			{
 				string parentDirectory = Path.GetDirectoryName(baseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 				if (!string.IsNullOrEmpty(parentDirectory))
 				{
-					string legacyArmPath = Path.Combine(parentDirectory, "ZToolARM.dll");
+					string legacyArmPath = Path.Combine(parentDirectory, "SWToolsARM.dll");
 					if (File.Exists(legacyArmPath))
 					{
 						armPath = legacyArmPath;
@@ -64,7 +64,7 @@ internal class SR
 			}
 			else
 			{
-				MessageBox.Show("«ZToolARM.dll» отсутствует", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				MessageBox.Show("«SWToolsARM.dll» отсутствует", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			}
 		}
 		catch (Exception ex)
@@ -417,7 +417,7 @@ internal class SR
 						}
 						else if ((Operators.CompareString(left, GetMNum("忘情水。。。", Encrypt: false, withversion: false), TextCompare: false) == 0 && Operators.CompareString(left, text3 + text4, TextCompare: false) == 0 && Conversions.ToDouble(use_date) == 0.0) ? true : false)
 						{
-							RegistryKey userRegistryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("ZTool");
+							RegistryKey userRegistryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("SWTools");
 							userRegistryKey.SetValue("sn", code, RegistryValueKind.String);
 							userRegistryKey.Close();
 							result = true;
@@ -445,7 +445,7 @@ internal class SR
 	{
 		try
 		{
-			RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("ZTool");
+			RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("SWTools");
 			registryKey.SetValue("AppDataPath", Application.ExecutablePath, RegistryValueKind.String);
 			registryKey.Close();
 		}

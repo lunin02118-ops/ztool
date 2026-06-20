@@ -15,22 +15,22 @@ internal class Prog2
 	{
 	}
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_Enum")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_Enum")]
 	public static extern uint JDK_E(ref DONGLE_INFO pDongleInfo, ref int pCount);
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_Open")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_Open")]
 	public static extern uint JDK_O(ref uint phDongle, string pPID, int index);
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_Close")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_Close")]
 	public static extern uint JDK_C(uint hDongle);
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_VerifyPIN")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_VerifyPIN")]
 	public static extern uint JDK_VP(uint hDongle, int nFlag, string pInPin, ref int pRemainCount);
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_GenRandom")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_GenRandom")]
 	public static extern uint JDK_GRd(uint hDongle, int Len_In, byte[] pOutBuf);
 
-	[DllImport("ZToolARM.dll", EntryPoint = "JDKey_RunARM")]
+	[DllImport("SWToolsARM.dll", EntryPoint = "JDKey_RunARM")]
 	public static extern uint JDK_RAM(uint hDongle, ushort appid, byte[] pInBuf, int Len_In, byte[] pOutBuf, ref int pLen_Out);
 
 	public string ToHexString(byte[] bytes)

@@ -648,8 +648,11 @@ public sealed class Resources
 	{
 		get
 		{
-			object objectValue = RuntimeHelpers.GetObjectValue(ResourceManager.GetObject("ztool_11", resourceCulture));
-			return (Icon)objectValue;
+			// Phase 3 rebrand: the application / window icon is the SWTools logo,
+			// loaded from the embedded "SWToolsApp.ico" manifest resource instead of
+			// the vendor cube that used to live in the ZTool.Resources resource set.
+			System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("SWToolsApp.ico");
+			return new Icon(stream);
 		}
 	}
 
@@ -657,8 +660,10 @@ public sealed class Resources
 	{
 		get
 		{
-			object objectValue = RuntimeHelpers.GetObjectValue(ResourceManager.GetObject("二维码", resourceCulture));
-			return (Bitmap)objectValue;
+			// Phase 3: the vendor contact QR (淘宝/公众号/QQ群 captions) is replaced by
+			// the user's MAX contact QR, embedded as the "MaxQr.png" manifest resource.
+			System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("MaxQr.png");
+			return new Bitmap(stream);
 		}
 	}
 }

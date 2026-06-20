@@ -680,7 +680,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(124, 16);
 		textBox3.Size = size;
 		this.TextBox3.TabIndex = 12;
-		this.TextBox3.Text = "823539419";
+		this.TextBox3.Text = "";
 		this.TextBox2.Anchor = System.Windows.Forms.AnchorStyles.Left;
 		this.TextBox2.BackColor = System.Drawing.SystemColors.Control;
 		this.TextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -696,7 +696,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(130, 16);
 		textBox6.Size = size;
 		this.TextBox2.TabIndex = 11;
-		this.TextBox2.Text = "287926418";
+		this.TextBox2.Text = "";
 		this.TextBox5.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 		this.TextBox5.BackColor = System.Drawing.SystemColors.Control;
 		this.TextBox5.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -792,7 +792,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(130, 16);
 		textBox24.Size = size;
 		this.TextBox1.TabIndex = 11;
-		this.TextBox1.Text = "mail@z-tool.cn";
+		this.TextBox1.Text = "";
 		this.TextBox9.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 		this.TextBox9.BackColor = System.Drawing.SystemColors.Control;
 		this.TextBox9.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -825,7 +825,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(145, 16);
 		textBox30.Size = size;
 		this.TextBox10.TabIndex = 11;
-		this.TextBox10.Text = "www.z-tool.cn";
+		this.TextBox10.Text = "";
 		this.TextBox11.BackColor = System.Drawing.SystemColors.Control;
 		this.TextBox11.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.TextBox11.ForeColor = System.Drawing.Color.Blue;
@@ -841,7 +841,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(334, 16);
 		textBox33.Size = size;
 		this.TextBox11.TabIndex = 11;
-		this.TextBox11.Text = "https://item.taobao.com/item.htm?id=638150915723";
+		this.TextBox11.Text = "";
 		this.TextBox12.BackColor = System.Drawing.SystemColors.Control;
 		this.TextBox12.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		System.Windows.Forms.TextBox textBox34 = this.TextBox12;
@@ -856,7 +856,7 @@ public class FrmRverify : Form
 		size = new System.Drawing.Size(43, 16);
 		textBox36.Size = size;
 		this.TextBox12.TabIndex = 4;
-		this.TextBox12.Text = "Taobao:";
+		this.TextBox12.Text = "";
 		this.TableLayoutPanel4.ColumnCount = 2;
 		this.TableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 39.24419f));
 		this.TableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 350f));
@@ -914,6 +914,59 @@ public class FrmRverify : Form
 		((System.ComponentModel.ISupportInitialize)this.PictureBox1).EndInit();
 		this.ResumeLayout(false);
 		this.PerformLayout();
+		zt_VerifySetup();
+	}
+
+	// Phase 3: redesigns the trial / "license not found" window from source
+	// (mirrors the IL-Localizer PatchVerifyContacts transform): hides the vendor
+	// QQ/Email/Сайт contact grids, shows a compact "Лицензия не обнаружена" banner,
+	// an e-mail line and a clickable "Перейти на сайт" link, relabels "Проба"->"Демо"
+	// and tightens the form around the pulled-up MAX QR card.
+	private void zt_VerifySetup()
+	{
+		TableLayoutPanel3.Visible = false;
+		TableLayoutPanel4.Visible = false;
+		TableLayoutPanel2.Size = new Size(402, 52);
+		Label2.Text = "Лицензия не обнаружена";
+		Label2.Font = new Font("Segoe UI", 15.75f, FontStyle.Bold);
+		Label label = new Label();
+		label.AutoSize = false;
+		label.Text = "Email: lunin021189@gmail.com";
+		label.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+		label.TextAlign = ContentAlignment.MiddleCenter;
+		label.Location = new Point(11, 66);
+		label.Size = new Size(380, 22);
+		Controls.Add(label);
+		LinkLabel linkLabel = new LinkLabel();
+		linkLabel.AutoSize = false;
+		linkLabel.Text = "Перейти на сайт";
+		linkLabel.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
+		linkLabel.TextAlign = ContentAlignment.MiddleCenter;
+		linkLabel.Location = new Point(11, 94);
+		linkLabel.Size = new Size(380, 24);
+		linkLabel.LinkClicked += zt_VerifyWeb_Click;
+		Controls.Add(linkLabel);
+		Test.Text = "Демо";
+		Test.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+		Button1.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+		Button2.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+		Button2.Size = new Size(86, 27);
+		PictureBox1.Location = new Point(8, 130);
+		ClientSize = new Size(402, 300);
+	}
+
+	private void zt_VerifyWeb_Click(object sender, LinkLabelLinkClickedEventArgs e)
+	{
+		try
+		{
+			Process.Start("explorer.exe", "https://license.vizbuka.ru/swtools/");
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			ProjectData.ClearProjectError();
+		}
 	}
 
 	private void FrmRverify_FormClosed(object sender, FormClosedEventArgs e)
