@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -54,6 +56,10 @@ public class TCPClient
 	private const int H_length = 10;
 
 	private const int L_length = 10;
+
+	private const int MAX_RESPONSE_BODY = 10485760;
+
+	private const int RESPONSE_READ_TIMEOUT_MS = 20000;
 
 	internal bool isok;
 
@@ -160,42 +166,42 @@ public class TCPClient
 				string left = m_head;
 				if (Operators.CompareString(left, Conversions.ToString(1), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Недопустимый регистрационный код", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Недопустимый регистрационный код", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(4), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Регистрация не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Регистрация не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(2), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Регистрационный код уже используется на другом компьютере", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Регистрационный код уже используется на другом компьютере", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(3), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Срок действия регистрационного кода истёк", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Срок действия регистрационного кода истёк", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(6), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Ошибка в сведениях о регистрации", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Ошибка в сведениях о регистрации", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(16), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Заявка на регистрацию не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Заявка на регистрацию не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(17), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Достигнут предел числа лицензированных компьютеров", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Достигнут предел числа лицензированных компьютеров", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(18), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Неверный пароль", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Неверный пароль", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				SR sR;
@@ -214,7 +220,7 @@ public class TCPClient
 					}
 					if (0 == 0)
 					{
-						MessageBox.Show("Ошибка сохранения сведений о регистрации", "提示", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						MessageBox.Show("Ошибка сохранения сведений о регистрации", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 						break;
 					}
 					goto IL_0240;
@@ -227,11 +233,28 @@ public class TCPClient
 					string text = "";
 					if (sR2.IsReg2("来生缘。。。", ref use_date, ref text))
 					{
-						MessageBox.Show("Регистрация выполнена", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show("Регистрация выполнена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						string executablePath = Application.ExecutablePath;
+						try
+						{
+							if (!string.IsNullOrWhiteSpace(executablePath) && File.Exists(executablePath))
+							{
+								Process.Start(new ProcessStartInfo(executablePath)
+								{
+									UseShellExecute = true,
+									WorkingDirectory = Path.GetDirectoryName(executablePath) ?? ""
+								});
+							}
+						}
+						catch (Exception ex)
+						{
+							logopathlist.WriteLog($"Restart after activation failed: {ex.GetType().Name}\r\n{ex.Message}\r\n{ex.StackTrace}");
+						}
+						Environment.Exit(0);
 					}
 					else
 					{
-						MessageBox.Show("Регистрация не удалась", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show("Регистрация не удалась", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					}
 					break;
 				}
@@ -243,28 +266,28 @@ public class TCPClient
 						sendstring(Sendtype.verify_Remove, sR3.get_rginfo());
 						continue;
 					}
-					MessageBox.Show("Не удалось перенести лицензию", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Не удалось перенести лицензию", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				if (Operators.CompareString(left, Conversions.ToString(7), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Лицензия успешно перенесена", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Лицензия успешно перенесена", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(8), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Не удалось перенести лицензию", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Не удалось перенести лицензию", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(9), TextCompare: false) == 0)
 				{
-					MessageBox.Show("Перенос не требуется", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Перенос не требуется", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(10), TextCompare: false) == 0)
 				{
-					MessageBox.Show("У этого компьютера нет прав на перенос", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("У этого компьютера нет прав на перенос", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else if (Operators.CompareString(left, Conversions.ToString(14), TextCompare: false) == 0)
 				{
-					MessageBox.Show("У этого кода нет прав на перенос", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("У этого кода нет прав на перенос", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				break;
 				IL_0240:
@@ -286,28 +309,59 @@ public class TCPClient
 	public string getreceive(Socket s, ref string m_head)
 	{
 		s.ReceiveBufferSize = 1024;
-		string text = "";
-		byte[] array = new byte[10];
-		byte[] array2 = new byte[10];
-		byte[] array3 = new byte[10485760];
-		int num = 0;
-		int i = 0;
-		if (s.Receive(array, 10, SocketFlags.None) == 0)
+		int receiveTimeout = s.ReceiveTimeout;
+		try
 		{
-			return "";
+			s.ReceiveTimeout = RESPONSE_READ_TIMEOUT_MS;
+			byte[] array = new byte[H_length];
+			int offset = 0;
+			while (offset < array.Length)
+			{
+				int num = s.Receive(array, offset, array.Length - offset, SocketFlags.None);
+				if (num == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num);
+			}
+			m_head = Conversions.ToString(code.byte_to_Int(array));
+			byte[] array2 = new byte[L_length];
+			offset = 0;
+			while (offset < array2.Length)
+			{
+				int num2 = s.Receive(array2, offset, array2.Length - offset, SocketFlags.None);
+				if (num2 == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num2);
+			}
+			int num3 = code.byte_to_Int(array2);
+			if (num3 < 0 || num3 > MAX_RESPONSE_BODY)
+			{
+				throw new InvalidOperationException("Некорректный размер ответа сервера");
+			}
+			byte[] array3 = new byte[num3];
+			offset = 0;
+			while (offset < array3.Length)
+			{
+				int num4 = s.Receive(array3, offset, array3.Length - offset, SocketFlags.None);
+				if (num4 == 0)
+				{
+					throw new InvalidOperationException("Соединение с сервером закрыто");
+				}
+				offset = checked(offset + num4);
+			}
+			return Encoding.UTF8.GetString(array3, 0, array3.Length).Trim();
 		}
-		m_head = Conversions.ToString(code.byte_to_Int(array));
-		if (s.Receive(array2, 10, SocketFlags.None) == 0)
+		catch (SocketException ex) when (ex.SocketErrorCode == SocketError.TimedOut)
 		{
-			return "";
+			throw new TimeoutException("Тайм-аут чтения ответа сервера", ex);
 		}
-		int num2;
-		for (num2 = code.byte_to_Int(array2); i < num2; i = checked(i + num))
+		finally
 		{
-			num = s.Receive(array3, i, s.ReceiveBufferSize, SocketFlags.None);
+			s.ReceiveTimeout = receiveTimeout;
 		}
-		text = Encoding.UTF8.GetString(array3, 0, num2);
-		return text.Trim();
 	}
 
 	public byte[] getsendbuffer(int rgtype, string sendstring)
@@ -324,4 +378,5 @@ public class TCPClient
 			return array3;
 		}
 	}
+
 }

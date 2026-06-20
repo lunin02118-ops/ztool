@@ -54,21 +54,48 @@ All of these are standard VB→C# decompilation artifacts; none change behaviour
   `ZTool_rsa`, `zxing`, `Ribbon` are also embedded as manifest resources and
   resolved at runtime via `AppDomain.AssemblyResolve`.
 - The dongle P/Invoke target `ZToolARM.dll` must be present next to the exe to
-  get past `SR.Isme`.
-- `Main` only shows UI when the vendor hardware-license check `SR.Isme` passes;
-  with no license it exits cleanly (genuine vendor behaviour). The trial /
-  registration flow and the SWTools rebrand currently live in the
-  `client-core` reinjection layer; migrating them to this source tree is the
-  next phase.
+  get past `SR.Isme`. `SR.Isme` is an **anti-tamper companion check**: it MD5s
+  `ZToolARM.dll` and compares the `code.GD51`-encoded hash against the embedded
+  `Resources.G_D5V`. It is *not* the server licence check.
+- `Main` only shows UI when `SR.Isme` passes. With `ZToolARM.dll` present it
+  passes and the full client UI renders (ribbon, `FrmAbout` trial/register,
+  `FrmRverify` online-activation). The server licence / hardware-binding check
+  then runs inside `FrmRverify`; on a cloud VM with a zeroed hardware UUID it
+  reports *«Это устройство не соответствует условиям регистрации»* — the
+  genuine hardware-binding behaviour, not a build problem.
+
+## Licensing core (in source as of Phase 2)
+
+The four licensing classes we own — `SR`, `SecurityCenter`, `TCPClient`,
+`GetRegistrycreatedtime` — are the **canonical owned versions**, identical to the
+`client-core/src` donors that the reinjection pipeline transplants into the
+shipping exe. The behaviour-preserving hardening they carry over the raw vendor
+decompile:
+
+| class | change |
+|-------|--------|
+| `GetRegistrycreatedtime` | `RegCloseKey` the enumerated handle (the vendor decompile leaks it) |
+| `SR` | `using`/null-safe registry reads + handle disposal; `ZToolARM.dll` lookup also falls back to the parent directory |
+| `TCPClient` | response-body size cap (`MAX_RESPONSE_BODY`) + read timeout; Chinese `MessageBox` caption `提示` → `«Сообщение»` |
+| `SecurityCenter` | identical to donor (no change needed) |
+
+The SWTools rebrand and the remaining UI localization still live in the
+`client-core` reinjection/`Localizer` layer; migrating them into this source
+tree is Phase 3.
 
 ## Status / scope
 
 - ✅ Phase 1: compiles from source with 0 errors; launches and runs the real
   vendor startup path without crashing.
-- ▢ Phase 2: full runtime verification (trial UI, About, license server, core
-  functions) once the licensing layer is wired in here.
-- ▢ Phase 3: move the SWTools rebrand + window redesigns from IL patches in
-  `client-core` into this source tree, and switch the build/installer over.
+- ✅ Phase 2: licensing core (`SR`/`SecurityCenter`/`TCPClient`/`GetRegistrycreatedtime`)
+  wired into this tree as the owned versions; runtime-verified standalone (no
+  SolidWorks): passes `SR.Isme`, renders the full ribbon, and the `FrmAbout`
+  trial/register + `FrmRverify` online-activation licensing UI open and work
+  from source.
+- ▢ Phase 3: move the SWTools rebrand + remaining RU localization (vendor
+  update-check disable, `FrmAbout` QR/contacts, `FrmRverify` `注册` title /
+  password placeholder) + window redesigns from the IL patches in `client-core`
+  into this source tree, and switch the build/installer over.
 
 Warnings (~120) are benign decompiler artifacts (unreachable code after
 `goto`/`return`, unused locals).

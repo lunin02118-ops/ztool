@@ -38,11 +38,22 @@ internal class SR
 				return false;
 			}
 			string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-			baseDirectory = Path.GetDirectoryName(baseDirectory);
-			baseDirectory = Path.Combine(baseDirectory, "ZToolARM.dll");
-			if (File.Exists(baseDirectory))
+			string armPath = Path.Combine(baseDirectory, "ZToolARM.dll");
+			if (!File.Exists(armPath))
 			{
-				FileInfo fileInfo = new FileInfo(baseDirectory);
+				string parentDirectory = Path.GetDirectoryName(baseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+				if (!string.IsNullOrEmpty(parentDirectory))
+				{
+					string legacyArmPath = Path.Combine(parentDirectory, "ZToolARM.dll");
+					if (File.Exists(legacyArmPath))
+					{
+						armPath = legacyArmPath;
+					}
+				}
+			}
+			if (File.Exists(armPath))
+			{
+				FileInfo fileInfo = new FileInfo(armPath);
 				using Stream inputStream = fileInfo.OpenRead();
 				using MD5 mD = new MD5CryptoServiceProvider();
 				byte[] inArray = mD.ComputeHash(inputStream);
@@ -261,18 +272,14 @@ internal class SR
 			{
 				try
 				{
-					RegistryKey registryKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\C4eHN4fjikBan", writable: false);
-					byte[] array = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\Jlj4aG8uZBvW", writable: false);
-					byte[] array2 = (byte[])registryKey.GetValue("F2S6qCdziIAm");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\HTwk2RCBDL", writable: false);
-					byte[] array3 = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\98CqyvBZcg", writable: false);
-					byte[] array4 = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
+					using RegistryKey regInfoKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\C4eHN4fjikBan", writable: false);
+					using RegistryKey regSignatureKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\Jlj4aG8uZBvW", writable: false);
+					using RegistryKey regMachineKey1 = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\HTwk2RCBDL", writable: false);
+					using RegistryKey regMachineKey2 = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\98CqyvBZcg", writable: false);
+					byte[] array = regInfoKey?.GetValue("information") as byte[];
+					byte[] array2 = regSignatureKey?.GetValue("F2S6qCdziIAm") as byte[];
+					byte[] array3 = regMachineKey1?.GetValue("information") as byte[];
+					byte[] array4 = regMachineKey2?.GetValue("information") as byte[];
 					if ((Information.IsNothing(array) || Information.IsNothing(array2) || Information.IsNothing(array3) || Information.IsNothing(array4)) ? true : false)
 					{
 						result = false;
@@ -353,18 +360,14 @@ internal class SR
 					string txt2 = GetRegistrycreatedtime.getregistryKeytime(GetRegistrycreatedtime.RootName.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\98CqyvBZcg");
 					txt = ZTool.code.GD51(txt);
 					txt2 = ZTool.code.GD51(txt2);
-					RegistryKey registryKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\C4eHN4fjikBan", writable: false);
-					byte[] array = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\Jlj4aG8uZBvW", writable: false);
-					byte[] array2 = (byte[])registryKey.GetValue("F2S6qCdziIAm");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\HTwk2RCBDL", writable: false);
-					byte[] array3 = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
-					registryKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\98CqyvBZcg", writable: false);
-					byte[] array4 = (byte[])registryKey.GetValue("information");
-					registryKey.Close();
+					using RegistryKey registryKey = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\C4eHN4fjikBan", writable: false);
+					using RegistryKey registryKey2 = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\Jlj4aG8uZBvW", writable: false);
+					using RegistryKey registryKey3 = Registry.LocalMachine.OpenSubKey("Software\\SolURxxCfNU\\HTwk2RCBDL", writable: false);
+					using RegistryKey registryKey4 = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\MzORu8qE4HhZ\\98CqyvBZcg", writable: false);
+					byte[] array = registryKey?.GetValue("information") as byte[];
+					byte[] array2 = registryKey2?.GetValue("F2S6qCdziIAm") as byte[];
+					byte[] array3 = registryKey3?.GetValue("information") as byte[];
+					byte[] array4 = registryKey4?.GetValue("information") as byte[];
 					if ((Information.IsNothing(array) || Information.IsNothing(array2) || Information.IsNothing(array3) || Information.IsNothing(array4)) ? true : false)
 					{
 						result = false;
@@ -414,9 +417,9 @@ internal class SR
 						}
 						else if ((Operators.CompareString(left, GetMNum("忘情水。。。", Encrypt: false, withversion: false), TextCompare: false) == 0 && Operators.CompareString(left, text3 + text4, TextCompare: false) == 0 && Conversions.ToDouble(use_date) == 0.0) ? true : false)
 						{
-							registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("ZTool");
-							registryKey.SetValue("sn", code, RegistryValueKind.String);
-							registryKey.Close();
+							RegistryKey userRegistryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE", writable: true).CreateSubKey("ZTool");
+							userRegistryKey.SetValue("sn", code, RegistryValueKind.String);
+							userRegistryKey.Close();
 							result = true;
 						}
 						else

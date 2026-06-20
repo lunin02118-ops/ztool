@@ -66,6 +66,9 @@ internal class GetRegistrycreatedtime
 	[DllImport("advapi32.dll")]
 	private static extern int RegCreateKeyEx(UIntPtr hKey, string lpSubKey, IntPtr Reserved, string lpClass, RegOption dwOptions, RegSAM samDesired, ref IntPtr lpSecurityAttributes, ref UIntPtr phkResult, ref RegResult lpdwDisposition);
 
+	[DllImport("advapi32.dll")]
+	private static extern int RegCloseKey(UIntPtr hKey);
+
 	private static long GetRegistryKeyValue(RootName rootKeyName, string subKeyName, int index)
 	{
 		UIntPtr hKey = new UIntPtr((uint)rootKeyName);
@@ -78,6 +81,10 @@ internal class GetRegistrycreatedtime
 		long lpftLastWriteTime = 0L;
 		uint index2 = checked((uint)index);
 		int num2 = RegEnumKeyEx(phkResult, index2, lpName, ref lpcbName, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref lpftLastWriteTime);
+		if (phkResult != UIntPtr.Zero)
+		{
+			RegCloseKey(phkResult);
+		}
 		return lpftLastWriteTime;
 	}
 
