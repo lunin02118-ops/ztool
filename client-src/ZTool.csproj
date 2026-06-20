@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>ZTool</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net48</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+  </ItemGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="ZTool.ExpandableGridView.dll" />
+    <None Remove="ZTool.ICSharpCode.SharpZipLib.dll" />
+    <None Remove="ZTool.ZTool_rsa.dll" />
+    <None Remove="ZTool.zxing.dll" />
+    <None Remove="ZTool.RibbonMarkup.ribbon" />
+    <None Remove="ZTool.Ribbon.dll" />
+    <EmbeddedResource Include="ZTool.ExpandableGridView.dll" LogicalName="ZTool.ExpandableGridView.dll" />
+    <EmbeddedResource Include="ZTool.ICSharpCode.SharpZipLib.dll" LogicalName="ZTool.ICSharpCode.SharpZipLib.dll" />
+    <EmbeddedResource Include="ZTool.ZTool_rsa.dll" LogicalName="ZTool.ZTool_rsa.dll" />
+    <EmbeddedResource Include="ZTool.zxing.dll" LogicalName="ZTool.zxing.dll" />
+    <EmbeddedResource Include="ZTool.RibbonMarkup.ribbon" LogicalName="ZTool.RibbonMarkup.ribbon" />
+    <EmbeddedResource Include="ZTool.Ribbon.dll" LogicalName="ZTool.Ribbon.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="ExpandableGridView">
+      <HintPath>..\ExpandableGridView.dll</HintPath>
+    </Reference>
+    <Reference Include="Ribbon">
+      <HintPath>..\Ribbon.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Data" />
+    <Reference Include="itextsharp">
+      <HintPath>..\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI">
+      <HintPath>..\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML">
+      <HintPath>..\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net">
+      <HintPath>..\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats">
+      <HintPath>..\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
+    <Reference Include="ZTool_rsa">
+      <HintPath>..\client-core\ref\ZTool_rsa.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Management" />
+  </ItemGroup>
+</Project>
