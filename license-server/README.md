@@ -1,6 +1,6 @@
-# ZTool License Server (Сценарий B)
+# SWTools License Server (Сценарий B)
 
-Сервер активации лицензий ZTool — замена оригинального китайского сервера (`120.78.215.80:58000`).
+Сервер активации лицензий SWTools — замена оригинального китайского сервера (`120.78.215.80:58000`).
 
 ## Архитектура
 
@@ -15,7 +15,7 @@
 
 ## Компоненты
 
-- `crypto/rsa_ztool.py` — RSA-1024 без паддинга, совместимая с `ZTool_rsa.dll`
+- `crypto/rsa_swtools.py` — RSA-1024 без паддинга, совместимая с `ZTool_rsa.dll`
 - `crypto/aes_security_center.py` — AES-128-CBC совместимый с `ZTool.SecurityCenter`
 - `crypto/des_offline.py` — DES для офлайн-активации
 - `crypto/keygen.py` — Генерация ключевой пары в формате `ComponentKey`
@@ -28,42 +28,42 @@
 ## Запуск
 
 ```bash
-python -m ztool_license_server.server --port 58000
+python -m swtools_license_server.server --port 58000
 ```
 
 Production-safe запуск:
 
 ```bash
-export ZTOOL_RUNTIME_ENV=production
-export ZTOOL_LOG_LEVEL=INFO
-export ZTOOL_PRIVATE_KEY_FILE=/etc/ztool-license/private_key.txt
-export ZTOOL_PUBLIC_KEY_FILE=/etc/ztool-license/public_key.txt
-export ZTOOL_DB_PATH=/var/lib/ztool-license-server/licenses.db
-export ZTOOL_MAX_BODY_SIZE=2097152
-export ZTOOL_MAX_FRAMES_PER_CONNECTION=16
-export ZTOOL_READ_TIMEOUT_SECONDS=10
-export ZTOOL_IDLE_TIMEOUT_SECONDS=30
-export ZTOOL_PENDING_ACTIVATION_TTL_SECONDS=600
-export ZTOOL_PENDING_TRANSFER_TTL_SECONDS=600
-python -m ztool_license_server.server
+export SWTOOLS_RUNTIME_ENV=production
+export SWTOOLS_LOG_LEVEL=INFO
+export SWTOOLS_PRIVATE_KEY_FILE=/etc/swtools-license/private_key.txt
+export SWTOOLS_PUBLIC_KEY_FILE=/etc/swtools-license/public_key.txt
+export SWTOOLS_DB_PATH=/var/lib/swtools-license-server/licenses.db
+export SWTOOLS_MAX_BODY_SIZE=2097152
+export SWTOOLS_MAX_FRAMES_PER_CONNECTION=16
+export SWTOOLS_READ_TIMEOUT_SECONDS=10
+export SWTOOLS_IDLE_TIMEOUT_SECONDS=30
+export SWTOOLS_PENDING_ACTIVATION_TTL_SECONDS=600
+export SWTOOLS_PENDING_TRANSFER_TTL_SECONDS=600
+python -m swtools_license_server.server
 ```
 
 В production `DEBUG` запрещён по умолчанию: сервер завершит старт, если
-`ZTOOL_RUNTIME_ENV=production` и `ZTOOL_LOG_LEVEL=DEBUG`. Временный аварийный
-режим включается только явно через `ZTOOL_ALLOW_DEBUG_LOGGING=1`; даже в этом
+`SWTOOLS_RUNTIME_ENV=production` и `SWTOOLS_LOG_LEVEL=DEBUG`. Временный аварийный
+режим включается только явно через `SWTOOLS_ALLOW_DEBUG_LOGGING=1`; даже в этом
 режиме расшифрованные protocol payload в application log не пишутся.
 
-Ключи можно хранить как раньше в `ZTOOL_KEYS_DIR`, но для production
-предпочтительны явные пути `ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`.
+Ключи можно хранить как раньше в `SWTOOLS_KEYS_DIR`, но для production
+предпочтительны явные пути `SWTOOLS_PRIVATE_KEY_FILE` и `SWTOOLS_PUBLIC_KEY_FILE`.
 На Unix private key в production должен иметь права `0600` или строже.
 
 Генерация ключей:
 
 ```bash
-python -m ztool_license_server.cli keygen --dir /etc/ztool-license
+python -m swtools_license_server.cli keygen --dir /etc/swtools-license
 ```
 
-Если заданы `ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`, то `keygen`
+Если заданы `SWTOOLS_PRIVATE_KEY_FILE` и `SWTOOLS_PUBLIC_KEY_FILE`, то `keygen`
 без `--dir` пишет ключи именно в эти файлы. `--dir` остаётся явным override.
 
 По умолчанию создаются только `public_key.txt` и `private_key.txt`.
@@ -74,12 +74,12 @@ python -m ztool_license_server.cli keygen --dir /etc/ztool-license
 
 Сервер fail-closed обрабатывает malformed/oversized кадры:
 
-- `ZTOOL_MAX_BODY_SIZE` — максимум тела запроса, по умолчанию `2097152`.
-- `ZTOOL_MAX_FRAMES_PER_CONNECTION` — максимум кадров на одно TCP-соединение,
+- `SWTOOLS_MAX_BODY_SIZE` — максимум тела запроса, по умолчанию `2097152`.
+- `SWTOOLS_MAX_FRAMES_PER_CONNECTION` — максимум кадров на одно TCP-соединение,
   по умолчанию `16`.
-- `ZTOOL_READ_TIMEOUT_SECONDS` — тайм-аут ожидания продолжения частичного
+- `SWTOOLS_READ_TIMEOUT_SECONDS` — тайм-аут ожидания продолжения частичного
   кадра, по умолчанию `10`.
-- `ZTOOL_IDLE_TIMEOUT_SECONDS` — тайм-аут простоя соединения без данных, по
+- `SWTOOLS_IDLE_TIMEOUT_SECONDS` — тайм-аут простоя соединения без данных, по
   умолчанию `30`.
 
 Отрицательная длина, неизвестный `sendtype`, тело больше лимита и переполнение
@@ -105,24 +105,24 @@ Healthcheck проверяет production-safe logging config, загрузку 
 RSA self-check, актуальность схемы, write-lock БД и SQLite `quick_check`.
 Команда не создаёт БД молча: если путь ошибочный, проверка падает.
 
-Все management-команды читают `ZTOOL_DB_PATH`, `ZTOOL_KEYS_DIR`,
-`ZTOOL_PRIVATE_KEY_FILE` и `ZTOOL_PUBLIC_KEY_FILE`; CLI-флаги остаются явными
+Все management-команды читают `SWTOOLS_DB_PATH`, `SWTOOLS_KEYS_DIR`,
+`SWTOOLS_PRIVATE_KEY_FILE` и `SWTOOLS_PUBLIC_KEY_FILE`; CLI-флаги остаются явными
 override.
 
 ```bash
-python -m ztool_license_server.cli --db /var/lib/ztool-license-server/licenses.db \
+python -m swtools_license_server.cli --db /var/lib/swtools-license-server/licenses.db \
   healthcheck \
-  --private-key-file /etc/ztool-license-server/private_key.txt \
-  --public-key-file /etc/ztool-license-server/public_key.txt
+  --private-key-file /etc/swtools-license-server/private_key.txt \
+  --public-key-file /etc/swtools-license-server/public_key.txt
 ```
 
 Backup делается через SQLite backup API, а не raw copy hot DB:
 
 ```bash
-python -m ztool_license_server.cli --db /var/lib/ztool-license-server/licenses.db \
-  backup --out /var/backups/ztool-license-server/licenses-YYYYMMDD.db
-python -m ztool_license_server.cli verify-backup \
-  /var/backups/ztool-license-server/licenses-YYYYMMDD.db
+python -m swtools_license_server.cli --db /var/lib/swtools-license-server/licenses.db \
+  backup --out /var/backups/swtools-license-server/licenses-YYYYMMDD.db
+python -m swtools_license_server.cli verify-backup \
+  /var/backups/swtools-license-server/licenses-YYYYMMDD.db
 ```
 
 Примеры production deployment лежат в `deploy/`:
@@ -150,11 +150,11 @@ python -m ztool_license_server.cli verify-backup \
   transfer-веток и IP клиента, затем освобождает только связанный seat;
 - без `apply_remove` ответ `remove_confirm` — `8` (`TRANSFER_FAILED`).
 
-TTL задаётся переменными `ZTOOL_PENDING_ACTIVATION_TTL_SECONDS` и
-`ZTOOL_PENDING_TRANSFER_TTL_SECONDS`, по умолчанию `600`. Очистка expired rows:
+TTL задаётся переменными `SWTOOLS_PENDING_ACTIVATION_TTL_SECONDS` и
+`SWTOOLS_PENDING_TRANSFER_TTL_SECONDS`, по умолчанию `600`. Очистка expired rows:
 
 ```bash
-python -m ztool_license_server.cli cleanup-pending
+python -m swtools_license_server.cli cleanup-pending
 ```
 
 ## Привязка к оборудованию (валидация машинного кода)
@@ -171,11 +171,11 @@ python -m ztool_license_server.cli cleanup-pending
 существующей БД:
 
 ```bash
-python -m ztool_license_server.cli purge-invalid          # --db <path> при необходимости
-python -m ztool_license_server.cli list-activations       # проверить результат
+python -m swtools_license_server.cli purge-invalid          # --db <path> при необходимости
+python -m swtools_license_server.cli list-activations       # проверить результат
 ```
 
 ## Правовое замечание
 
 Сервер предназначен для миграции СОБСТВЕННОЙ инфраструктуры лицензирования
-при наличии прав на продукт ZTool или разрешения правообладателя.
+при наличии прав на продукт SWTools или разрешения правообладателя.

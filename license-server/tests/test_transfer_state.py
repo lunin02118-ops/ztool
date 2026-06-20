@@ -2,8 +2,8 @@
 
 import pytest
 
-from ztool_license_server.protocol.framing import FrameParser
-from ztool_license_server.protocol.dispatcher import Result
+from swtools_license_server.protocol.framing import FrameParser
+from swtools_license_server.protocol.dispatcher import Result
 
 from tests.test_integration import CODE, MACHINE_A, MACHINE_B, _make_server
 

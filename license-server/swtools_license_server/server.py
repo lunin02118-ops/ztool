@@ -1,7 +1,7 @@
 """
-ZTool License Activation Server.
+SWTools License Activation Server.
 
-TCP server implementing the ZTool activation protocol:
+TCP server implementing the SWTools activation protocol:
 - Frame format: [type:10 LE][len:10 LE][AES-encrypted body]
 - Message types (Sendtype): 128-132
 - AES key for body = str(sendtype)
@@ -14,7 +14,7 @@ import logging
 from .config import ServerConfig
 from .key_provider import KeyProvider
 from .logging_utils import configure_logging, payload_summary, redact_path
-from .crypto.rsa_ztool import decrypt_string
+from .crypto.rsa_swtools import decrypt_string
 from .crypto import aes_security_center as aes
 from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
@@ -584,7 +584,7 @@ async def main():
     """Entry point for the license server."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="ZTool License Activation Server")
+    parser = argparse.ArgumentParser(description="SWTools License Activation Server")
     parser.add_argument('--host', default=None, help='Bind address')
     parser.add_argument('--port', type=int, default=None, help='Port (default: 58000)')
     parser.add_argument('--keys-dir', default=None, help='Keys directory')
@@ -614,7 +614,7 @@ async def main():
     )
     args = parser.parse_args()
 
-    # Start from environment (ZTOOL_HOST/PORT/KEYS_DIR/DB_PATH/...) so env-only
+    # Start from environment (SWTOOLS_HOST/PORT/KEYS_DIR/DB_PATH/...) so env-only
     # launches work, then let explicit CLI flags take precedence.
     config = ServerConfig.from_env()
     if args.host is not None:

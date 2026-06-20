@@ -33,7 +33,7 @@ def encode_int_field(value: int) -> bytes:
     """
     Encode an integer into a 10-byte field (little-endian).
 
-    ZTool's int_to_Byte(v, 10):
+    SWTools's int_to_Byte(v, 10):
     - Stores value as 4-byte LE int
     - Remaining 6 bytes are zero-padded
     """

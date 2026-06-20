@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Object-based Win32 helpers for ZTool acceptance tests.
+  Object-based Win32 helpers for SWTools acceptance tests.
 
 .DESCRIPTION
   This file intentionally avoids hardcoded screen coordinates. It locates
@@ -13,14 +13,14 @@ $ErrorActionPreference = 'Stop'
 
 Add-Type -AssemblyName System.Windows.Forms
 
-if (-not ('ZToolAcceptanceWin32' -as [type])) {
+if (-not ('SWToolsAcceptanceWin32' -as [type])) {
 Add-Type @'
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-public class ZToolAcceptanceWin32 {
+public class SWToolsAcceptanceWin32 {
   public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
   [DllImport("user32.dll")]
@@ -272,28 +272,28 @@ public class ZToolAcceptanceWin32 {
 '@
 }
 
-function Get-ZToolWindowTitles {
+function Get-SWToolsWindowTitles {
     param([Parameter(Mandatory = $true)][int]$ProcessId)
-    [ZToolAcceptanceWin32]::TitlesForPid($ProcessId)
+    [SWToolsAcceptanceWin32]::TitlesForPid($ProcessId)
 }
 
-function Export-ZToolWindowTree {
+function Export-SWToolsWindowTree {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][string]$Path
     )
-    $lines = [ZToolAcceptanceWin32]::DumpForPid($ProcessId)
+    $lines = [SWToolsAcceptanceWin32]::DumpForPid($ProcessId)
     Set-Content -LiteralPath $Path -Encoding UTF8 -Value $lines
 }
 
-function Get-ZToolWindowControls {
+function Get-SWToolsWindowControls {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [string]$ClassContains = "",
         [string]$Text = "",
         [string]$WindowTitleContains = ""
     )
-    $items = [ZToolAcceptanceWin32]::ControlsForPid($ProcessId)
+    $items = [SWToolsAcceptanceWin32]::ControlsForPid($ProcessId)
     if ($WindowTitleContains) {
         $topWindow = @(
             $items |
@@ -305,7 +305,7 @@ function Get-ZToolWindowControls {
                 Sort-Object Top, Left
         )
         if ($topWindow.Count -eq 0) {
-            throw "ZTool top window not found: title contains '$WindowTitleContains', pid=$ProcessId"
+            throw "SWTools top window not found: title contains '$WindowTitleContains', pid=$ProcessId"
         }
         $target = $topWindow[0]
         $items = @(
@@ -324,7 +324,7 @@ function Get-ZToolWindowControls {
     $items
 }
 
-function Set-ZToolControlText {
+function Set-SWToolsControlText {
     param(
         [Parameter(Mandatory = $true)][long]$Hwnd,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text,
@@ -335,7 +335,7 @@ function Set-ZToolControlText {
         throw "SetWindowText is diagnostic-only and forbidden for activation gates. Use clipboard/UIA ValuePattern and server audit instead."
     }
 
-    $ok = [ZToolAcceptanceWin32]::SetTextByHwnd($Hwnd, $Text)
+    $ok = [SWToolsAcceptanceWin32]::SetTextByHwnd($Hwnd, $Text)
     if (-not $ok) {
         throw "Failed to set text for hwnd=$Hwnd"
     }
@@ -346,7 +346,7 @@ function Set-ZToolControlText {
     }
 }
 
-function Set-ZToolEditTextsByTopLeft {
+function Set-SWToolsEditTextsByTopLeft {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][string[]]$Texts,
@@ -360,7 +360,7 @@ function Set-ZToolEditTextsByTopLeft {
     }
 
     $edits = @(
-        Get-ZToolWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
+        Get-SWToolsWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
             Where-Object { $_.Visible } |
             Sort-Object Top, Left
     )
@@ -372,7 +372,7 @@ function Set-ZToolEditTextsByTopLeft {
     $written = @()
     for ($i = 0; $i -lt $Texts.Count; $i++) {
         $target = $edits[$Skip + $i]
-        Set-ZToolControlText -Hwnd $target.Hwnd -Text $Texts[$i] -AllowUnsafeSetWindowText | Out-Null
+        Set-SWToolsControlText -Hwnd $target.Hwnd -Text $Texts[$i] -AllowUnsafeSetWindowText | Out-Null
         $written += [ordered]@{
             hwnd = $target.Hwnd
             index = $Skip + $i
@@ -383,7 +383,7 @@ function Set-ZToolEditTextsByTopLeft {
     $written
 }
 
-function Set-ZToolClipboardText {
+function Set-SWToolsClipboardText {
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
 
     for ($attempt = 1; $attempt -le 5; $attempt++) {
@@ -397,31 +397,31 @@ function Set-ZToolClipboardText {
     }
 }
 
-function Focus-ZToolControl {
+function Focus-SWToolsControl {
     param(
         [Parameter(Mandatory = $true)][long]$TopHwnd,
         [Parameter(Mandatory = $true)][long]$Hwnd
     )
 
-    [ZToolAcceptanceWin32]::ActivateAndFocus($TopHwnd, $Hwnd) | Out-Null
+    [SWToolsAcceptanceWin32]::ActivateAndFocus($TopHwnd, $Hwnd) | Out-Null
     $clickPoint = [IntPtr]((5 -band 0xffff) -bor (5 -shl 16))
-    [ZToolAcceptanceWin32]::SendMessage(
+    [SWToolsAcceptanceWin32]::SendMessage(
         [IntPtr]$Hwnd,
         0x0201, # WM_LBUTTONDOWN
         [IntPtr]1,
         $clickPoint
     ) | Out-Null
-    [ZToolAcceptanceWin32]::SendMessage(
+    [SWToolsAcceptanceWin32]::SendMessage(
         [IntPtr]$Hwnd,
         0x0202, # WM_LBUTTONUP
         [IntPtr]0,
         $clickPoint
     ) | Out-Null
-    [ZToolAcceptanceWin32]::ClickWindowCenter($Hwnd) | Out-Null
+    [SWToolsAcceptanceWin32]::ClickWindowCenter($Hwnd) | Out-Null
     Start-Sleep -Milliseconds 120
 }
 
-function Get-ZToolControlTextByHwnd {
+function Get-SWToolsControlTextByHwnd {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][long]$Hwnd,
@@ -429,16 +429,16 @@ function Get-ZToolControlTextByHwnd {
     )
 
     $control = @(
-        Get-ZToolWindowControls -ProcessId $ProcessId -WindowTitleContains $WindowTitleContains |
+        Get-SWToolsWindowControls -ProcessId $ProcessId -WindowTitleContains $WindowTitleContains |
             Where-Object { $_.Hwnd -eq $Hwnd }
     )
     if ($control.Count -ne 1) {
-        throw "ZTool control not found for readback: hwnd=$Hwnd, pid=$ProcessId"
+        throw "SWTools control not found for readback: hwnd=$Hwnd, pid=$ProcessId"
     }
     $control[0].Text
 }
 
-function Set-ZToolEditTextByClipboard {
+function Set-SWToolsEditTextByClipboard {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][long]$TopHwnd,
@@ -449,16 +449,16 @@ function Set-ZToolEditTextByClipboard {
     )
 
     for ($attempt = 1; $attempt -le $Retries; $attempt++) {
-        Focus-ZToolControl -TopHwnd $TopHwnd -Hwnd $Hwnd
+        Focus-SWToolsControl -TopHwnd $TopHwnd -Hwnd $Hwnd
         [System.Windows.Forms.SendKeys]::SendWait('^a')
         Start-Sleep -Milliseconds 80
         [System.Windows.Forms.SendKeys]::SendWait('{BACKSPACE}')
         Start-Sleep -Milliseconds 80
-        Set-ZToolClipboardText -Text $Text
+        Set-SWToolsClipboardText -Text $Text
         [System.Windows.Forms.SendKeys]::SendWait('^v')
         Start-Sleep -Milliseconds 180
 
-        $actual = Get-ZToolControlTextByHwnd `
+        $actual = Get-SWToolsControlTextByHwnd `
             -ProcessId $ProcessId `
             -Hwnd $Hwnd `
             -WindowTitleContains $WindowTitleContains
@@ -472,14 +472,14 @@ function Set-ZToolEditTextByClipboard {
         }
     }
 
-    $final = Get-ZToolControlTextByHwnd `
+    $final = Get-SWToolsControlTextByHwnd `
         -ProcessId $ProcessId `
         -Hwnd $Hwnd `
         -WindowTitleContains $WindowTitleContains
     throw "Clipboard paste readback mismatch for hwnd=${Hwnd}: expected length=$($Text.Length), actual length=$($final.Length)"
 }
 
-function Set-ZToolRegistrationFieldsByClipboard {
+function Set-SWToolsRegistrationFieldsByClipboard {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][string]$RegistrationCode,
@@ -499,7 +499,7 @@ function Set-ZToolRegistrationFieldsByClipboard {
     }
 
     $edits = @(
-        Get-ZToolWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
+        Get-SWToolsWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
             Where-Object { $_.Visible } |
             Sort-Object Top, Left
     )
@@ -515,7 +515,7 @@ function Set-ZToolRegistrationFieldsByClipboard {
     $written = @()
 
     for ($i = 0; $i -lt $targets.Count; $i++) {
-        $result = Set-ZToolEditTextByClipboard `
+        $result = Set-SWToolsEditTextByClipboard `
             -ProcessId $ProcessId `
             -TopHwnd $topHwnd `
             -Hwnd ([long]$targets[$i].Hwnd) `
@@ -533,7 +533,7 @@ function Set-ZToolRegistrationFieldsByClipboard {
     }
 
     $readback = @(
-        Get-ZToolWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
+        Get-SWToolsWindowControls -ProcessId $ProcessId -ClassContains 'EDIT' -WindowTitleContains $WindowTitleContains |
             Where-Object { $_.Visible } |
             Sort-Object Top, Left |
             Select-Object -Skip 1 -First 6
@@ -554,7 +554,7 @@ function Set-ZToolRegistrationFieldsByClipboard {
     }
 }
 
-function Invoke-ZToolButtonByText {
+function Invoke-SWToolsButtonByText {
     param(
         [Parameter(Mandatory = $true)][int]$ProcessId,
         [Parameter(Mandatory = $true)][string]$Text,
@@ -565,7 +565,7 @@ function Invoke-ZToolButtonByText {
 
     if ($WindowTitleContains) {
         $matched = @(
-            Get-ZToolWindowControls `
+            Get-SWToolsWindowControls `
                 -ProcessId $ProcessId `
                 -ClassContains $ClassContains `
                 -Text $Text `
@@ -574,39 +574,39 @@ function Invoke-ZToolButtonByText {
         )
         $handle = if ($matched.Count -gt 0) { [IntPtr]::new([long]$matched[0].Hwnd) } else { [IntPtr]::Zero }
     } else {
-        $handle = [ZToolAcceptanceWin32]::FindChildByTextAndClass(
+        $handle = [SWToolsAcceptanceWin32]::FindChildByTextAndClass(
             $ProcessId,
             $Text,
             $ClassContains
         )
     }
     if ($handle -eq [IntPtr]::Zero) {
-        throw "ZTool button not found: text='$Text', class contains '$ClassContains', window title contains '$WindowTitleContains', pid=$ProcessId"
+        throw "SWTools button not found: text='$Text', class contains '$ClassContains', window title contains '$WindowTitleContains', pid=$ProcessId"
     }
 
     if ($Async) {
-        $posted = [ZToolAcceptanceWin32]::PostMessage(
+        $posted = [SWToolsAcceptanceWin32]::PostMessage(
             $handle,
-            [ZToolAcceptanceWin32]::BM_CLICK,
+            [SWToolsAcceptanceWin32]::BM_CLICK,
             [IntPtr]::Zero,
             [IntPtr]::Zero
         )
         if (-not $posted) {
-            throw "ZTool button click was not posted: text='$Text', hwnd=$($handle.ToInt64())"
+            throw "SWTools button click was not posted: text='$Text', hwnd=$($handle.ToInt64())"
         }
     } else {
         $result = [IntPtr]::Zero
-        $sent = [ZToolAcceptanceWin32]::SendMessageTimeout(
+        $sent = [SWToolsAcceptanceWin32]::SendMessageTimeout(
             $handle,
-            [ZToolAcceptanceWin32]::BM_CLICK,
+            [SWToolsAcceptanceWin32]::BM_CLICK,
             [IntPtr]::Zero,
             [IntPtr]::Zero,
-            [ZToolAcceptanceWin32]::SMTO_ABORTIFHUNG,
+            [SWToolsAcceptanceWin32]::SMTO_ABORTIFHUNG,
             5000,
             [ref]$result
         )
         if ($sent -eq [IntPtr]::Zero) {
-            throw "ZTool button click timed out or failed: text='$Text', hwnd=$($handle.ToInt64())"
+            throw "SWTools button click timed out or failed: text='$Text', hwnd=$($handle.ToInt64())"
         }
     }
 

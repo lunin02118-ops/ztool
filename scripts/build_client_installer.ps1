@@ -1,18 +1,18 @@
 <#
 .SYNOPSIS
-  Build a production Windows client installer for a packaged ZTool runtime.
+  Build a production Windows client installer for a packaged SWTools runtime.
 
 .DESCRIPTION
   Creates a normal NSIS Setup.exe for the client runtime from an existing
   release package. The installer copies runtime files to Program Files,
-  registers ZTool.dll with 64-bit RegAsm, configures the SolidWorks add-in,
+  registers SWTools.dll with 64-bit RegAsm, configures the SolidWorks add-in,
   creates Start Menu shortcuts and writes an uninstall entry.
 
   The installer intentionally does not embed, create or remove license keys.
 
 .EXAMPLE
   ./scripts/build_client_installer.ps1 `
-    -PackageRoot ./releases/1.1.0-alfa/package/ZTool-1.1.0-alfa
+    -PackageRoot ./releases/1.1.0-alfa/package/SWTools-1.1.0-alfa
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -53,7 +53,7 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 $root = (Resolve-Path -LiteralPath $PackageRoot).Path
 $runtimeDir = Join-Path $root 'runtime'
 $manifestPath = Join-Path $root 'manifest.json'
-$templatePath = Join-Path $repoRoot 'installer\windows-client\ZToolClient.nsi.in'
+$templatePath = Join-Path $repoRoot 'installer\windows-client\SWToolsClient.nsi.in'
 
 if (-not (Test-Path -LiteralPath $runtimeDir -PathType Container)) { Fail "runtime directory missing: $runtimeDir" }
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { Fail "manifest missing: $manifestPath" }
@@ -76,11 +76,11 @@ if (-not $OutputDir) {
     }
 }
 
-$runtimeExe = Join-Path $runtimeDir 'ZTool.exe'
-$runtimeDll = Join-Path $runtimeDir 'ZTool.dll'
+$runtimeExe = Join-Path $runtimeDir 'SWTools.exe'
+$runtimeDll = Join-Path $runtimeDir 'SWTools.dll'
 $runtimeRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
-if (-not (Test-Path -LiteralPath $runtimeExe -PathType Leaf)) { Fail "ZTool.exe missing: $runtimeExe" }
-if (-not (Test-Path -LiteralPath $runtimeDll -PathType Leaf)) { Fail "ZTool.dll missing: $runtimeDll" }
+if (-not (Test-Path -LiteralPath $runtimeExe -PathType Leaf)) { Fail "SWTools.exe missing: $runtimeExe" }
+if (-not (Test-Path -LiteralPath $runtimeDll -PathType Leaf)) { Fail "SWTools.dll missing: $runtimeDll" }
 if (-not (Test-Path -LiteralPath $runtimeRsaDll -PathType Leaf)) { Fail "ZTool_rsa.dll missing: $runtimeRsaDll" }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
@@ -135,12 +135,12 @@ $installerManifest = [ordered]@{
         path = $runtimeDir
         file_count = $runtimeFiles.Count
         total_size_bytes = ($runtimeFiles | Measure-Object -Property Length -Sum).Sum
-        ztool_exe_sha256 = Get-Sha256 $runtimeExe
-        ztool_dll_sha256 = Get-Sha256 $runtimeDll
+        swtools_exe_sha256 = Get-Sha256 $runtimeExe
+        swtools_dll_sha256 = Get-Sha256 $runtimeDll
         ztool_rsa_dll_sha256 = Get-Sha256 $runtimeRsaDll
     }
     installer_behavior = [ordered]@{
-        install_dir = '%ProgramFiles%\ZTool'
+        install_dir = '%ProgramFiles%\SWTools'
         requires_admin = $true
         requires_64_bit_windows = $true
         registers_com_with_regasm = $true

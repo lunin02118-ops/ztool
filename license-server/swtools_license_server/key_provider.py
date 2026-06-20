@@ -12,7 +12,7 @@ from .logging_utils import normalize_runtime_env, redact_path
 
 @dataclass(frozen=True)
 class KeyProvider:
-    """Load the ZTool RSA ComponentKey pair from explicit files or legacy dir."""
+    """Load the SWTools RSA ComponentKey pair from explicit files or legacy dir."""
 
     keys_dir: str
     private_key_file: Optional[str] = None

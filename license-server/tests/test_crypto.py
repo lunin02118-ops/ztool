@@ -1,12 +1,12 @@
 """Tests for cryptographic modules."""
 
 import pytest
-from ztool_license_server.crypto.rsa_ztool import (
+from swtools_license_server.crypto.rsa_swtools import (
     resolve_key, make_component_key, encrypt_string, decrypt_string,
     ORIGINAL_PUBLIC_KEY,
 )
-from ztool_license_server.crypto.keygen import generate_keypair, verify_keypair
-from ztool_license_server.crypto.aes_security_center import (
+from swtools_license_server.crypto.keygen import generate_keypair, verify_keypair
+from swtools_license_server.crypto.aes_security_center import (
     encrypt, decrypt, encrypt_message_body, decrypt_message_body,
     PASSPHRASE_BINGYU,
 )

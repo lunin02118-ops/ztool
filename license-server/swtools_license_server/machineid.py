@@ -102,7 +102,7 @@ def binding_id(machine_code: str) -> str:
 def is_valid_machine_code(machine_code: Optional[str]) -> bool:
     """Return True only for a genuine hardware fingerprint.
 
-    A real ZTool client always sends ``<36-char GUID>|<disk>|<board>`` (the disk
+    A real SWTools client always sends ``<36-char GUID>|<disk>|<board>`` (the disk
     and board fields may be empty on some hosts, but the leading UUID is always a
     valid GUID — SR.GetUUID enforces it and IsReg1 requires its length to be 36).
     An empty, malformed, or non-GUID fingerprint (e.g. ``""`` or ``"x"``) must be

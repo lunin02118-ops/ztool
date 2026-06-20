@@ -1,7 +1,7 @@
 """
 End-to-end integration tests for the license server.
 
-An in-process client emulator exercises the *real* ZTool activation protocol
+An in-process client emulator exercises the *real* SWTools activation protocol
 over a real asyncio TCP socket against a freshly generated key pair, matching
 the de-obfuscated client (FrmRg.createinfo / TCPClient.SocketRecive / SR.rg /
 SR.get_rginfo):
@@ -27,20 +27,20 @@ import logging
 
 import pytest
 
-from ztool_license_server.config import ServerConfig
-from ztool_license_server.server import LicenseServer
-from ztool_license_server.crypto.keygen import generate_keypair, save_keypair
-from ztool_license_server.crypto.rsa_ztool import encrypt_string, decrypt_string
-from ztool_license_server.crypto.aes_security_center import (
+from swtools_license_server.config import ServerConfig
+from swtools_license_server.server import LicenseServer
+from swtools_license_server.crypto.keygen import generate_keypair, save_keypair
+from swtools_license_server.crypto.rsa_swtools import encrypt_string, decrypt_string
+from swtools_license_server.crypto.aes_security_center import (
     encrypt_message_body,
 )
-from ztool_license_server.crypto import aes_security_center as aes
-from ztool_license_server.license_blob import (
+from swtools_license_server.crypto import aes_security_center as aes
+from swtools_license_server.license_blob import (
     getver_today, gd51, machine_version_suffix,
     FIRST_LEN_B2, FIRST_LEN_B3, SUFFIX_LEN,
 )
-from ztool_license_server.protocol.framing import build_frame, FrameParser
-from ztool_license_server.protocol.dispatcher import Sendtype, Result
+from swtools_license_server.protocol.framing import build_frame, FrameParser
+from swtools_license_server.protocol.dispatcher import Sendtype, Result
 
 
 CODE = "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
@@ -54,7 +54,7 @@ MACHINE_C = "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC|DISK-CCCC|BOARD-CCCC"
 DUMMY_PW = "Testpass123"
 
 
-class ZToolClientEmulator:
+class SWToolsClientEmulator:
     """Emulation of the real client transport (TCPClient.sendstring +
     FrmRg.createinfo + TCPClient.getreceive + SR.rg/get_rginfo)."""
 
@@ -192,7 +192,7 @@ async def _make_server(tmp_path, device_limit=1, password=""):
     server.db.add_license_code(CODE, password=password, device_limit=device_limit)
     aio_server = await asyncio.start_server(server._handle_client, "127.0.0.1", 0)
     port = aio_server.sockets[0].getsockname()[1]
-    client = ZToolClientEmulator("127.0.0.1", port, kp["public_component_key"])
+    client = SWToolsClientEmulator("127.0.0.1", port, kp["public_component_key"])
     return server, aio_server, client
 
 
@@ -264,7 +264,7 @@ async def test_protected_code_rejects_empty_password(tmp_path):
 async def test_invalid_code_rejected(tmp_path, caplog):
     server, aio_server, client = await _make_server(tmp_path)
     async with aio_server:
-        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
+        caplog.set_level(logging.WARNING, logger="swtools_license_server.server")
         code, body = await client.apply_register("ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ", MACHINE_A)
         assert code == Result.INVALID_CODE
         assert body == ""
@@ -335,7 +335,7 @@ async def test_transfer_out_flow(tmp_path):
 async def test_wrong_password_rejected(tmp_path, caplog):
     server, aio_server, client = await _make_server(tmp_path, password="secret123")
     async with aio_server:
-        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
+        caplog.set_level(logging.WARNING, logger="swtools_license_server.server")
         cw, _ = await client.apply_register(CODE, MACHINE_A, password="wrong")
         assert cw == Result.WRONG_PASSWORD
         assert "security event" in caplog.text
@@ -365,7 +365,7 @@ async def test_junk_machine_code_rejected(tmp_path, caplog):
     validate (IsReg1 requires a 36-char GUID UUID)."""
     server, aio_server, client = await _make_server(tmp_path, device_limit=2)
     async with aio_server:
-        caplog.set_level(logging.WARNING, logger="ztool_license_server.server")
+        caplog.set_level(logging.WARNING, logger="swtools_license_server.server")
         code, body = await client.apply_register(CODE, "x")
         assert code == Result.INFO_ERROR
         assert body == ""

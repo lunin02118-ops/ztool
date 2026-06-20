@@ -1,6 +1,6 @@
-# ZTool
+# SWTools
 
-**ZTool** — надстройка и приложение для **SolidWorks**: управление файлами,
+**SWTools** — надстройка и приложение для **SolidWorks**: управление файлами,
 автоматическое заполнение свойств, генерация и экспорт спецификаций (BOM),
 пакетная печать/конвертация и переименование компонентов. В комплект входит
 собственный сервер лицензирования.
@@ -23,16 +23,16 @@ gates ожидают следующие runtime-хеши; полный productio
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
-| `ZTool.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | см. `scripts/expected_release_hashes.json` |
-| `ZTool.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
+| `SWTools.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | см. `scripts/expected_release_hashes.json` |
+| `SWTools.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
 
 Что внесено в PR #8:
 
 1. **Шаблоны/экспорт BOM** — Arial, русификация, корректные имена столбцов;
    8/8 режимов экспорта проходят.
-2. **`pmpguard2`** в `ZTool.dll` — снята гонка инициализации (модальное окно
+2. **`pmpguard2`** в `SWTools.dll` — снята гонка инициализации (модальное окно
    «Ссылка на объект не указывает на экземпляр…»).
-3. **`binderfix`** в `ZTool.exe` — защита небезопасной десериализации:
+3. **`binderfix`** в `SWTools.exe` — защита небезопасной десериализации:
    - `VTBinder` — version-tolerant привязка типов в конфиге (шрифт/цвет,
      таблица автозаполнения);
    - `SafeListBinder` — allow-list при вставке из буфера обмена (только
@@ -47,9 +47,9 @@ gates ожидают следующие runtime-хеши; полный productio
 
 | Путь                       | Что внутри                                                        |
 |----------------------------|-------------------------------------------------------------------|
-| `ZTool.exe`, `ZTool.dll`   | основные сборки (рекомендуемые версии — см. таблицу выше)          |
-| `ZToolARM.dll`, `*.dll`    | нативная библиотека и сторонние зависимости (NPOI, iTextSharp …)   |
-| `ZTool.settings`           | основной конфиг (`CConfigDO`)                                     |
+| `SWTools.exe`, `SWTools.dll`   | основные сборки (рекомендуемые версии — см. таблицу выше)          |
+| `SWToolsARM.dll`, `*.dll`    | нативная библиотека и сторонние зависимости (NPOI, iTextSharp …)   |
+| `SWTools.settings`           | основной конфиг (`CConfigDO`)                                     |
 | `help.CHM` / `help_ru.chm` | справка пользователя (оригинал / русский перевод)                 |
 | `client-core/`             | C#-код и инструменты клиента ([README](client-core/README.md))    |
 | `client-core/tools/BinderInject/` | dnlib-патчер десериализации ([README](client-core/tools/BinderInject/README.md)) |
@@ -68,7 +68,7 @@ gates ожидают следующие runtime-хеши; полный productio
 cd license-server
 python -m venv .venv && . .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
-python -m ztool_license_server
+python -m swtools_license_server
 ```
 
 ## Документация

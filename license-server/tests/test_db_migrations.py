@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from ztool_license_server.db import LATEST_SCHEMA_VERSION, LicenseDB
+from swtools_license_server.db import LATEST_SCHEMA_VERSION, LicenseDB
 
 
 def test_fresh_db_migrates_to_latest_schema(tmp_path):

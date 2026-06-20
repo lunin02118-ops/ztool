@@ -1,13 +1,13 @@
-# Формат лицензионного блоба и реестра ZTool (Фазы 5–7)
+# Формат лицензионного блоба и реестра SWTools (Фазы 5–7)
 
 Документ описывает «ground truth», извлечённый декомпиляцией де-обфусцированного
-клиента ZTool (методы `SR.IsReg1`, `SR.IsReg2`, `FrmRg.rg`, `FrmRg.Decryptstr`,
+клиента SWTools (методы `SR.IsReg1`, `SR.IsReg2`, `FrmRg.rg`, `FrmRg.Decryptstr`,
 `SecurityCenter.EncriptStr/DecriptStr`, `RSAHelper.Encrypt/DecryptString`). На
 его основе реализована серверная генерация лицензии (`license_blob.py`).
 
 > ⚠️ Эталоны получены статическим анализом. Байтовая совместимость с
 > неизменённым оригинальным клиентом подтверждается только на стенде с
-> установленным ZTool (отдельный шаг).
+> установленным SWTools (отдельный шаг).
 
 ## Криптопримитивы
 
@@ -72,6 +72,6 @@ b0 =          AES( RSA_sign(uuid36) + "\n" + RSA_sign(AES(machine_code, seed_F))
 ## CLI офлайн-активации
 
 ```bash
-python -m ztool_license_server.cli keygen --dir keys
-python -m ztool_license_server.cli offline-activate "<MACHINE_CODE>" --out activation.lic
+python -m swtools_license_server.cli keygen --dir keys
+python -m swtools_license_server.cli offline-activate "<MACHINE_CODE>" --out activation.lic
 ```

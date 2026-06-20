@@ -18,10 +18,10 @@ from pathlib import Path
 
 
 DEFAULT_FILES = [
-    "ZTool.exe",
-    "ZTool.dll",
-    "ZToolARM.dll",
-    "ZTool.settings",
+    "SWTools.exe",
+    "SWTools.dll",
+    "SWToolsARM.dll",
+    "SWTools.settings",
     "license-server/pyproject.toml",
 ]
 
@@ -85,7 +85,7 @@ def build_manifest(root: Path, file_names: list[str]) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate ZTool release manifest")
+    parser = argparse.ArgumentParser(description="Generate SWTools release manifest")
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--output", default=None, help="Write JSON manifest to this path")
     parser.add_argument(

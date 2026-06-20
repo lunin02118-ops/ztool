@@ -2,9 +2,9 @@
 
 import pytest
 
-from ztool_license_server.crypto import aes_security_center as aes
-from ztool_license_server.license_blob import generate_license_blob, getver_today
-from ztool_license_server.protocol.dispatcher import Result, Sendtype
+from swtools_license_server.crypto import aes_security_center as aes
+from swtools_license_server.license_blob import generate_license_blob, getver_today
+from swtools_license_server.protocol.dispatcher import Result, Sendtype
 
 from tests.test_integration import CODE, MACHINE_A, MACHINE_B, _make_server
 

@@ -1,4 +1,4 @@
-# ZTool license-server: Docker deployment
+# SWTools license-server: Docker deployment
 
 Docker-вариант удобен для staging или изолированного VPS. Для production через
 systemd проще контролировать права ключей и backup, но оба варианта используют
@@ -9,7 +9,7 @@ systemd проще контролировать права ключей и backu
 ```bash
 cd deploy/docker
 mkdir -p data keys
-cp ../systemd/ztool-license-server.env.example .env
+cp ../systemd/swtools-license-server.env.example .env
 ```
 
 Положите `private_key.txt` и `public_key.txt` в `deploy/docker/keys/`.
@@ -25,15 +25,15 @@ docker compose logs -f
 Healthcheck из контейнера:
 
 ```bash
-docker compose exec ztool-license-server \
-  python -m ztool_license_server.cli healthcheck
+docker compose exec swtools-license-server \
+  python -m swtools_license_server.cli healthcheck
 ```
 
 Backup:
 
 ```bash
-docker compose exec ztool-license-server \
-  python -m ztool_license_server.cli backup --out /var/lib/ztool-license-server/licenses-backup.db
-docker compose exec ztool-license-server \
-  python -m ztool_license_server.cli verify-backup /var/lib/ztool-license-server/licenses-backup.db
+docker compose exec swtools-license-server \
+  python -m swtools_license_server.cli backup --out /var/lib/swtools-license-server/licenses-backup.db
+docker compose exec swtools-license-server \
+  python -m swtools_license_server.cli verify-backup /var/lib/swtools-license-server/licenses-backup.db
 ```

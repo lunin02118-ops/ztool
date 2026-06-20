@@ -1,7 +1,7 @@
 [project]
-name = "ztool-license-server"
+name = "swtools-license-server"
 version = "0.1.0"
-description = "ZTool license activation server (Scenario B migration)"
+description = "SWTools license activation server (Scenario B migration)"
 requires-python = ">=3.10"
 dependencies = [
     "pycryptodome>=3.19",
@@ -25,7 +25,7 @@ build-backend = "setuptools.build_meta"
 # package and aborts the (editable) install with a "multiple top-level packages"
 # error.
 [tool.setuptools.packages.find]
-include = ["ztool_license_server*"]
+include = ["swtools_license_server*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -49,6 +49,6 @@ select = ["E9", "F63", "F7", "F82"]
 
 [tool.bandit]
 exclude_dirs = ["tests"]
-# Legacy ZTool compatibility intentionally uses weak crypto primitives. Phase 09
+# Legacy SWTools compatibility intentionally uses weak crypto primitives. Phase 09
 # documents residual crypto risk; this gate still catches non-crypto issues.
 skips = ["B104", "B105", "B107", "B303", "B304", "B305", "B324", "B413"]

@@ -67,36 +67,36 @@ class ServerConfig:
     def from_env(cls) -> 'ServerConfig':
         """Load configuration from environment variables."""
         return cls(
-            host=os.getenv('ZTOOL_HOST', '0.0.0.0'),
-            port=int(os.getenv('ZTOOL_PORT', '58000')),
-            keys_dir=os.getenv('ZTOOL_KEYS_DIR', cls.keys_dir),
-            private_key_file=os.getenv('ZTOOL_PRIVATE_KEY_FILE'),
-            public_key_file=os.getenv('ZTOOL_PUBLIC_KEY_FILE'),
-            db_path=os.getenv('ZTOOL_DB_PATH', cls.db_path),
-            default_device_limit=int(os.getenv('ZTOOL_DEVICE_LIMIT', '1')),
-            log_level=os.getenv('ZTOOL_LOG_LEVEL', 'INFO'),
-            runtime_env=os.getenv('ZTOOL_RUNTIME_ENV', os.getenv('ZTOOL_ENV', 'development')),
-            allow_debug_logging=_env_bool('ZTOOL_ALLOW_DEBUG_LOGGING'),
-            max_body_size=_env_int('ZTOOL_MAX_BODY_SIZE', cls.max_body_size),
+            host=os.getenv('SWTOOLS_HOST', '0.0.0.0'),
+            port=int(os.getenv('SWTOOLS_PORT', '58000')),
+            keys_dir=os.getenv('SWTOOLS_KEYS_DIR', cls.keys_dir),
+            private_key_file=os.getenv('SWTOOLS_PRIVATE_KEY_FILE'),
+            public_key_file=os.getenv('SWTOOLS_PUBLIC_KEY_FILE'),
+            db_path=os.getenv('SWTOOLS_DB_PATH', cls.db_path),
+            default_device_limit=int(os.getenv('SWTOOLS_DEVICE_LIMIT', '1')),
+            log_level=os.getenv('SWTOOLS_LOG_LEVEL', 'INFO'),
+            runtime_env=os.getenv('SWTOOLS_RUNTIME_ENV', os.getenv('SWTOOLS_ENV', 'development')),
+            allow_debug_logging=_env_bool('SWTOOLS_ALLOW_DEBUG_LOGGING'),
+            max_body_size=_env_int('SWTOOLS_MAX_BODY_SIZE', cls.max_body_size),
             max_frames_per_connection=_env_int(
-                'ZTOOL_MAX_FRAMES_PER_CONNECTION',
+                'SWTOOLS_MAX_FRAMES_PER_CONNECTION',
                 cls.max_frames_per_connection,
             ),
             read_timeout_seconds=_env_float(
-                'ZTOOL_READ_TIMEOUT_SECONDS',
+                'SWTOOLS_READ_TIMEOUT_SECONDS',
                 cls.read_timeout_seconds,
             ),
             idle_timeout_seconds=_env_float(
-                'ZTOOL_IDLE_TIMEOUT_SECONDS',
+                'SWTOOLS_IDLE_TIMEOUT_SECONDS',
                 cls.idle_timeout_seconds,
             ),
             pending_activation_ttl_seconds=_env_int(
-                'ZTOOL_PENDING_ACTIVATION_TTL_SECONDS',
+                'SWTOOLS_PENDING_ACTIVATION_TTL_SECONDS',
                 cls.pending_activation_ttl_seconds,
             ),
             pending_transfer_ttl_seconds=_env_int(
-                'ZTOOL_PENDING_TRANSFER_TTL_SECONDS',
+                'SWTOOLS_PENDING_TRANSFER_TTL_SECONDS',
                 cls.pending_transfer_ttl_seconds,
             ),
-            client_version=os.getenv('ZTOOL_CLIENT_VERSION', cls.client_version),
+            client_version=os.getenv('SWTOOLS_CLIENT_VERSION', cls.client_version),
         )

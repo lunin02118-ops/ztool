@@ -7,7 +7,7 @@ fields, `desKey` and `desSIV`, then reads the plaintext with a StreamReader
 (default UTF-8). The server must therefore DES-CBC encrypt the activation
 payload with these exact key/IV values and Base64-encode it.
 
-The key/IV were extracted from the client binary (ZTool .ctor field
+The key/IV were extracted from the client binary (SWTools .ctor field
 initialisers, element-wise byte arrays):
 
     desKey = 37 17 0D 31 48 39 34 08

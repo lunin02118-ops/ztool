@@ -1,10 +1,10 @@
-# Перевыпуск клиента ZTool под наш сервер лицензирования
+# Перевыпуск клиента SWTools под наш сервер лицензирования
 
 Этот каталог содержит инструмент и исходные данные для **перевыпуска
-де-обфусцированного `ZTool.exe`** (из ветки русификации) так, чтобы клиент
+де-обфусцированного `SWTools.exe`** (из ветки русификации) так, чтобы клиент
 работал с нашим сервером лицензий вместо вендорского.
 
-## Что меняется в `ZTool.exe`
+## Что меняется в `SWTools.exe`
 
 Патчер (`Program.cs`, на базе [dnlib](https://github.com/0xd4d/dnlib))
 правит готовую сборку на уровне IL, без перекомпиляции исходников:
@@ -45,7 +45,7 @@
 ключ: их безопасно хранить в репозитории. Регенерация (на сервере, где лежит
 приватный ключ):
 ```python
-from ztool_license_server.crypto.rsa_ztool import sign_string, decrypt_string
+from swtools_license_server.crypto.rsa_swtools import sign_string, decrypt_string
 priv = open("keys/private_key.txt").read().strip()
 pub  = open("keys/public_key.txt").read().strip()
 ip   = sign_string("<LICENSE_SERVER_IP>", priv)
@@ -54,13 +54,13 @@ assert decrypt_string(ip, pub)  == "<LICENSE_SERVER_IP>"
 assert decrypt_string(port, pub) == "58000"
 ```
 
-## Как собрать перевыпущенный `ZTool.exe`
+## Как собрать перевыпущенный `SWTools.exe`
 
-Нужен .NET SDK. Вход — де-обфусцированный `ZTool.exe` из ветки русификации.
+Нужен .NET SDK. Вход — де-обфусцированный `SWTools.exe` из ветки русификации.
 
 ```bash
 dotnet build patcher.csproj -c Release -o bin
-dotnet bin/patcher.dll <вход ZTool.exe> <выход ZTool.exe> .
+dotnet bin/patcher.dll <вход SWTools.exe> <выход SWTools.exe> .
 ```
 
 Патчер печатает счётчики замен и **прерывается, если что-то не найдено**
@@ -76,5 +76,5 @@ dotnet bin/patcher.dll <вход ZTool.exe> <выход ZTool.exe> .
   живые тесты сервера).
 - **Остаётся проверить на машине с SolidWorks** (фаза 10): что перевыпущенная
   сборка корректно грузится надстройкой и проходит полный цикл активации.
-  Надстройка `ZTool.dll` в ветке русификации **не** распаковывалась и здесь
+  Надстройка `SWTools.dll` в ветке русификации **не** распаковывалась и здесь
   не перевыпускается.

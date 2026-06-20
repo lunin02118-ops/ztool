@@ -52,7 +52,7 @@ def assert_safe_log_config(
     if env == "production" and level <= logging.DEBUG and not allow_debug_logging:
         raise ValueError(
             "DEBUG logging is disabled in production. "
-            "Set ZTOOL_ALLOW_DEBUG_LOGGING=1 only for a controlled emergency window."
+            "Set SWTOOLS_ALLOW_DEBUG_LOGGING=1 only for a controlled emergency window."
         )
 
 

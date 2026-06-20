@@ -1,5 +1,5 @@
 """
-Message dispatcher for ZTool license protocol.
+Message dispatcher for SWTools license protocol.
 
 Sendtype codes (request header; verified from the de-obfuscated client):
     128 - Apply_register: activation request. Server replies result 13 + blob.

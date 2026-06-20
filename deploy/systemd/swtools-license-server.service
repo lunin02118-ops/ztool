@@ -1,0 +1,22 @@
+[Unit]
+Description=SWTools License TCP Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=swtools
+Group=swtools
+WorkingDirectory=/opt/swtools-license-server/app/license-server
+EnvironmentFile=/etc/swtools-license-server/swtools-license-server.env
+ExecStart=/opt/swtools-license-server/.venv/bin/python -m swtools_license_server.server
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/swtools-license-server /var/log/swtools-license-server
+
+[Install]
+WantedBy=multi-user.target

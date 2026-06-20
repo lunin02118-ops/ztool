@@ -34,12 +34,12 @@ jobs:
         run: ruff check .
 
       - name: Compile Python
-        run: python -m compileall ztool_license_server tests
+        run: python -m compileall swtools_license_server tests
 
       - name: Bandit security scan
         env:
           PYTHONIOENCODING: utf-8
-        run: bandit -q -r ztool_license_server -c pyproject.toml
+        run: bandit -q -r swtools_license_server -c pyproject.toml
 
       - name: Pytest
-        run: pytest -q --cov=ztool_license_server --cov-report=term-missing
+        run: pytest -q --cov=swtools_license_server --cov-report=term-missing
