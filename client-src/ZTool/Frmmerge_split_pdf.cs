@@ -736,7 +736,7 @@ public class Frmmerge_split_pdf : Form
 		System.Windows.Forms.ToolStripDropDownButton oK_Button3 = this.OK_Button;
 		size = new System.Drawing.Size(101, 30);
 		oK_Button3.Size = size;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.merge_pdf.Name = "merge_pdf";
 		System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3 = this.merge_pdf;
 		size = new System.Drawing.Size(152, 22);
@@ -962,9 +962,9 @@ public class Frmmerge_split_pdf : Form
 			int num3 = (int)Math.Round(200.0 * dpixRatio);
 			int num4 = (int)Math.Round(200.0 * dpixRatio);
 			ListView1.Columns.Add("Номер", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("文件名", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Имя файла", num2, HorizontalAlignment.Left);
 			ListView1.Columns.Add("Путь", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("状态", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Статус", num4, HorizontalAlignment.Left);
 			ToolStripProgressBar1.Visible = false;
 		}
 	}
@@ -1018,7 +1018,7 @@ public class Frmmerge_split_pdf : Form
 				num++;
 				if ((code.TMode && num > 10) ? true : false)
 				{
-					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				ListViewItem listViewItem = new ListViewItem();
@@ -1032,7 +1032,7 @@ public class Frmmerge_split_pdf : Form
 			ListView1.AddData(list);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -1047,7 +1047,7 @@ public class Frmmerge_split_pdf : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "PDF文件(*.pdf)|*.pdf";
+		openFileDialog.Filter = "Файлы PDF (*.pdf)|*.pdf";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -1182,7 +1182,7 @@ public class Frmmerge_split_pdf : Form
 			}
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(num) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + "поз.";
 			}
 			else
 			{
@@ -1282,8 +1282,8 @@ public class Frmmerge_split_pdf : Form
 			saveFileDialog.OverwritePrompt = true;
 			saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 			saveFileDialog.RestoreDirectory = true;
-			saveFileDialog.Filter = "pdf文件（*.pdf）|*.pdf";
-			saveFileDialog.FileName = "合并PDF-" + DateTime.Now.ToString("yyyymmddhhmmss");
+			saveFileDialog.Filter = "Файлы PDF (*.pdf)|*.pdf";
+			saveFileDialog.FileName = "Объединение PDF-" + DateTime.Now.ToString("yyyymmddhhmmss");
 			if (saveFileDialog.ShowDialog(this) != DialogResult.Cancel)
 			{
 				string fileName = saveFileDialog.FileName;
@@ -1344,7 +1344,7 @@ public class Frmmerge_split_pdf : Form
 				int num8 = MyiTextSharp.SplitAndSave(inputPath, text);
 				if (num8 > 0)
 				{
-					listView.Items[num6].SubItems[3].Text = "拆分 " + Conversions.ToString(num8) + " стр.";
+					listView.Items[num6].SubItems[3].Text = "Разделить " + Conversions.ToString(num8) + " стр.";
 					listView.Items[num6].SubItems[3].ForeColor = Color.Blue;
 				}
 				num6++;

@@ -36,8 +36,8 @@ public class bomsetting
 
 	public bomsetting()
 	{
-		name = "默认导出汇总BOM";
-		bomname = Path.GetDirectoryName(Application.ExecutablePath) + "\\Шаблоны спецификации\\bom模板.xlsx";
+		name = "Экспорт сводной спецификации по умолчанию";
+		bomname = Path.GetDirectoryName(Application.ExecutablePath) + "\\Шаблоны спецификации\\bom_шаблон.xlsx";
 		type = 0;
 		insertimagebool = false;
 		lockratio = true;

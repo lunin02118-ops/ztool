@@ -356,7 +356,7 @@ ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></da
   <data name="&gt;&gt;DataGridViewTextBoxColumn17.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn17</value></data>
   <data name="StatusStrip1.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
 dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
-ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAALwIAAAs=</value></data><data name="Col_Quantity.HeaderText" xml:space="preserve"><value>Подсчитанное количество</value></data>
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAALwIAAAs=</value></data><data name="Col_Quantity.HeaderText" xml:space="preserve"><value>Количество</value></data>
   <data name="DataGridViewTextBoxColumn7.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
   <data name="SplitContainerEx1.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>27</value></data>
   <data name="&gt;&gt;DataGridViewTextBoxColumn15.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
@@ -514,7 +514,7 @@ ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABgBAAAGAAAACw==</value></da
   <data name="Col_Drw.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>22</value></data>
   <data name="PropSwitchLabel.TextAlign" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
 dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAAB9TeXN0
-ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="DataGridViewTextBoxColumn5.HeaderText" xml:space="preserve"><value>Подсчитанное количество</value></data>
+ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="DataGridViewTextBoxColumn5.HeaderText" xml:space="preserve"><value>Количество</value></data>
   <data name="Col_partnumber.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
   <data name="SplitContainerEx1.SplitterWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>9</value></data>
   </root>

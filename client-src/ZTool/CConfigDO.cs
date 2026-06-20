@@ -979,35 +979,35 @@ public class CConfigDO
 
 	public void InitDefaults()
 	{
-		propname = new List<string> { "设计", "零件名称", "图号", "材料", "类型", "版本", "Количество", "表面处理", "设计日期", "重量" };
-		proptype = new List<string> { "文字", "文字", "文字", "文字", "文字", "文字", "数字", "文字", "日期", "文字" };
+		propname = new List<string> { "Разработал", "Имя детали", "Номер чертежа", "Материал", "Тип", "Версия", "Количество", "Обработка поверхности", "Дата разработки", "Масса" };
+		proptype = new List<string> { "Текст", "Текст", "Текст", "Текст", "Текст", "Текст", "Число", "Текст", "Дата", "Текст" };
 		Preview_Hotkey = new List<string>
 		{
 			Conversions.ToString(18),
 			Conversions.ToString(90)
 		};
 		propshow = new List<string> { "1", "1", "1", "1", "1", "1", "1", "1", "1", "1" };
-		needfillcolumns = new List<string> { "图号\n0", "零件名称\n1", "版本\n2" };
+		needfillcolumns = new List<string> { "Номер чертежа\n0", "Имя детали\n1", "Версия\n2" };
 		bomsettings = new List<bomsetting>
 		{
 			new bomsetting
 			{
-				name = "导出汇总BOM",
+				name = "Экспорт сводной спецификации",
 				type = 0
 			},
 			new bomsetting
 			{
-				name = "导出缩进式BOM",
+				name = "Экспорт иерархической спецификации",
 				type = 1
 			},
 			new bomsetting
 			{
-				name = "导出顶层BOM",
+				name = "Экспорт спецификации верхнего уровня",
 				type = 2
 			},
 			new bomsetting
 			{
-				name = "导出零件汇总BOM",
+				name = "Экспорт сводной спецификации деталей",
 				type = 3
 			}
 		};

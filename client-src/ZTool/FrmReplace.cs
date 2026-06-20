@@ -687,7 +687,7 @@ public class FrmReplace : Form
 								if ((dictionary.TryGetValue(key3, out value) && !string.Equals(value, text4, StringComparison.OrdinalIgnoreCase)) ? true : false)
 								{
 									num3++;
-									MyProject.Forms.Frmtips.additem(0, Conversions.ToString(num11), "文件名重复", "Поиск и замена", text4);
+									MyProject.Forms.Frmtips.additem(0, Conversions.ToString(num11), "Имя файла повторяется", "Поиск и замена", text4);
 									goto IL_0550;
 								}
 								if (!dictionary.ContainsKey(key3))
@@ -705,7 +705,7 @@ public class FrmReplace : Form
 				}
 				if (num == 0)
 				{
-					MessageBox.Show(MyProject.Forms.Frmmain, "未找到字符\"" + TextBox1.Text + "\"", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(MyProject.Forms.Frmmain, "Символ не найден \"" + TextBox1.Text + "\"", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 				else
 				{
@@ -713,7 +713,7 @@ public class FrmReplace : Form
 				}
 				if (num3 > 0)
 				{
-					MessageBox.Show(this, "有 " + Conversions.ToString(num3) + " элементов не заменено из-за повторяющихся имён файлов", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Есть " + Conversions.ToString(num3) + " элементов не заменено из-за повторяющихся имён файлов", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				}
 			}
 			catch (Exception ex)
@@ -805,7 +805,7 @@ public class FrmReplace : Form
 				{
 					if (!ReplaceOK)
 					{
-						MessageBox.Show(MyProject.Forms.Frmmain, "未找到字符\"" + TextBox1.Text + "\"", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show(MyProject.Forms.Frmmain, "Символ не найден \"" + TextBox1.Text + "\"", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					}
 				}
 				else if (list[list.Count - 1] > MyProject.Forms.Frmmain.DGV1.CurrentRow.Index)

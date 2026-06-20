@@ -426,7 +426,7 @@ public class FrmAbout : Form
 		size = new System.Drawing.Size(296, 20);
 		labelVersion3.Size = size;
 		this.LabelVersion.TabIndex = 0;
-		this.LabelVersion.Text = "版本";
+		this.LabelVersion.Text = "Версия";
 		this.LabelVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		this.TableLayoutPanel1.ColumnCount = 2;
 		this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100f));
@@ -544,11 +544,11 @@ public class FrmAbout : Form
 		Text = string.Format(arg0: (Operators.CompareString(MyProject.Application.Info.Title, "", TextCompare: false) == 0) ? Path.GetFileNameWithoutExtension(MyProject.Application.Info.AssemblyName) : MyProject.Application.Info.Title, format: "О программе" + MyProject.Application.Info.ProductName + "--{0}");
 		if (Environment.Is64BitProcess)
 		{
-			LabelVersion.Text = string.Format("版 本 :{0}", Application.ProductVersion.ToString() + "（x64）");
+			LabelVersion.Text = string.Format("Версия :{0}", Application.ProductVersion.ToString() + "(x64)");
 		}
 		else
 		{
-			LabelVersion.Text = string.Format("版 本 :{0}", Application.ProductVersion.ToString() + "（x86）");
+			LabelVersion.Text = string.Format("Версия :{0}", Application.ProductVersion.ToString() + "(x86)");
 		}
 		LabelEmail.Text = "Email: mail@z-tool.cn";
 		LabelQQ.Text = "Группа QQ: 823539419";

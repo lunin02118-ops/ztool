@@ -975,7 +975,7 @@ public class FrmSetDrwOption : Form
 		size = new System.Drawing.Size(67, 27);
 		oK_Button2.Size = size;
 		this.OK_Button.TabIndex = 0;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.Cancel_Button.Anchor = System.Windows.Forms.AnchorStyles.None;
 		this.Cancel_Button.AutoSize = true;
 		this.Cancel_Button.DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -1462,8 +1462,8 @@ public class FrmSetDrwOption : Form
 		DGV1.Enabled = CheckBox2.Checked;
 		DataGridView dGV = DGV1;
 		dGV.RowCount = 7;
-		dGV.Rows[0].Cells[0].Value = "A4横";
-		dGV.Rows[1].Cells[0].Value = "A4竖";
+		dGV.Rows[0].Cells[0].Value = "A4 альбомная";
+		dGV.Rows[1].Cells[0].Value = "A4 книжная";
 		dGV.Rows[2].Cells[0].Value = "A3";
 		dGV.Rows[3].Cells[0].Value = "A2";
 		dGV.Rows[4].Cells[0].Value = "A1";
@@ -1488,13 +1488,13 @@ public class FrmSetDrwOption : Form
 			switch (getfiles())
 			{
 			case 0:
-				MessageBox.Show(this, "\"" + TextBox2.Text + "\" в папке не найдено файлов формата листа с расширением «.slddrt»", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "\"" + TextBox2.Text + "\" в папке не найдено файлов формата листа с расширением «.slddrt»", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				break;
 			case 2:
-				MessageBox.Show(this, "\"" + TextBox2.Text + "\" папка не существует!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "\"" + TextBox2.Text + "\" папка не существует!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				break;
 			case 3:
-				MessageBox.Show(this, "Сначала укажите папку с форматами листа", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "Сначала укажите папку с форматами листа", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				break;
 			}
 		}
@@ -1535,7 +1535,7 @@ public class FrmSetDrwOption : Form
 	private void Button1_Click(object sender, EventArgs e)
 	{
 		OpenFileDialog openFileDialog = new OpenFileDialog();
-		openFileDialog.Filter = "绘图标准文件（*.sldstd）|*.sldstd";
+		openFileDialog.Filter = "Файл стандарта оформления (*.sldstd)|*.sldstd";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			Button button = (Button)sender;
@@ -1745,7 +1745,7 @@ public class FrmSetDrwOption : Form
 						}
 						if (!File.Exists(Drwstandardfile))
 						{
-							Interaction.MsgBox("绘图标准文件\"" + TextBox1.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
+							Interaction.MsgBox("Файл стандарта оформления \"" + TextBox1.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
 							return;
 						}
 					}
@@ -1758,7 +1758,7 @@ public class FrmSetDrwOption : Form
 						}
 						if (!File.Exists(prtstandardfile))
 						{
-							Interaction.MsgBox("绘图标准文件\"" + TextBox3.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
+							Interaction.MsgBox("Файл стандарта оформления \"" + TextBox3.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
 							return;
 						}
 					}
@@ -1771,7 +1771,7 @@ public class FrmSetDrwOption : Form
 						}
 						if (!File.Exists(asmstandardfile))
 						{
-							Interaction.MsgBox("绘图标准文件\"" + TextBox4.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
+							Interaction.MsgBox("Файл стандарта оформления \"" + TextBox4.Text + "\" не найдено", MsgBoxStyle.Information, "Информация");
 							return;
 						}
 					}
@@ -1782,7 +1782,7 @@ public class FrmSetDrwOption : Form
 					return;
 				}
 				Hide();
-				MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count) + "файлов";
+				MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count) + "файлов";
 				MyProject.Forms.FrmSetDrwlist.ListView1.MultiSelect = false;
 				MyProject.Forms.FrmSetDrwlist.ListView1.Items[0].Selected = true;
 				MyProject.Forms.FrmSetDrwlist.ToolStripProgressBar1.Maximum = MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count;
@@ -1800,7 +1800,7 @@ public class FrmSetDrwOption : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2250,7 +2250,7 @@ public class FrmSetDrwOption : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				er = true;
 				ProjectData.ClearProjectError();
@@ -2275,7 +2275,7 @@ public class FrmSetDrwOption : Form
 					MyProject.Forms.FrmSetDrwlist.ListView1.Items[e.ProgressPercentage].Selected = true;
 					MyProject.Forms.FrmSetDrwlist.ListView1.Items[e.ProgressPercentage].EnsureVisible();
 					MyProject.Forms.FrmSetDrwlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
 					CallInProgress = false;
 				}
 			}
@@ -2318,7 +2318,7 @@ public class FrmSetDrwOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2662,7 +2662,7 @@ public class FrmSetDrwOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}

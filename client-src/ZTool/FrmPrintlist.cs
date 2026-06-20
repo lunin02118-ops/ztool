@@ -1531,7 +1531,7 @@ public class FrmPrintlist : Form
 		System.Windows.Forms.ToolStripButton toolStripButton2 = this.nextstep;
 		size = new System.Drawing.Size(64, 30);
 		toolStripButton2.Size = size;
-		this.nextstep.Text = "下一步";
+		this.nextstep.Text = "Далее";
 		System.Windows.Forms.ToolStripSeparator toolStripSeparator = this.ToolStripSeparator1;
 		padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
 		toolStripSeparator.Margin = padding;
@@ -1843,10 +1843,10 @@ public class FrmPrintlist : Form
 			int num4 = (int)Math.Round(80.0 * dpixRatio);
 			int num5 = (int)Math.Round(50.0 * dpixRatio);
 			ListView1.Columns.Add("Номер", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("文件名", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Имя файла", num2, HorizontalAlignment.Left);
 			ListView1.Columns.Add("Путь", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("零件配置", num4, HorizontalAlignment.Left);
-			ListView1.Columns.Add("状态", num5, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Конфигурация детали", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Статус", num5, HorizontalAlignment.Left);
 			ToolStripProgressBar1.Visible = false;
 			ListView1.CheckBoxes = true;
 		}
@@ -1944,7 +1944,7 @@ public class FrmPrintlist : Form
 				num12++;
 				if ((code.TMode && num12 > 10) ? true : false)
 				{
-					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				ListViewItem listViewItem = new ListViewItem();
@@ -1960,7 +1960,7 @@ public class FrmPrintlist : Form
 			ListView1.AddData(list4);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -1996,7 +1996,7 @@ public class FrmPrintlist : Form
 				binaryFormatter.Serialize(memoryStream, list);
 				Clipboard.SetData(DataFormats.Serializable, memoryStream);
 				Clipboard.SetAudio(memoryStream);
-				MessageBox.Show("已成功复制 " + Conversions.ToString(list.Count) + " поз.", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Успешно скопировано " + Conversions.ToString(list.Count) + " поз.", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 		}
 	}
@@ -2052,7 +2052,7 @@ public class FrmPrintlist : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "工程图(*.SLDDRW)|*.SLDDRW";
+		openFileDialog.Filter = "Чертёж (*.SLDDRW)|*.SLDDRW";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -2079,7 +2079,7 @@ public class FrmPrintlist : Form
 			loadview(list);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -2365,7 +2365,7 @@ public class FrmPrintlist : Form
 
 	private void nextstep_Click(object sender, EventArgs e)
 	{
-		if (Operators.CompareString(nextstep.Text, "下一步", TextCompare: false) == 0)
+		if (Operators.CompareString(nextstep.Text, "Далее", TextCompare: false) == 0)
 		{
 			MyProject.Forms.FrmPrintoptions.ShowDialog();
 		}
@@ -2385,22 +2385,22 @@ public class FrmPrintlist : Form
 			ToolStripStatusLabel1.Text = "Задача останавливается";
 			break;
 		case 1:
-			nextstep.Text = "停止";
+			nextstep.Text = "Стоп";
 			nextstep.Image = Resources.Stop_24x;
 			break;
 		case 2:
 			ToolStripStatusLabel1.Text = "Задача завершена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			break;
 		case 3:
 			ToolStripStatusLabel1.Text = "Задача остановлена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			break;
 		case 4:
 			ToolStripStatusLabel1.Text = "Задача остановлена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			MessageBox.Show(this, "Текущая задача прервана; нажмите «Далее» ➜ «Старт», чтобы продолжить", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			break;
@@ -2440,7 +2440,7 @@ public class FrmPrintlist : Form
 			}
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(num) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + "поз.";
 			}
 			else
 			{
@@ -2521,7 +2521,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(1);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
 		}
 		else
 		{
@@ -2534,7 +2534,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(2);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
 		}
 		else
 		{
@@ -2547,7 +2547,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(3);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
 		}
 		else
 		{
@@ -2566,7 +2566,7 @@ public class FrmPrintlist : Form
 		{
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
 			}
 			else
 			{
@@ -2579,7 +2579,7 @@ public class FrmPrintlist : Form
 	{
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
 		}
 		else
 		{
@@ -2667,7 +2667,7 @@ public class FrmPrintlist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 				openFileDialog.FilterIndex = 1;
 				if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 				{

@@ -1987,7 +1987,7 @@ public class FrmFilling : Form
 		size = new System.Drawing.Size(171, 23);
 		textBox6.Size = size;
 		this.TextBox2.TabIndex = 16;
-		this.TextBox2.Text = "$图号$-$零件名称$-{001}";
+		this.TextBox2.Text = "$Номер$-$ИмяДетали$-{001}";
 		this.Label4.AutoSize = true;
 		System.Windows.Forms.Label label3 = this.Label4;
 		location = new System.Drawing.Point(19, 24);
@@ -2010,7 +2010,7 @@ public class FrmFilling : Form
 		size = new System.Drawing.Size(177, 85);
 		label6.Size = size;
 		this.Label5.TabIndex = 15;
-		this.Label5.Text = "Описание:\r\n{ } — начальное значение инкремента;\r\n$属性名称$ — значение свойства\r\n%属性名称% — выражение свойства\r\n<列标题> — значение из другого столбца\r\n";
+		this.Label5.Text = "Описание:\r\n{ } — начальное значение инкремента;\r\n$ИмяСвойства$ — значение свойства\r\n%ИмяСвойства% — выражение свойства\r\n<ЗаголовокСтолбца> — значение из другого столбца\r\n";
 		this.Label7.AutoSize = true;
 		this.Label7.ForeColor = System.Drawing.Color.Blue;
 		System.Windows.Forms.Label label7 = this.Label7;
@@ -2021,7 +2021,7 @@ public class FrmFilling : Form
 		size = new System.Drawing.Size(109, 17);
 		label8.Size = size;
 		this.Label7.TabIndex = 15;
-		this.Label7.Text = "ID001-轴承座-001";
+		this.Label7.Text = "ID001-Корпус подшипника-001";
 		this.Label8.AutoSize = true;
 		System.Windows.Forms.Label label9 = this.Label8;
 		location = new System.Drawing.Point(20, 80);
@@ -3143,7 +3143,7 @@ public class FrmFilling : Form
 				}
 				else if (name.Contains("PropResolvedVal_"))
 				{
-					text += " (属性值)";
+					text += " (значение свойства)";
 				}
 				if ((Operators.CompareString(text, "", TextCompare: false) != 0 && Operators.CompareString(name, MyProject.Forms.Frmmain.Col_Preview.Name, TextCompare: false) != 0) ? true : false)
 				{
@@ -3232,9 +3232,9 @@ public class FrmFilling : Form
 		contextMenuStrip.Items.Clear();
 		vallist.Clear();
 		contextMenuStrip.AutoSize = true;
-		ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("表格列");
-		ToolStripMenuItem toolStripMenuItem2 = new ToolStripMenuItem("SW属性");
-		ToolStripMenuItem toolStripMenuItem3 = new ToolStripMenuItem("自定义属性");
+		ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("Столбец таблицы");
+		ToolStripMenuItem toolStripMenuItem2 = new ToolStripMenuItem("Свойства SW");
+		ToolStripMenuItem toolStripMenuItem3 = new ToolStripMenuItem("Настраиваемые свойства");
 		checked
 		{
 			try
@@ -3252,7 +3252,7 @@ public class FrmFilling : Form
 							if ((num2 != MyProject.Forms.Frmmain.Col_Preview.Index && num2 != MyProject.Forms.Frmmain.Col_Checkbox.Index && num2 != MyProject.Forms.Frmmain.Col_Extname.Index && num2 != MyProject.Forms.Frmmain.Col_Drw.Index && num2 != MyProject.Forms.Frmmain.Col_CreationTime.Index && num2 != MyProject.Forms.Frmmain.Col_SaveTime.Index && num2 != MyProject.Forms.Frmmain.Col_Path.Index && num2 != MyProject.Forms.Frmmain.Col_NewFolder.Index) || 1 == 0)
 							{
 								string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num2].HeaderText;
-								headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropVal_") ? (headerText + " (属性表达式)") : ((!MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropResolvedVal_")) ? ("<" + headerText + ">") : (headerText + " (属性值)")));
+								headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropVal_") ? (headerText + " (выражение свойства)") : ((!MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropResolvedVal_")) ? ("<" + headerText + ">") : (headerText + " (значение свойства)")));
 								toolStripMenuItem.DropDownItems.Add(headerText);
 								vallist.Add(headerText);
 							}
@@ -3397,14 +3397,14 @@ public class FrmFilling : Form
 		{
 			string text = TextBox1.Text;
 			string text2 = ((ToolStripMenuItem)sender).Text;
-			if (text2.EndsWith(" (属性表达式)"))
+			if (text2.EndsWith(" (выражение свойства)"))
 			{
-				text2 = text2.Substring(0, text2.LastIndexOf(" (属性表达式)"));
+				text2 = text2.Substring(0, text2.LastIndexOf(" (выражение свойства)"));
 				text2 = "%" + text2 + "%";
 			}
-			else if (text2.EndsWith(" (属性值)"))
+			else if (text2.EndsWith(" (значение свойства)"))
 			{
-				text2 = text2.Substring(0, text2.LastIndexOf(" (属性值)"));
+				text2 = text2.Substring(0, text2.LastIndexOf(" (значение свойства)"));
 				text2 = "$" + text2 + "$";
 			}
 			TextBox1.Focus();
@@ -3476,7 +3476,7 @@ public class FrmFilling : Form
 	private void add_Click(object sender, EventArgs e)
 	{
 		_Closure_0024__80 closure_0024__ = new _Closure_0024__80();
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("输入方案名称");
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя схемы");
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) == 0)
 		{
 			return;
@@ -3525,7 +3525,7 @@ public class FrmFilling : Form
 		{
 			return;
 		}
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("输入规则名称", "", closure_0024__._0024VB_0024Local_RuleName);
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя правила", "", closure_0024__._0024VB_0024Local_RuleName);
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) != 0 && Operators.CompareString(closure_0024__._0024VB_0024Local_str, closure_0024__._0024VB_0024Local_RuleName, TextCompare: false) != 0 && 0 == 0)
 		{
 			int num2 = CConfigMng.Config.fillsettings.FindIndex(closure_0024__._Lambda_0024__139);
@@ -3743,7 +3743,7 @@ public class FrmFilling : Form
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
 		openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-		openFileDialog.Filter = "Excel 文件（*.xls;*.xlsx）|*.xls;*.xlsx";
+		openFileDialog.Filter = "Файлы Excel (*.xls;*.xlsx)|*.xls;*.xlsx";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			datasource.Text = openFileDialog.FileName;
@@ -3882,7 +3882,7 @@ public class FrmFilling : Form
 			}
 			if (num8 > 0)
 			{
-				MessageBox.Show(this, "匹配 " + Conversions.ToString(num8) + " 项，填写 " + Conversions.ToString(num7) + " поз.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "Совпадений " + Conversions.ToString(num8) + " элементов, заполнено " + Conversions.ToString(num7) + " поз.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 			else
 			{
@@ -4008,7 +4008,7 @@ public class FrmFilling : Form
 		{
 			if (column.ColumnName.Equals(name_list.Text, StringComparison.OrdinalIgnoreCase))
 			{
-				MessageBox.Show(name_list.Text + " уже существует!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(name_list.Text + " уже существует!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				return;
 			}
 		}
@@ -4051,7 +4051,7 @@ public class FrmFilling : Form
 			{
 				if (dt.Columns.Count < 1)
 				{
-					MessageBox.Show("Сначала добавьте столбец", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show("Сначала добавьте столбец", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					return;
 				}
 				DGV1.EndEdit();

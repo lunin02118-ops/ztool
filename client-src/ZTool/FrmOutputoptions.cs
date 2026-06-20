@@ -2619,7 +2619,7 @@ public class FrmOutputoptions : Form
 		size = new System.Drawing.Size(67, 27);
 		oK_Button2.Size = size;
 		this.OK_Button.TabIndex = 0;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.TabPage5.Controls.Add(this.Label6);
 		this.TabPage5.Controls.Add(this.SetScalebyfirstview);
 		this.TabPage5.Controls.Add(this.forcurcfg);
@@ -2858,7 +2858,7 @@ public class FrmOutputoptions : Form
 		this.ExportAllSheetsToPaperSpace.UseVisualStyleBackColor = true;
 		this.Multiplesheet_dwg.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.Multiplesheet_dwg.FormattingEnabled = true;
-		this.Multiplesheet_dwg.Items.AddRange(new object[4] { "输出所有图纸到一个文件", "输出所有图纸到单个文件", "仅输出第一页", "仅输出激活的图纸" });
+		this.Multiplesheet_dwg.Items.AddRange(new object[4] { "Вывести все листы в один файл", "Вывести каждый лист в отдельный файл", "Выводить только первую страницу", "Выводить только активный лист" });
 		System.Windows.Forms.ComboBox multiplesheet_dwg = this.Multiplesheet_dwg;
 		location = new System.Drawing.Point(112, 92);
 		multiplesheet_dwg.Location = location;
@@ -2922,7 +2922,7 @@ public class FrmOutputoptions : Form
 		this.Label1.Text = "Версия:";
 		this.CADline.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.CADline.FormattingEnabled = true;
-		this.CADline.Items.AddRange(new object[2] { "SolidWorks自定义样式", "AutoCAD标准样式" });
+		this.CADline.Items.AddRange(new object[2] { "Пользовательский стиль SolidWorks", "Стандартный стиль AutoCAD" });
 		System.Windows.Forms.ComboBox cADline = this.CADline;
 		location = new System.Drawing.Point(242, 59);
 		cADline.Location = location;
@@ -2933,7 +2933,7 @@ public class FrmOutputoptions : Form
 		this.CADline.TabIndex = 0;
 		this.CADfont.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.CADfont.FormattingEnabled = true;
-		this.CADfont.Items.AddRange(new object[2] { "TrueType", "仅限于AutoCAD标准" });
+		this.CADfont.Items.AddRange(new object[2] { "TrueType", "Только для стандарта AutoCAD" });
 		System.Windows.Forms.ComboBox cADfont = this.CADfont;
 		location = new System.Drawing.Point(242, 29);
 		cADfont.Location = location;
@@ -3023,7 +3023,7 @@ public class FrmOutputoptions : Form
 		this.ImageType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.ImageType.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
 		this.ImageType.FormattingEnabled = true;
-		this.ImageType.Items.AddRange(new object[3] { "黑白（双层）", "RGB全色", "灰度级" });
+		this.ImageType.Items.AddRange(new object[3] { "Чёрно-белый (двухуровневый)", "RGB (полный цвет)", "Оттенки серого" });
 		System.Windows.Forms.ComboBox imageType = this.ImageType;
 		location = new System.Drawing.Point(88, 23);
 		imageType.Location = location;
@@ -3059,7 +3059,7 @@ public class FrmOutputoptions : Form
 		this.GroupBox4.Text = "Параметры вывода PDF";
 		this.Multiplesheet_pdf.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.Multiplesheet_pdf.FormattingEnabled = true;
-		this.Multiplesheet_pdf.Items.AddRange(new object[4] { "输出所有图纸到一个文件", "输出所有图纸到单个文件", "仅输出第一页", "仅输出激活的图纸" });
+		this.Multiplesheet_pdf.Items.AddRange(new object[4] { "Вывести все листы в один файл", "Вывести каждый лист в отдельный файл", "Выводить только первую страницу", "Выводить только активный лист" });
 		System.Windows.Forms.ComboBox multiplesheet_pdf = this.Multiplesheet_pdf;
 		location = new System.Drawing.Point(112, 76);
 		multiplesheet_pdf.Location = location;
@@ -3621,7 +3621,7 @@ public class FrmOutputoptions : Form
 		this.Label9.Text = "Начало координат:";
 		this.img_postion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.img_postion.FormattingEnabled = true;
-		this.img_postion.Items.AddRange(new object[4] { "左下角", "左上角", "右上角", "右下角" });
+		this.img_postion.Items.AddRange(new object[4] { "Нижний левый угол", "Верхний левый угол", "Верхний правый угол", "Нижний правый угол" });
 		System.Windows.Forms.ComboBox comboBox = this.img_postion;
 		location = new System.Drawing.Point(48, 28);
 		comboBox.Location = location;
@@ -3849,7 +3849,7 @@ public class FrmOutputoptions : Form
 		this.Label16.Text = "Начало координат:";
 		this.text_postion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.text_postion.FormattingEnabled = true;
-		this.text_postion.Items.AddRange(new object[4] { "左下角", "左上角", "右上角", "右下角" });
+		this.text_postion.Items.AddRange(new object[4] { "Нижний левый угол", "Верхний левый угол", "Верхний правый угол", "Нижний правый угол" });
 		System.Windows.Forms.ComboBox comboBox3 = this.text_postion;
 		location = new System.Drawing.Point(48, 28);
 		comboBox3.Location = location;
@@ -4065,7 +4065,7 @@ public class FrmOutputoptions : Form
 					}
 					if (!Directory.Exists(folder.Text))
 					{
-						if (MessageBox.Show(this, "路径 \"" + folder.Text + "\" не существует, создать?", "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+						if (MessageBox.Show(this, "Путь \"" + folder.Text + "\" не существует, создать?", "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
 						{
 							return;
 						}
@@ -4172,7 +4172,7 @@ public class FrmOutputoptions : Form
 					num9++;
 				}
 				outset();
-				frmOutputlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(frmOutputlist.ListView1.Items.Count) + "файлов";
+				frmOutputlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(frmOutputlist.ListView1.Items.Count) + "файлов";
 				frmOutputlist.ListView1.MultiSelect = false;
 				frmOutputlist.ListView1.Items[indexlist[0]].Selected = true;
 				frmOutputlist.ToolStripProgressBar1.Maximum = frmOutputlist.ListView1.Items.Count;
@@ -4191,7 +4191,7 @@ public class FrmOutputoptions : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -4506,7 +4506,7 @@ public class FrmOutputoptions : Form
 									if (text8.Length > 0 || text7.Length > 0)
 									{
 										Dictionary<string, string> dictionary = code.Getpropfromsheet(RuntimeHelpers.GetObjectValue(code.swApp), RuntimeHelpers.GetObjectValue(objectValue3));
-										dictionary.Add("<文件名称>", text4);
+										dictionary.Add("<ИмяФайла>", text4);
 										MatchCollection matchCollection = Regex.Matches(text7, "(\\$).*?(\\$)");
 										int num16 = matchCollection.Count - 1;
 										int num17 = 0;
@@ -5252,7 +5252,7 @@ public class FrmOutputoptions : Form
 										}
 										if ((withoutcfgname.Checked && list7.Count == 1) ? true : false)
 										{
-											text11 = text11.Replace("<配置名称>", "\t|@#$%|");
+											text11 = text11.Replace("<ИмяКонфигурации>", "\t|@#$%|");
 										}
 										int num50 = dictionary2.Count - 1;
 										int num51 = 0;
@@ -5432,7 +5432,7 @@ public class FrmOutputoptions : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				code.swApp = null;
 				er = true;
@@ -5587,7 +5587,7 @@ public class FrmOutputoptions : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			code.swApp = null;
 			ProjectData.ClearProjectError();
@@ -5611,7 +5611,7 @@ public class FrmOutputoptions : Form
 					MyProject.Forms.FrmOutputlist.ListView1.Items[indexlist[e.ProgressPercentage]].Selected = true;
 					MyProject.Forms.FrmOutputlist.ListView1.Items[indexlist[e.ProgressPercentage]].EnsureVisible();
 					MyProject.Forms.FrmOutputlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmOutputlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(MyProject.Forms.FrmOutputlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmOutputlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmOutputlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
 					CallInProgress = false;
 				}
 			}
@@ -5655,7 +5655,7 @@ public class FrmOutputoptions : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5698,15 +5698,15 @@ public class FrmOutputoptions : Form
 		watertext.Height = checked((int)Math.Round(72.0 * dpixRatio));
 		if (Operators.CompareString(watertext.Text, "", TextCompare: false) == 0)
 		{
-			TextBoxWaterMark.SetWatermark(watertext, "$图号$ $名称$ $类型$");
+			TextBoxWaterMark.SetWatermark(watertext, "$Номер$ $Название$ $Тип$");
 		}
 		if (Operators.CompareString(customname_2d.Text, "", TextCompare: false) == 0)
 		{
-			TextBoxWaterMark.SetWatermark(customname_2d, "$类型$-<文件名称>-<当前日期>");
+			TextBoxWaterMark.SetWatermark(customname_2d, "$Тип$-<ИмяФайла>-<ТекущаяДата>");
 		}
 		if (Operators.CompareString(customname_3d.Text, "", TextCompare: false) == 0)
 		{
-			TextBoxWaterMark.SetWatermark(customname_3d, "$类型$-<文件名称>-<当前日期>");
+			TextBoxWaterMark.SetWatermark(customname_3d, "$Тип$-<ИмяФайла>-<ТекущаяДата>");
 		}
 		menu1 = createmenu1();
 		menu2 = createmenu2();
@@ -5794,7 +5794,7 @@ public class FrmOutputoptions : Form
 		TextBox textBox = (TextBox)sender;
 		if (Operators.CompareString(textBox.Text, "", TextCompare: false) == 0)
 		{
-			TextBoxWaterMark.SetWatermark(textBox, "$图号$ $名称$ $类型$");
+			TextBoxWaterMark.SetWatermark(textBox, "$Номер$ $Название$ $Тип$");
 		}
 	}
 
@@ -5826,10 +5826,10 @@ public class FrmOutputoptions : Form
 	private void Button2_Click(object sender, EventArgs e)
 	{
 		OpenFileDialog openFileDialog = new OpenFileDialog();
-		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "图片文件");
+		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Изображение");
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "图片文件（*.bmp;*.jpg;*.png）|*.bmp;*.jpg;*.png";
+		openFileDialog.Filter = "Изображения (*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			img_path.Text = openFileDialog.FileName;
@@ -5885,17 +5885,17 @@ public class FrmOutputoptions : Form
 		contextMenuStrip.ShowImageMargin = false;
 		contextMenuStrip.Items.Clear();
 		contextMenuStrip.AutoSize = true;
-		contextMenuStrip.Items.Add("<标题>");
-		contextMenuStrip.Items.Add("<主题>");
-		contextMenuStrip.Items.Add("<作者>");
-		contextMenuStrip.Items.Add("<关键字>");
-		contextMenuStrip.Items.Add("<备注>");
-		contextMenuStrip.Items.Add("<文件名称>");
-		contextMenuStrip.Items.Add("<文件夹名称>");
-		contextMenuStrip.Items.Add("<配置名称>");
-		contextMenuStrip.Items.Add("<材质>");
-		contextMenuStrip.Items.Add("<统计数量>");
-		contextMenuStrip.Items.Add("<当前日期>");
+		contextMenuStrip.Items.Add("<Заголовок>");
+		contextMenuStrip.Items.Add("<Тема>");
+		contextMenuStrip.Items.Add("<Автор>");
+		contextMenuStrip.Items.Add("<КлючевыеСлова>");
+		contextMenuStrip.Items.Add("<Примечание>");
+		contextMenuStrip.Items.Add("<ИмяФайла>");
+		contextMenuStrip.Items.Add("<ИмяПапки>");
+		contextMenuStrip.Items.Add("<ИмяКонфигурации>");
+		contextMenuStrip.Items.Add("<Материал>");
+		contextMenuStrip.Items.Add("<Количество>");
+		contextMenuStrip.Items.Add("<ТекущаяДата>");
 		checked
 		{
 			try
@@ -5944,18 +5944,18 @@ public class FrmOutputoptions : Form
 		contextMenuStrip.ShowImageMargin = false;
 		contextMenuStrip.Items.Clear();
 		contextMenuStrip.AutoSize = true;
-		contextMenuStrip.Items.Add("<标题>");
-		contextMenuStrip.Items.Add("<主题>");
-		contextMenuStrip.Items.Add("<作者>");
-		contextMenuStrip.Items.Add("<关键字>");
-		contextMenuStrip.Items.Add("<备注>");
-		contextMenuStrip.Items.Add("<模型文件名称>");
-		contextMenuStrip.Items.Add("<模型文件夹名称>");
-		contextMenuStrip.Items.Add("<配置名称>");
-		contextMenuStrip.Items.Add("<材质>");
-		contextMenuStrip.Items.Add("<统计数量>");
-		contextMenuStrip.Items.Add("<文件名称>");
-		contextMenuStrip.Items.Add("<当前日期>");
+		contextMenuStrip.Items.Add("<Заголовок>");
+		contextMenuStrip.Items.Add("<Тема>");
+		contextMenuStrip.Items.Add("<Автор>");
+		contextMenuStrip.Items.Add("<КлючевыеСлова>");
+		contextMenuStrip.Items.Add("<Примечание>");
+		contextMenuStrip.Items.Add("<ИмяФайлаМодели>");
+		contextMenuStrip.Items.Add("<ИмяПапкиМодели>");
+		contextMenuStrip.Items.Add("<ИмяКонфигурации>");
+		contextMenuStrip.Items.Add("<Материал>");
+		contextMenuStrip.Items.Add("<Количество>");
+		contextMenuStrip.Items.Add("<ИмяФайла>");
+		contextMenuStrip.Items.Add("<ТекущаяДата>");
 		checked
 		{
 			try

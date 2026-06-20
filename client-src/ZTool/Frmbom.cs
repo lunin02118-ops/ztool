@@ -1102,7 +1102,7 @@ public class Frmbom : Form
 				{
 					TGV1.Nodes[0].ExpandAll();
 				}
-				StatusLabel1.Text = "共 " + Conversions.ToString(TGV1.RowCount) + " поз.";
+				StatusLabel1.Text = "Всего " + Conversions.ToString(TGV1.RowCount) + " поз.";
 				TGV1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 				List<int> list = new List<int>();
 				int num = TGV1.ColumnCount - 1;
@@ -1132,7 +1132,7 @@ public class Frmbom : Form
 					TGV1.Columns[num6].Width = list[num6];
 					num6++;
 				}
-				Text = "BOM报表 【" + code.SplitStr(CurrentNode.PathName, 1) + "】";
+				Text = "Спецификация 【" + code.SplitStr(CurrentNode.PathName, 1) + "】";
 				if (bomtype != 0)
 				{
 					if (bomtype == 1)
@@ -1155,7 +1155,7 @@ public class Frmbom : Form
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
 				MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -1266,7 +1266,7 @@ public class Frmbom : Form
 		ToolStripDropDownButton1.DropDownItems.Clear();
 		if (CConfigMng.Config.bomsettings.Count < 1)
 		{
-			ToolStripDropDownButton1.DropDownItems.Add("无可以模板");
+			ToolStripDropDownButton1.DropDownItems.Add("Нет доступного шаблона");
 			return;
 		}
 		checked
@@ -1309,7 +1309,7 @@ public class Frmbom : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1354,7 +1354,7 @@ public class Frmbom : Form
 	private void ToolStripButton5_Click(object sender, EventArgs e)
 	{
 		dgvPrinter.mainTitle = Text;
-		dgvPrinter.subTitle = "打印日期：" + Conversions.ToString(DateTime.Today);
+		dgvPrinter.subTitle = "Дата печати: " + Conversions.ToString(DateTime.Today);
 		dgvPrinter.ShowDialog();
 	}
 
@@ -1591,7 +1591,7 @@ public class Frmbom : Form
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
 				MessageBox.Show(ex2.Message);
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			treeGridNode = gridnodes.Add(array);
@@ -1743,7 +1743,7 @@ public class Frmbom : Form
 		SaveFileDialog saveFileDialog = new SaveFileDialog();
 		saveFileDialog.DefaultExt = ".txt";
 		saveFileDialog.FileName = code.SplitStr(CurrentNode.PathName, 1) + "-" + DateTime.Now.ToString("yyyyMMdd");
-		saveFileDialog.Filter = "文本文件（*txt）|*.txt";
+		saveFileDialog.Filter = "Текстовый файл (*.txt)|*.txt";
 		saveFileDialog.ValidateNames = true;
 		if (saveFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -1833,14 +1833,14 @@ public class Frmbom : Form
 						num6++;
 					}
 				}
-				StatusLabel1.Text = "共" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 				Process.Start(fileName);
 			}
 			catch (Exception ex3)
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1871,7 +1871,7 @@ public class Frmbom : Form
 		saveFileDialog.DefaultExt = ".xls";
 		saveFileDialog.FileName = code.SplitStr(CurrentNode.PathName, 1) + "-" + DateTime.Now.ToString("yyyyMMdd");
 		saveFileDialog.SupportMultiDottedExtensions = true;
-		saveFileDialog.Filter = "Excel 工作簿（*xlsx）|*.xlsx|Excel 97-2003工作簿（*xls）|*.xls";
+		saveFileDialog.Filter = "Книга Excel (*.xlsx)|*.xlsx|Книга Excel 97-2003 (*.xls)|*.xls";
 		saveFileDialog.ValidateNames = true;
 		if (saveFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -2037,7 +2037,7 @@ public class Frmbom : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2045,7 +2045,7 @@ public class Frmbom : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "共" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}

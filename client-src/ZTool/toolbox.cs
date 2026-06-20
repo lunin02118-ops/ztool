@@ -1020,7 +1020,7 @@ public class toolbox : Form
 		System.Windows.Forms.ToolStripMenuItem toolStripMenuItem9 = this.ToolStripMenuItem17;
 		size = new System.Drawing.Size(124, 22);
 		toolStripMenuItem9.Size = size;
-		this.ToolStripMenuItem17.Text = "零件";
+		this.ToolStripMenuItem17.Text = "Деталь";
 		this.ToolStripMenuItem18.Name = "ToolStripMenuItem18";
 		System.Windows.Forms.ToolStripMenuItem toolStripMenuItem10 = this.ToolStripMenuItem18;
 		size = new System.Drawing.Size(124, 22);
@@ -1287,10 +1287,10 @@ public class toolbox : Form
 			int num2 = (int)Math.Round(400.0 * dpixRatio);
 			int num3 = (int)Math.Round(200.0 * dpixRatio);
 			int num4 = (int)Math.Round(200.0 * dpixRatio);
-			LV1.Columns.Add("名称", num, HorizontalAlignment.Left);
+			LV1.Columns.Add("Название", num, HorizontalAlignment.Left);
 			LV1.Columns.Add("Путь", num2, HorizontalAlignment.Left);
-			LV1.Columns.Add("提示", num3, HorizontalAlignment.Left);
-			LV1.Columns.Add("标签", num4, HorizontalAlignment.Left);
+			LV1.Columns.Add("Сообщение", num3, HorizontalAlignment.Left);
+			LV1.Columns.Add("Метка", num4, HorizontalAlignment.Left);
 		}
 	}
 
@@ -1393,7 +1393,7 @@ public class toolbox : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "文件(*.*|*.*";
+		openFileDialog.Filter = "Файлы (*.*)|*.*";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -1521,7 +1521,7 @@ public class toolbox : Form
 		{
 			if (!Directory.Exists(path))
 			{
-				MessageBox.Show(path + "не существует!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(path + "не существует!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				return;
 			}
 			flag = false;
@@ -1638,7 +1638,7 @@ public class toolbox : Form
 				LV1.AddData(list);
 				if (LV1.Items.Count > 0)
 				{
-					ToolStripStatusLabel1.Text = "共" + Conversions.ToString(LV1.Items.Count) + "поз.";
+					ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(LV1.Items.Count) + "поз.";
 				}
 				else
 				{
@@ -1784,7 +1784,7 @@ public class toolbox : Form
 			LV1.AddData(list);
 			if (LV1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(LV1.Items.Count) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(LV1.Items.Count) + "поз.";
 			}
 			else
 			{

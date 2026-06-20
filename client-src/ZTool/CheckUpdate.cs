@@ -351,7 +351,7 @@ public class CheckUpdate : Form
 		size = new System.Drawing.Size(66, 27);
 		button2.Size = size;
 		this.Button2.TabIndex = 2;
-		this.Button2.Text = "下载更新";
+		this.Button2.Text = "Загрузить обновление";
 		this.Button2.UseVisualStyleBackColor = true;
 		this.Label1.Dock = System.Windows.Forms.DockStyle.Top;
 		this.Label1.Font = new System.Drawing.Font("楷体", 21.75f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
@@ -522,15 +522,15 @@ public class CheckUpdate : Form
 		{
 			return;
 		}
-		if ((Operators.CompareString(Button2.Text, "安装更新", TextCompare: false) == 0 && Operators.CompareString(RemoteInf.md5, GetHash(updatezip), TextCompare: false) == 0) ? true : false)
+		if ((Operators.CompareString(Button2.Text, "Установить обновление", TextCompare: false) == 0 && Operators.CompareString(RemoteInf.md5, GetHash(updatezip), TextCompare: false) == 0) ? true : false)
 		{
-			string text = "是否立即安装更新？\n注：安装前会关闭主程序和SolidWorks进程，请注意保存！";
+			string text = "Установить обновление сейчас?\nВнимание: перед установкой будут закрыты основная программа и процессы SolidWorks, сохраните данные!";
 			if (MessageBox.Show(text, "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 			{
 				openupdater();
 			}
 		}
-		else if (Operators.CompareString(Button2.Text, "下载更新", TextCompare: false) == 0)
+		else if (Operators.CompareString(Button2.Text, "Загрузить обновление", TextCompare: false) == 0)
 		{
 			updateprocess();
 		}
@@ -636,7 +636,7 @@ public class CheckUpdate : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			Label2.Text = "下载失败：" + ex2.Message;
+			Label2.Text = "Ошибка загрузки: " + ex2.Message;
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -663,7 +663,7 @@ public class CheckUpdate : Form
 		if (!e.Cancelled && Operators.CompareString(GetHash(updatezip), RemoteInf.md5, TextCompare: false) == 0)
 		{
 			ControlExtensions.InvokeOnUiThreadIfRequired(this, _Lambda_0024__59);
-			string text = "下载完毕！是否立即安装更新？\n注：安装前会关闭主程序和SolidWorks进程，请注意保存数据！";
+			string text = "Загрузка завершена! Установить обновление сейчас?\nВнимание: перед установкой будут закрыты основная программа и процессы SolidWorks, сохраните данные!";
 			if (MessageBox.Show(text, "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 			{
 				openupdater();
@@ -789,7 +789,7 @@ public class CheckUpdate : Form
 			}
 			else
 			{
-				text = "没有找到更新包！";
+				text = "Пакет обновления не найден!";
 			}
 		}
 		catch (Exception ex)
@@ -821,26 +821,26 @@ public class CheckUpdate : Form
 	private void _Lambda_0024__56()
 	{
 		Label1.Text = "Найдена новая версия!\r\n" + RemoteInf.latestversion;
-		TextBox1.AppendText("发布日期：" + RemoteInf.changetime + "\r\n");
+		TextBox1.AppendText("Дата выпуска: " + RemoteInf.changetime + "\r\n");
 		TextBox1.AppendText("\r\n");
 		TextBox1.AppendText("Что нового:\r\n");
 		TextBox1.AppendText(RemoteInf.changelog);
 		TextBox1.Visible = true;
 		Button2.Enabled = true;
-		Button2.Text = "下载更新";
+		Button2.Text = "Загрузить обновление";
 	}
 
 	[SpecialName]
 	[CompilerGenerated]
 	private void _Lambda_0024__57()
 	{
-		Button2.Text = "安装更新";
+		Button2.Text = "Установить обновление";
 	}
 
 	[SpecialName]
 	[CompilerGenerated]
 	private void _Lambda_0024__59()
 	{
-		Button2.Text = "安装更新";
+		Button2.Text = "Установить обновление";
 	}
 }

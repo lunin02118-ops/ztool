@@ -867,7 +867,7 @@ public class FrmPrintoptions : Form
 		size = new System.Drawing.Size(67, 27);
 		oK_Button2.Size = size;
 		this.OK_Button.TabIndex = 0;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.Cancel_Button.Anchor = System.Windows.Forms.AnchorStyles.None;
 		this.Cancel_Button.AutoSize = true;
 		this.Cancel_Button.DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -1461,7 +1461,7 @@ public class FrmPrintoptions : Form
 					Interaction.MsgBox("Нет элементов для печати", MsgBoxStyle.Information, "Информация");
 					return;
 				}
-				MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount()) + "файлов";
+				MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount()) + "файлов";
 				MyProject.Forms.FrmPrintlist.ListView1.MultiSelect = false;
 				MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[0]].Selected = true;
 				MyProject.Forms.FrmPrintlist.ToolStripProgressBar1.Maximum = MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount();
@@ -1480,7 +1480,7 @@ public class FrmPrintoptions : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1798,7 +1798,7 @@ public class FrmPrintoptions : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				code.swApp = null;
 				er = true;
@@ -1824,7 +1824,7 @@ public class FrmPrintoptions : Form
 					MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[e.ProgressPercentage]].Selected = true;
 					MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[e.ProgressPercentage]].EnsureVisible();
 					MyProject.Forms.FrmPrintlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "剩余" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount() - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount() - 1 - e.ProgressPercentage) + "файлов";
 					CallInProgress = false;
 				}
 			}
@@ -1868,7 +1868,7 @@ public class FrmPrintoptions : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1915,7 +1915,7 @@ public class FrmPrintoptions : Form
 			foreach (object item2 in (IEnumerable)NewLateBinding.LateGet(objectValue2, null, "Verbs", new object[0], null, null, null))
 			{
 				object objectValue3 = RuntimeHelpers.GetObjectValue(item2);
-				if (Operators.ConditionalCompareObjectEqual(NewLateBinding.LateGet(objectValue3, null, "Name", new object[0], null, null, null), "打印首选项(&E)...", TextCompare: false))
+				if (Operators.ConditionalCompareObjectEqual(NewLateBinding.LateGet(objectValue3, null, "Name", new object[0], null, null, null), "Параметры печати (&E)...", TextCompare: false))
 				{
 					NewLateBinding.LateCall(objectValue3, null, "doit", new object[0], null, null, null, IgnoreReturn: true);
 				}

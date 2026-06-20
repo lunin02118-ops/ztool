@@ -238,7 +238,7 @@ public class MySWDM
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			err = ex2.Message;
 			ProjectData.ClearProjectError();
 		}
@@ -252,7 +252,7 @@ public class MySWDM
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "SOLIDWORKS文件(*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM|SOLIDWORKS零件(*.SLDPRT)|*.SLDPRT|SOLIDWORKS装配体(*.SLDASM)|*.SLDASM";
+		openFileDialog.Filter = "Файлы SOLIDWORKS (*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM|Деталь SOLIDWORKS (*.SLDPRT)|*.SLDPRT|Сборка SOLIDWORKS (*.SLDASM)|*.SLDASM";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -597,7 +597,7 @@ public class MySWDM
 			object objectValue = RuntimeHelpers.GetObjectValue(swDMConfiguration.GetComponents());
 			using (sw)
 			{
-				sw.WriteLine("层级\tpathname\tcfgname\tExcludeFromBOM\tIsEnvelope\tIsVirtual\tSelectName");
+				sw.WriteLine("Уровень\tpathname\tcfgname\tExcludeFromBOM\tIsEnvelope\tIsVirtual\tSelectName");
 				sw.WriteLine(Conversions.ToString(0) + "\t" + sDocFileName + "\t" + activeConfigurationName + "\t\t\t\t");
 				int num3 = Information.UBound((Array)objectValue);
 				int num4 = 0;

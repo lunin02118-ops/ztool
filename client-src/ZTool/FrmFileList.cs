@@ -858,7 +858,7 @@ public class FrmFileList : Form
 				num++;
 				if ((code.TMode && num > 10) ? true : false)
 				{
-					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				ListViewItem listViewItem = new ListViewItem();
@@ -940,7 +940,7 @@ public class FrmFileList : Form
 				loadview(list);
 				if (ListView1.Items.Count > 0)
 				{
-					Label1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+					Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 				}
 				else
 				{
@@ -972,7 +972,7 @@ public class FrmFileList : Form
 		ListView1.DelSelectItems();
 		if (ListView1.Items.Count > 0)
 		{
-			Label1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+			Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 		}
 		else
 		{
@@ -1111,7 +1111,7 @@ public class FrmFileList : Form
 			OpenFileDialog openFileDialog = new OpenFileDialog();
 			openFileDialog.Multiselect = true;
 			openFileDialog.SupportMultiDottedExtensions = true;
-			openFileDialog.Filter = "零件(*.SLDPRT)|*.SLDPRT|装配体(*.SLDASM)|*.SLDASM|SOLIDWORKS文件(*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM";
+			openFileDialog.Filter = "Деталь (*.SLDPRT)|*.SLDPRT|Сборка (*.SLDASM)|*.SLDASM|Файлы SOLIDWORKS (*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM";
 			openFileDialog.FilterIndex = 1;
 			if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 			{
@@ -1138,7 +1138,7 @@ public class FrmFileList : Form
 				loadview(list);
 				if (ListView1.Items.Count > 0)
 				{
-					Label1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+					Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 				}
 				else
 				{
@@ -1150,7 +1150,7 @@ public class FrmFileList : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}

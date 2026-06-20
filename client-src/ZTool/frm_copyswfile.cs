@@ -939,7 +939,7 @@ public class frm_copyswfile : Form
 		{
 			if (code.TMode)
 			{
-				MessageBox.Show(this, "Не поддерживается в пробной версии!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "Не поддерживается в пробной версии!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 			else
 			{
@@ -956,7 +956,7 @@ public class frm_copyswfile : Form
 					}
 					if (!Directory.Exists(c_folder.Text))
 					{
-						if (MessageBox.Show(this, "路径 \"" + c_folder.Text + "\" не существует, создать?", "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+						if (MessageBox.Show(this, "Путь \"" + c_folder.Text + "\" не существует, создать?", "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
 						{
 							return;
 						}
@@ -1213,7 +1213,7 @@ public class frm_copyswfile : Form
 					closure_0024__._0024VB_0024Local_i++;
 				}
 				stopwatch.Stop();
-				string text3 = Conversions.ToString(Interaction.IIf((code.Dostop || Abort) ? true : false, "备份已取消", "备份完成，耗时" + Conversions.ToString((double)stopwatch.ElapsedMilliseconds / 1000.0) + "秒，共" + Conversions.ToString(filelist.Count) + "поз."));
+				string text3 = Conversions.ToString(Interaction.IIf((code.Dostop || Abort) ? true : false, "Резервное копирование отменено", "Резервное копирование завершено, затрачено" + Conversions.ToString((double)stopwatch.ElapsedMilliseconds / 1000.0) + "сек, всего" + Conversions.ToString(filelist.Count) + "поз."));
 				MessageBox.Show(this, text3, "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 			catch (Exception ex3)
@@ -1260,7 +1260,7 @@ public class frm_copyswfile : Form
 		MyProject.Forms.Frmmain.ToolStripProgressBar1.Visible = false;
 		MyProject.Forms.Frmmain.IsStop.Visible = false;
 		MyProject.Forms.Frmmain.ToolStripProgressBar1.Value = 0;
-		MyProject.Forms.Frmmain.StatusLabel1.Text = "当前共" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+		MyProject.Forms.Frmmain.StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 	}
 
 	private void Cancel_Button_Click(object sender, EventArgs e)
@@ -1340,7 +1340,7 @@ public class frm_copyswfile : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -1361,7 +1361,7 @@ public class frm_copyswfile : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 		c_folder.Enabled = c_usefolder.Checked;

@@ -573,7 +573,7 @@ public class boxset : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "所有文件（*.*）|*.*";
+		openFileDialog.Filter = "Все файлы (*.*)|*.*";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			string fileName = openFileDialog.FileName;

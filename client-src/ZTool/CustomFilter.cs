@@ -73,7 +73,7 @@ internal class CustomFilter
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -160,7 +160,7 @@ internal class CustomFilter
 										}
 										else if ((array[0].StartsWith("<") && array[0].EndsWith(">") && num9 == MyProject.Forms.Frmmain.Col_Extname.Index) ? true : false)
 										{
-											if (Operators.CompareString(array[0].TrimStart('<').TrimEnd('>'), "文件类型", TextCompare: false) == 0)
+											if (Operators.CompareString(array[0].TrimStart('<').TrimEnd('>'), "Тип файла", TextCompare: false) == 0)
 											{
 												flag3 = true;
 											}
@@ -171,7 +171,7 @@ internal class CustomFilter
 											{
 												goto IL_0827;
 											}
-											if (Operators.CompareString(array[0].TrimStart('<').TrimEnd('>'), "有无工程图", TextCompare: false) == 0)
+											if (Operators.CompareString(array[0].TrimStart('<').TrimEnd('>'), "Наличие чертежа", TextCompare: false) == 0)
 											{
 												flag3 = true;
 											}
@@ -191,49 +191,49 @@ internal class CustomFilter
 												}
 												switch (array[1])
 												{
-												case "等于":
+												case "Равно":
 													if (text.Trim().Equals(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
 													}
 													break;
-												case "不等于":
+												case "Не равно":
 													if (!text.Trim().Equals(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
 													}
 													break;
-												case "包含":
+												case "Содержит":
 													if (((Operators.CompareString(array2[num12].Trim(), "", TextCompare: false) != 0 && text.Trim().ToUpper().Contains(array2[num12].Trim().ToUpper())) || (Operators.CompareString(array2[num12].Trim(), "", TextCompare: false) == 0 && Operators.CompareString(text.Trim(), "", TextCompare: false) == 0)) ? true : false)
 													{
 														flag2 = true;
 													}
 													break;
-												case "不包含":
+												case "Не содержит":
 													if (((Operators.CompareString(array2[num12].Trim(), "", TextCompare: false) != 0 && !text.Trim().ToUpper().Contains(array2[num12].Trim().ToUpper())) || (Operators.CompareString(array2[num12].Trim(), "", TextCompare: false) == 0 && Operators.CompareString(text.Trim(), "", TextCompare: false) != 0)) ? true : false)
 													{
 														flag2 = true;
 													}
 													break;
-												case "开头是":
+												case "Начинается с":
 													if (text.Trim().StartsWith(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
 													}
 													break;
-												case "开头不是":
+												case "Не начинается с":
 													if (!text.Trim().StartsWith(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
 													}
 													break;
-												case "结尾是":
+												case "Заканчивается на":
 													if (text.Trim().EndsWith(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
 													}
 													break;
-												case "结尾不是":
+												case "Не заканчивается на":
 													if (!text.Trim().EndsWith(array2[num12].Trim(), StringComparison.OrdinalIgnoreCase))
 													{
 														flag2 = true;
@@ -276,7 +276,7 @@ internal class CustomFilter
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}

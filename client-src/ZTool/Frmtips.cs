@@ -443,11 +443,11 @@ public class Frmtips : Form
 			int num5 = (int)Math.Round(100.0 * dpixRatio);
 			int num6 = (int)Math.Round(400.0 * dpixRatio);
 			ListView1.Columns.Add("", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("时间", num2, HorizontalAlignment.Left);
-			ListView1.Columns.Add("行", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("说明", num4, HorizontalAlignment.Left);
-			ListView1.Columns.Add("操作", num5, HorizontalAlignment.Left);
-			ListView1.Columns.Add("名称", num6, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Время", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Строка", num3, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Описание", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Действие", num5, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Название", num6, HorizontalAlignment.Left);
 			loadview();
 		}
 	}

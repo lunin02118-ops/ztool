@@ -1974,7 +1974,7 @@ public class Frmexportbom : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -2141,7 +2141,7 @@ public class Frmexportbom : Form
 	private void add_Click(object sender, EventArgs e)
 	{
 		_Closure_0024__32 closure_0024__ = new _Closure_0024__32();
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("输入方案名称");
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя схемы");
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) == 0)
 		{
 			return;
@@ -2190,7 +2190,7 @@ public class Frmexportbom : Form
 		{
 			return;
 		}
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("输入规则名称", "", closure_0024__._0024VB_0024Local_RuleName);
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя правила", "", closure_0024__._0024VB_0024Local_RuleName);
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) != 0 && Operators.CompareString(closure_0024__._0024VB_0024Local_str, closure_0024__._0024VB_0024Local_RuleName, TextCompare: false) != 0 && 0 == 0)
 		{
 			int num2 = CConfigMng.Config.bomsettings.FindIndex(closure_0024__._Lambda_0024__70);
@@ -2288,8 +2288,8 @@ public class Frmexportbom : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "BOM表模板");
-		openFileDialog.Filter = "BOM模板文件（*.xls;*.xlsx）|*.xls;*.xlsx";
+		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Шаблон спецификации");
+		openFileDialog.Filter = "Файл шаблона спецификации (*.xls;*.xlsx)|*.xls;*.xlsx";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			ComboBox1.Text = openFileDialog.FileName;
@@ -2337,8 +2337,8 @@ public class Frmexportbom : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show("打开帮助文件出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show("Ошибка при открытии файла справки:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}

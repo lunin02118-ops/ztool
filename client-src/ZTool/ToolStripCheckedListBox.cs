@@ -96,7 +96,7 @@ public class ToolStripCheckedListBox : ToolStripControlHost
 			CheckedListBoxControl.ThreeDCheckBoxes = true;
 			CheckedListBoxControl.CheckOnClick = true;
 			CheckedListBoxControl.SelectionMode = SelectionMode.One;
-			CheckedListBoxControl.Items.Add("(全选)", isChecked: true);
+			CheckedListBoxControl.Items.Add("(Выбрать все)", isChecked: true);
 			CheckedListBoxControl.HorizontalScrollbar = true;
 		}
 	}

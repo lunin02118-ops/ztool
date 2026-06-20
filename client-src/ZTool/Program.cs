@@ -94,7 +94,7 @@ internal sealed class Program
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			string str = $"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}\r\n";
+			string str = $"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}\r\n";
 			logopathlist.WriteLog(str);
 			ProjectData.ClearProjectError();
 		}
@@ -113,7 +113,7 @@ internal sealed class Program
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			string str2 = $"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}\r\n";
+			string str2 = $"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}\r\n";
 			logopathlist.WriteLog(str2);
 			Environment.Exit(0);
 			ProjectData.ClearProjectError();
@@ -176,7 +176,7 @@ internal sealed class Program
 	{
 		string text = "";
 		Exception exception = e.Exception;
-		text = ((exception == null) ? $"Ошибка потока приложения:{e}" : $"异常类型：{exception.GetType().Name}\r\n异常消息：{exception.Message}\r\n异常信息：{exception.StackTrace}");
+		text = ((exception == null) ? $"Ошибка потока приложения:{e}" : $"Тип исключения: {exception.GetType().Name}\r\nСообщение: {exception.Message}\r\nИнформация: {exception.StackTrace}");
 		logopathlist.WriteLog(text);
 		MessageBox.Show(exception.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 	}

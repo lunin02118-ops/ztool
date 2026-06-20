@@ -848,7 +848,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(79, 27);
 		oK_Button3.Size = size;
 		this.OK_Button.TabIndex = 1;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.Undo_Button.Anchor = System.Windows.Forms.AnchorStyles.None;
 		this.Undo_Button.AutoSize = true;
 		System.Windows.Forms.Button undo_Button = this.Undo_Button;
@@ -908,7 +908,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(196, 23);
 		textBox6.Size = size;
 		this.TextBox2.TabIndex = 16;
-		this.TextBox2.Text = "$图号$-$零件名称$-{001}";
+		this.TextBox2.Text = "$Номер$-$ИмяДетали$-{001}";
 		this.Label3.AutoSize = true;
 		System.Windows.Forms.Label label5 = this.Label3;
 		location = new System.Drawing.Point(20, 80);
@@ -931,7 +931,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(181, 85);
 		label8.Size = size;
 		this.Label5.TabIndex = 15;
-		this.Label5.Text = "Описание:\r\n{ } — начальное значение порядкового номера;\r\n$列标题$ — вычисленное значение столбца свойства\r\n%列标题% — выражение столбца свойства\r\n<列标题> — значение из другого столбца\r\n";
+		this.Label5.Text = "Описание:\r\n{ } — начальное значение порядкового номера;\r\n$ЗаголовокСтолбца$ — вычисленное значение столбца свойства\r\n%ЗаголовокСтолбца% — выражение столбца свойства\r\n<ЗаголовокСтолбца> — значение из другого столбца\r\n";
 		this.GroupBox1.BackColor = System.Drawing.SystemColors.Control;
 		this.GroupBox1.Controls.Add(this.Label9);
 		this.GroupBox1.Controls.Add(this.Label7);
@@ -977,7 +977,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(109, 17);
 		label12.Size = size;
 		this.Label7.TabIndex = 17;
-		this.Label7.Text = "ID010-轴承座-010";
+		this.Label7.Text = "ID010-Корпус подшипника-010";
 		this.Label4.AutoSize = true;
 		this.Label4.ForeColor = System.Drawing.Color.Blue;
 		System.Windows.Forms.Label label13 = this.Label4;
@@ -988,7 +988,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(109, 17);
 		label14.Size = size;
 		this.Label4.TabIndex = 15;
-		this.Label4.Text = "ID001-轴承座-001";
+		this.Label4.Text = "ID001-Корпус подшипника-001";
 		this.Label6.AutoSize = true;
 		System.Windows.Forms.Label label15 = this.Label6;
 		location = new System.Drawing.Point(391, 8);
@@ -1462,7 +1462,7 @@ public class FrmRename : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1717,7 +1717,7 @@ public class FrmRename : Form
 							if ((num2 != MyProject.Forms.Frmmain.Col_Preview.Index && num2 != MyProject.Forms.Frmmain.Col_Checkbox.Index && num2 != MyProject.Forms.Frmmain.Col_Extname.Index && num2 != MyProject.Forms.Frmmain.Col_Drw.Index && num2 != MyProject.Forms.Frmmain.Col_CreationTime.Index && num2 != MyProject.Forms.Frmmain.Col_SaveTime.Index && num2 != MyProject.Forms.Frmmain.Col_bound.Index && num2 != MyProject.Forms.Frmmain.Col_Path.Index && num2 != MyProject.Forms.Frmmain.Col_NewFolder.Index) || 1 == 0)
 							{
 								string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num2].HeaderText;
-								headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropVal_") ? (headerText + " (属性表达式)") : ((!MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropResolvedVal_")) ? ("<" + headerText + ">") : (headerText + " (属性值)")));
+								headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropVal_") ? (headerText + " (выражение свойства)") : ((!MyProject.Forms.Frmmain.DGV1.Columns[num2].Name.Contains("PropResolvedVal_")) ? ("<" + headerText + ">") : (headerText + " (значение свойства)")));
 								contextMenuStrip.Items.Add(headerText);
 								vallist.Add(headerText);
 							}
@@ -1757,14 +1757,14 @@ public class FrmRename : Form
 		{
 			string text = TextBox1.Text;
 			string text2 = ((ToolStripMenuItem)sender).Text;
-			if (text2.EndsWith(" (属性表达式)"))
+			if (text2.EndsWith(" (выражение свойства)"))
 			{
-				text2 = text2.Substring(0, text2.LastIndexOf(" (属性表达式)"));
+				text2 = text2.Substring(0, text2.LastIndexOf(" (выражение свойства)"));
 				text2 = "%" + text2 + "%";
 			}
-			else if (text2.EndsWith(" (属性值)"))
+			else if (text2.EndsWith(" (значение свойства)"))
 			{
-				text2 = text2.Substring(0, text2.LastIndexOf(" (属性值)"));
+				text2 = text2.Substring(0, text2.LastIndexOf(" (значение свойства)"));
 				text2 = "$" + text2 + "$";
 			}
 			TextBox1.Focus();

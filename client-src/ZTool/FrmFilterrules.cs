@@ -828,7 +828,7 @@ public class FrmFilterrules : Form
 		this.ruler_and.TabIndex = 29;
 		this.ruler_and.Text = "И";
 		this.ruler_and.UseVisualStyleBackColor = true;
-		this.Column1.HeaderText = "名称";
+		this.Column1.HeaderText = "Название";
 		this.Column1.MinimumWidth = 10;
 		this.Column1.Name = "Column1";
 		this.Column1.ReadOnly = true;
@@ -836,8 +836,8 @@ public class FrmFilterrules : Form
 		this.Column3.DisplayStyle = System.Windows.Forms.DataGridViewComboBoxDisplayStyle.ComboBox;
 		this.Column3.FillWeight = 50f;
 		this.Column3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.Column3.HeaderText = "类型";
-		this.Column3.Items.AddRange("等于", "不等于", "包含", "不包含", "开头是", "开头不是", "结尾是", "结尾不是");
+		this.Column3.HeaderText = "Тип";
+		this.Column3.Items.AddRange("Равно", "Не равно", "Содержит", "Не содержит", "Начинается с", "Не начинается с", "Заканчивается на", "Не заканчивается на");
 		this.Column3.MinimumWidth = 90;
 		this.Column3.Name = "Column3";
 		this.Column3.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -947,7 +947,7 @@ public class FrmFilterrules : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1045,7 +1045,7 @@ public class FrmFilterrules : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1067,7 +1067,7 @@ public class FrmFilterrules : Form
 						if (!((num6 == MyProject.Forms.Frmmain.Col_Preview.Index) | (num6 == MyProject.Forms.Frmmain.Col_Number.Index) | (num6 == MyProject.Forms.Frmmain.Col_Checkbox.Index)))
 						{
 							string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num6].HeaderText;
-							headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num6].Name.Contains("PropVal_") ? (headerText + " (属性表达式)") : (MyProject.Forms.Frmmain.DGV1.Columns[num6].Name.Contains("PropResolvedVal_") ? (headerText + " (属性值)") : ((num6 == MyProject.Forms.Frmmain.Col_Extname.Index) ? "<文件类型>" : ((num6 != MyProject.Forms.Frmmain.Col_Drw.Index) ? ("<" + headerText + ">") : "<有无工程图>"))));
+							headerText = (MyProject.Forms.Frmmain.DGV1.Columns[num6].Name.Contains("PropVal_") ? (headerText + " (выражение свойства)") : (MyProject.Forms.Frmmain.DGV1.Columns[num6].Name.Contains("PropResolvedVal_") ? (headerText + " (значение свойства)") : ((num6 == MyProject.Forms.Frmmain.Col_Extname.Index) ? "<ТипФайла>" : ((num6 != MyProject.Forms.Frmmain.Col_Drw.Index) ? ("<" + headerText + ">") : "<НаличиеЧертежа>"))));
 							ComboBox1.Items.Add(headerText);
 						}
 						num6++;
@@ -1215,7 +1215,7 @@ public class FrmFilterrules : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1223,7 +1223,7 @@ public class FrmFilterrules : Form
 
 	private void add1_Click(object sender, EventArgs e)
 	{
-		string text = Interaction.InputBox("输入规则名称");
+		string text = Interaction.InputBox("Введите имя правила");
 		if (Operators.CompareString(text, "", TextCompare: false) == 0)
 		{
 			return;
@@ -1328,7 +1328,7 @@ public class FrmFilterrules : Form
 			MessageBox.Show(this, "Можно выбрать только один элемент", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			return;
 		}
-		string text = Interaction.InputBox("输入规则名称", "", RuleName);
+		string text = Interaction.InputBox("Введите имя правила", "", RuleName);
 		if ((Operators.CompareString(text, "", TextCompare: false) == 0) | (Operators.CompareString(text, RuleName, TextCompare: false) == 0))
 		{
 			return;
@@ -1457,14 +1457,14 @@ public class FrmFilterrules : Form
 		try
 		{
 			string text = ComboBox1.Text;
-			if (text.EndsWith(" (属性表达式)"))
+			if (text.EndsWith(" (выражение свойства)"))
 			{
-				text = text.Substring(0, text.LastIndexOf(" (属性表达式)"));
+				text = text.Substring(0, text.LastIndexOf(" (выражение свойства)"));
 				text = "%" + text + "%";
 			}
-			else if (text.EndsWith(" (属性值)"))
+			else if (text.EndsWith(" (значение свойства)"))
 			{
-				text = text.Substring(0, text.LastIndexOf(" (属性值)"));
+				text = text.Substring(0, text.LastIndexOf(" (значение свойства)"));
 				text = "$" + text + "$";
 			}
 			DGV1.CurrentCell.Value = text;
@@ -1506,7 +1506,7 @@ public class FrmFilterrules : Form
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
 			ComboBox1.Visible = false;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}

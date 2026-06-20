@@ -50,11 +50,11 @@ internal class HardDisk
 	{
 		return (int)Environment.OSVersion.Platform switch
 		{
-			1 => throw new NotSupportedException("不支持Win9x."), 
+			1 => throw new NotSupportedException("Win9x не поддерживается."), 
 			2 => GetHddInfoNT(driveIndex), 
-			0 => throw new NotSupportedException("不支持Win32s."), 
-			3 => throw new NotSupportedException("不支持WinCE."), 
-			_ => throw new NotSupportedException("不知道的操作系统."), 
+			0 => throw new NotSupportedException("Win32s не поддерживается."), 
+			3 => throw new NotSupportedException("WinCE не поддерживается."), 
+			_ => throw new NotSupportedException("Неизвестная операционная система."), 
 		};
 	}
 

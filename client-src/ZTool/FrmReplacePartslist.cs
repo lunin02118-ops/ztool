@@ -179,7 +179,7 @@ public class FrmReplacePartslist : Form
 							}
 						}
 					}
-					_0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_B8_1A._0024VB_0024Me.OK_Button.Text = "开始";
+					_0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_B8_1A._0024VB_0024Me.OK_Button.Text = "Старт";
 					_0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_B8_1A._0024VB_0024Me.ToolStripProgressBar1.Value = 0;
 					_0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_B8_1A._0024VB_0024Me.ToolStripProgressBar1.Visible = false;
 					_0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_B8_1A._0024VB_0024Me.Abort = true;
@@ -2019,7 +2019,7 @@ public class FrmReplacePartslist : Form
 		System.Windows.Forms.ToolStripButton oK_Button2 = this.OK_Button;
 		size = new System.Drawing.Size(52, 30);
 		oK_Button2.Size = size;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.GroupBox4.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 		this.GroupBox4.Controls.Add(this.RadioButton3);
 		this.GroupBox4.Controls.Add(this.RadioButton4);
@@ -2272,7 +2272,7 @@ public class FrmReplacePartslist : Form
 		dpixRatio = 1.0;
 		Abort = true;
 		selrow = -1;
-		arr = new string[4] { "Открыть в SolidWorks", "Открыть в папке", "清除", "Изменить" };
+		arr = new string[4] { "Открыть в SolidWorks", "Открыть в папке", "Очистить", "Изменить" };
 		InitializeComponent();
 		if (!code.HasShell("笨小孩。。。"))
 		{
@@ -2328,7 +2328,7 @@ public class FrmReplacePartslist : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 		if (Application.OpenForms.Count == 0)
@@ -2385,10 +2385,10 @@ public class FrmReplacePartslist : Form
 			int num4 = (int)Math.Round(120.0 * dpixRatio);
 			int num5 = (int)Math.Round(50.0 * dpixRatio);
 			ListView1.Columns.Add("Номер", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("参考文件", num2, HorizontalAlignment.Left);
-			ListView1.Columns.Add("替换为", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("备注", num4, HorizontalAlignment.Left);
-			ListView1.Columns.Add("状态", num5, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Ссылочный файл", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Заменить на", num3, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Примечание", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Статус", num5, HorizontalAlignment.Left);
 			ListView2.View = View.Details;
 			ListView2.AllowDrop = true;
 			ListView2.GridLines = true;
@@ -2399,7 +2399,7 @@ public class FrmReplacePartslist : Form
 			int num7 = (int)Math.Round(250.0 * dpixRatio);
 			int num8 = (int)Math.Round(200.0 * dpixRatio);
 			ListView2.Columns.Add("Номер", num6, HorizontalAlignment.Left);
-			ListView2.Columns.Add("文件名", num7, HorizontalAlignment.Left);
+			ListView2.Columns.Add("Имя файла", num7, HorizontalAlignment.Left);
 			ListView2.Columns.Add("Путь", num8, HorizontalAlignment.Left);
 			try
 			{
@@ -2417,7 +2417,7 @@ public class FrmReplacePartslist : Form
 			{
 				ProjectData.SetProjectError(ex5);
 				Exception ex6 = ex5;
-				logopathlist.WriteLog($"异常类型：{ex6.GetType().Name}\r\n异常消息：{ex6.Message}\r\n异常信息：{ex6.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex6.GetType().Name}\r\nСообщение: {ex6.Message}\r\nИнформация: {ex6.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			ToolStripProgressBar1.Value = 0;
@@ -2449,16 +2449,16 @@ public class FrmReplacePartslist : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
-		if (Operators.CompareString(OK_Button.Text, "停止", TextCompare: false) == 0)
+		if (Operators.CompareString(OK_Button.Text, "Стоп", TextCompare: false) == 0)
 		{
 			Abort = true;
 		}
 		else
 		{
-			if (Operators.CompareString(OK_Button.Text, "开始", TextCompare: false) != 0 || lvi1.Count < 1)
+			if (Operators.CompareString(OK_Button.Text, "Старт", TextCompare: false) != 0 || lvi1.Count < 1)
 			{
 				return;
 			}
@@ -2496,7 +2496,7 @@ public class FrmReplacePartslist : Form
 			}
 			Abort = false;
 			code.EnablePreview = false;
-			OK_Button.Text = "停止";
+			OK_Button.Text = "Стоп";
 			mythread = new Thread(ReplaceReference);
 			mythread.Name = "ReplaceReference";
 			mythread.Start();
@@ -2668,7 +2668,7 @@ public class FrmReplacePartslist : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2744,7 +2744,7 @@ public class FrmReplacePartslist : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+		openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -2771,7 +2771,7 @@ public class FrmReplacePartslist : Form
 			loadview(list);
 			if (ListView2.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -2807,7 +2807,7 @@ public class FrmReplacePartslist : Form
 			loadview(list);
 			if (ListView2.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -2840,7 +2840,7 @@ public class FrmReplacePartslist : Form
 				loadview(list);
 				if (ListView2.Items.Count > 0)
 				{
-					ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+					ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
 				}
 				else
 				{
@@ -2882,7 +2882,7 @@ public class FrmReplacePartslist : Form
 		loadview(list);
 		if (ListView2.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
 		}
 		else
 		{
@@ -2998,7 +2998,7 @@ public class FrmReplacePartslist : Form
 		ListView2.DelSpecificItems(selrow);
 		if (ListView2.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
 		}
 		else
 		{
@@ -3036,12 +3036,12 @@ public class FrmReplacePartslist : Form
 		{
 			if (Strings.Len(Replacereference_folderpath.Text) == 0)
 			{
-				MessageBox.Show(this, "Сначала укажите путь ссылок", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "Сначала укажите путь ссылок", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				return;
 			}
 			if (!Directory.Exists(Replacereference_folderpath.Text))
 			{
-				MessageBox.Show(this, "参考路径 " + Replacereference_folderpath.Text + " не существует, задайте заново", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show(this, "Ссылочный путь " + Replacereference_folderpath.Text + " не существует, задайте заново", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				return;
 			}
 			ToolStripStatusLabel1.Text = "Загрузка данных, подождите...";
@@ -3050,7 +3050,7 @@ public class FrmReplacePartslist : Form
 			getfileformsw();
 			lookup();
 			code.T.Stop();
-			ToolStripStatusLabel1.Text = "加载完成,耗时 " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " с";
+			ToolStripStatusLabel1.Text = "Загрузка завершена, затрачено " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " с";
 		}
 	}
 
@@ -3176,7 +3176,7 @@ public class FrmReplacePartslist : Form
 					lvi1[num2].SubItems[2].Text = list[0];
 					if (list.Count > 1)
 					{
-						lvi1[num2].SubItems[3].Text = "有" + Conversions.ToString(list.Count) + "файлов с тем же именем";
+						lvi1[num2].SubItems[3].Text = "Есть" + Conversions.ToString(list.Count) + "файлов с тем же именем";
 						lvi1[num2].SubItems[3].ForeColor = Color.Blue;
 						lvi1[num2].UseItemStyleForSubItems = false;
 					}
@@ -3359,7 +3359,7 @@ public class FrmReplacePartslist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "零件(*.SLDPRT)|*.SLDPRT|装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Деталь (*.SLDPRT)|*.SLDPRT|Сборка (*.SLDASM)|*.SLDASM";
 				if (openFileDialog.ShowDialog() == DialogResult.OK)
 				{
 					ListView1.Items[currow].SubItems[curcol].Text = openFileDialog.FileName;

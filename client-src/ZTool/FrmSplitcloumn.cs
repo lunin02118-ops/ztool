@@ -1103,30 +1103,30 @@ public class FrmSplitcloumn : Form
 		Ismodifylist = new List<bool>();
 		default_regexlist_match = new Dictionary<string, string>
 		{
-			{ "取前10位", "\\A.{10}" },
-			{ "取后10位", ".{10}\\z" },
-			{ "从第10位开始向后取10位", "(?<=^.{9}).{10}" },
-			{ "从第10位开始向后最少取10位，最大取20位", "(?<=^.{9}).{10,20}" },
-			{ "从第10位开始向后取至结尾", "(?<=^.{9}).*\\z" },
-			{ "取开头到_|(（[【空格或结尾之间的字符", "\\A.*?(?=_|\\(|\\（|\\[|\\【|\\s|\\z)" },
-			{ "取_或空格到结尾", "(?<=_|\\s).*\\z" },
-			{ "取()内字符", "(?<=\\().*?(?=\\))" },
-			{ "取类似V1.1的字符", "[A-HJ-NP-Z][0-9][.][0-9]" },
-			{ "取结尾处类似V1.1的字符", "[A-HJ-NP-Z][0-9][.][0-9](?=\\z)" },
-			{ "取中文字符", "[\\u4e00-\\u9fa5]+" }
+			{ "Первые 10 символов", "\\A.{10}" },
+			{ "Последние 10 символов", ".{10}\\z" },
+			{ "С 10-й позиции взять 10 символов", "(?<=^.{9}).{10}" },
+			{ "С 10-й позиции взять минимум 10, максимум 20 символов", "(?<=^.{9}).{10,20}" },
+			{ "С 10-й позиции взять до конца", "(?<=^.{9}).*\\z" },
+			{ "От начала до _ | ( （ [ 【, пробела или конца", "\\A.*?(?=_|\\(|\\（|\\[|\\【|\\s|\\z)" },
+			{ "От _ или пробела до конца", "(?<=_|\\s).*\\z" },
+			{ "Извлечь символы в ()", "(?<=\\().*?(?=\\))" },
+			{ "Извлечь подстроку вида V1.1", "[A-HJ-NP-Z][0-9][.][0-9]" },
+			{ "Извлечь в конце подстроку вида V1.1", "[A-HJ-NP-Z][0-9][.][0-9](?=\\z)" },
+			{ "Извлечь китайские символы", "[\\u4e00-\\u9fa5]+" }
 		};
 		default_regexlist_split = new Dictionary<string, string>
 		{
-			{ "空格", "\\s+" },
-			{ "下横线 \"_\"", "_" },
-			{ "短横线 \"-\"", "\\-" },
-			{ "波浪线 \"~\"", "\\~" },
-			{ "斜线\"\\\"", "\\\\" },
-			{ "点 \".\"", "\\." },
-			{ "分号 \";\"", "\\;" },
-			{ "换行符", "\\n" },
-			{ "空格或下横线", "\\s+|_" },
-			{ "中文字符", "[\\u4e00-\\u9fa5]+" }
+			{ "Пробел", "\\s+" },
+			{ "Подчёркивание \"_\"", "_" },
+			{ "Дефис \"-\"", "\\-" },
+			{ "Тильда \"~\"", "\\~" },
+			{ "Косая черта \"\\\"", "\\\\" },
+			{ "Точка \".\"", "\\." },
+			{ "Точка с запятой \";\"", "\\;" },
+			{ "Перенос строки", "\\n" },
+			{ "Пробел или подчёркивание", "\\s+|_" },
+			{ "Китайские символы", "[\\u4e00-\\u9fa5]+" }
 		};
 		dpixRatio = 1.0;
 		ref Size reference = ref mediumsize;
@@ -1795,7 +1795,7 @@ public class FrmSplitcloumn : Form
 												if (num10 > 0)
 												{
 													int num11 = Conversions.ToInteger(MyProject.Forms.Frmmain.DGV1[MyProject.Forms.Frmmain.Col_Number.Index, num3].Value);
-													stringBuilder.AppendLine("序号 " + Conversions.ToString(num11) + " 与 " + Conversions.ToString(num10) + " строк имеют повторяющиеся имена файлов на диске, заполнение не выполнено!");
+													stringBuilder.AppendLine("Номер " + Conversions.ToString(num11) + " и " + Conversions.ToString(num10) + " строк имеют повторяющиеся имена файлов на диске, заполнение не выполнено!");
 												}
 												else
 												{
@@ -1843,7 +1843,7 @@ public class FrmSplitcloumn : Form
 													if (num12 > 0)
 													{
 														int num13 = Conversions.ToInteger(MyProject.Forms.Frmmain.DGV1[MyProject.Forms.Frmmain.Col_Number.Index, num3].Value);
-														stringBuilder.AppendLine("序号 " + Conversions.ToString(num13) + " 与 " + Conversions.ToString(num12) + " строк имеют повторяющиеся имена файлов на диске, заполнение не выполнено!");
+														stringBuilder.AppendLine("Номер " + Conversions.ToString(num13) + " и " + Conversions.ToString(num12) + " строк имеют повторяющиеся имена файлов на диске, заполнение не выполнено!");
 													}
 													else
 													{
@@ -1895,7 +1895,7 @@ public class FrmSplitcloumn : Form
 			{
 				ProjectData.SetProjectError(ex5);
 				Exception ex6 = ex5;
-				logopathlist.WriteLog($"异常类型：{ex6.GetType().Name}\r\n异常消息：{ex6.Message}\r\n异常信息：{ex6.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex6.GetType().Name}\r\nСообщение: {ex6.Message}\r\nИнформация: {ex6.StackTrace}");
 				MessageBox.Show(ex6.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}

@@ -605,11 +605,11 @@ public class Frmcustomsort : Form
 					string text = "";
 					if (num2 == MyProject.Forms.Frmmain.Col_Extname.Index)
 					{
-						text = "文件类型";
+						text = "Тип файла";
 					}
 					else if (num2 == MyProject.Forms.Frmmain.Col_Drw.Index)
 					{
-						text = "有无工程图";
+						text = "Наличие чертежа";
 					}
 					else
 					{

@@ -3676,7 +3676,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -3689,18 +3689,18 @@ public class Frmmain : Form
 		{
 			if (Environment.Is64BitProcess)
 			{
-				Text = Application.ProductName + " " + Application.ProductVersion + "（x64）";
+				Text = Application.ProductName + " " + Application.ProductVersion + "(x64)";
 			}
 			else
 			{
-				Text = Application.ProductName + " " + Application.ProductVersion + "（x86）";
+				Text = Application.ProductName + " " + Application.ProductVersion + "(x86)";
 			}
 		}
 		catch (Exception ex)
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3723,7 +3723,7 @@ public class Frmmain : Form
 				IsStop.Image = Resources.Stop_red_16;
 				IsStop.ImageAlign = ContentAlignment.MiddleCenter;
 				IsStop.ImageScaling = ToolStripItemImageScaling.SizeToFit;
-				IsStop.Tag = "停止任务";
+				IsStop.Tag = "Остановить задачу";
 				IsStop.MouseHover += ToolStripButton_MouseHover;
 				IsStop.MouseLeave += _Lambda_0024__79;
 				sep.Alignment = ToolStripItemAlignment.Right;
@@ -3734,7 +3734,7 @@ public class Frmmain : Form
 				PropSwitch.Image = Resources.prop;
 				PropSwitch.ImageAlign = ContentAlignment.MiddleCenter;
 				PropSwitch.ImageScaling = ToolStripItemImageScaling.SizeToFit;
-				PropSwitch.Tag = "属性表达式/评估的值";
+				PropSwitch.Tag = "Выражение свойства / вычисленное значение";
 				PropSwitchLabel.Text = "Выражение свойства";
 				PropSwitchLabel.BackColor = SystemColors.Control;
 				PropSwitch.Alignment = ToolStripItemAlignment.Right;
@@ -3758,7 +3758,7 @@ public class Frmmain : Form
 				PreviewSwitch1.Image = Resources.thumbnail_16px;
 				PreviewSwitch1.ImageAlign = ContentAlignment.MiddleCenter;
 				PreviewSwitch1.ImageScaling = ToolStripItemImageScaling.SizeToFit;
-				PreviewSwitch1.Tag = "显示/隐藏缩略图";
+				PreviewSwitch1.Tag = "Показать/скрыть эскизы";
 				PreviewSwitch1.Alignment = ToolStripItemAlignment.Right;
 				PreviewSwitch1.MouseHover += ToolStripButton_MouseHover;
 				PreviewSwitch1.MouseLeave += _Lambda_0024__82;
@@ -3770,7 +3770,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(this, ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -3878,7 +3878,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3890,7 +3890,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			MessageBox.Show(this, ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3902,7 +3902,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex5);
 			Exception ex6 = ex5;
-			logopathlist.WriteLog($"异常类型：{ex6.GetType().Name}\r\n异常消息：{ex6.Message}\r\n异常信息：{ex6.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex6.GetType().Name}\r\nСообщение: {ex6.Message}\r\nИнформация: {ex6.StackTrace}");
 			MessageBox.Show(this, ex6.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3915,7 +3915,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex7);
 			Exception ex8 = ex7;
-			logopathlist.WriteLog($"异常类型：{ex8.GetType().Name}\r\n异常消息：{ex8.Message}\r\n异常信息：{ex8.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex8.GetType().Name}\r\nСообщение: {ex8.Message}\r\nИнформация: {ex8.StackTrace}");
 			MessageBox.Show(this, ex8.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3950,7 +3950,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex9);
 			Exception ex10 = ex9;
-			logopathlist.WriteLog($"异常类型：{ex10.GetType().Name}\r\n异常消息：{ex10.Message}\r\n异常信息：{ex10.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex10.GetType().Name}\r\nСообщение: {ex10.Message}\r\nИнформация: {ex10.StackTrace}");
 			MessageBox.Show(this, ex10.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -3973,7 +3973,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex11);
 			Exception ex12 = ex11;
-			logopathlist.WriteLog($"异常类型：{ex12.GetType().Name}\r\n异常消息：{ex12.Message}\r\n异常信息：{ex12.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex12.GetType().Name}\r\nСообщение: {ex12.Message}\r\nИнформация: {ex12.StackTrace}");
 			MessageBox.Show(this, ex12.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4054,7 +4054,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex15);
 			Exception ex16 = ex15;
-			logopathlist.WriteLog($"异常类型：{ex16.GetType().Name}\r\n异常消息：{ex16.Message}\r\n异常信息：{ex16.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex16.GetType().Name}\r\nСообщение: {ex16.Message}\r\nИнформация: {ex16.StackTrace}");
 			MessageBox.Show(ex16.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4135,7 +4135,7 @@ public class Frmmain : Form
 			openFileDialog.Multiselect = false;
 			openFileDialog.SupportMultiDottedExtensions = false;
 			openFileDialog.InitialDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-			openFileDialog.Filter = "配置文件(*.settings)|*.settings";
+			openFileDialog.Filter = "Файл настроек (*.settings)|*.settings";
 			openFileDialog.FilterIndex = 1;
 			if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 			{
@@ -4154,7 +4154,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4203,7 +4203,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4213,8 +4213,8 @@ public class Frmmain : Form
 			SaveFileDialog saveFileDialog = new SaveFileDialog();
 			saveFileDialog.DefaultExt = Path.GetExtension(code.SplitStr(configFileName, 5));
 			saveFileDialog.InitialDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-			saveFileDialog.FileName = "备份-" + DateTime.Now.ToString("yyyyMMdd");
-			saveFileDialog.Filter = "配置文件（*settings）|*.settings";
+			saveFileDialog.FileName = "Резервная копия-" + DateTime.Now.ToString("yyyyMMdd");
+			saveFileDialog.Filter = "Файл настроек (*.settings)|*.settings";
 			saveFileDialog.ValidateNames = true;
 			if (saveFileDialog.ShowDialog() != DialogResult.Cancel)
 			{
@@ -4226,7 +4226,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4313,7 +4313,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -4411,7 +4411,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -4460,7 +4460,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -4637,12 +4637,12 @@ public class Frmmain : Form
 				categories.Clear();
 				categories.Add(new GalleryItemPropertySet
 				{
-					Label = "过滤规则",
+					Label = "Правило фильтрации",
 					CategoryID = 1u
 				});
 				if (CConfigMng.Config.FilterRulesList.Count < 1)
 				{
-					buttons1[0].Label = "无";
+					buttons1[0].Label = "Нет";
 					buttons1[0].Enabled = false;
 					itemsSource.Add(new GalleryCommandPropertySet
 					{
@@ -4692,7 +4692,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -4790,7 +4790,7 @@ public class Frmmain : Form
 				itemsSource.Clear();
 				if (CConfigMng.Config.bomsettings.Count < 1)
 				{
-					buttons4[0].Label = "无";
+					buttons4[0].Label = "Нет";
 					buttons4[0].Enabled = false;
 					itemsSource.Add(new GalleryCommandPropertySet
 					{
@@ -4830,7 +4830,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -4977,7 +4977,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -5038,7 +5038,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				_cmdButtonFreezecol.ItemsSource.Clear();
 				ProjectData.ClearProjectError();
@@ -5092,7 +5092,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				_Markrepeat.ItemsSource.Clear();
 				ProjectData.ClearProjectError();
@@ -5118,7 +5118,7 @@ public class Frmmain : Form
 				});
 				if (CConfigMng.Config.FilterRulesList.Count < 1)
 				{
-					buttons6[0].Label = "无";
+					buttons6[0].Label = "Нет";
 					buttons6[0].Enabled = false;
 					itemsSource.Add(new GalleryCommandPropertySet
 					{
@@ -5163,7 +5163,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -5286,7 +5286,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -5325,7 +5325,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5389,7 +5389,7 @@ public class Frmmain : Form
 					{
 						ProjectData.SetProjectError(ex);
 						Exception ex2 = ex;
-						logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+						logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 						MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 						ProjectData.ClearProjectError();
 					}
@@ -5598,7 +5598,7 @@ public class Frmmain : Form
 				{
 					ProjectData.SetProjectError(ex3);
 					Exception ex4 = ex3;
-					logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+					logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 					MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 					ProjectData.ClearProjectError();
 				}
@@ -5672,7 +5672,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -5722,7 +5722,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5763,7 +5763,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -5806,7 +5806,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5846,7 +5846,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex7);
 			Exception ex8 = ex7;
-			logopathlist.WriteLog($"异常类型：{ex8.GetType().Name}\r\n异常消息：{ex8.Message}\r\n异常信息：{ex8.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex8.GetType().Name}\r\nСообщение: {ex8.Message}\r\nИнформация: {ex8.StackTrace}");
 			MessageBox.Show(ex8.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5922,7 +5922,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			Environment.Exit(0);
 			ProjectData.ClearProjectError();
 		}
@@ -5983,7 +5983,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -5998,7 +5998,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -6091,7 +6091,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -6168,7 +6168,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -6252,7 +6252,7 @@ public class Frmmain : Form
 						int num = isrepeat(Conversions.ToString(DGV1[e.ColumnIndex, e.RowIndex].Value), e.RowIndex);
 						if (num > 0)
 						{
-							MessageBox.Show(this, "名称已存在，序号：" + Conversions.ToString(num), "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+							MessageBox.Show(this, "Имя уже существует, номер: " + Conversions.ToString(num), "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 							DGV1[e.ColumnIndex, e.RowIndex].Value = oldcellval;
 							DGV1[e.ColumnIndex, e.RowIndex].Style.ForeColor = oldcellcolor;
 						}
@@ -6356,7 +6356,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			GetSelRowCount();
@@ -6496,7 +6496,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -6547,12 +6547,12 @@ public class Frmmain : Form
 		Image image = Resources.sldprt;
 		if (text.EndsWith(".SLDASM", StringComparison.OrdinalIgnoreCase))
 		{
-			text2 = "打开装配体 (&W）";
+			text2 = "Открыть сборку (&W)";
 			image = Resources.sldasm;
 		}
 		else if (text.EndsWith(".SLDPRT", StringComparison.OrdinalIgnoreCase))
 		{
-			text2 = "打开零件 (&W）";
+			text2 = "Открыть деталь (&W)";
 			image = Resources.sldprt;
 		}
 		int displayInBOM = GetDisplayInBOM(text, cfgname);
@@ -6591,14 +6591,14 @@ public class Frmmain : Form
 			null
 		};
 		array[0].Image = image;
-		array[1] = new ToolStripMenuItem("打开工程图 (&D）");
+		array[1] = new ToolStripMenuItem("Открыть чертёж (&D)");
 		array[1].Image = Resources.slddrw;
 		array[1].Enabled = File.Exists(path);
-		array[2] = new ToolStripMenuItem("在文件夹中显示 (&F）");
+		array[2] = new ToolStripMenuItem("Показать в папке (&F)");
 		array[2].Image = Resources.folder_vertical_24px;
 		array[3] = new ToolStripMenuItem("Выбрать в SolidWorks");
 		array[3].Visible = Conversions.ToBoolean(Interaction.IIf((GetDataOption == 0 || GetDataOption == 1) ? true : false, true, false));
-		array[4] = new ToolStripMenuItem("创建工程图（支持多选）");
+		array[4] = new ToolStripMenuItem("Создать чертёж (множественный выбор)");
 		string expression = Conversions.ToString(NewLateBinding.LateGet(code.swApp, null, "GetUserPreferenceStringValue", new object[1] { 6 }, null, null, null));
 		string[] array2 = Strings.Split(expression, ";");
 		checked
@@ -6673,27 +6673,27 @@ public class Frmmain : Form
 					array[4].DropDownItemClicked += c_tsm_Click;
 				}
 			}
-			array[5] = new ToolStripMenuItem("删除工程图（支持多选）");
+			array[5] = new ToolStripMenuItem("Удалить чертёж (множественный выбор)");
 			array[5].Enabled = File.Exists(path);
-			array[6] = new ToolStripMenuItem("复制工程图");
+			array[6] = new ToolStripMenuItem("Копировать чертёж");
 			array[6].Enabled = File.Exists(path);
-			array[7] = new ToolStripMenuItem("粘贴工程图");
+			array[7] = new ToolStripMenuItem("Вставить чертёж");
 			array[7].Enabled = File.Exists(obj_drw_copy.drwname);
 			bool enabled = topdocisopen(Conversions.ToString(DGV1.Tag));
-			array[8] = new ToolStripMenuItem("压缩零部件（&S）");
-			array[8].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("需先打开", DGV1.Tag), "才能启用"));
+			array[8] = new ToolStripMenuItem("Погасить компоненты (&S)");
+			array[8].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("Сначала откройте", DGV1.Tag), " для активации"));
 			array[8].Enabled = enabled;
 			array[8].Visible = visible;
-			array[9] = new ToolStripMenuItem("解除压缩（&U）");
-			array[9].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("需先打开", DGV1.Tag), "才能启用"));
+			array[9] = new ToolStripMenuItem("Высветить (&U)");
+			array[9].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("Сначала откройте", DGV1.Tag), " для активации"));
 			array[9].Enabled = enabled;
 			array[9].Visible = visible;
-			array[10] = new ToolStripMenuItem("不包括在材料明细表中（&E）");
-			array[10].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("需先打开", DGV1.Tag), "才能启用"));
+			array[10] = new ToolStripMenuItem("Исключить из спецификации (&E)");
+			array[10].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("Сначала откройте", DGV1.Tag), " для активации"));
 			array[10].Enabled = enabled;
 			array[10].Visible = visible;
-			array[11] = new ToolStripMenuItem("包含在材料明细表中（&I）");
-			array[11].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("需先打开", DGV1.Tag), "才能启用"));
+			array[11] = new ToolStripMenuItem("Включить в спецификацию (&I)");
+			array[11].ToolTipText = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject("Сначала откройте", DGV1.Tag), " для активации"));
 			array[11].Enabled = enabled;
 			array[11].Visible = visible;
 			array[12] = new ToolStripMenuItem("Отображение подкомпонентов при использовании в качестве подсборки");
@@ -6707,19 +6707,19 @@ public class Frmmain : Form
 			array[12].DropDownItems.Add(toolStripMenuItem3);
 			array[12].DropDownItems.Add(toolStripMenuItem);
 			array[12].DropDownItems.Add(toolStripMenuItem2);
-			array[13] = new ToolStripMenuItem("批量复制 (&C）");
+			array[13] = new ToolStripMenuItem("Пакетное копирование (&C)");
 			array[13].ToolTipText = "Только операции с одним столбцом";
 			array[13].Visible = Conversions.ToBoolean(Interaction.IIf(DGV1.Columns[sel_col] is DataGridViewTextBoxColumn, true, false));
-			array[14] = new ToolStripMenuItem("批量粘贴 (&V）");
+			array[14] = new ToolStripMenuItem("Пакетная вставка (&V)");
 			array[14].ToolTipText = "Только операции с одним столбцом";
 			array[14].Visible = Conversions.ToBoolean(Interaction.IIf((!DGV1.Columns[sel_col].ReadOnly && DGV1.Columns[sel_col] is DataGridViewTextBoxColumn) ? true : false, true, false));
-			array[15] = new ToolStripMenuItem("激活并保存此零部件（支持多选）");
+			array[15] = new ToolStripMenuItem("Активировать и сохранить компонент (множественный выбор)");
 			array[15].ToolTipText = "Подходит для компонентов без отображения эскиза или требующих сохранения";
 			array[15].Image = Resources.save_24px;
-			array[16] = new ToolStripMenuItem("标记相关节点（支持多选）");
+			array[16] = new ToolStripMenuItem("Отметить связанные узлы (множественный выбор)");
 			array[16].ToolTipText = "Отметить связанные узлы";
 			array[16].Visible = Conversions.ToBoolean(Interaction.IIf((GetDataOption == 0 || GetDataOption == 1) ? true : false, true, false));
-			array[17] = new ToolStripMenuItem("执行宏（支持多选）");
+			array[17] = new ToolStripMenuItem("Выполнить макрос (множественный выбор)");
 			array[17].ToolTipText = "Выполнить макрос SolidWorks для выбранных элементов";
 			array[17].DropDownItemClicked += mens17_DropDownItemClicked;
 			int num11 = CConfigMng.Config.macrolist.Count - 1;
@@ -6740,7 +6740,7 @@ public class Frmmain : Form
 				}
 				num12++;
 			}
-			array[18] = new ToolStripMenuItem("隐藏行（支持多选） (&H）");
+			array[18] = new ToolStripMenuItem("Скрыть строки (множественный выбор) (&H)");
 			DGV_Menulist.Items.AddRange(array);
 			DGV_Menulist.Items.Insert(4, new ToolStripSeparator());
 			DGV_Menulist.Items.Insert(9, new ToolStripSeparator());
@@ -6800,7 +6800,7 @@ public class Frmmain : Form
 						NewDrw2(value, cfgname, text, tempName, ref err, num5);
 						if (err.Length > 0)
 						{
-							MyProject.Forms.Frmtips.additem(num5, Conversions.ToString(DGV1[Col_Number.Index, key].Value), err, "创建工程图", value);
+							MyProject.Forms.Frmtips.additem(num5, Conversions.ToString(DGV1[Col_Number.Index, key].Value), err, "Создать чертёж", value);
 						}
 					}
 					else
@@ -6809,7 +6809,7 @@ public class Frmmain : Form
 					}
 					if (File.Exists(text))
 					{
-						DGV1[Col_Drw.Index, key].Tag = "有";
+						DGV1[Col_Drw.Index, key].Tag = "Есть";
 						DGV1[Col_Drw.Index, key].Value = Resources.slddrw;
 					}
 					num2++;
@@ -6824,7 +6824,7 @@ public class Frmmain : Form
 			finally
 			{
 				DGV1.Enabled = true;
-				StatusLabel1.Text = "当前共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 				IsStop.Visible = false;
 				ToolStripProgressBar1.Visible = false;
 				ToolStripProgressBar1.Value = 0;
@@ -6914,7 +6914,7 @@ public class Frmmain : Form
 				DGV1.Enabled = true;
 				ToolStripProgressBar1.Visible = false;
 				ToolStripProgressBar1.Value = 0;
-				StatusLabel1.Text = "当前共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 				IsStop.Visible = false;
 			}
 		}
@@ -7008,7 +7008,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -7022,7 +7022,7 @@ public class Frmmain : Form
 		string text3 = code.SplitStr(text, 3) + ".SLDDRW";
 		int num = Conversions.ToInteger(DGV1[Col_Number.Index, sel_row].Value);
 		int num2 = 0;
-		if ((Operators.CompareString(e.ClickedItem.Text, "打开零件 (&W）", TextCompare: false) == 0) | (Operators.CompareString(e.ClickedItem.Text, "打开装配体 (&W）", TextCompare: false) == 0))
+		if ((Operators.CompareString(e.ClickedItem.Text, "Открыть деталь (&W)", TextCompare: false) == 0) | (Operators.CompareString(e.ClickedItem.Text, "Открыть сборку (&W)", TextCompare: false) == 0))
 		{
 			if (File.Exists(text))
 			{
@@ -7031,7 +7031,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "打开工程图 (&D）", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Открыть чертёж (&D)", TextCompare: false) == 0)
 		{
 			if (File.Exists(text3))
 			{
@@ -7040,7 +7040,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "在文件夹中显示 (&F）", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Показать в папке (&F)", TextCompare: false) == 0)
 		{
 			Interaction.Shell("explorer.exe /select," + text, AppWinStyle.NormalFocus);
 			return;
@@ -7067,13 +7067,13 @@ public class Frmmain : Form
 				return;
 			}
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "创建工程图（支持多选）", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Создать чертёж (множественный выбор)", TextCompare: false) == 0)
 		{
 			return;
 		}
 		checked
 		{
-			if (Operators.CompareString(e.ClickedItem.Text, "删除工程图（支持多选）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Удалить чертёж (множественный выбор)", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				Dictionary<int, string> dictionary = getselpathname();
@@ -7107,39 +7107,39 @@ public class Frmmain : Form
 				ReadonlyRowMark();
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "复制工程图", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Копировать чертёж", TextCompare: false) == 0)
 			{
 				obj_drw_copy.drwname = text3;
 				obj_drw_copy.modelname = text;
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "粘贴工程图", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Вставить чертёж", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				copydrw(text);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "压缩零部件（&S）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Погасить компоненты (&S)", TextCompare: false) == 0)
 			{
 				Setcomponentstate(Conversions.ToString(DGV1.Tag), text, text2, 1);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "解除压缩（&U）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Высветить (&U)", TextCompare: false) == 0)
 			{
 				Setcomponentstate(Conversions.ToString(DGV1.Tag), text, text2, 2);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "不包括在材料明细表中（&E）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Исключить из спецификации (&E)", TextCompare: false) == 0)
 			{
 				Setcomponentstate(Conversions.ToString(DGV1.Tag), text, text2, 3);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "包含在材料明细表中（&I）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Включить в спецификацию (&I)", TextCompare: false) == 0)
 			{
 				Setcomponentstate(Conversions.ToString(DGV1.Tag), text, text2, 4);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "隐藏行（支持多选） (&H）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Скрыть строки (множественный выбор) (&H)", TextCompare: false) == 0)
 			{
 				int num7 = DGV1.RowCount - 1;
 				int num8 = 0;
@@ -7219,19 +7219,19 @@ public class Frmmain : Form
 				}
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "批量复制 (&C）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Пакетное копирование (&C)", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				copycell();
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "批量粘贴 (&V）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Пакетная вставка (&V)", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				code.PasteExcel(DGV1);
 				return;
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "激活并保存此零部件（支持多选）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Активировать и сохранить компонент (множественный выбор)", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				try
@@ -7282,11 +7282,11 @@ public class Frmmain : Form
 					DGV1.Enabled = true;
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
-					StatusLabel1.Text = "当前共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					IsStop.Visible = false;
 				}
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "标记相关节点（支持多选）", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Отметить связанные узлы (множественный выбор)", TextCompare: false) == 0)
 			{
 				DGV_Menulist.Close();
 				try
@@ -7316,7 +7316,7 @@ public class Frmmain : Form
 					return;
 				}
 			}
-			if (Operators.CompareString(e.ClickedItem.Text, "执行宏（支持多选）", TextCompare: false) != 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Выполнить макрос (множественный выбор)", TextCompare: false) != 0)
 			{
 			}
 		}
@@ -7330,12 +7330,12 @@ public class Frmmain : Form
 			{
 				if (!File.Exists(obj_drw_copy.drwname))
 				{
-					MessageBox.Show(this, "Исходный чертёж не существует или нет доступа к его папке", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Исходный чертёж не существует или нет доступа к его папке", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					return;
 				}
 				if (!File.Exists(ModelName))
 				{
-					MessageBox.Show(this, "Текущая модель не существует или нет доступа к её папке", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Текущая модель не существует или нет доступа к её папке", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					return;
 				}
 				string text = code.SplitStr(ModelName, 3) + ".SLDDRW";
@@ -7393,7 +7393,7 @@ public class Frmmain : Form
 					{
 						if (Operators.ConditionalCompareObjectEqual(DGV1[Col_Path.Index, num2].Value, ModelName, TextCompare: false))
 						{
-							DGV1[Col_Drw.Index, num2].Tag = "有";
+							DGV1[Col_Drw.Index, num2].Tag = "Есть";
 							DGV1[Col_Drw.Index, num2].Value = Resources.slddrw;
 						}
 						num2++;
@@ -7406,8 +7406,8 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-				MessageBox.Show("复制工程图出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+				MessageBox.Show("Ошибка при копировании чертежа:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -7675,8 +7675,8 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show("创建工程图出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show("Ошибка при создании чертежа:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			code.swApp = null;
 			ProjectData.ClearProjectError();
 		}
@@ -7688,7 +7688,7 @@ public class Frmmain : Form
 		{
 			if (File.Exists(DrwName))
 			{
-				err = "当前模型已经存在工程图！";
+				err = "Для текущей модели чертёж уже существует!";
 				warn = 0;
 				return;
 			}
@@ -7697,7 +7697,7 @@ public class Frmmain : Form
 				TempName = Conversions.ToString(NewLateBinding.LateGet(code.swApp, null, "GetUserPreferenceStringValue", new object[1] { 10 }, null, null, null));
 				if (!File.Exists(TempName))
 				{
-					err = "没找到工程图模板！";
+					err = "Шаблон чертежа не найден!";
 					warn = 1;
 					return;
 				}
@@ -7942,7 +7942,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			err = ex2.Message;
 			warn = 1;
 			ProjectData.ClearProjectError();
@@ -8008,7 +8008,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -8125,7 +8125,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -8793,7 +8793,7 @@ public class Frmmain : Form
 	{
 		if (code.TMode)
 		{
-			MessageBox.Show(this, "Не поддерживается в пробной версии!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+			MessageBox.Show(this, "Не поддерживается в пробной версии!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			return;
 		}
 		chl = new checklic();
@@ -9225,12 +9225,12 @@ public class Frmmain : Form
 		mlist.Clear();
 		Material_list.Items.Clear();
 		Material_list.AutoClose = true;
-		Material_list.Items.Add("删除材质", Resources.del);
-		Material_list.Items.Add("清除颜色", Resources.clearcolor_32);
-		Material_list.Items.Add("设定颜色", Resources.setcolor_32);
-		Material_list.Items.Add("随机颜色", Resources.Random_32);
-		Material_list.Items.Add("重置颜色");
-		Material_list.Items.Add("恢复为材质颜色");
+		Material_list.Items.Add("Удалить материал", Resources.del);
+		Material_list.Items.Add("Сбросить цвет", Resources.clearcolor_32);
+		Material_list.Items.Add("Задать цвет", Resources.setcolor_32);
+		Material_list.Items.Add("Случайный цвет", Resources.Random_32);
+		Material_list.Items.Add("Сбросить цвет");
+		Material_list.Items.Add("Восстановить цвет материала");
 		CheckBox checkBox = new CheckBox();
 		checkBox.BackColor = Color.White;
 		checkBox.Text = "Использовать цвет материала";
@@ -9401,14 +9401,14 @@ public class Frmmain : Form
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
 				xDocument = null;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			Material_list.Items.Add(new ToolStripSeparator());
-			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("选择可用材质库...");
+			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("Выбрать доступную базу материалов...");
 			toolStripMenuItem.ForeColor = Color.Blue;
-			ToolStripMenuItem toolStripMenuItem2 = new ToolStripMenuItem("添加材质库...");
+			ToolStripMenuItem toolStripMenuItem2 = new ToolStripMenuItem("Добавить базу материалов...");
 			toolStripMenuItem2.ForeColor = Color.Blue;
 			Material_list.Items.Add(toolStripMenuItem);
 			Material_list.Items.Add(toolStripMenuItem2);
@@ -9431,7 +9431,7 @@ public class Frmmain : Form
 
 	private void Material_list_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
 	{
-		if (Operators.CompareString(e.ClickedItem.Text, "删除材质", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Удалить материал", TextCompare: false) == 0)
 		{
 			foreach (DataGridViewCell selectedCell in DGV1.SelectedCells)
 			{
@@ -9475,7 +9475,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "清除颜色", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Сбросить цвет", TextCompare: false) == 0)
 		{
 			foreach (DataGridViewCell selectedCell2 in DGV1.SelectedCells)
 			{
@@ -9519,7 +9519,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "设定颜色", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Задать цвет", TextCompare: false) == 0)
 		{
 			Material_list.Close();
 			try
@@ -9593,7 +9593,7 @@ public class Frmmain : Form
 				return;
 			}
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "随机颜色", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Случайный цвет", TextCompare: false) == 0)
 		{
 			foreach (DataGridViewCell selectedCell4 in DGV1.SelectedCells)
 			{
@@ -9637,7 +9637,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "重置颜色", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Сбросить цвет", TextCompare: false) == 0)
 		{
 			Color color = default(Color);
 			foreach (DataGridViewCell selectedCell5 in DGV1.SelectedCells)
@@ -9690,7 +9690,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "恢复为材质颜色", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Восстановить цвет материала", TextCompare: false) == 0)
 		{
 			foreach (DataGridViewCell selectedCell6 in DGV1.SelectedCells)
 			{
@@ -9742,12 +9742,12 @@ public class Frmmain : Form
 		}
 		checked
 		{
-			if (Operators.CompareString(e.ClickedItem.Text, "添加材质库...", TextCompare: false) == 0)
+			if (Operators.CompareString(e.ClickedItem.Text, "Добавить базу материалов...", TextCompare: false) == 0)
 			{
 				MyProject.Forms.FrmOptions.TabControl1.SelectedIndex = 2;
 				MyProject.Forms.FrmOptions.ShowDialog();
 			}
-			else if (Operators.CompareString(e.ClickedItem.Text, "选择可用材质库...", TextCompare: false) == 0)
+			else if (Operators.CompareString(e.ClickedItem.Text, "Выбрать доступную базу материалов...", TextCompare: false) == 0)
 			{
 				ToolStripMenuItem toolStripMenuItem = (ToolStripMenuItem)e.ClickedItem;
 				toolStripMenuItem.DropDownItemClicked += mens2_click;
@@ -9886,7 +9886,7 @@ public class Frmmain : Form
 
 	private void Prop_Downlist_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
 	{
-		if (Operators.CompareString(e.ClickedItem.Text, "清除内容", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Очистить содержимое", TextCompare: false) == 0)
 		{
 			foreach (DataGridViewCell selectedCell in DGV1.SelectedCells)
 			{
@@ -9897,7 +9897,7 @@ public class Frmmain : Form
 			}
 			return;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "自定义菜单...", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Настроить меню...", TextCompare: false) == 0)
 		{
 			MyProject.Forms.FrmOptions.TabControl1.SelectedIndex = 3;
 			MyProject.Forms.FrmOptions.ShowDialog();
@@ -9937,7 +9937,7 @@ public class Frmmain : Form
 				size = new Size((int)Math.Round(150.0 * dpixRatio), (int)Math.Round(50.0 * dpixRatio));
 				toolStripControlHost.Size = size;
 			}
-			Prop_Downlist.Items.Add("清除内容", Resources.clear);
+			Prop_Downlist.Items.Add("Очистить содержимое", Resources.clear);
 			Prop_Downlist.Items.Add(toolStripControlHost);
 			Prop_Downlist.Items.Add(new ToolStripSeparator());
 			bool flag = false;
@@ -10001,7 +10001,7 @@ public class Frmmain : Form
 			}
 			Prop_Downlist.Items.AddRange(array2);
 			Prop_Downlist.Items.Add(new ToolStripSeparator());
-			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("自定义菜单...");
+			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("Настроить меню...");
 			toolStripMenuItem.ForeColor = Color.Blue;
 			Prop_Downlist.Items.Add(toolStripMenuItem);
 			Prop_Downlist.AutoSize = false;
@@ -10113,8 +10113,8 @@ public class Frmmain : Form
 		DoubleBuffer(dgv2);
 		dgv2.AutoSize = false;
 		dgv2.BackgroundColor = Color.White;
-		dgv2.Columns.Add("col1", "原配置名");
-		dgv2.Columns.Add("col2", "新配置名");
+		dgv2.Columns.Add("col1", "Старое имя конфигурации");
+		dgv2.Columns.Add("col2", "Новое имя конфигурации");
 		dgv2.Columns["col1"].SortMode = DataGridViewColumnSortMode.NotSortable;
 		dgv2.Columns["col2"].SortMode = DataGridViewColumnSortMode.NotSortable;
 		checked
@@ -10520,7 +10520,7 @@ public class Frmmain : Form
 			{
 				if (Operators.CompareString(bd.ParentName, "", TextCompare: false) == 0)
 				{
-					partnumber_option.Items.AddRange(new object[3] { "文档名称", "配置名称", "用户指定的名称" });
+					partnumber_option.Items.AddRange(new object[3] { "Имя документа", "Имя конфигурации", "Имя, заданное пользователем" });
 					switch (bd.BOMPartNoSource)
 					{
 					case 1:
@@ -10539,7 +10539,7 @@ public class Frmmain : Form
 				}
 				else
 				{
-					partnumber_option.Items.AddRange(new object[4] { "文档名称", "配置名称", "用户指定的名称", "链接到父配置" });
+					partnumber_option.Items.AddRange(new object[4] { "Имя документа", "Имя конфигурации", "Имя, заданное пользователем", "Связать с родительской конфигурацией" });
 					switch (bd.BOMPartNoSource)
 					{
 					case 1:
@@ -10563,7 +10563,7 @@ public class Frmmain : Form
 			}
 			else
 			{
-				partnumber_option.Items.AddRange(new object[4] { "文档名称", "配置名称", "用户指定的名称", "链接到父配置" });
+				partnumber_option.Items.AddRange(new object[4] { "Имя документа", "Имя конфигурации", "Имя, заданное пользователем", "Связать с родительской конфигурацией" });
 				partnumber_option.SelectedIndex = -1;
 			}
 			ToolStripControlHost toolStripControlHost = new ToolStripControlHost(partnumber_intable);
@@ -10746,7 +10746,7 @@ public class Frmmain : Form
 		{
 			text = DGV1.Columns[SelectedCol].ToolTipText;
 		}
-		if (Operators.CompareString(e.ClickedItem.Text, "清除筛选", TextCompare: false) == 0)
+		if (Operators.CompareString(e.ClickedItem.Text, "Сбросить фильтр", TextCompare: false) == 0)
 		{
 			ClearFilter();
 			Filter_list.Close();
@@ -10760,13 +10760,13 @@ public class Frmmain : Form
 			}
 			Filter_list.Close();
 		}
-		else if (Operators.CompareString(e.ClickedItem.Text, "筛选", TextCompare: false) == 0)
+		else if (Operators.CompareString(e.ClickedItem.Text, "Фильтр", TextCompare: false) == 0)
 		{
 			lastcolor = null;
 			ColFilter(invertbool: false, SelectedCol);
 			Filter_list.Close();
 		}
-		else if (Operators.CompareString(e.ClickedItem.Text, "筛选（反向）", TextCompare: false) == 0)
+		else if (Operators.CompareString(e.ClickedItem.Text, "Фильтр (инверсия)", TextCompare: false) == 0)
 		{
 			lastcolor = null;
 			ColFilter(invertbool: true, SelectedCol);
@@ -11032,11 +11032,11 @@ public class Frmmain : Form
 				{
 					if (rowCount2 != DGV1.RowCount)
 					{
-						StatusLabel1.Text = "在 " + Conversions.ToString(DGV1.RowCount) + " 条记录中找到 " + Conversions.ToString(rowCount2) + " шт.";
+						StatusLabel1.Text = "В " + Conversions.ToString(DGV1.RowCount) + " записях найдено " + Conversions.ToString(rowCount2) + " шт.";
 					}
 					else
 					{
-						StatusLabel1.Text = "共 " + Conversions.ToString(rowCount2) + " поз.";
+						StatusLabel1.Text = "Всего " + Conversions.ToString(rowCount2) + " поз.";
 					}
 					int num11 = list.Count - 1;
 					num = 0;
@@ -11067,7 +11067,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11118,7 +11118,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11198,14 +11198,14 @@ public class Frmmain : Form
 				}
 				if (num > 0)
 				{
-					StatusLabel1.Text = "共 " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 				}
 			}
 			catch (Exception ex)
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11223,7 +11223,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -11238,7 +11238,7 @@ public class Frmmain : Form
 		{
 			text2 = DGV1.Columns[SelectedCol].ToolTipText;
 		}
-		Filter_list.Items.Add("清除筛选", Resources.Del_Filter);
+		Filter_list.Items.Add("Сбросить фильтр", Resources.Del_Filter);
 		Filter_list.Items.Add("Из «" + text2 + "» снять фильтр со столбца", Resources.Del_Filter);
 		if (DGV1.Columns[SelectedCol].HeaderCell.Style.BackColor != Color.Tomato)
 		{
@@ -11254,7 +11254,7 @@ public class Frmmain : Form
 			Clb = new ToolStripCheckedListBox();
 			Filter_list.Items.Add(tst);
 			Filter_list.Items.Add(new ToolStripSeparator());
-			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("按颜色筛选");
+			ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem("Фильтр по цвету");
 			int num2;
 			try
 			{
@@ -11286,14 +11286,14 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 				return;
 			}
 			Filter_list.Items.Add(Clb);
-			Filter_list.Items.Add("筛选", Resources.Filter);
-			Filter_list.Items.Add("筛选（反向）", Resources.ReFilter);
+			Filter_list.Items.Add("Фильтр", Resources.Filter);
+			Filter_list.Items.Add("Фильтр (инверсия)", Resources.ReFilter);
 			if (SelectedCol == Col_Material.Index)
 			{
 				toolStripMenuItem.DropDownItemClicked += tsm_DropDownItemClicked;
@@ -11525,7 +11525,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11581,7 +11581,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -11661,7 +11661,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -11693,7 +11693,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11718,7 +11718,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex5);
 				Exception ex6 = ex5;
-				logopathlist.WriteLog($"异常类型：{ex6.GetType().Name}\r\n异常消息：{ex6.Message}\r\n异常信息：{ex6.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex6.GetType().Name}\r\nСообщение: {ex6.Message}\r\nИнформация: {ex6.StackTrace}");
 				MessageBox.Show(ex6.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11763,7 +11763,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex7);
 				Exception ex8 = ex7;
-				logopathlist.WriteLog($"异常类型：{ex8.GetType().Name}\r\n异常消息：{ex8.Message}\r\n异常信息：{ex8.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex8.GetType().Name}\r\nСообщение: {ex8.Message}\r\nИнформация: {ex8.StackTrace}");
 				MessageBox.Show(ex8.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11775,7 +11775,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex9);
 				Exception ex10 = ex9;
-				logopathlist.WriteLog($"异常类型：{ex10.GetType().Name}\r\n异常消息：{ex10.Message}\r\n异常信息：{ex10.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex10.GetType().Name}\r\nСообщение: {ex10.Message}\r\nИнформация: {ex10.StackTrace}");
 				MessageBox.Show(ex10.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -11950,12 +11950,12 @@ public class Frmmain : Form
 					string path = code.SplitStr(text, 3) + ".SLDDRW";
 					if (File.Exists(path))
 					{
-						DGV1[Col_Drw.Index, num].Tag = "有";
+						DGV1[Col_Drw.Index, num].Tag = "Есть";
 						DGV1[Col_Drw.Index, num].Value = Resources.slddrw;
 					}
 					else
 					{
-						DGV1[Col_Drw.Index, num].Tag = "无";
+						DGV1[Col_Drw.Index, num].Tag = "Нет";
 						DGV1[Col_Drw.Index, num].Value = null;
 					}
 					if (!string.IsNullOrEmpty(text) && (customFilter.FilterByRule(num) || (code.IsReadOnly(text) ? true : false)))
@@ -12002,7 +12002,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -12044,7 +12044,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -12083,7 +12083,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -12132,7 +12132,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -12191,7 +12191,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -12228,7 +12228,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -12337,7 +12337,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -12424,11 +12424,11 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
-			StatusLabel2.Text = Conversions.ToString(Interaction.IIf(selcount == 0, "", "已选择 " + Conversions.ToString(selcount) + " строк"));
+			StatusLabel2.Text = Conversions.ToString(Interaction.IIf(selcount == 0, "", "Выбрано " + Conversions.ToString(selcount) + " строк"));
 		}
 	}
 
@@ -12482,25 +12482,25 @@ public class Frmmain : Form
 					{
 						if (openForm.Equals(this))
 						{
-							openForm.Text = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(string.Concat(Application.ProductName + " ", Application.ProductVersion.ToString()), Interaction.IIf(Environment.Is64BitProcess, "（x64）", "（x86）")), Strings.Space(5)), "试用中...剩余"), (double)(int.Parse("C", NumberStyles.HexNumber) * int.Parse("F", NumberStyles.HexNumber)) / 3.0 + (double)(2 * int.Parse(code.TTime3, NumberStyles.HexNumber)) - (double)k1), "秒"));
+							openForm.Text = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(string.Concat(Application.ProductName + " ", Application.ProductVersion.ToString()), Interaction.IIf(Environment.Is64BitProcess, "(x64)", "(x86)")), Strings.Space(5)), "Пробный период... осталось"), (double)(int.Parse("C", NumberStyles.HexNumber) * int.Parse("F", NumberStyles.HexNumber)) / 3.0 + (double)(2 * int.Parse(code.TTime3, NumberStyles.HexNumber)) - (double)k1), "секунда"));
 						}
 						else if ((openForm.Equals(MyProject.Forms.FrmOutputlist) || openForm.Equals(MyProject.Forms.FrmPrintlist) || openForm.Equals(MyProject.Forms.FrmReplacePartslist) || openForm.Equals(MyProject.Forms.FrmSetDrwlist) || openForm.Equals(MyProject.Forms.FrmSyncDrwName) || openForm.Equals(MyProject.Forms.Frmmerge_split_pdf)) ? true : false)
 						{
-							openForm.Text = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(openForm.Tag, Strings.Space(5)), "试用中...剩余"), (double)(int.Parse("C", NumberStyles.HexNumber) * int.Parse("F", NumberStyles.HexNumber)) / 3.0 + (double)(2 * int.Parse(code.TTime3, NumberStyles.HexNumber)) - (double)k1), "秒"));
+							openForm.Text = Conversions.ToString(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(openForm.Tag, Strings.Space(5)), "Пробный период... осталось"), (double)(int.Parse("C", NumberStyles.HexNumber) * int.Parse("F", NumberStyles.HexNumber)) / 3.0 + (double)(2 * int.Parse(code.TTime3, NumberStyles.HexNumber)) - (double)k1), "секунда"));
 						}
 					}
 					return;
 				}
 				timer.Stop();
 				lockbutton();
-				code.MessageBoxTimeoutA(Application.OpenForms[0].Handle, "试用时间到！软件将在10秒后自动关闭！", "提示", 0, 0, 10000);
+				code.MessageBoxTimeoutA(Application.OpenForms[0].Handle, "Пробный период истёк! Программа закроется через 10 секунд!", "Сообщение", 0, 0, 10000);
 				Environment.Exit(0);
 			}
 			catch (Exception ex)
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				Environment.Exit(0);
 				ProjectData.ClearProjectError();
 			}
@@ -12570,7 +12570,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			Environment.Exit(0);
 			ProjectData.ClearProjectError();
 		}
@@ -12686,7 +12686,7 @@ public class Frmmain : Form
 								DGV1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
 							}
 							DGV1.Rows[num8].ErrorText = string.Join("\r\n", closure_0024__._0024VB_0024Local_str);
-							MyProject.Forms.Frmtips.additem(1, Conversions.ToString(DGV1[Col_Number.Index, num8].Value), string.Join("；", closure_0024__._0024VB_0024Local_str), "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, num8].Value));
+							MyProject.Forms.Frmtips.additem(1, Conversions.ToString(DGV1[Col_Number.Index, num8].Value), string.Join("；", closure_0024__._0024VB_0024Local_str), "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, num8].Value));
 						}
 					}
 					else if (dwData == (IntPtr)6)
@@ -12723,7 +12723,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -12825,12 +12825,12 @@ public class Frmmain : Form
 					DialogResult dialogResult = default(DialogResult);
 					if (string.Equals(a, Conversions.ToString(DGV1.Tag), StringComparison.OrdinalIgnoreCase))
 					{
-						string text = "重新获取数据？";
+						string text = "Получить данные заново?";
 						dialogResult = MessageBox.Show(this, text, "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 					}
 					else
 					{
-						dialogResult = MessageBoxEX.Show(this, "重新获取数据？", "Вопрос", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, new string[3] { "连接上次文档", "连接当前文档", "Отмена" });
+						dialogResult = MessageBoxEX.Show(this, "Получить данные заново?", "Вопрос", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, new string[3] { "Подключить предыдущий документ", "Подключить текущий документ", "Отмена" });
 					}
 					switch ((int)dialogResult)
 					{
@@ -12941,8 +12941,8 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show(this, "准备读取SW数据时出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show(this, "Ошибка при подготовке к чтению данных SW:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -13007,7 +13007,7 @@ public class Frmmain : Form
 					}
 					if ((code.TMode && num2 > 9) ? true : false)
 					{
-						MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+						MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 						break;
 					}
 					stringBuilder.AppendLine(listView.Items[num2].SubItems[1].Text);
@@ -13046,7 +13046,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -13071,7 +13071,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -13107,8 +13107,8 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show(this, "读取SW数据出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show(this, "Ошибка при чтении данных SW:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -13148,19 +13148,19 @@ public class Frmmain : Form
 			int rowCount = DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible);
 			if (rowCount < DGV1.RowCount)
 			{
-				StatusLabel1.Text = "连接完成，耗时 " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " 秒， 共 " + Conversions.ToString(rowCount) + "/" + Conversions.ToString(DGV1.RowCount) + " поз.";
+				StatusLabel1.Text = "Подключение завершено, затрачено " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " сек, всего " + Conversions.ToString(rowCount) + "/" + Conversions.ToString(DGV1.RowCount) + " поз.";
 			}
 			else
 			{
-				StatusLabel1.Text = "连接完成，耗时 " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " 秒，共 " + Conversions.ToString(DGV1.RowCount) + " поз.";
+				StatusLabel1.Text = "Подключение завершено, затрачено " + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + " сек, всего " + Conversions.ToString(DGV1.RowCount) + " поз.";
 			}
 		}
 		catch (Exception ex)
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show(this, "加载数据出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show(this, "Ошибка при загрузке данных:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 		finally
@@ -13216,11 +13216,11 @@ public class Frmmain : Form
 							}
 							DGV1[Col_Checkbox.Index, num].Value = false;
 							DGV1[Col_Number.Index, num].Value = num + 1;
-							DGV1[Col_Drw.Index, num].Tag = "无";
+							DGV1[Col_Drw.Index, num].Tag = "Нет";
 							if ((File.Exists(code.SplitStr(text, 3) + ".SLDDRW") && !text.EndsWith(".SLDDRW", StringComparison.OrdinalIgnoreCase)) ? true : false)
 							{
 								DGV1[Col_Drw.Index, num].Value = Resources.slddrw;
-								DGV1[Col_Drw.Index, num].Tag = "有";
+								DGV1[Col_Drw.Index, num].Tag = "Есть";
 							}
 						}
 						else if ((Operators.CompareString(array[0], "ConfigureName", TextCompare: false) == 0 && array.Length >= 2) ? true : false)
@@ -13353,7 +13353,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -13391,7 +13391,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -13493,8 +13493,8 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
-			MessageBox.Show(this, "保存到SW过程出错：\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
+			MessageBox.Show(this, "Ошибка при сохранении в SW:\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -13509,10 +13509,10 @@ public class Frmmain : Form
 		IsStop.Visible = false;
 		code.swApp = null;
 		code.T.Stop();
-		StatusLabel1.Text = "保存完毕，耗时" + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + "秒";
+		StatusLabel1.Text = "Сохранение завершено, затрачено" + Strings.FormatNumber((double)code.T.ElapsedMilliseconds / 1000.0, 1) + "секунда";
 		if (Rowlist_Savefailed.Count > 0)
 		{
-			MessageBox.Show(this, Conversions.ToString(Rowlist_Savefailed.Count) + "Не удалось сохранить элемент", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+			MessageBox.Show(this, Conversions.ToString(Rowlist_Savefailed.Count) + "Не удалось сохранить элемент", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 		}
 		else if (MessageBox.Show(this, "Сохранение завершено, рекомендуется заново получить данные!", "Вопрос", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
 		{
@@ -13565,7 +13565,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -13613,7 +13613,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -13663,7 +13663,7 @@ public class Frmmain : Form
 					int index = dataGridViewRow.Index;
 					if ((code.SkipReadOnly && code.IsReadOnly(Conversions.ToString(DGV1[Col_Path.Index, index].Value))) ? true : false)
 					{
-						MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "跳过只读项", "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
+						MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "Пропускать элементы «только чтение»", "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
 					}
 					else
 					{
@@ -13671,7 +13671,7 @@ public class Frmmain : Form
 						{
 							if ((code.SaveOptions == 1 && !flag) ? true : false)
 							{
-								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "跳过未修改的项", "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
+								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "Пропускать неизменённые элементы", "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
 								goto IL_0947;
 							}
 						}
@@ -13679,17 +13679,17 @@ public class Frmmain : Form
 						{
 							if ((code.SaveOptions == 1 && !code.Cbool1(Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1.Rows[index].Tag)))) ? true : false)
 							{
-								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "跳过未修改的项", "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
+								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "Пропускать неизменённые элементы", "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
 								goto IL_0947;
 							}
 							if ((code.SaveOptions == 2 && Operators.CompareString(DGV1.Rows[index].ErrorText, "", TextCompare: false) == 0) ? true : false)
 							{
-								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "跳过没有失败的项", "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
+								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "Пропускать элементы без ошибок", "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
 								goto IL_0947;
 							}
 							if (customFilter.FilterByRule(index))
 							{
-								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "跳过被筛选的项", "保存到SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
+								MyProject.Forms.Frmtips.additem(0, Conversions.ToString(DGV1[Col_Number.Index, index].Value), "Пропускать отфильтрованные элементы", "Сохранить в SW", Conversions.ToString(DGV1[Col_Path.Index, index].Value));
 								goto IL_0947;
 							}
 						}
@@ -13765,7 +13765,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -14036,7 +14036,7 @@ public class Frmmain : Form
 								num++;
 								NewLateBinding.LateCall(NewLateBinding.LateGet(objectValue3, null, "rows", new object[1] { num8 + num + 1 }, null, null, null), null, "insert", new object[0], null, null, null, IgnoreReturn: true);
 							}
-							if (bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num10].Tag, "有", TextCompare: false))
+							if (bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num10].Tag, "Есть", TextCompare: false))
 							{
 								NewLateBinding.LateSetComplex(NewLateBinding.LateGet(NewLateBinding.LateGet(objectValue3, null, "rows", new object[1] { num8 + num - 1 }, null, null, null), null, "Interior", new object[0], null, null, null), null, "ColorIndex", new object[1] { 6 }, null, null, OptimisticSet: false, RValueBase: true);
 							}
@@ -14083,15 +14083,15 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
-				MessageBox.Show("导出BOM出错：\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
+				MessageBox.Show("Ошибка при экспорте спецификации:\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			finally
 			{
 				try
 				{
-					StatusLabel1.Text = "共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 					NewLateBinding.LateCall(objectValue2, null, "Close", new object[1] { false }, null, null, null, IgnoreReturn: true);
@@ -14441,7 +14441,7 @@ public class Frmmain : Form
 								num11++;
 								NewLateBinding.LateCall(NewLateBinding.LateGet(objectValue3, null, "rows", new object[1] { num10 + num11 + 1 }, null, null, null), null, "insert", new object[0], null, null, null, IgnoreReturn: true);
 							}
-							if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num15].Tag, "有", TextCompare: false)) ? true : false)
+							if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num15].Tag, "Есть", TextCompare: false)) ? true : false)
 							{
 								NewLateBinding.LateSetComplex(NewLateBinding.LateGet(NewLateBinding.LateGet(objectValue3, null, "rows", new object[1] { num10 + num11 - 1 }, null, null, null), null, "Interior", new object[0], null, null, null), null, "ColorIndex", new object[1] { 6 }, null, null, OptimisticSet: false, RValueBase: true);
 							}
@@ -14488,15 +14488,15 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
-				MessageBox.Show("导出BOM出错：\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
+				MessageBox.Show("Ошибка при экспорте спецификации:\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			finally
 			{
 				try
 				{
-					StatusLabel1.Text = "共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 					NewLateBinding.LateCall(objectValue2, null, "Close", new object[1] { false }, null, null, null, IgnoreReturn: true);
@@ -14751,7 +14751,7 @@ public class Frmmain : Form
 								{
 									num++;
 								}
-								if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num7].Tag, "有", TextCompare: false)) ? true : false)
+								if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num7].Tag, "Есть", TextCompare: false)) ? true : false)
 								{
 									if (flag)
 									{
@@ -14792,15 +14792,15 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
-				MessageBox.Show("导出BOM出错：\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
+				MessageBox.Show("Ошибка при экспорте спецификации:\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			finally
 			{
 				try
 				{
-					StatusLabel1.Text = "共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}
@@ -15106,7 +15106,7 @@ public class Frmmain : Form
 									}
 									num14++;
 								}
-								if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num12].Tag, "有", TextCompare: false)) ? true : false)
+								if ((bst.marknodrw && Operators.ConditionalCompareObjectNotEqual(DGV1[Col_Drw.Index, num12].Tag, "Есть", TextCompare: false)) ? true : false)
 								{
 									if (flag)
 									{
@@ -15151,15 +15151,15 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
-				MessageBox.Show("导出BOM出错：\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
+				MessageBox.Show("Ошибка при экспорте спецификации:\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			finally
 			{
 				try
 				{
-					StatusLabel1.Text = "共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}
@@ -15214,7 +15214,7 @@ public class Frmmain : Form
 			SaveFileDialog saveFileDialog = new SaveFileDialog();
 			saveFileDialog.DefaultExt = ".txt";
 			saveFileDialog.FileName = code.SplitStr(treenode.PathName, 1) + "-" + DateTime.Now.ToString("yyyyMMdd");
-			saveFileDialog.Filter = "bom数据（*txt）|*.txt";
+			saveFileDialog.Filter = "Данные спецификации (*.txt)|*.txt";
 			saveFileDialog.ValidateNames = true;
 			if (saveFileDialog.ShowDialog() == DialogResult.Cancel)
 			{
@@ -15257,7 +15257,7 @@ public class Frmmain : Form
 						}
 						num6++;
 					}
-					stringBuilder.Append("\t统计数量");
+					stringBuilder.Append("\tКоличество");
 					streamWriter.WriteLine(stringBuilder);
 					int num8 = list.Count - 1;
 					int num9 = 0;
@@ -15294,15 +15294,15 @@ public class Frmmain : Form
 						num9++;
 					}
 				}
-				StatusLabel1.Text = "共" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 				Process.Start("NotePad.exe", fileName);
 			}
 			catch (Exception ex3)
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
-				MessageBox.Show("导出到txt出错：\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
+				MessageBox.Show("Ошибка при экспорте в txt:\n" + ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
 			finally
@@ -15571,7 +15571,7 @@ public class Frmmain : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			result = false;
 			ProjectData.ClearProjectError();
 			goto IL_014d;
@@ -15600,7 +15600,7 @@ public class Frmmain : Form
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				result = false;
 				ProjectData.ClearProjectError();
 			}

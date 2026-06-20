@@ -989,22 +989,22 @@ public class FrmRg : Form
 			Control.CheckForIllegalCrossThreadCalls = false;
 			if (Environment.Is64BitProcess)
 			{
-				Text = Application.ProductName + " " + Application.ProductVersion.ToString() + "（x64） 注册\u001e\u001c";
+				Text = Application.ProductName + " " + Application.ProductVersion.ToString() + "(x64) Регистрация\u001E\u001C";
 			}
 			else
 			{
-				Text = Application.ProductName + " " + Application.ProductVersion.ToString() + "（x86） 注册\u001e\u001c";
+				Text = Application.ProductName + " " + Application.ProductVersion.ToString() + "(x86) Регистрация\u001E\u001C";
 			}
 		}
 		catch (Exception ex)
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
-		TextBoxWaterMark.SetWatermark(password, "请输入8-20位包含大小写字母和数字的密码");
+		TextBoxWaterMark.SetWatermark(password, "Введите пароль (8-20 символов)");
 		Introduction.Clear();
 		try
 		{
@@ -1052,7 +1052,7 @@ public class FrmRg : Form
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -1102,20 +1102,20 @@ public class FrmRg : Form
 			string text = Licence1.Text.Trim() + "-" + Licence2.Text.Trim() + "-" + Licence3.Text.Trim() + "-" + Licence4.Text.Trim() + "-" + Licence5.Text.Trim();
 			if (Strings.Len(text) <= 4)
 			{
-				MessageBox.Show("Введите регистрационный код", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Введите регистрационный код", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				result = "";
 				goto IL_0279;
 			}
 			if ((Strings.Len(text) > 4) & (Strings.Len(text) != 36))
 			{
-				MessageBox.Show("Недопустимый код, обратитесь к автору для покупки кода", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Недопустимый код, обратитесь к автору для покупки кода", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				result = "";
 				goto IL_0279;
 			}
 			string text2 = Conversions.ToString(Interaction.IIf(Operators.ConditionalCompareObjectEqual(password.Tag, true, TextCompare: false), "", password.Text));
 			if (text2.Length > 0 && !checkpassword(text2))
 			{
-				MessageBox.Show("Неверный формат пароля, введите 8-20 символов с заглавными и строчными буквами и цифрами", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Неверный формат пароля, введите 8-20 символов с заглавными и строчными буквами и цифрами", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 				result = "";
 				goto IL_0279;
 			}
@@ -1141,7 +1141,7 @@ public class FrmRg : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			result = "";
 			ProjectData.ClearProjectError();
 			goto IL_0279;
@@ -1206,7 +1206,7 @@ public class FrmRg : Form
 		{
 			password.UseSystemPasswordChar = true;
 		}
-		TextBoxWaterMark.SetWatermark(password, "请输入8-20位包含大小写字母和数字的密码");
+		TextBoxWaterMark.SetWatermark(password, "Введите пароль (8-20 символов)");
 	}
 
 	private void password_Enter(object sender, EventArgs e)
@@ -1216,6 +1216,6 @@ public class FrmRg : Form
 
 	private void password_LostFocus(object sender, EventArgs e)
 	{
-		TextBoxWaterMark.SetWatermark(password, "请输入8-20位包含大小写字母和数字的密码");
+		TextBoxWaterMark.SetWatermark(password, "Введите пароль (8-20 символов)");
 	}
 }

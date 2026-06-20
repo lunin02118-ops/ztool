@@ -1373,7 +1373,7 @@ public class FrmSWUnit : Form
 		size = new System.Drawing.Size(32, 17);
 		label12.Size = size;
 		this.Label1.TabIndex = 0;
-		this.Label1.Text = "类型";
+		this.Label1.Text = "Тип";
 		this.GroupBox3.Controls.Add(this.Mass_Decimals);
 		this.GroupBox3.Controls.Add(this.Mass_Volume);
 		this.GroupBox3.Controls.Add(this.Mass_Mass);
@@ -1493,7 +1493,7 @@ public class FrmSWUnit : Form
 		size = new System.Drawing.Size(32, 17);
 		label24.Size = size;
 		this.Label12.TabIndex = 0;
-		this.Label12.Text = "类型";
+		this.Label12.Text = "Тип";
 		this.GroupBox4.Controls.Add(this.Motion_Energy_Decimal);
 		this.GroupBox4.Controls.Add(this.Motion_Power_Decimal);
 		this.GroupBox4.Controls.Add(this.Motion_Force_Decimal);
@@ -1638,7 +1638,7 @@ public class FrmSWUnit : Form
 		size = new System.Drawing.Size(32, 17);
 		label32.Size = size;
 		this.Label15.TabIndex = 0;
-		this.Label15.Text = "时间";
+		this.Label15.Text = "Время";
 		this.Label16.AutoSize = true;
 		System.Windows.Forms.Label label33 = this.Label16;
 		location = new System.Drawing.Point(238, 26);
@@ -1668,7 +1668,7 @@ public class FrmSWUnit : Form
 		size = new System.Drawing.Size(32, 17);
 		label38.Size = size;
 		this.Label18.TabIndex = 0;
-		this.Label18.Text = "类型";
+		this.Label18.Text = "Тип";
 		this.AcceptButton = this.OK_Button;
 		System.Drawing.SizeF sizeF = new System.Drawing.SizeF(96f, 96f);
 		this.AutoScaleDimensions = sizeF;
@@ -1737,38 +1737,38 @@ public class FrmSWUnit : Form
 		Motion_Energy_Decimal.Items.Clear();
 		Basic_Length.Items.AddRange(new object[11]
 		{
-			"埃", "纳米", "微米", "毫米", "厘米", "米", "千分英寸", "密耳", "英寸", "英尺",
-			"英尺和英寸"
+			"ангстрем", "нанометр", "микрометр", "миллиметр", "сантиметр", "метр", "тысячная дюйма", "мил", "дюйм", "фут",
+			"футы и дюймы"
 		});
 		Basic_DualDimension.Items.AddRange(new object[11]
 		{
-			"埃", "纳米", "微米", "毫米", "厘米", "米", "千分英寸", "密耳", "英寸", "英尺",
-			"英尺和英寸"
+			"ангстрем", "нанометр", "микрометр", "миллиметр", "сантиметр", "метр", "тысячная дюйма", "мил", "дюйм", "фут",
+			"футы и дюймы"
 		});
-		Basic_Angle.Items.AddRange(new object[4] { "度", "度/分", "度/分秒", "弧度" });
-		Basic_Length_Decimals.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Basic_DualDimension_Decimals.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Basic_Angle_Decimals.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Basic_Angle.Items.AddRange(new object[4] { "градус", "градус/минута", "градус/минута/секунда", "радиан" });
+		Basic_Length_Decimals.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Basic_DualDimension_Decimals.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Basic_Angle_Decimals.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
 		Mass_Length.Items.AddRange(new object[11]
 		{
-			"埃", "纳米", "微米", "毫米", "厘米", "米", "千分英寸", "密耳", "英寸", "英尺",
-			"英尺和英寸"
+			"ангстрем", "нанометр", "микрометр", "миллиметр", "сантиметр", "метр", "тысячная дюйма", "мил", "дюйм", "фут",
+			"футы и дюймы"
 		});
-		Mass_Mass.Items.AddRange(new object[4] { "毫克", "克", "公斤", "磅" });
+		Mass_Mass.Items.AddRange(new object[4] { "миллиграмм", "грамм", "килограмм", "фунт" });
 		Mass_Volume.Items.AddRange(new object[15]
 		{
-			"埃^3", "纳米^3", "微米^3", "毫米^3", "厘米^3", "米^3", "千分英寸^3", "密耳^3", "英寸^3", "英尺^3",
-			"微升", "毫升", "厘升", "分升", "升"
+			"ангстрем³", "нанометр³", "микрометр³", "миллиметр³", "сантиметр³", "метр³", "тысячная дюйма³", "мил³", "дюйм³", "фут³",
+			"микролитр", "миллилитр", "сантилитр", "децилитр", "литр"
 		});
-		Mass_Decimals.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Motion_Time.Items.AddRange(new object[6] { "秒", "毫秒", "微秒", "纳秒", "分", "时" });
-		Motion_Force.Items.AddRange(new object[8] { "达因", "毫牛顿", "牛顿", "千牛顿", "兆牛顿", "磅-力", "千克-力", "盎司-力" });
-		Motion_Power.Items.AddRange(new object[3] { "瓦", "马力", "千瓦" });
-		Motion_Energy.Items.AddRange(new object[4] { "焦耳", "尔格", "BTU", "千瓦-小时" });
-		Motion_Time_Decimal.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Motion_Force_Decimal.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Motion_Power_Decimal.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
-		Motion_Energy_Decimal.Items.AddRange(new object[9] { "无", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Mass_Decimals.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Motion_Time.Items.AddRange(new object[6] { "секунда", "миллисекунда", "микросекунда", "наносекунда", "минута", "час" });
+		Motion_Force.Items.AddRange(new object[8] { "дина", "миллиньютон", "ньютон", "килоньютон", "меганьютон", "фунт-сила", "килограмм-сила", "унция-сила" });
+		Motion_Power.Items.AddRange(new object[3] { "ватт", "лошадиная сила", "киловатт" });
+		Motion_Energy.Items.AddRange(new object[4] { "джоуль", "эрг", "BTU", "киловатт-час" });
+		Motion_Time_Decimal.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Motion_Force_Decimal.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Motion_Power_Decimal.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
+		Motion_Energy_Decimal.Items.AddRange(new object[9] { "Нет", ".1", ".12", ".123", ".1234", ".12345", ".123456", ".1234567", ".12345678" });
 		Loadcfg();
 		Motion_Force_Decimal.SelectedIndex = 2;
 		Motion_Power_Decimal.SelectedIndex = 2;

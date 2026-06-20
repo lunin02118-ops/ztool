@@ -891,7 +891,7 @@ public class FrmSyncDrwName : Form
 		System.Windows.Forms.ToolStripButton oK_Button2 = this.OK_Button;
 		size = new System.Drawing.Size(52, 30);
 		oK_Button2.Size = size;
-		this.OK_Button.Text = "开始";
+		this.OK_Button.Text = "Старт";
 		this.StatusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[2] { this.ToolStripStatusLabel1, this.ToolStripProgressBar1 });
 		System.Windows.Forms.StatusStrip statusStrip = this.StatusStrip1;
 		location = new System.Drawing.Point(0, 429);
@@ -1089,9 +1089,9 @@ public class FrmSyncDrwName : Form
 			int num3 = (int)Math.Round(200.0 * dpixRatio);
 			int num4 = (int)Math.Round(200.0 * dpixRatio);
 			ListView1.Columns.Add("Номер", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("文件名", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Имя файла", num2, HorizontalAlignment.Left);
 			ListView1.Columns.Add("Путь", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("状态", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Статус", num4, HorizontalAlignment.Left);
 			ToolStripProgressBar1.Visible = false;
 		}
 	}
@@ -1140,7 +1140,7 @@ public class FrmSyncDrwName : Form
 				num8++;
 				if ((code.TMode && num8 > 10) ? true : false)
 				{
-					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				ListViewItem listViewItem = new ListViewItem();
@@ -1154,7 +1154,7 @@ public class FrmSyncDrwName : Form
 			ListView1.AddData(list);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -1190,7 +1190,7 @@ public class FrmSyncDrwName : Form
 				binaryFormatter.Serialize(memoryStream, list);
 				Clipboard.SetData(DataFormats.Serializable, memoryStream);
 				Clipboard.SetAudio(memoryStream);
-				MessageBox.Show("已成功复制 " + Conversions.ToString(list.Count) + " поз.", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Успешно скопировано " + Conversions.ToString(list.Count) + " поз.", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 		}
 	}
@@ -1246,7 +1246,7 @@ public class FrmSyncDrwName : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "工程图(*.SLDDRW)|*.SLDDRW";
+		openFileDialog.Filter = "Чертёж (*.SLDDRW)|*.SLDDRW";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -1532,7 +1532,7 @@ public class FrmSyncDrwName : Form
 			}
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "个文件，勾选了" + Conversions.ToString(num) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + "поз.";
 			}
 			else
 			{
@@ -1609,11 +1609,11 @@ public class FrmSyncDrwName : Form
 
 	private void OK_Button_Click(object sender, EventArgs e)
 	{
-		if (Operators.CompareString(OK_Button.Text, "停止", TextCompare: false) == 0)
+		if (Operators.CompareString(OK_Button.Text, "Стоп", TextCompare: false) == 0)
 		{
 			Abort = true;
 		}
-		else if (Operators.CompareString(OK_Button.Text, "开始", TextCompare: false) == 0)
+		else if (Operators.CompareString(OK_Button.Text, "Старт", TextCompare: false) == 0)
 		{
 			if (ListView1.Items.Count < 1)
 			{
@@ -1623,7 +1623,7 @@ public class FrmSyncDrwName : Form
 			{
 				Abort = false;
 				code.EnablePreview = false;
-				OK_Button.Text = "停止";
+				OK_Button.Text = "Стоп";
 				mythread = new Thread(SyncName);
 				mythread.Name = "SyncName";
 				mythread.Start();
@@ -1723,7 +1723,7 @@ public class FrmSyncDrwName : Form
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -1760,7 +1760,7 @@ public class FrmSyncDrwName : Form
 		{
 			ToolStripStatusLabel1.Text = "Синхронизация завершена";
 		}
-		OK_Button.Text = "开始";
+		OK_Button.Text = "Старт";
 		ToolStripProgressBar1.Value = 0;
 		ToolStripProgressBar1.Visible = false;
 		Abort = true;

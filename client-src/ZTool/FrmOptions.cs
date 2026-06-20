@@ -2068,7 +2068,7 @@ public class FrmOptions : Form
 			}
 			try
 			{
-				othermenu.Text = "其它            " + char.ConvertFromUtf32(9660);
+				othermenu.Text = "Прочее            " + char.ConvertFromUtf32(9660);
 			}
 			catch (Exception ex21)
 			{
@@ -2101,7 +2101,7 @@ public class FrmOptions : Form
 	private void menu2_Click(object sender, EventArgs e)
 	{
 		ShortcutHelper shortcutHelper = new ShortcutHelper();
-		shortcutHelper.CreateDesktopShortcut2(Application.ExecutablePath, "ZTool", "SolidWorks高效辅助工具\n批量重命名、编辑属性、打印、转图、生成bom等");
+		shortcutHelper.CreateDesktopShortcut2(Application.ExecutablePath, "ZTool", "Эффективный помощник для SolidWorks\nПакетное переименование, редактирование свойств, печать, конвертация чертежей, создание спецификаций и т. д.");
 	}
 
 	private void menu3_Click(object sender, EventArgs e)
@@ -2117,7 +2117,7 @@ public class FrmOptions : Form
 		stopwatch.Stop();
 		if (flag)
 		{
-			MessageBox.Show(Conversions.ToString(stopwatch.ElapsedMilliseconds) + "毫秒", "Общее время подключения к SolidWorks", MessageBoxButtons.OK, MessageBoxIcon.None);
+			MessageBox.Show(Conversions.ToString(stopwatch.ElapsedMilliseconds) + "миллисекунда", "Общее время подключения к SolidWorks", MessageBoxButtons.OK, MessageBoxIcon.None);
 		}
 		else
 		{
@@ -2139,10 +2139,10 @@ public class FrmOptions : Form
 	private void open_browse_Click(object sender, EventArgs e)
 	{
 		OpenFileDialog openFileDialog = new OpenFileDialog();
-		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "SW模板");
+		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Шаблон SW");
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "材质数据库文件（*.sldmat）|*.sldmat";
+		openFileDialog.Filter = "Файл базы материалов (*.sldmat)|*.sldmat";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{
 			materialpath.Text = openFileDialog.FileName;
@@ -2459,7 +2459,7 @@ public class FrmOptions : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "solidworks宏文件（*.swb;*.swp）|*.swb;*.swp";
+		openFileDialog.Filter = "Файл макроса SolidWorks (*.swb;*.swp)|*.swb;*.swp";
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
 			return;

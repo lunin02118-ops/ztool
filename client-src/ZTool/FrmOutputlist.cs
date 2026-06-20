@@ -1428,7 +1428,7 @@ public class FrmOutputlist : Form
 		System.Windows.Forms.ToolStripButton toolStripButton7 = this.nextstep;
 		size = new System.Drawing.Size(64, 30);
 		toolStripButton7.Size = size;
-		this.nextstep.Text = "下一步";
+		this.nextstep.Text = "Далее";
 		this.ToolStripButton1.Image = ZTool.My.Resources.Resources.Folder_24px;
 		this.ToolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
 		this.ToolStripButton1.Name = "ToolStripButton1";
@@ -1656,10 +1656,10 @@ public class FrmOutputlist : Form
 			int num4 = (int)Math.Round(80.0 * dpixRatio);
 			int num5 = (int)Math.Round(50.0 * dpixRatio);
 			ListView1.Columns.Add("Номер", num, HorizontalAlignment.Left);
-			ListView1.Columns.Add("文件名", num2, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Имя файла", num2, HorizontalAlignment.Left);
 			ListView1.Columns.Add("Путь", num3, HorizontalAlignment.Left);
-			ListView1.Columns.Add("零件配置", num4, HorizontalAlignment.Left);
-			ListView1.Columns.Add("状态", num5, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Конфигурация детали", num4, HorizontalAlignment.Left);
+			ListView1.Columns.Add("Статус", num5, HorizontalAlignment.Left);
 			ToolStripProgressBar1.Visible = false;
 			try
 			{
@@ -1766,7 +1766,7 @@ public class FrmOutputlist : Form
 				num++;
 				if ((code.TMode && num > 10) ? true : false)
 				{
-					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Пробная версия поддерживает не более 10 файлов", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					break;
 				}
 				ListViewItem listViewItem = new ListViewItem();
@@ -1783,7 +1783,7 @@ public class FrmOutputlist : Form
 			ListView1.AddData(list4);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 			}
 			else
 			{
@@ -1819,7 +1819,7 @@ public class FrmOutputlist : Form
 				binaryFormatter.Serialize(memoryStream, list);
 				Clipboard.SetData(DataFormats.Serializable, memoryStream);
 				Clipboard.SetAudio(memoryStream);
-				MessageBox.Show("已成功复制 " + Conversions.ToString(list.Count) + " поз.", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+				MessageBox.Show("Успешно скопировано " + Conversions.ToString(list.Count) + " поз.", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			}
 		}
 	}
@@ -1875,7 +1875,7 @@ public class FrmOutputlist : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.Filter = "工程图(*.SLDDRW)|*.SLDDRW|零件(*.SLDPRT)|*.SLDPRT|装配体(*.SLDASM)|*.SLDASM|SOLIDWORKS文件(*.SLDPRT;*.SLDASM;*.SLDDRW)|*.SLDPRT;*.SLDASM;*.SLDDRW";
+		openFileDialog.Filter = "Чертёж (*.SLDDRW)|*.SLDDRW|Деталь (*.SLDPRT)|*.SLDPRT|Сборка (*.SLDASM)|*.SLDASM|Файлы SOLIDWORKS (*.SLDPRT;*.SLDASM;*.SLDDRW)|*.SLDPRT;*.SLDASM;*.SLDDRW";
 		openFileDialog.FilterIndex = 1;
 		if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 		{
@@ -2346,7 +2346,7 @@ public class FrmOutputlist : Form
 
 	private void nextstep_Click(object sender, EventArgs e)
 	{
-		if (Operators.CompareString(nextstep.Text, "下一步", TextCompare: false) == 0)
+		if (Operators.CompareString(nextstep.Text, "Далее", TextCompare: false) == 0)
 		{
 			MyProject.Forms.FrmOutputoptions.ShowDialog(this);
 		}
@@ -2366,22 +2366,22 @@ public class FrmOutputlist : Form
 			ToolStripStatusLabel1.Text = "Задача останавливается";
 			break;
 		case 1:
-			nextstep.Text = "停止";
+			nextstep.Text = "Стоп";
 			nextstep.Image = Resources.Stop_24x;
 			break;
 		case 2:
 			ToolStripStatusLabel1.Text = "Задача завершена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			break;
 		case 3:
 			ToolStripStatusLabel1.Text = "Задача остановлена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			break;
 		case 4:
 			ToolStripStatusLabel1.Text = "Задача остановлена";
-			nextstep.Text = "下一步";
+			nextstep.Text = "Далее";
 			nextstep.Image = Resources.Start_24x;
 			MessageBox.Show(this, "Текущая задача прервана; нажмите «Далее» ➜ «Старт», чтобы продолжить", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			break;
@@ -2402,7 +2402,7 @@ public class FrmOutputlist : Form
 		ListView1.DelSelectItems();
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "共" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
 		}
 		else
 		{
@@ -2770,7 +2770,7 @@ public class FrmOutputlist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 				openFileDialog.FilterIndex = 1;
 				if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 				{
@@ -2837,7 +2837,7 @@ public class FrmOutputlist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 				openFileDialog.FilterIndex = 1;
 				if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 				{
@@ -2904,7 +2904,7 @@ public class FrmOutputlist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 				openFileDialog.FilterIndex = 1;
 				if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 				{
@@ -2975,7 +2975,7 @@ public class FrmOutputlist : Form
 				OpenFileDialog openFileDialog = new OpenFileDialog();
 				openFileDialog.Multiselect = false;
 				openFileDialog.SupportMultiDottedExtensions = true;
-				openFileDialog.Filter = "装配体(*.SLDASM)|*.SLDASM";
+				openFileDialog.Filter = "Сборка (*.SLDASM)|*.SLDASM";
 				openFileDialog.FilterIndex = 1;
 				if (openFileDialog.ShowDialog() == DialogResult.Cancel)
 				{

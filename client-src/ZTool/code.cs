@@ -226,8 +226,8 @@ public static class code
 
 	public static Array downlist = new string[17]
 	{
-		"SW-材质", "SW-质量", "SW-密度", "SW-体积", "SW-表面积", "SW-生成的日期(Created Date)", "SW-上次保存的日期(Last Saved Date)", "SW-上次保存者(Last Saved By)", "SW-文件名称(File Name)", "SW-文件夹名称(Folder Name)",
-		"SW-配置名称(Configuration Name)", "SW-作者(Author)", "SW-评述(Comments)", "SW-主题(Subject)", "SW-标题 (Title)", "SW-关键词(Keywords)", "当前日期"
+		"SW-Материал", "SW-Масса", "SW-Плотность", "SW-Объём", "SW-Площадь поверхности", "SW-Дата создания (Created Date)", "SW-Дата последнего сохранения (Last Saved Date)", "SW-Кто сохранил последним (Last Saved By)", "SW-Имя файла (File Name)", "SW-Имя папки (Folder Name)",
+		"SW-Имя конфигурации (Configuration Name)", "SW-Автор (Author)", "SW-Примечания (Comments)", "SW-Тема (Subject)", "SW-Заголовок (Title)", "SW-Ключевые слова (Keywords)", "Текущая дата"
 	};
 
 	public static Array downlistvalue = new string[17]
@@ -442,7 +442,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -470,7 +470,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -479,7 +479,7 @@ public static class code
 	{
 		string text = "";
 		int num = 0;
-		string text2 = "设置的SolidWorks版本不正确，请重新设置";
+		string text2 = "Указана неверная версия SolidWorks, задайте её заново";
 		bool result;
 		checked
 		{
@@ -506,7 +506,7 @@ public static class code
 				if ((Versioned.IsNumeric(MacroVer) && MacroVer >= 20) ? true : false)
 				{
 					num = MacroVer;
-					text2 = "当前SolidWorks版本调用失败！";
+					text2 = "Не удалось обратиться к текущей версии SolidWorks!";
 				}
 				text = Conversions.ToString(Interaction.IIf(num == 0, "SldWorks.Application", "SldWorks.Application." + Conversions.ToString(num)));
 			}
@@ -676,7 +676,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -765,7 +765,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -795,7 +795,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -1318,7 +1318,7 @@ public static class code
 					case null:
 					case "":
 					case "default":
-					case "默认":
+					case "По умолчанию":
 						if (true)
 						{
 							break;
@@ -1449,15 +1449,15 @@ public static class code
 						}
 						num7++;
 					}
-					dictionary.Add("<标题>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 0 }, null, null, null)));
-					dictionary.Add("<主题>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 1 }, null, null, null)));
-					dictionary.Add("<作者>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 2 }, null, null, null)));
-					dictionary.Add("<关键字>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 3 }, null, null, null)));
-					dictionary.Add("<备注>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 4 }, null, null, null)));
-					dictionary.Add("<模型文件名称>", SplitStr(text2, 1));
-					dictionary.Add("<模型文件夹名称>", SplitStr(text2));
-					dictionary.Add("<配置名称>", text);
-					dictionary.Add("<当前日期>", DateTime.Now.ToString("yyyyMMdd"));
+					dictionary.Add("<Заголовок>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 0 }, null, null, null)));
+					dictionary.Add("<Тема>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 1 }, null, null, null)));
+					dictionary.Add("<Автор>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 2 }, null, null, null)));
+					dictionary.Add("<КлючевыеСлова>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 3 }, null, null, null)));
+					dictionary.Add("<Примечание>", Conversions.ToString(NewLateBinding.LateGet(obj, null, "SummaryInfo", new object[1] { 4 }, null, null, null)));
+					dictionary.Add("<ИмяФайлаМодели>", SplitStr(text2, 1));
+					dictionary.Add("<ИмяПапкиМодели>", SplitStr(text2));
+					dictionary.Add("<ИмяКонфигурации>", text);
+					dictionary.Add("<ТекущаяДата>", DateTime.Now.ToString("yyyyMMdd"));
 					string value = "";
 					if (text2.EndsWith(".sldprt", StringComparison.OrdinalIgnoreCase))
 					{
@@ -1477,7 +1477,7 @@ public static class code
 						}
 						value = Conversions.ToString(obj8);
 					}
-					dictionary.Add("<材质>", value);
+					dictionary.Add("<Материал>", value);
 					string text9 = "";
 					string text10 = "";
 					int num11 = dgvdatalist.Count - 1;
@@ -1500,7 +1500,7 @@ public static class code
 							}
 							if (text9.Equals(text10, StringComparison.OrdinalIgnoreCase))
 							{
-								dictionary.Add("<统计数量>", Conversions.ToString(dgvdatalist[num12].Quantity));
+								dictionary.Add("<Количество>", Conversions.ToString(dgvdatalist[num12].Quantity));
 								break;
 							}
 							num12++;
@@ -1514,7 +1514,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			return dictionary;
@@ -1643,15 +1643,15 @@ public static class code
 						num3++;
 					}
 					string text5 = Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "getpathname", new object[0], null, null, null));
-					dictionary.Add("<标题>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 0 }, null, null, null)));
-					dictionary.Add("<主题>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 1 }, null, null, null)));
-					dictionary.Add("<作者>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 2 }, null, null, null)));
-					dictionary.Add("<关键字>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 3 }, null, null, null)));
-					dictionary.Add("<备注>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 4 }, null, null, null)));
-					dictionary.Add("<文件名称>", SplitStr(text5, 1));
-					dictionary.Add("<文件夹名称>", SplitStr(text5));
-					dictionary.Add("<配置名称>", sConfName);
-					dictionary.Add("<当前日期>", DateTime.Now.ToString("yyyyMMdd"));
+					dictionary.Add("<Заголовок>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 0 }, null, null, null)));
+					dictionary.Add("<Тема>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 1 }, null, null, null)));
+					dictionary.Add("<Автор>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 2 }, null, null, null)));
+					dictionary.Add("<КлючевыеСлова>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 3 }, null, null, null)));
+					dictionary.Add("<Примечание>", Conversions.ToString(NewLateBinding.LateGet(modeldoc, null, "SummaryInfo", new object[1] { 4 }, null, null, null)));
+					dictionary.Add("<ИмяФайла>", SplitStr(text5, 1));
+					dictionary.Add("<ИмяПапки>", SplitStr(text5));
+					dictionary.Add("<ИмяКонфигурации>", sConfName);
+					dictionary.Add("<ТекущаяДата>", DateTime.Now.ToString("yyyyMMdd"));
 					string value = "";
 					if (text5.EndsWith(".sldprt", StringComparison.OrdinalIgnoreCase))
 					{
@@ -1670,7 +1670,7 @@ public static class code
 						}
 						value = Conversions.ToString(obj7);
 					}
-					dictionary.Add("<材质>", value);
+					dictionary.Add("<Материал>", value);
 					string text7 = "";
 					string text8 = "";
 					int num8 = dgvdatalist.Count - 1;
@@ -1693,7 +1693,7 @@ public static class code
 							}
 							if (text7.Equals(text8, StringComparison.OrdinalIgnoreCase))
 							{
-								dictionary.Add("<统计数量>", Conversions.ToString(dgvdatalist[num9].Quantity));
+								dictionary.Add("<Количество>", Conversions.ToString(dgvdatalist[num9].Quantity));
 								break;
 							}
 							num9++;
@@ -2045,7 +2045,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2058,7 +2058,7 @@ public static class code
 		{
 			if (!IsValidPath(str))
 			{
-				throw new ArgumentException("路径格式不合法", str);
+				throw new ArgumentException("Недопустимый формат пути", str);
 			}
 			string directoryName = Path.GetDirectoryName(str);
 			string fileName = Path.GetFileName(str);
@@ -2079,7 +2079,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			result = str;
 			ProjectData.ClearProjectError();
 		}
@@ -2125,7 +2125,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2137,10 +2137,10 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"文本" => 30, 
-			"日期" => 64, 
-			"数字" => 3, 
-			"是或否" => 11, 
+			"Текст" => 30, 
+			"Дата" => 64, 
+			"Число" => 3, 
+			"Да или нет" => 11, 
 			_ => 30, 
 		};
 	}
@@ -2149,17 +2149,17 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"埃" => 6, 
-			"纳米" => 7, 
-			"微米" => 8, 
-			"毫米" => 0, 
-			"厘米" => 1, 
-			"米" => 2, 
-			"千分英寸" => 10, 
-			"密耳" => 9, 
-			"英寸" => 3, 
-			"英尺" => 4, 
-			"英尺和英寸" => 5, 
+			"ангстрем" => 6, 
+			"нанометр" => 7, 
+			"микрометр" => 8, 
+			"миллиметр" => 0, 
+			"сантиметр" => 1, 
+			"метр" => 2, 
+			"тысячная дюйма" => 10, 
+			"мил" => 9, 
+			"дюйм" => 3, 
+			"фут" => 4, 
+			"футы и дюймы" => 5, 
 			_ => 0, 
 		};
 	}
@@ -2168,10 +2168,10 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"度" => 0, 
-			"度/分" => 1, 
-			"度/分秒" => 2, 
-			"弧度" => 3, 
+			"градус" => 0, 
+			"градус/минута" => 1, 
+			"градус/минута/секунда" => 2, 
+			"радиан" => 3, 
 			_ => 0, 
 		};
 	}
@@ -2180,10 +2180,10 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"毫克" => 1, 
-			"克" => 2, 
-			"公斤" => 3, 
-			"磅" => 4, 
+			"миллиграмм" => 1, 
+			"грамм" => 2, 
+			"килограмм" => 3, 
+			"фунт" => 4, 
 			_ => 3, 
 		};
 	}
@@ -2192,21 +2192,21 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"埃^3" => 1, 
-			"纳米^3" => 2, 
-			"微米^3" => 3, 
-			"毫米^3" => 4, 
-			"厘米^3" => 5, 
-			"米^3" => 6, 
-			"千分英寸^3" => 7, 
-			"密耳^3" => 8, 
-			"英寸^3" => 9, 
-			"英尺^3" => 10, 
-			"微升" => 11, 
-			"毫升" => 12, 
-			"厘升" => 13, 
-			"分升" => 14, 
-			"升" => 15, 
+			"ангстрем³" => 1, 
+			"нанометр³" => 2, 
+			"микрометр³" => 3, 
+			"миллиметр³" => 4, 
+			"сантиметр³" => 5, 
+			"метр³" => 6, 
+			"тысячная дюйма³" => 7, 
+			"мил³" => 8, 
+			"дюйм³" => 9, 
+			"фут³" => 10, 
+			"микролитр" => 11, 
+			"миллилитр" => 12, 
+			"сантилитр" => 13, 
+			"децилитр" => 14, 
+			"литр" => 15, 
 			_ => 4, 
 		};
 	}
@@ -2215,12 +2215,12 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"秒" => 1, 
-			"毫秒" => 2, 
-			"微秒" => 5, 
-			"纳秒" => 6, 
-			"分" => 3, 
-			"时" => 4, 
+			"секунда" => 1, 
+			"миллисекунда" => 2, 
+			"микросекунда" => 5, 
+			"наносекунда" => 6, 
+			"минута" => 3, 
+			"час" => 4, 
 			_ => 1, 
 		};
 	}
@@ -2229,14 +2229,14 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"达因" => 1, 
-			"毫牛顿" => 2, 
-			"牛顿" => 3, 
-			"千牛顿" => 4, 
-			"兆牛顿" => 5, 
-			"磅-力" => 6, 
-			"千克-力" => 7, 
-			"盎司-力" => 8, 
+			"дина" => 1, 
+			"миллиньютон" => 2, 
+			"ньютон" => 3, 
+			"килоньютон" => 4, 
+			"меганьютон" => 5, 
+			"фунт-сила" => 6, 
+			"килограмм-сила" => 7, 
+			"унция-сила" => 8, 
 			_ => 3, 
 		};
 	}
@@ -2245,9 +2245,9 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"瓦" => 1, 
-			"马力" => 2, 
-			"千瓦" => 3, 
+			"ватт" => 1, 
+			"лошадиная сила" => 2, 
+			"киловатт" => 3, 
 			_ => 1, 
 		};
 	}
@@ -2256,10 +2256,10 @@ public static class code
 	{
 		return wName.ToUpper() switch
 		{
-			"焦耳" => 1, 
-			"尔格" => 2, 
+			"джоуль" => 1, 
+			"эрг" => 2, 
 			"BTU" => 3, 
-			"千瓦-小时" => 4, 
+			"киловатт-час" => 4, 
 			_ => 1, 
 		};
 	}
@@ -2331,7 +2331,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2385,7 +2385,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(MyProject.Forms.Frmmain, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2408,7 +2408,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(MyProject.Forms.Frmmain, ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2446,7 +2446,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex5);
 			Exception ex6 = ex5;
-			logopathlist.WriteLog($"异常类型：{ex6.GetType().Name}\r\n异常消息：{ex6.Message}\r\n异常信息：{ex6.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex6.GetType().Name}\r\nСообщение: {ex6.Message}\r\nИнформация: {ex6.StackTrace}");
 			MessageBox.Show(ex6.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2542,7 +2542,7 @@ public static class code
 					{
 						ProjectData.SetProjectError(ex);
 						Exception ex2 = ex;
-						logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+						logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 						ProjectData.ClearProjectError();
 					}
 					num2++;
@@ -2556,7 +2556,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2567,7 +2567,7 @@ public static class code
 				MyProject.Forms.Frmmain.DGV1.Columns[MyProject.Forms.Frmmain.Col_Preview.Index].Visible = true;
 				MyProject.Forms.Frmmain.ToolStripProgressBar1.Visible = false;
 				MyProject.Forms.Frmmain.ToolStripProgressBar1.Value = 0;
-				MyProject.Forms.Frmmain.StatusLabel1.Text = "当前共" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				MyProject.Forms.Frmmain.StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
 				MyProject.Forms.Frmmain.IsStop.Visible = false;
 				EnablePreview = true;
 				InsertPicBool = true;
@@ -2644,7 +2644,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -2701,7 +2701,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2755,7 +2755,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex3);
 			Exception ex4 = ex3;
-			logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 			MessageBox.Show(ex4.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2881,7 +2881,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -2907,7 +2907,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 		return result;
@@ -2925,7 +2925,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
 		return result;
@@ -3030,7 +3030,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
 			}
@@ -3157,7 +3157,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			return result;
@@ -3332,7 +3332,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
-				logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			num2 = Conversions.ToInteger(Interaction.IIf(num2 > 20, num2 - 20, num2));
@@ -3350,7 +3350,7 @@ public static class code
 			{
 				ProjectData.SetProjectError(ex3);
 				Exception ex4 = ex3;
-				logopathlist.WriteLog($"异常类型：{ex4.GetType().Name}\r\n异常消息：{ex4.Message}\r\n异常信息：{ex4.StackTrace}");
+				logopathlist.WriteLog($"Тип исключения: {ex4.GetType().Name}\r\nСообщение: {ex4.Message}\r\nИнформация: {ex4.StackTrace}");
 				ProjectData.ClearProjectError();
 			}
 			return result;
@@ -3471,7 +3471,7 @@ public static class code
 		bool result;
 		try
 		{
-			result = string.Equals(str.Trim(), "yes", StringComparison.OrdinalIgnoreCase) || (string.Equals(str.Trim(), "是", StringComparison.OrdinalIgnoreCase) ? true : false) || (((!string.Equals(str.Trim(), "no", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "not", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "否", StringComparison.OrdinalIgnoreCase)) || 1 == 0) && Conversions.ToBoolean(str));
+			result = string.Equals(str.Trim(), "yes", StringComparison.OrdinalIgnoreCase) || (string.Equals(str.Trim(), "Да", StringComparison.OrdinalIgnoreCase) ? true : false) || (((!string.Equals(str.Trim(), "no", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "not", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "Нет", StringComparison.OrdinalIgnoreCase)) || 1 == 0) && Conversions.ToBoolean(str));
 		}
 		catch (Exception ex)
 		{
@@ -3488,7 +3488,7 @@ public static class code
 		string result;
 		try
 		{
-			result = (((string.Equals(str.Trim(), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(str.Trim(), "yes", StringComparison.OrdinalIgnoreCase) || string.Equals(str.Trim(), "是", StringComparison.OrdinalIgnoreCase)) ? true : false) ? "Yes" : (((!string.Equals(str.Trim(), "false", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "no", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "not", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "否", StringComparison.OrdinalIgnoreCase)) || 1 == 0) ? str : "Not"));
+			result = (((string.Equals(str.Trim(), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(str.Trim(), "yes", StringComparison.OrdinalIgnoreCase) || string.Equals(str.Trim(), "Да", StringComparison.OrdinalIgnoreCase)) ? true : false) ? "Yes" : (((!string.Equals(str.Trim(), "false", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "no", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "not", StringComparison.OrdinalIgnoreCase) && !string.Equals(str.Trim(), "Нет", StringComparison.OrdinalIgnoreCase)) || 1 == 0) ? str : "Not"));
 		}
 		catch (Exception ex)
 		{
@@ -3835,7 +3835,7 @@ public static class code
 				streamWriter.WriteLine("set oShellLink = WshShell.CreateShortcut(\"" + text2 + "\")");
 				streamWriter.WriteLine("oShellLink.TargetPath =\"" + Application.ExecutablePath + "\"");
 				streamWriter.WriteLine("oShellLink.WindowStyle = 1");
-				streamWriter.WriteLine("oShellLink.Description =\"SolidWorks高效辅助工具\" ");
+				streamWriter.WriteLine("oShellLink.Description =\"Эффективный помощник для SolidWorks\" ");
 				streamWriter.WriteLine("oShellLink.WorkingDirectory =\"" + Application.StartupPath + "\"");
 				streamWriter.WriteLine("oShellLink.Save");
 				streamWriter.WriteLine("createobject(\"scripting.filesystemobject\").deletefile wscript.scriptfullname");
@@ -3937,7 +3937,7 @@ public static class code
 						try
 						{
 							Assembly assembly = Assembly.LoadFrom(array[num2]);
-							if ((!Information.IsNothing(assembly) && assembly.GetName().Name.Equals("初始化", StringComparison.OrdinalIgnoreCase)) ? true : false)
+							if ((!Information.IsNothing(assembly) && assembly.GetName().Name.Equals("Инициализация", StringComparison.OrdinalIgnoreCase)) ? true : false)
 							{
 								flag = true;
 								break;
@@ -4152,7 +4152,7 @@ public static class code
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}

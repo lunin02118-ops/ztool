@@ -61,7 +61,7 @@ public class ShortcutHelper
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			MessageBox.Show("创建快捷方式失败：\r\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			MessageBox.Show("Не удалось создать ярлык:\r\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}
@@ -104,7 +104,7 @@ public class ShortcutHelper
 					{
 						text9 = process.StandardOutput.ReadToEnd();
 					}
-					throw new Exception("PowerShell 执行失败 (ExitCode: " + process.ExitCode + "): " + text9);
+					throw new Exception("PowerShell: ошибка выполнения (ExitCode: " + process.ExitCode + "): " + text9);
 				}
 			}
 			MessageBox.Show("Ярлык успешно создан!", "Успешно", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -113,7 +113,7 @@ public class ShortcutHelper
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			MessageBox.Show("创建快捷方式失败：\r\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			MessageBox.Show("Не удалось создать ярлык:\r\n" + ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
 	}

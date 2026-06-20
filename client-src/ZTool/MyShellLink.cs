@@ -66,7 +66,7 @@ public class MyShellLink
 	public void creatShortcut()
 	{
 		IShellLink shellLink = (IShellLink)new ShellLink();
-		shellLink.SetDescription("SolidWorks高效辅助工具\n批量重命名、编辑属性、打印、转图、生成bom等");
+		shellLink.SetDescription("Эффективный помощник для SolidWorks\nПакетное переименование, редактирование свойств, печать, конвертация чертежей, создание спецификаций и т. д.");
 		shellLink.SetPath(Application.ExecutablePath);
 		shellLink.SetWorkingDirectory(Application.StartupPath);
 		IPersistFile persistFile = (IPersistFile)shellLink;

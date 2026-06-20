@@ -958,7 +958,7 @@ public class FrmSaveOption : Form
 		this.ComboBox4.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ComboBox4.FormattingEnabled = true;
 		this.ComboBox4.ItemHeight = 17;
-		this.ComboBox4.Items.AddRange(new object[1] { "其它位置" });
+		this.ComboBox4.Items.AddRange(new object[1] { "Другое расположение" });
 		System.Windows.Forms.ComboBox comboBox = this.ComboBox4;
 		location = new System.Drawing.Point(13, 98);
 		comboBox.Location = location;
@@ -1041,7 +1041,7 @@ public class FrmSaveOption : Form
 		this.ComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.ComboBox2.Enabled = false;
 		this.ComboBox2.FormattingEnabled = true;
-		this.ComboBox2.Items.AddRange(new object[4] { "自定义和所有配置", "所有配置", "当前配置", "Пользовательское" });
+		this.ComboBox2.Items.AddRange(new object[4] { "Настраиваемые и все конфигурации", "Все конфигурации", "Текущая конфигурация", "Пользовательское" });
 		System.Windows.Forms.ComboBox comboBox4 = this.ComboBox2;
 		location = new System.Drawing.Point(13, 153);
 		comboBox4.Location = location;
@@ -1058,7 +1058,7 @@ public class FrmSaveOption : Form
 		this.ComboBox3.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ComboBox3.FormattingEnabled = true;
 		this.ComboBox3.ItemHeight = 17;
-		this.ComboBox3.Items.AddRange(new object[2] { "其它位置", "Пользовательское" });
+		this.ComboBox3.Items.AddRange(new object[2] { "Другое расположение", "Пользовательское" });
 		System.Windows.Forms.ComboBox comboBox7 = this.ComboBox3;
 		location = new System.Drawing.Point(13, 98);
 		comboBox7.Location = location;
@@ -1074,7 +1074,7 @@ public class FrmSaveOption : Form
 		this.ComboBox1.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ComboBox1.FormattingEnabled = true;
 		this.ComboBox1.ItemHeight = 17;
-		this.ComboBox1.Items.AddRange(new object[4] { "原位置（新建属性在自定义）", "原位置（新建属性在配置）", "Пользовательское", "当前配置" });
+		this.ComboBox1.Items.AddRange(new object[4] { "Исходное расположение (новое свойство в «Настраиваемые»)", "Исходное расположение (новое свойство в «Конфигурация»)", "Пользовательское", "Текущая конфигурация" });
 		System.Windows.Forms.ComboBox comboBox10 = this.ComboBox1;
 		location = new System.Drawing.Point(13, 43);
 		comboBox10.Location = location;
@@ -1383,7 +1383,7 @@ public class FrmSaveOption : Form
 				code.oldfile_moveto = 2;
 				if (!Directory.Exists(code.targetpath))
 				{
-					MessageBox.Show(this, "Сначала укажите путь перемещения старых файлов после переименования", "提示", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+					MessageBox.Show(this, "Сначала укажите путь перемещения старых файлов после переименования", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 					return;
 				}
 			}
@@ -1464,7 +1464,7 @@ public class FrmSaveOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1492,7 +1492,7 @@ public class FrmSaveOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(this, ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1572,7 +1572,7 @@ public class FrmSaveOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
@@ -1595,7 +1595,7 @@ public class FrmSaveOption : Form
 		{
 			ProjectData.SetProjectError(ex);
 			Exception ex2 = ex;
-			logopathlist.WriteLog($"异常类型：{ex2.GetType().Name}\r\n异常消息：{ex2.Message}\r\n异常信息：{ex2.StackTrace}");
+			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 			ProjectData.ClearProjectError();
 		}
