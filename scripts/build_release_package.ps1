@@ -42,6 +42,10 @@ function Get-Sha256([string]$Path) {
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
 }
 
+function Invoke-Checked([string]$What) {
+    if ($LASTEXITCODE -ne 0) { throw "$What failed (exit $LASTEXITCODE)" }
+}
+
 function Write-Utf8NoBom([string]$Path, [string[]]$Lines) {
     $encoding = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllLines($Path, $Lines, $encoding)
@@ -80,7 +84,15 @@ New-Item -ItemType Directory -Force -Path $runtimeDir, $serverDir, $docsDir | Ou
 
 $copied = @()
 $copied += Copy-RequiredFile $ClientExe $runtimeDir 'SWTools.exe'
-$copied += Copy-RequiredFile $AddinDll $runtimeDir 'SWTools.dll'
+$addinRuntimeDll = Copy-RequiredFile $AddinDll $runtimeDir 'SWTools.dll'
+$addinPatchProject = Join-Path $repoRoot 'client-core\tools\AddinBrandPatch\AddinBrandPatch.csproj'
+$addinPatchTmp = "$addinRuntimeDll.brand.tmp"
+dotnet run -c Release --project $addinPatchProject -- $addinRuntimeDll patch $addinPatchTmp
+Invoke-Checked 'addin brand patch'
+Move-Item -Force $addinPatchTmp $addinRuntimeDll
+dotnet run -c Release --project $addinPatchProject -- $addinRuntimeDll verify
+Invoke-Checked 'addin brand verify'
+$copied += $addinRuntimeDll
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'SWToolsARM.dll') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'SWTools.settings') $runtimeDir
 $copied += Copy-RequiredFile (Join-Path $repoRoot 'SWTools Updater.exe') $runtimeDir
@@ -128,6 +140,7 @@ $manifest = [ordered]@{
     runtime = [ordered]@{
         client_exe_source = $ClientExe
         addin_dll_source = $AddinDll
+        addin_dll_brand_patched = $true
         solidworks_tools_included = [bool]$swTools
     }
     files = $files

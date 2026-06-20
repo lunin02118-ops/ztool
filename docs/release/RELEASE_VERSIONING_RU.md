@@ -11,7 +11,7 @@ VERSION
 Для текущей ветки версия:
 
 ```text
-1.1.1
+1.1.3
 ```
 
 Дата сборки не является версией продукта. Дату можно смотреть в manifest/log,
@@ -29,11 +29,11 @@ releases\<version>\
 
 ```text
 releases\<version>\
-  ZTool-<version>-Setup.exe
-  ZTool-<version>-Setup.manifest.json
-  ZTool-<version>-Setup.build.log
+  SWTools-<version>-Setup.exe
+  SWTools-<version>-Setup.manifest.json
+  SWTools-<version>-Setup.build.log
   package\
-    ZTool-<version>\
+    SWTools-<version>\
       manifest.json
       SHA256SUMS.txt
       runtime\
@@ -47,7 +47,7 @@ releases\<version>\
 ## Commands
 
 Обычная сборка клиента берёт версию из `VERSION` и записывает её в
-`client-core/out/ZTool.manifest.json`:
+`client-core/out/SWTools.manifest.json`:
 
 ```powershell
 .\client-core\build.ps1
@@ -63,7 +63,7 @@ Installer из package по умолчанию пишет setup прямо в `r
 
 ```powershell
 .\scripts\build_client_installer.ps1 `
-  -PackageRoot .\releases\1.1.1\package\ZTool-1.1.1
+  -PackageRoot .\releases\1.1.3\package\SWTools-1.1.3
 ```
 
 ## Rules

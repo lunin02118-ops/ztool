@@ -26,8 +26,8 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256             = 'cd0b4aa0d3faca3089cf854297c4402b56ee2c4208679415e18a36d9b11ebe13'
-        addin_dll_sha256              = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+        client_exe_sha256             = 'a57441105c5d02f8c01f920ac23e56a94ca027615520e7c29c5fb1c57fd73ec5'
+        addin_dll_sha256              = '1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705'
         ribbon_dll_sha256             = '57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e'
         expandable_grid_view_sha256   = '89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0'
         ztool_rsa_dll_sha256          = '274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90'
@@ -61,6 +61,10 @@ function Get-Sha256([string]$Path) {
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
 }
 
+function Invoke-Checked([string]$What) {
+    if ($LASTEXITCODE -ne 0) { Fail "$What failed (exit $LASTEXITCODE)" }
+}
+
 function Assert-File([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         Fail "missing file: $Path"
@@ -87,6 +91,7 @@ function Get-XmlText([xml]$Xml, [string]$ElementName) {
     return $node.InnerText.Trim()
 }
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $root = (Resolve-Path -LiteralPath $PackageRoot).Path
 $manifestPath = Join-Path $root 'manifest.json'
 $sumsPath = Join-Path $root 'SHA256SUMS.txt'
@@ -202,6 +207,9 @@ Get-ChildItem -LiteralPath $root -Recurse -Force | ForEach-Object {
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
+$addinPatchProject = Join-Path $repoRoot 'client-core\tools\AddinBrandPatch\AddinBrandPatch.csproj'
+dotnet run -c Release --project $addinPatchProject -- $addinDll verify
+Invoke-Checked 'addin brand verify'
 Assert-Hash $ribbonDll $ExpectedRibbonSha256
 Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
 Assert-Hash $ztoolRsaDll $ExpectedZToolRsaSha256

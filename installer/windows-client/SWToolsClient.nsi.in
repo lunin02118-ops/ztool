@@ -11,6 +11,7 @@ Unicode true
 !define PACKAGE_NAME "@@PACKAGE_NAME@@"
 !define SOURCE_RUNTIME "@@SOURCE_RUNTIME@@"
 !define OUTPUT_SETUP "@@OUTPUT_SETUP@@"
+!define CLEAN_CMGR_SCRIPT "@@CLEAN_CMGR_SCRIPT@@"
 !define ADDIN_GUID "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\SWTools"
 
@@ -65,10 +66,24 @@ Function RequireNoRunningSWTools
   ${EndIf}
 FunctionEnd
 
+Function RunCommandManagerCleanup
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File /oname=clean_swtools_commandmanager_tabs.ps1 "${CLEAN_CMGR_SCRIPT}"
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -ReportDir "$TEMP\SWTools-cmgr-cleanup"'
+  Pop $0
+  Pop $1
+  ${If} $0 != 0
+    MessageBox MB_ICONSTOP "Не удалось очистить кеш вкладок SolidWorks. Код: $0$\r$\n$1"
+    Abort
+  ${EndIf}
+FunctionEnd
+
 Section "SWTools client" SecMain
   SetShellVarContext all
   SetRegView 64
   Call RequireNoRunningSWTools
+  Call RunCommandManagerCleanup
 
   StrCpy $0 "$WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
   IfFileExists "$0" 0 regasm_missing
@@ -147,10 +162,23 @@ Function un.RequireNoRunningSWTools
   ${EndIf}
 FunctionEnd
 
+Function un.RunCommandManagerCleanup
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File /oname=clean_swtools_commandmanager_tabs.ps1 "${CLEAN_CMGR_SCRIPT}"
+  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -IncludeAddInsStartup -ReportDir "$TEMP\SWTools-cmgr-cleanup-uninstall"'
+  Pop $0
+  Pop $1
+  ${If} $0 != 0
+    DetailPrint "CommandManager cleanup warning: $1"
+  ${EndIf}
+FunctionEnd
+
 Section "Uninstall"
   SetShellVarContext all
   SetRegView 64
   Call un.RequireNoRunningSWTools
+  Call un.RunCommandManagerCleanup
 
   StrCpy $0 "$WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
   IfFileExists "$0" 0 skip_regasm_uninstall

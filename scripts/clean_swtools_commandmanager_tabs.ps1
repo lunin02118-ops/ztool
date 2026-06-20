@@ -1,13 +1,14 @@
 <#
 .SYNOPSIS
-  Remove stale SWTools CommandManager tabs (including anonymous "blank tab" clones)
+  Remove stale SWTools/ZTool CommandManager tabs (including anonymous "blank tab" clones)
   and Custom API Flyouts from the SolidWorks user profile.
 
 .DESCRIPTION
-  Addresses finding F-14 / refactoring-plan R1.1: SolidWorks persists SWTools
+  Addresses finding F-14 / refactoring-plan R1.1: SolidWorks persists add-in
   CommandManager tabs in the per-user registry. Besides the obvious named SWTools
-  tabs, it can keep an *anonymous* clone that has no ModuleName/RefName but still
-  carries the SWTools button set (Tab Props = 0,1,1,-1; buttons include 2,59425 and
+  tab, legacy profiles can still keep a named ZTool tab from before the rebrand.
+  SolidWorks can also keep an *anonymous* clone that has no ModuleName/RefName but still
+  carries the add-in button set (Tab Props = 0,1,1,-1; buttons include 2,59425 and
   41658..41675). A cleanup that searches only for "SWTools"/the add-in GUID misses
   this clone, which then shows up as a second, blank SWTools tab.
 
@@ -15,9 +16,9 @@
   standalone pre-flight helper). It:
     1. Enumerates the targeted SolidWorks version(s) under HKCU.
     2. Backs up the affected registry branches (reg export) before any change.
-    3. Finds named SWTools tabs AND anonymous SWTools clones under
+    3. Finds named SWTools/ZTool tabs AND anonymous SWTools clones under
        CommandManager\{AssyContext,PartContext,DrwContext}\Tab*.
-    4. Finds Custom API Flyouts referencing SWTools / the add-in GUID.
+    4. Finds Custom API Flyouts referencing SWTools, legacy ZTool or the add-in GUID.
     5. With -IncludeAddInsStartup, zeroes the AddInsStartup parent value + subkey
        (uninstall hygiene; stops auto-loading the old add-in).
 
@@ -94,8 +95,10 @@ function Invoke-Reg([string[]]$RegArgs) {
 }
 
 $guidCore = $AddinGuid.Trim('{', '}')
-# -match is case-insensitive by default; this catches the GUID or the literal name.
-$guidRe = "$([regex]::Escape($guidCore))|SWTools"
+$brandNames = @('SWTools', 'ZTool')
+$brandRe = ($brandNames | ForEach-Object { [regex]::Escape($_) }) -join '|'
+# -match is case-insensitive by default; this catches the GUID or either visible brand.
+$guidRe = "$([regex]::Escape($guidCore))|$brandRe"
 
 # --- 1. Resolve targeted SolidWorks version(s) -----------------------------
 $swRoot = 'HKCU:\SOFTWARE\SolidWorks'
@@ -179,8 +182,8 @@ foreach ($ver in $versions) {
 
                 $isNamedSWTools = ($text -match $guidRe) -or
                     ($props.ModuleName -eq $AddinGuid) -or
-                    ($props.RefName -eq 'SWTools') -or
-                    ($props.'Tab Props' -like 'SWTools,*')
+                    ($brandNames -contains $props.RefName) -or
+                    ($brandNames | Where-Object { $props.'Tab Props' -like "$_,*" })
 
                 $isAnonymousClone = (-not $props.ModuleName) -and
                     (-not $props.RefName) -and
@@ -272,9 +275,9 @@ $report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $reportPath -Encodi
 Step "report written: $reportPath"
 
 if (-not $Apply -and $Found.Count -gt 0) {
-    Write-Host "DRY RUN: $($Found.Count) SWTools CommandManager/flyout/startup match(es). Re-run with -Apply to remove." -ForegroundColor Yellow
+    Write-Host "DRY RUN: $($Found.Count) SWTools/ZTool CommandManager/flyout/startup match(es). Re-run with -Apply to remove." -ForegroundColor Yellow
 } elseif ($Found.Count -eq 0) {
-    Write-Host 'CommandManager cleanup: CLEAN (no SWTools tabs/flyouts found).' -ForegroundColor Green
+    Write-Host 'CommandManager cleanup: CLEAN (no SWTools/ZTool tabs/flyouts found).' -ForegroundColor Green
 } else {
     Write-Host "CommandManager cleanup: removed $($Removed.Count) item(s)." -ForegroundColor Green
 }

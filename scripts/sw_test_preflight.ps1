@@ -13,20 +13,22 @@
        even though launching via the desktop shortcut works. This script
        normalizes WINDIR/SystemRoot/ComSpec and verifies RegAsm is reachable.
 
-    2. Dirty registry / wrong DLL. Stale RegAsm CodeBase, SolidWorks AddIn keys
-       or HKCU\SOFTWARE\SWTools from a previous test can make SolidWorks load a
-       different SWTools.dll/SWTools.exe than the one under test. This script backs
+    2. Dirty registry / wrong DLL / stale CommandManager tab. Stale RegAsm CodeBase,
+       SolidWorks AddIn keys, HKCU\SOFTWARE\SWTools or a legacy ZTool/SWTools
+       CommandManager cache from a previous test can make SolidWorks load a
+       different SWTools.dll/SWTools.exe or show the old tab. This script backs
        up the affected registry branches, reports stale SWTools references,
        (optionally) re-registers the current runtime SWTools.dll via RegAsm
-       /codebase, and verifies the live CodeBase points at the runtime folder.
+       /codebase, cleans CommandManager tabs, and verifies the live CodeBase
+       points at the runtime folder.
 
     3. Wrong artifact under test. Optionally verifies the SHA256 of the runtime
        SWTools.exe / SWTools.dll against the accepted hashes so a run cannot silently
        use the wrong binary.
 
   The script is idempotent and read-mostly: it only writes to the registry when
-  -Register (RegAsm) or -CleanLicenseState is passed, and always takes a backup
-  first. It does NOT launch SolidWorks or drive the UI; window normalization and
+  -Register (RegAsm + CommandManager cleanup) or -CleanLicenseState is passed,
+  and always takes a backup first. It does NOT launch SolidWorks or drive the UI; window normalization and
   object-based UI automation remain in FULL_TEST_METHODOLOGY_RU.md section 2.2.
 
 .PARAMETER RuntimeDir
@@ -80,8 +82,8 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256 = 'cd0b4aa0d3faca3089cf854297c4402b56ee2c4208679415e18a36d9b11ebe13'
-        addin_dll_sha256  = 'd053542521a6d869b2208d8c5a45d894f0fb6786cab8a78f9af7762d0e492eb9'
+        client_exe_sha256 = 'a57441105c5d02f8c01f920ac23e56a94ca027615520e7c29c5fb1c57fd73ec5'
+        addin_dll_sha256  = '1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705'
     }
     $path = Join-Path $PSScriptRoot 'expected_release_hashes.json'
     if (Test-Path -LiteralPath $path) {
@@ -97,6 +99,8 @@ function Get-ExpectedHashes {
 $expectedHashes = Get-ExpectedHashes
 if (-not $ExpectedExeSha256) { $ExpectedExeSha256 = $expectedHashes.client_exe_sha256 }
 if (-not $ExpectedDllSha256) { $ExpectedDllSha256 = $expectedHashes.addin_dll_sha256 }
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$addinGuid = '{59959DFA-3229-4B86-852E-52ABF2BDB8C0}'
 
 $script:Warnings = @()
 $script:Steps = @()
@@ -117,6 +121,10 @@ function Fail([string]$Message) {
 
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+}
+
+function Invoke-Checked([string]$What) {
+    if ($LASTEXITCODE -ne 0) { Fail "$What failed (exit $LASTEXITCODE)" }
 }
 
 # reg.exe writes to stderr and returns a non-zero exit code for absent keys,
@@ -188,6 +196,11 @@ if ($ExpectedDllSha256 -and $dllHash -ne $ExpectedDllSha256.ToLowerInvariant()) 
     Warn "SWTools.dll hash does not match expected ($ExpectedDllSha256). Confirm this is the intended build before trusting parity results."
 }
 
+$addinPatchProject = Join-Path $repoRoot 'client-core\tools\AddinBrandPatch\AddinBrandPatch.csproj'
+Step "verifying SWTools.dll add-in brand metadata"
+dotnet run -c Release --project $addinPatchProject -- $dllPath verify
+Invoke-Checked 'addin brand verify'
+
 # --- 3. Stop any running SolidWorks / SWTools --------------------------------
 Step "stopping SLDWORKS/SWTools processes (if any)"
 Get-Process SLDWORKS, SWTools -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -217,10 +230,29 @@ foreach ($t in $backupTargets) {
     # absent keys simply produce no file; that is fine for a backup
 }
 
-# --- 5. Detect stale SWTools references --------------------------------------
+# --- 5. Clean/detect stale CommandManager tabs -------------------------------
+$cmgrCleanupScript = Join-Path $PSScriptRoot 'clean_swtools_commandmanager_tabs.ps1'
+$cmgrReportDir = Join-Path $ReportDir 'commandmanager-cleanup'
+if (Test-Path -LiteralPath $cmgrCleanupScript -PathType Leaf) {
+    if ($Register) {
+        Step "cleaning stale SWTools/ZTool CommandManager tabs"
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -File $cmgrCleanupScript -Apply -ReportDir $cmgrReportDir
+        Invoke-Checked 'CommandManager cleanup'
+    }
+    else {
+        Step "dry-run scan for stale SWTools/ZTool CommandManager tabs"
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -File $cmgrCleanupScript -ReportDir $cmgrReportDir
+        Invoke-Checked 'CommandManager cleanup dry-run'
+    }
+}
+else {
+    Warn "CommandManager cleanup script not found: $cmgrCleanupScript"
+}
+
+# --- 6. Detect stale SWTools references --------------------------------------
 Step "scanning registry for stale SWTools CodeBase / AddIn references"
 $classesHits = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'SWTools', '/s', '/reg:64')
-$codeBaseLines = $classesHits | Where-Object { $_ -match 'CodeBase' }
+$codeBaseLines = @($classesHits | Where-Object { $_ -match 'CodeBase' } | Select-Object -Unique)
 foreach ($line in $codeBaseLines) {
     if (-not (Test-RegistryLineReferencesPath $line $runtimeNeedles)) {
         if ($Register) {
@@ -232,7 +264,7 @@ foreach ($line in $codeBaseLines) {
     }
 }
 
-# --- 6. Optionally (re)register the current DLL ----------------------------
+# --- 7. Optionally (re)register the current DLL ----------------------------
 if ($Register) {
     Step "registering $dllPath via RegAsm /codebase"
     Push-Location $runtime
@@ -244,9 +276,16 @@ if ($Register) {
         Pop-Location
     }
 
+    Step "configuring SolidWorks add-in enable/startup keys"
+    Invoke-Reg @('add', "HKLM\SOFTWARE\SolidWorks\Addins\$addinGuid", '/ve', '/t', 'REG_DWORD', '/d', '1', '/f') | Out-Null
+    Invoke-Reg @('add', "HKLM\SOFTWARE\SolidWorks\Addins\$addinGuid", '/v', 'Title', '/t', 'REG_SZ', '/d', 'SWTools', '/f') | Out-Null
+    Invoke-Reg @('add', "HKLM\SOFTWARE\SolidWorks\Addins\$addinGuid", '/v', 'Description', '/t', 'REG_SZ', '/d', 'SWTools SolidWorks Add-in', '/f') | Out-Null
+    Invoke-Reg @('add', 'HKCU\SOFTWARE\SolidWorks\AddInsStartup', '/v', $addinGuid, '/t', 'REG_DWORD', '/d', '1', '/f') | Out-Null
+    Invoke-Reg @('add', "HKCU\SOFTWARE\SolidWorks\AddInsStartup\$addinGuid", '/ve', '/t', 'REG_DWORD', '/d', '1', '/f') | Out-Null
+
     Step "verifying CodeBase now points at the runtime DLL"
     $verify = Invoke-Reg @('query', 'HKLM\SOFTWARE\Classes', '/f', 'SWTools.dll', '/s', '/reg:64')
-    $verifyCodeBaseLines = @($verify | Where-Object { $_ -match 'CodeBase' })
+    $verifyCodeBaseLines = @($verify | Where-Object { $_ -match 'CodeBase' } | Select-Object -Unique)
     if (-not ($verifyCodeBaseLines | Where-Object { Test-RegistryLineReferencesPath $_ $dllPathNeedles })) {
         Fail "after RegAsm, no HKLM\SOFTWARE\Classes CodeBase references $dllPath; SolidWorks may still load a stale DLL"
     }
@@ -259,7 +298,7 @@ else {
     Step "skipping RegAsm registration (pass -Register to (re)register the runtime DLL)"
 }
 
-# --- 7. Optionally clean license state -------------------------------------
+# --- 8. Optionally clean license state -------------------------------------
 if ($CleanLicenseState) {
     Warn "CleanLicenseState requested: deleting SWTools license-state keys (clean-license scenario only)"
     foreach ($k in @('HKCU\SOFTWARE\SWTools', 'HKLM\SOFTWARE\SolURxxCfNU', 'HKLM\SOFTWARE\Microsoft\MzORu8qE4HhZ')) {
@@ -267,7 +306,7 @@ if ($CleanLicenseState) {
     }
 }
 
-# --- 8. Emit preflight report ----------------------------------------------
+# --- 9. Emit preflight report ----------------------------------------------
 $status = if ($script:Warnings.Count -eq 0) { 'PASS' } else { 'PASS_WITH_WARNINGS' }
 $report = [ordered]@{
     timestamp           = (Get-Date).ToString('o')
@@ -276,6 +315,7 @@ $report = [ordered]@{
     swtoolsExe            = @{ path = $exePath; sha256 = $exeHash; expected = $ExpectedExeSha256.ToLowerInvariant() }
     swtoolsDll            = @{ path = $dllPath; sha256 = $dllHash; expected = $ExpectedDllSha256.ToLowerInvariant() }
     registered          = [bool]$Register
+    commandManagerCleanup = $cmgrReportDir
     licenseStateCleaned = [bool]$CleanLicenseState
     windir              = $env:WINDIR
     steps               = $script:Steps

@@ -54,10 +54,12 @@ $root = (Resolve-Path -LiteralPath $PackageRoot).Path
 $runtimeDir = Join-Path $root 'runtime'
 $manifestPath = Join-Path $root 'manifest.json'
 $templatePath = Join-Path $repoRoot 'installer\windows-client\SWToolsClient.nsi.in'
+$cmgrCleanupScript = Join-Path $repoRoot 'scripts\clean_swtools_commandmanager_tabs.ps1'
 
 if (-not (Test-Path -LiteralPath $runtimeDir -PathType Container)) { Fail "runtime directory missing: $runtimeDir" }
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { Fail "manifest missing: $manifestPath" }
 if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) { Fail "NSIS template missing: $templatePath" }
+if (-not (Test-Path -LiteralPath $cmgrCleanupScript -PathType Leaf)) { Fail "CommandManager cleanup script missing: $cmgrCleanupScript" }
 if (-not (Test-Path -LiteralPath $MakensisPath -PathType Leaf)) { Fail "makensis not found: $MakensisPath" }
 
 $manifest = Get-Content -LiteralPath $manifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
@@ -97,6 +99,7 @@ $replacements = @{
     '@@PACKAGE_NAME@@' = ConvertTo-NsisLiteral $PackageName
     '@@SOURCE_RUNTIME@@' = ConvertTo-NsisLiteral $runtimeDir
     '@@OUTPUT_SETUP@@' = ConvertTo-NsisLiteral $setupPath
+    '@@CLEAN_CMGR_SCRIPT@@' = ConvertTo-NsisLiteral $cmgrCleanupScript
 }
 $generated = $template
 foreach ($key in $replacements.Keys) {
