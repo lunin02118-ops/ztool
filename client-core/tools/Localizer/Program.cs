@@ -507,10 +507,30 @@ internal static class Program
                         && m.DeclaringType?.FullName == "System.String"
                         && m.MethodSig?.Params.Count == 2);
 
+                // Used to drop calculated columns that carry no header text (they
+                // would otherwise show up as blank, unmappable rows in the grid).
+                var getHeaderText = mod.GetTypes()
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.Body != null)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Select(i => i.Operand as IMethod)
+                    .FirstOrDefault(m => m != null && m.Name == "get_HeaderText");
+                if (getHeaderText == null && getItem != null)
+                {
+                    var colType = getItem.MethodSig?.RetType?.ToTypeDefOrRef();
+                    if (colType != null)
+                        getHeaderText = new MemberRefUser(mod, "get_HeaderText",
+                            MethodSig.CreateInstance(mod.CorLibTypes.String), colType);
+                }
+                var isNullOrWhiteSpace = stringEquals == null ? null
+                    : new MemberRefUser(mod, "IsNullOrWhiteSpace",
+                        MethodSig.CreateStatic(mod.CorLibTypes.Boolean, mod.CorLibTypes.String),
+                        stringEquals.DeclaringType);
+
                 if (skipLocal != null && getForms != null && getFrmmain != null
                     && getDgv1 != null && getColumns != null && getItem != null
                     && getName != null && columnIndexLocal != null && stringEquals != null
-                    && stringStartsWith != null)
+                    && stringStartsWith != null && getHeaderText != null && isNullOrWhiteSpace != null)
                 {
                     // Show every calculated/service column (Name starts with
                     // "Col_") in the mapping grid, excluding the two non-data
@@ -534,6 +554,11 @@ internal static class Program
                         add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
                         add.Add(Instruction.Create(OpCodes.Brtrue, after));
                     }
+                    // Skip columns whose header text is empty/whitespace so they
+                    // don't appear as blank rows in the mapping grid.
+                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getHeaderText));
+                    add.Add(Instruction.Create(OpCodes.Call, isNullOrWhiteSpace));
+                    add.Add(Instruction.Create(OpCodes.Brtrue, after));
                     add.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                     add.Add(Instruction.Create(OpCodes.Stloc, skipLocal));
                     add.Add(after);
@@ -711,6 +736,152 @@ internal static class Program
         return changes;
     }
 
+    private const int RT_ICON = 3;
+    private const int RT_GROUP_ICON = 14;
+
+    // Replace the Win32 application icon (taskbar / Alt-Tab / Explorer) with the
+    // images inside <icoPath>, rebuilding the RT_ICON + RT_GROUP_ICON resource
+    // trees on mod.Win32Resources in place. Keeps the original group-icon name +
+    // language so the shell keeps treating it as the app's default icon.
+    private static int ReplaceWin32AppIcon(ModuleDefMD mod, string icoPath)
+    {
+        if (string.IsNullOrEmpty(icoPath) || !System.IO.File.Exists(icoPath)) { Console.WriteLine($"  app icon: .ico not found: {icoPath}"); return 0; }
+        var res = mod.Win32Resources;
+        if (res?.Root == null) { Console.WriteLine("  app icon: module has no Win32 resources"); return 0; }
+        byte[] ico = System.IO.File.ReadAllBytes(icoPath);
+        ushort count = BitConverter.ToUInt16(ico, 4);
+        if (count == 0) { Console.WriteLine("  app icon: .ico has no images"); return 0; }
+        var groupName = IconFindGroupName(res.Root, out var langName);
+        var images = new List<(byte w, byte h, byte cc, byte rs, ushort planes, ushort bits, byte[] data)>();
+        for (int i = 0; i < count; i++)
+        {
+            int e = 6 + i * 16;
+            ushort planes = BitConverter.ToUInt16(ico, e + 4);
+            ushort bits = BitConverter.ToUInt16(ico, e + 6);
+            uint bytesInRes = BitConverter.ToUInt32(ico, e + 8);
+            uint off = BitConverter.ToUInt32(ico, e + 12);
+            var data = new byte[bytesInRes];
+            Array.Copy(ico, off, data, 0, (int)bytesInRes);
+            images.Add((ico[e + 0], ico[e + 1], ico[e + 2], ico[e + 3], planes, bits, data));
+        }
+        byte[] grp;
+        using (var ms = new System.IO.MemoryStream())
+        using (var bw = new System.IO.BinaryWriter(ms))
+        {
+            bw.Write((ushort)0); bw.Write((ushort)1); bw.Write((ushort)count); // GRPICONDIR header
+            for (int i = 0; i < count; i++)
+            {
+                var im = images[i];
+                bw.Write(im.w); bw.Write(im.h); bw.Write(im.cc); bw.Write(im.rs);
+                bw.Write(im.planes); bw.Write(im.bits);
+                bw.Write((uint)im.data.Length); bw.Write((ushort)(i + 1)); // -> RT_ICON id
+            }
+            bw.Flush(); grp = ms.ToArray();
+        }
+        IconRemoveType(res.Root, RT_ICON);
+        IconRemoveType(res.Root, RT_GROUP_ICON);
+        var iconType = new ResourceDirectoryUser(new ResourceName(RT_ICON));
+        for (int i = 0; i < count; i++)
+        {
+            var nameDir = new ResourceDirectoryUser(new ResourceName(i + 1));
+            nameDir.Data.Add(IconMakeData(langName, images[i].data));
+            iconType.Directories.Add(nameDir);
+        }
+        var grpType = new ResourceDirectoryUser(new ResourceName(RT_GROUP_ICON));
+        var grpNameDir = new ResourceDirectoryUser(groupName);
+        grpNameDir.Data.Add(IconMakeData(langName, grp));
+        grpType.Directories.Add(grpNameDir);
+        res.Root.Directories.Add(iconType);
+        res.Root.Directories.Add(grpType);
+        Console.WriteLine($"  app icon: replaced Win32 icon group with {count} image(s)");
+        return count;
+    }
+
+    // Retarget every WinForms form whose InitializeComponent sets this.Icon (from
+    // the vendor's "$this.Icon" designer resource) to instead load the embedded
+    // AppIcon.ico, so window title bars show the new logo. Mirrors InjectMaxQr's
+    // embed-resource + reflection-IL pattern.
+    private static int RetargetFormIcons(ModuleDefMD mod, string icoPath)
+    {
+        if (string.IsNullOrEmpty(icoPath) || !System.IO.File.Exists(icoPath)) return 0;
+        const string resName = "AppIcon.ico";
+        if (!mod.Resources.Any(r => r.Name == resName))
+            mod.Resources.Add(new EmbeddedResource(resName, System.IO.File.ReadAllBytes(icoPath), ManifestResourceAttributes.Public));
+        var corlib = mod.CorLibTypes.AssemblyRef;
+        var typeRef = new TypeRefUser(mod, "System", "Type", corlib);
+        var rthRef = new TypeRefUser(mod, "System", "RuntimeTypeHandle", corlib);
+        var asmRef = new TypeRefUser(mod, "System.Reflection", "Assembly", corlib);
+        var streamRef = new TypeRefUser(mod, "System.IO", "Stream", corlib);
+        var streamSig = new ClassSig(streamRef);
+        var mGetTypeFromHandle = new MemberRefUser(mod, "GetTypeFromHandle", MethodSig.CreateStatic(new ClassSig(typeRef), new ValueTypeSig(rthRef)), typeRef);
+        var mGetAssembly = new MemberRefUser(mod, "get_Assembly", MethodSig.CreateInstance(new ClassSig(asmRef)), typeRef);
+        var mGetStream = new MemberRefUser(mod, "GetManifestResourceStream", MethodSig.CreateInstance(streamSig, mod.CorLibTypes.String), asmRef);
+        int patched = 0;
+        foreach (var t in mod.GetTypes())
+        {
+            var init = t.Methods.FirstOrDefault(m => m.Name == "InitializeComponent" && m.HasBody);
+            if (init == null) continue;
+            var body = init.Body;
+            IMethod setIcon = body.Instructions
+                .Where(i => (i.OpCode.Code == Code.Callvirt || i.OpCode.Code == Code.Call) && i.Operand is IMethod im && im.Name == "set_Icon")
+                .Select(i => (IMethod)i.Operand).FirstOrDefault();
+            if (setIcon == null) continue;
+            if (body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (i.Operand as string) == resName)) continue; // idempotent
+            var iconTypeRef = setIcon.MethodSig.Params.LastOrDefault()?.ToTypeDefOrRef();
+            if (iconTypeRef == null) continue;
+            var mIconCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), iconTypeRef);
+            var ret = body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+            if (ret == null) continue;
+            int idx = body.Instructions.IndexOf(ret);
+            var add = new List<Instruction>
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldtoken, (ITypeDefOrRef)t),
+                Instruction.Create(OpCodes.Call, mGetTypeFromHandle),
+                Instruction.Create(OpCodes.Callvirt, mGetAssembly),
+                Instruction.Create(OpCodes.Ldstr, resName),
+                Instruction.Create(OpCodes.Callvirt, mGetStream),
+                Instruction.Create(OpCodes.Newobj, mIconCtor),
+                Instruction.Create(OpCodes.Callvirt, setIcon),
+            };
+            for (int i = 0; i < add.Count; i++)
+                body.Instructions.Insert(idx + i, add[i]);
+            body.UpdateInstructionOffsets();
+            patched++;
+        }
+        Console.WriteLine($"  app icon: retargeted {patched} form title-bar icon(s) to {resName}");
+        return patched;
+    }
+
+    private static ResourceData IconMakeData(ResourceName lang, byte[] data)
+        => new ResourceData(lang, ByteArrayDataReaderFactory.Create(data, null), 0, (uint)data.Length);
+
+    private static void IconRemoveType(ResourceDirectory root, int typeId)
+    {
+        for (int i = root.Directories.Count - 1; i >= 0; i--)
+            if (root.Directories[i].Name.HasId && root.Directories[i].Name.Id == typeId)
+                root.Directories.RemoveAt(i);
+    }
+
+    private static ResourceName IconFindGroupName(ResourceDirectory root, out ResourceName lang)
+    {
+        lang = new ResourceName(1033);
+        foreach (var typeDir in root.Directories)
+        {
+            if (typeDir.Name.HasId && typeDir.Name.Id == RT_GROUP_ICON)
+            {
+                var nd = typeDir.Directories.FirstOrDefault();
+                if (nd != null)
+                {
+                    var d = nd.Data.FirstOrDefault();
+                    if (d != null) lang = d.Name;
+                    return nd.Name;
+                }
+            }
+        }
+        return new ResourceName(32512);
+    }
+
     private sealed class DialogLayout
     {
         public DialogLayout(int width, int height)
@@ -733,6 +904,10 @@ internal static class Program
             ["FrmFilling"] = new DialogLayout(760, 540),
             ["FrmSWUnit"] = new DialogLayout(640, 650),
             ["FrmOptions"] = new DialogLayout(760, 560),
+            // Give the property-name dialog a sane default + minimum size so the
+            // bottom-left "Импорт..." and bottom-right OK/Cancel buttons never
+            // overlap or get clipped when the form is shrunk.
+            ["Frmsetpropname"] = new DialogLayout(360, 420),
         };
 
     private sealed class ControlPatch
@@ -833,10 +1008,12 @@ internal static class Program
             },
             ["Frmsetpropname"] = new[]
             {
-                // The "Импорт..." button ships with AnchorStyles.None, so once
-                // the dialog is made resizable it drifts toward the centre as the
-                // form grows. Pin it to the bottom-left corner (Bottom|Left = 6).
-                new ControlPatch("Button1", anchor: 6),
+                // "Импорт..." pinned to the bottom-left corner (Bottom|Left = 6);
+                // the OK/Cancel TableLayoutPanel pinned to the bottom-right
+                // (Bottom|Right = 10). Both ship as AnchorStyles.None and would
+                // otherwise drift toward the centre once the form is resizable.
+                new ControlPatch("Button1", left: 12, top: 381, width: 90, anchor: 6),
+                new ControlPatch("TableLayoutPanel1", left: 183, top: 378, anchor: 10),
             },
             ["FrmFilterrules"] = new[]
             {
@@ -1786,6 +1963,9 @@ internal static class Program
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
             int aboutBoxChanges = PatchAboutBox(mod,
                 System.IO.Path.Combine(assetDir, "swtools_logo.png"));
+            string appIcoPath = System.IO.Path.Combine(assetDir, "swtools_app.ico");
+            int win32IconChanges = ReplaceWin32AppIcon(mod, appIcoPath);
+            int formIconChanges = RetargetFormIcons(mod, appIcoPath);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -1807,7 +1987,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped}, win32-icon={win32IconChanges}, form-icons={formIconChanges} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
