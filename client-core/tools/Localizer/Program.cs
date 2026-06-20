@@ -2652,7 +2652,10 @@ internal static class Program
         var getTlp4 = frm.FindMethod("get_TableLayoutPanel4");
         var getLabel2 = frm.FindMethod("get_Label2");
         var getPic = frm.FindMethod("get_PictureBox1");
-        if (getTlp2 == null || getTlp3 == null || getTlp4 == null || getLabel2 == null || getPic == null)
+        var getTest = frm.FindMethod("get_Test");
+        var getBtn1 = frm.FindMethod("get_Button1");
+        var getBtn2 = frm.FindMethod("get_Button2");
+        if (getTlp2 == null || getTlp3 == null || getTlp4 == null || getLabel2 == null || getPic == null || getTest == null || getBtn1 == null || getBtn2 == null)
         {
             Console.WriteLine("  FrmRverify: contact patch skipped (TLP accessors missing)");
             return 0;
@@ -2774,6 +2777,16 @@ internal static class Program
         E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, webClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
         CAdd(locLink);
 
+        // friendlier button labels: "Проба" -> "Демо" (demo/trial period); the
+        // "Регистрация" caption already exists but was clipped by the narrow 65px
+        // button drawn in the wide vendor font. Switch all three buttons to the
+        // tidy Segoe UI 9pt used elsewhere and widen "Регистрация" so it fits.
+        GText(getTest, "Демо");
+        GFont(getTest, 9f, 0);
+        GFont(getBtn1, 9f, 0);
+        GFont(getBtn2, 9f, 0);
+        GSize(getBtn2, 86, 27);
+
         // pull the MAX QR card up into the freed space and tighten the form so the
         // bottom-anchored buttons sit just under it (removes the big empty gaps).
         GLoc(getPic, 8, 130);
@@ -2789,7 +2802,7 @@ internal static class Program
         init.Body.Instructions.Insert(insertAt, Instruction.Create(OpCodes.Ldarg_0));
         init.Body.Instructions.Insert(insertAt + 1, Instruction.Create(OpCodes.Call, setup));
 
-        Console.WriteLine("  FrmRverify: redesigned (compact 'Лицензия не обнаружена' banner; hid QQ/Сайт grids; email + 'Перейти на сайт' link; MAX QR pulled up; form tightened)");
+        Console.WriteLine("  FrmRverify: redesigned (compact 'Лицензия не обнаружена' banner; hid QQ/Сайт grids; email + 'Перейти на сайт' link; MAX QR pulled up; 'Демо'/'Регистрация' buttons; form tightened)");
         return 1;
     }
 
