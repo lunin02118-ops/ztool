@@ -378,8 +378,11 @@ internal static class Program
     // PropResolvedVal_ columns. Computed service columns such as Col_Weight and
     // Col_bound have Excel-invalid headers ("Масса ед._кг",
     // "Габаритные размеры"), so they need the same mapping fallback by
-    // DataGridViewColumn.Name. Also let Frmmapping display only those two
-    // calculated columns in addition to normal PropVal_* rows.
+    // DataGridViewColumn.Name. The export fallback below re-runs the
+    // namemappinglist lookup (matched by column Name + header text), so it is
+    // already generic for any column; Frmmapping is widened to display every
+    // calculated/service column (every "Col_" column except the non-data
+    // checkbox/new-folder columns) so users can map them by hand.
     private static int PatchBomCalculatedColumnMapping(ModuleDefMD mod)
     {
         int changes = 0;
@@ -494,11 +497,24 @@ internal static class Program
                         && m.DeclaringType?.FullName == "System.String"
                         && m.MethodSig?.Params.Count == 2);
 
+                var stringStartsWith = mod.GetTypes()
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.Body != null)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Select(i => i.Operand as IMethod)
+                    .FirstOrDefault(m => m != null
+                        && m.Name == "StartsWith"
+                        && m.DeclaringType?.FullName == "System.String"
+                        && m.MethodSig?.Params.Count == 2);
+
                 if (skipLocal != null && getForms != null && getFrmmain != null
                     && getDgv1 != null && getColumns != null && getItem != null
-                    && getName != null && columnIndexLocal != null && stringEquals != null)
+                    && getName != null && columnIndexLocal != null && stringEquals != null
+                    && stringStartsWith != null)
                 {
-                    var allow = Instruction.Create(OpCodes.Nop);
+                    // Show every calculated/service column (Name starts with
+                    // "Col_") in the mapping grid, excluding the two non-data
+                    // columns that have no meaningful header to map.
                     var after = Instruction.Create(OpCodes.Nop);
                     var add = new List<Instruction>
                     {
@@ -506,17 +522,18 @@ internal static class Program
                         Instruction.Create(OpCodes.Brfalse, after),
                     };
                     add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
-                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_Weight"));
+                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_"));
                     add.Add(Instruction.CreateLdcI4(5)); // StringComparison.OrdinalIgnoreCase
-                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
-                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
-                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
-                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_bound"));
-                    add.Add(Instruction.CreateLdcI4(5));
-                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
-                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
-                    add.Add(Instruction.Create(OpCodes.Br, after));
-                    add.Add(allow);
+                    add.Add(Instruction.Create(OpCodes.Callvirt, stringStartsWith));
+                    add.Add(Instruction.Create(OpCodes.Brfalse, after));
+                    foreach (var excluded in new[] { "Col_Checkbox", "Col_NewFolder" })
+                    {
+                        add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
+                        add.Add(Instruction.Create(OpCodes.Ldstr, excluded));
+                        add.Add(Instruction.CreateLdcI4(5));
+                        add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
+                        add.Add(Instruction.Create(OpCodes.Brtrue, after));
+                    }
                     add.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                     add.Add(Instruction.Create(OpCodes.Stloc, skipLocal));
                     add.Add(after);
@@ -528,7 +545,7 @@ internal static class Program
             }
         }
 
-        Console.WriteLine($"  BOM mapping: enabled calculated columns Col_Weight/Col_bound in mapping/export (edits={changes})");
+        Console.WriteLine($"  BOM mapping: enabled all calculated/service (Col_*) columns in mapping/export (edits={changes})");
         return changes;
     }
 
@@ -813,6 +830,13 @@ internal static class Program
             {
                 new ControlPatch("DGV1", width: 760, height: 360),
                 new ControlPatch("Label1", top: 380, width: 760, height: 80),
+            },
+            ["Frmsetpropname"] = new[]
+            {
+                // The "Импорт..." button ships with AnchorStyles.None, so once
+                // the dialog is made resizable it drifts toward the centre as the
+                // form grows. Pin it to the bottom-left corner (Bottom|Left = 6).
+                new ControlPatch("Button1", anchor: 6),
             },
             ["FrmFilterrules"] = new[]
             {
