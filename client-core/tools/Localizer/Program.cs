@@ -2631,6 +2631,7 @@ internal static class Program
         var setLocation = new MemberRefUser(mod, "set_Location", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigPoint), trControl);
         var setCtrlSize = new MemberRefUser(mod, "set_Size", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSize), trControl);
         var setVisible = new MemberRefUser(mod, "set_Visible", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trControl);
+        var setClientSize = new MemberRefUser(mod, "set_ClientSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, sigSize), trControl);
 
         var labCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void), trLabel);
         var labAutoSize = new MemberRefUser(mod, "set_AutoSize", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), trLabel);
@@ -2646,9 +2647,12 @@ internal static class Program
         var fontCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.String, mod.CorLibTypes.Single, sigFontStyle), trFont);
         var linkHandlerCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr), trLinkHandler);
 
+        var getTlp2 = frm.FindMethod("get_TableLayoutPanel2");
         var getTlp3 = frm.FindMethod("get_TableLayoutPanel3");
         var getTlp4 = frm.FindMethod("get_TableLayoutPanel4");
-        if (getTlp3 == null || getTlp4 == null)
+        var getLabel2 = frm.FindMethod("get_Label2");
+        var getPic = frm.FindMethod("get_PictureBox1");
+        if (getTlp2 == null || getTlp3 == null || getTlp4 == null || getLabel2 == null || getPic == null)
         {
             Console.WriteLine("  FrmRverify: contact patch skipped (TLP accessors missing)");
             return 0;
@@ -2732,6 +2736,10 @@ internal static class Program
         void CSetFont(Local l, float sz, int style) => E(LdL(l), Instruction.Create(OpCodes.Ldstr, "Segoe UI"), Instruction.Create(OpCodes.Ldc_R4, sz), I4(style), Instruction.Create(OpCodes.Newobj, fontCtor), Instruction.Create(OpCodes.Callvirt, setFont));
         void CAdd(Local l) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, getControls), LdL(l), Instruction.Create(OpCodes.Callvirt, ccAdd));
         void GVisible(MethodDef g, bool v) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(v ? 1 : 0), Instruction.Create(OpCodes.Callvirt, setVisible));
+        void GText(MethodDef g, string s) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), Instruction.Create(OpCodes.Ldstr, s), Instruction.Create(OpCodes.Callvirt, setText));
+        void GFont(MethodDef g, float sz, int style) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), Instruction.Create(OpCodes.Ldstr, "Segoe UI"), Instruction.Create(OpCodes.Ldc_R4, sz), I4(style), Instruction.Create(OpCodes.Newobj, fontCtor), Instruction.Create(OpCodes.Callvirt, setFont));
+        void GSize(MethodDef g, int w, int h) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(w), I4(h), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setCtrlSize));
+        void GLoc(MethodDef g, int x, int y) => E(Ld0(), Instruction.Create(OpCodes.Callvirt, g), I4(x), I4(y), Instruction.Create(OpCodes.Newobj, pointCtor), Instruction.Create(OpCodes.Callvirt, setLocation));
 
         const int MidC = 32; // ContentAlignment.MiddleCenter
 
@@ -2739,14 +2747,20 @@ internal static class Program
         GVisible(getTlp3, false);
         GVisible(getTlp4, false);
 
-        // e-mail line, centered in the space freed above the MAX QR card (y=200).
+        // compact, professional red banner: shorter text, smaller clean font,
+        // half the original height (was 18pt italic wrapping in an 88px cell).
+        GSize(getTlp2, 402, 52);
+        GText(getLabel2, "Лицензия не обнаружена");
+        GFont(getLabel2, 15.75f, 1); // Segoe UI Bold (red colour kept from designer)
+
+        // e-mail line, centered just below the banner.
         E(Instruction.Create(OpCodes.Newobj, labCtor), Instruction.Create(OpCodes.Stloc, locLabel));
         E(LdL(locLabel), I4(0), Instruction.Create(OpCodes.Callvirt, labAutoSize));
         CSetText(locLabel, "Email: lunin021189@gmail.com");
         CSetFont(locLabel, 9.75f, 0);
         E(LdL(locLabel), I4(MidC), Instruction.Create(OpCodes.Callvirt, labTextAlign));
-        CSetLoc(locLabel, 11, 104);
-        CSetSize(locLabel, 380, 24);
+        CSetLoc(locLabel, 11, 66);
+        CSetSize(locLabel, 380, 22);
         CAdd(locLabel);
 
         // website hyperlink "Перейти на сайт".
@@ -2755,10 +2769,15 @@ internal static class Program
         CSetText(locLink, "Перейти на сайт");
         CSetFont(locLink, 9.75f, 1); // Bold
         E(LdL(locLink), I4(MidC), Instruction.Create(OpCodes.Callvirt, linkTextAlign));
-        CSetLoc(locLink, 11, 136);
-        CSetSize(locLink, 380, 26);
+        CSetLoc(locLink, 11, 94);
+        CSetSize(locLink, 380, 24);
         E(LdL(locLink), Ld0(), Instruction.Create(OpCodes.Ldftn, webClick), Instruction.Create(OpCodes.Newobj, linkHandlerCtor), Instruction.Create(OpCodes.Callvirt, addLinkClicked));
         CAdd(locLink);
+
+        // pull the MAX QR card up into the freed space and tighten the form so the
+        // bottom-anchored buttons sit just under it (removes the big empty gaps).
+        GLoc(getPic, 8, 130);
+        E(Ld0(), I4(402), I4(300), Instruction.Create(OpCodes.Newobj, sizeCtor), Instruction.Create(OpCodes.Callvirt, setClientSize));
 
         S.Add(Instruction.Create(OpCodes.Ret));
         frm.Methods.Add(setup);
@@ -2770,7 +2789,7 @@ internal static class Program
         init.Body.Instructions.Insert(insertAt, Instruction.Create(OpCodes.Ldarg_0));
         init.Body.Instructions.Insert(insertAt + 1, Instruction.Create(OpCodes.Call, setup));
 
-        Console.WriteLine("  FrmRverify: redesigned contacts (hid QQ/Группа QQ/Email + Сайт grids; added email + 'Перейти на сайт' link; kept red banner + MAX QR + buttons)");
+        Console.WriteLine("  FrmRverify: redesigned (compact 'Лицензия не обнаружена' banner; hid QQ/Сайт grids; email + 'Перейти на сайт' link; MAX QR pulled up; form tightened)");
         return 1;
     }
 
