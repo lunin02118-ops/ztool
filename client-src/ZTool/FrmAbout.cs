@@ -582,7 +582,12 @@ public class FrmAbout : Form
 		TableLayoutPanel1.Visible = false;
 		Button1.Visible = false;
 		PictureBox pictureBox = new PictureBox();
-		pictureBox.BackgroundImage = new Bitmap(typeof(FrmAbout).Assembly.GetManifestResourceStream("SWToolsLogo.png"));
+		System.IO.Stream logoStream = typeof(FrmAbout).Assembly.GetManifestResourceStream("SWToolsLogo.png");
+		if (logoStream == null)
+		{
+			throw new System.InvalidOperationException("Встроенный ресурс \"SWToolsLogo.png\" не найден");
+		}
+		pictureBox.BackgroundImage = new Bitmap(logoStream);
 		pictureBox.BackgroundImageLayout = ImageLayout.Stretch;
 		pictureBox.Location = new Point(0, 0);
 		pictureBox.Size = new Size(360, 72);
