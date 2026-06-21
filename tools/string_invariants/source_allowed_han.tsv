@@ -1,0 +1,38 @@
+# From-source allow-list: every distinct C# string LITERAL in client-src that
+# contains CJK must be listed here. Columns: literal<TAB>role<TAB>note
+# role: crypto-passphrase | font | semantic-key | control-name | help-path |
+#       image-name | symbol-palette | format-fragment | log-text
+# note starting with REVIEW = allowed but surfaced for human confirmation /
+# planned replacement. crypto-passphrase entries are PERMANENT (see required_keys).
+/基本操作/保存数据到SolidWorks.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
+/进阶操作/BOM表模板制作和导出.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
+/进阶操作/缩略图显示及操作.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
+Application UnhandledException:{ex3.Message};\\n\\r堆栈信息:{ex3.StackTrace}	log-text	REVIEW: residual Chinese fragment in an UnhandledException log line (low-visibility).
+DPI：	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+\\\\A.*?(?=_|\\\\(|\\\\（|\\\\[|\\\\【|\\\\s|\\\\z)	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+°,℃,℉,%,‰,≤,≥,《,》,≈,≠,±,×,÷,∠,＃,ø,§,@,＆,￡,∮,$,:,Α,Β,Γ,Δ,Ε,Ζ,Η,Θ,Ι,Κ,Λ,Μ,Ν,Ξ,Ο,Π,Ρ,Σ,Τ,Υ,Φ,Χ,Ψ,Ω,α,β,γ,δ,ε,ζ,ν,ξ,ο,π,ρ,σ,η,θ,ι,κ,λ,μ,τ,υ,φ,χ,ψ,ω	symbol-palette	REVIEW: insertable special-character palette (CJK punctuation offered to the user).
+От начала до _ | ( （ [ 【, пробела или конца	symbol-palette	REVIEW: insertable special-character palette (CJK punctuation offered to the user).
+今天。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+修改ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+冰雨。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+列表ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+列表ToolStripMenuItem1	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+华文行楷	font	REVIEW: font family name. Planned: replace with a Latin family (e.g. 'Segoe UI'). Not a localization miss — invisible as text.
+在solidworks中打开ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+在文件夹中打开ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+天意。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+宋体	font	REVIEW: font family name. Planned: replace with a Latin family (e.g. 'Segoe UI'). Not a localization miss — invisible as text.
+小图标ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+工具箱.png	image-name	REVIEW: embedded image resource name (internal).
+平铺ToolStripMenuItem	control-name	REVIEW: WinForms control Name / ApplyResources key (internal, not user-visible).
+微软雅黑	font	REVIEW: font family name. Planned: replace with a Latin family (e.g. 'Segoe UI'). Not a localization miss — invisible as text.
+忘情水。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+提供一个Vista样式的选择文件对话框	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+来生缘。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+楷体	font	REVIEW: font family name. Planned: replace with a Latin family (e.g. 'Segoe UI'). Not a localization miss — invisible as text.
+笨小孩。。。	crypto-passphrase	vendor crypto passphrase; passed to SR/code (IsReg/GetMNum/getver/HasShell/Isme/St2). MUST stay byte-exact — changing it breaks the licensing handshake. PERMANENT.
+零件	semantic-key	REVIEW: Frmmain Col_Extname.Tag part-kind key for material/manual/random colour. Owned producer+consumer — planned rename to a non-Han constant TOGETHER with the add-in (Этап D), since the add-in side still uses the same key.
+（x64）\\u001e\\u001c	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+（x86）\\u001e\\u001c	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+）|*	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+；	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.

@@ -1,0 +1,8 @@
+# Crypto passphrases that MUST remain present (byte-exact) in client-src source.
+# Dropping/translating any of these breaks the licensing handshake. Columns: key<TAB>note
+今天。。。	crypto passphrase — must remain present in client-src source
+冰雨。。。	crypto passphrase — must remain present in client-src source
+天意。。。	crypto passphrase — must remain present in client-src source
+忘情水。。。	crypto passphrase — must remain present in client-src source
+来生缘。。。	crypto passphrase — must remain present in client-src source
+笨小孩。。。	crypto passphrase — must remain present in client-src source
