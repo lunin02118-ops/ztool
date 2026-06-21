@@ -11,7 +11,7 @@ VERSION
 Для текущей ветки версия:
 
 ```text
-1.1.3
+1.1.4
 ```
 
 Дата сборки не является версией продукта. Дату можно смотреть в manifest/log,
@@ -63,7 +63,7 @@ Installer из package по умолчанию пишет setup прямо в `r
 
 ```powershell
 .\scripts\build_client_installer.ps1 `
-  -PackageRoot .\releases\1.1.3\package\SWTools-1.1.3
+  -PackageRoot .\releases\1.1.4\package\SWTools-1.1.4
 ```
 
 ## Rules
