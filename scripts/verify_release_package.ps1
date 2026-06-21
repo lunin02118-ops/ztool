@@ -184,6 +184,14 @@ $expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
 $ztoolRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
 $settingsPath = Join-Path $runtimeDir 'SWTools.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
+$clientConfigPath = Join-Path $runtimeDir 'SWTools.exe.config'
+$clientRuntimeDependencies = @(
+    'System.Buffers.dll',
+    'System.Memory.dll',
+    'System.Numerics.Vectors.dll',
+    'System.Resources.Extensions.dll',
+    'System.Runtime.CompilerServices.Unsafe.dll'
+)
 
 function Test-HasCjk {
     param([string] $Text)
@@ -215,6 +223,18 @@ Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
 Assert-Hash $ztoolRsaDll $ExpectedZToolRsaSha256
 Assert-File $settingsPath
 Assert-File $materialLibrary
+Assert-File $clientConfigPath
+foreach ($dep in $clientRuntimeDependencies) {
+    Assert-File (Join-Path $runtimeDir $dep)
+}
+
+[xml]$clientConfigXml = Get-Content -LiteralPath $clientConfigPath -Encoding UTF8 -Raw
+$resourceRedirect = $clientConfigXml.configuration.runtime.assemblyBinding.dependentAssembly | Where-Object {
+    $_.assemblyIdentity.name -eq 'System.Resources.Extensions'
+}
+if (-not $resourceRedirect) {
+    Fail 'runtime/SWTools.exe.config must contain a bindingRedirect for System.Resources.Extensions'
+}
 
 [xml]$settingsXml = Get-Content -LiteralPath $settingsPath -Encoding UTF8 -Raw
 $settingsMaterialPath = Get-XmlText $settingsXml 'materialpath'
