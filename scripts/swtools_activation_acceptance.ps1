@@ -25,6 +25,10 @@ param(
 
     [switch]$ProvisionProductionKey,
 
+    [switch]$ResetProductionBinding,
+
+    [switch]$ServerOnly,
+
     [switch]$ClickActivate
 )
 
@@ -176,6 +180,78 @@ db.close()
 "@ | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Write-RemoteResetScript {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Secret,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+@"
+import os, sys, json, hashlib, subprocess
+sys.path.insert(0, '/opt/ztool-tcp-server')
+from ztool_license_server.db_mysql import MySQLLicenseDB
+
+service = '$ServiceName'
+pid = subprocess.check_output(['systemctl', 'show', service, '-p', 'MainPID', '--value'], text=True).strip()
+env = {}
+with open(f'/proc/{pid}/environ', 'rb') as f:
+    for item in f.read().split(b'\x00'):
+        if b'=' in item:
+            k, v = item.split(b'=', 1)
+            env[k.decode()] = v.decode()
+
+code = '''$($Secret.code)'''
+backend = env.get('ZTOOL_DB_BACKEND', 'sqlite')
+if backend != 'mysql':
+    raise SystemExit(json.dumps({'error': 'production backend is not mysql', 'backend': backend}, ensure_ascii=False))
+
+db = MySQLLicenseDB(
+    host=env.get('ZTOOL_MYSQL_HOST', 'localhost'),
+    port=int(env.get('ZTOOL_MYSQL_PORT', '3306')),
+    database=env['ZTOOL_MYSQL_DB'],
+    user=env['ZTOOL_MYSQL_USER'],
+    password=env['ZTOOL_MYSQL_PASSWORD'],
+)
+before = db._fetchone(
+    'SELECT current_activations, max_activations, machine_id, is_active, is_revoked '
+    'FROM license_keys WHERE license_key=%s',
+    (code,),
+)
+cur = db._cursor()
+cur.execute(
+    'UPDATE license_keys SET current_activations=0, machine_id=NULL, machine_meta=NULL, '
+    'activated_at=NULL, last_check_at=NULL WHERE license_key=%s',
+    (code,),
+)
+db._conn.commit()
+cur.close()
+after = db._fetchone(
+    'SELECT current_activations, max_activations, machine_id, is_active, is_revoked '
+    'FROM license_keys WHERE license_key=%s',
+    (code,),
+)
+out = {
+    'backend': backend,
+    'mask': code[:4] + '...' + code[-4:],
+    'sha12': hashlib.sha256(code.encode()).hexdigest()[:12],
+    'before': {
+        'current_activations': before.get('current_activations') if before else None,
+        'machine_bound': bool(before and before.get('machine_id')),
+        'is_active': before.get('is_active') if before else None,
+        'is_revoked': before.get('is_revoked') if before else None,
+    },
+    'after': {
+        'current_activations': after.get('current_activations') if after else None,
+        'machine_bound': bool(after and after.get('machine_id')),
+        'is_active': after.get('is_active') if after else None,
+        'is_revoked': after.get('is_revoked') if after else None,
+    },
+}
+print(json.dumps(out, ensure_ascii=False, indent=2, default=str))
+db.close()
+"@ | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
 function Write-RemoteStateScript {
     param(
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Secret,
@@ -297,6 +373,18 @@ if ($ProvisionProductionKey) {
     $provision = Invoke-RemotePython -ScriptPath $tmp -RemoteName "swtools_provision_key.py" -StdoutName "activation-provision-mysql-redacted.out.log" -StderrName "activation-provision-mysql-redacted.err.log"
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
     $provision
+}
+
+if ($ResetProductionBinding) {
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) ("swtools_reset_" + [Guid]::NewGuid().ToString("N") + ".py")
+    Write-RemoteResetScript -Secret $secret -Path $tmp
+    $reset = Invoke-RemotePython -ScriptPath $tmp -RemoteName "swtools_reset_binding.py" -StdoutName "activation-reset-binding-redacted.out.log" -StderrName "activation-reset-binding-redacted.err.log"
+    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+    $reset
+}
+
+if ($ServerOnly) {
+    return
 }
 
 $process = Get-Process SWTools -ErrorAction Stop | Sort-Object StartTime -Descending | Select-Object -First 1
