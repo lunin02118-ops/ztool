@@ -1,0 +1,38 @@
+name: client-src
+
+on:
+  pull_request:
+    paths:
+      - "client-src/**"
+      - ".github/workflows/client-src.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "client-src/**"
+      - ".github/workflows/client-src.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - name: Build from-source client (Release)
+        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
+
+      - name: Verify produced exe
+        run: |
+          $exe = "client-src/bin/Release/net48/ZTool.exe"
+          if (-not (Test-Path $exe)) { throw "from-source build did not produce $exe" }
+          $info = (Get-Item $exe).VersionInfo
+          Write-Host ("Built {0}  ProductName='{1}'  ProductVersion='{2}'" -f $exe, $info.ProductName, $info.ProductVersion)
