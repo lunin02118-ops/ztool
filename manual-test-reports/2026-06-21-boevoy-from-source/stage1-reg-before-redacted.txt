@@ -1,0 +1,13 @@
+--- reg query HKCU\SOFTWARE\SWTools ---
+
+HKEY_CURRENT_USER\SOFTWARE\SWTools
+    sn    REG_SZ    <redacted>
+    AppDataPath    REG_SZ    D:\Development\ztool\_local_artifacts\worktrees\pr50-phase3b\client-src\bin\Release\net48\ZTool.exe
+
+--- reg query HKCU\SOFTWARE\ZTool ---
+
+HKEY_CURRENT_USER\SOFTWARE\ZTool
+    AppDataPath    REG_SZ    C:\Program Files\ZTool\ZTool.exe
+    sn    REG_SZ    <redacted>
+
+HKEY_CURRENT_USER\SOFTWARE\ZTool\AddinMenuOption

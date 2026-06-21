@@ -1,0 +1,1111 @@
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext
+    Active Tab Index    REG_SZ    13
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0
+    Tab Props    REG_SZ    23280,1,1,26
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB0
+    Btn0    REG_SZ    2,33149
+    Btn1    REG_SZ    2,54116
+    Btn2    REG_SZ    2,33065
+    Btn3    REG_SZ    2,52202
+    Btn4    REG_SZ    2,54401
+    Btn5    REG_SZ    2,571
+    Btn6    REG_SZ    2,54305
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB1
+    Btn0    REG_SZ    2,54226
+    Btn1    REG_SZ    2,52398
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB2
+    Btn0    REG_SZ    2,54309
+    Btn1    REG_SZ    2,38290
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB3
+    Btn0    REG_SZ    2,38564
+    Btn1    REG_SZ    2,38124
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB4
+    Btn0    REG_SZ    2,33057
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB5
+    Btn0    REG_SZ    2,55254
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB6
+    Btn0    REG_SZ    2,37847
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB7
+    Btn0    REG_SZ    2,55875
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab0\GB8
+    Btn0    REG_SZ    2,44170
+    Btn1    REG_SZ    2,37902
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1
+    Tab Props    REG_SZ    23675,1,1,17
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB0
+    Btn0    REG_SZ    2,43671
+    Btn1    REG_SZ    2,54115
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB1
+    Btn0    REG_SZ    1,54101
+    Btn1    REG_SZ    1,54418
+    Btn2    REG_SZ    1,59411
+    Btn3    REG_SZ    1,54419
+    Btn4    REG_SZ    1,54420
+    Btn5    REG_SZ    1,33918
+    Btn6    REG_SZ    1,54103
+    Btn7    REG_SZ    1,54102
+    Btn8    REG_SZ    1,54104
+    Btn9    REG_SZ    1,38627
+    Btn10    REG_SZ    1,33108
+    Btn11    REG_SZ    1,32947
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB2
+    Btn0    REG_SZ    2,54106
+    Btn1    REG_SZ    2,54105
+    Btn2    REG_SZ    2,32964
+    Btn3    REG_SZ    2,21859
+    Btn4    REG_SZ    3,32928
+    Btn5    REG_SZ    3,54108
+    Btn6    REG_SZ    3,54107
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB3
+    Btn0    REG_SZ    2,54114
+    Btn1    REG_SZ    2,37797
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB4
+    Btn0    REG_SZ    2,222
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB5
+    Btn0    REG_SZ    3,38274
+    Btn1    REG_SZ    3,38276
+    Btn2    REG_SZ    3,38275
+    Btn3    REG_SZ    3,38403
+    Btn4    REG_SZ    3,38278
+    Btn5    REG_SZ    3,38277
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB6
+    Btn0    REG_SZ    2,54046
+    Btn1    REG_SZ    2,54116
+    Btn2    REG_SZ    2,33065
+    Btn3    REG_SZ    2,32810
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab1\GB7
+    Btn0    REG_SZ    2,54226
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab10
+    ModuleName    REG_SZ    {03412BA8-10F6-4D51-AC38-4937CE7BEA5F}
+    RefName    REG_SZ    钣金型材
+    Tab Props    REG_SZ    钣金型材,0,1,-1
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab10\GB0
+    Btn0    REG_SZ    3,41799
+    Btn1    REG_SZ    3,41800
+    Btn2    REG_SZ    3,41801
+    Btn3    REG_SZ    3,41802
+    Btn4    REG_SZ    3,41803
+    Btn5    REG_SZ    3,41804
+    Btn6    REG_SZ    3,41805
+    Btn7    REG_SZ    3,41806
+    Btn8    REG_SZ    3,41807
+    Btn9    REG_SZ    3,41808
+    Btn10    REG_SZ    3,41809
+    Btn11    REG_SZ    3,41810
+    Btn12    REG_SZ    3,41811
+    Btn13    REG_SZ    3,41812
+    Btn14    REG_SZ    3,41813
+    Btn15    REG_SZ    3,41814
+    Btn16    REG_SZ    3,41815
+    Btn17    REG_SZ    3,41816
+    Btn18    REG_SZ    3,41817
+    Btn19    REG_SZ    3,41818
+    Btn20    REG_SZ    3,41819
+    Btn21    REG_SZ    3,41820
+    Btn22    REG_SZ    3,41821
+    Btn23    REG_SZ    3,41822
+    Btn24    REG_SZ    3,41823
+    Btn25    REG_SZ    3,41824
+    Btn26    REG_SZ    3,41825
+    Btn27    REG_SZ    3,41826
+    Btn28    REG_SZ    3,41827
+    Btn29    REG_SZ    3,41828
+    Btn30    REG_SZ    3,41829
+    Btn31    REG_SZ    3,41830
+    Btn32    REG_SZ    3,41831
+    Btn33    REG_SZ    3,41832
+    Btn34    REG_SZ    3,41833
+    Btn35    REG_SZ    3,41834
+    Btn36    REG_SZ    3,41835
+    Btn37    REG_SZ    3,41836
+    Btn38    REG_SZ    3,41837
+    Btn39    REG_SZ    3,41838
+    Btn40    REG_SZ    3,41839
+    Btn41    REG_SZ    3,41840
+    Btn42    REG_SZ    3,41841
+    Btn43    REG_SZ    3,41842
+    Btn44    REG_SZ    3,41843
+    Btn45    REG_SZ    3,41844
+    Btn46    REG_SZ    3,41845
+    Btn47    REG_SZ    3,41846
+    Btn48    REG_SZ    3,41847
+    Btn49    REG_SZ    3,41848
+    Btn50    REG_SZ    3,41849
+    Btn51    REG_SZ    3,41850
+    Btn52    REG_SZ    3,41851
+    Btn53    REG_SZ    3,41852
+    Btn54    REG_SZ    3,41853
+    Btn55    REG_SZ    3,41854
+    Btn56    REG_SZ    3,41855
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab11
+    ModuleName    REG_SZ    {08C4BC0B-C36C-470E-A0EA-02232F023333}
+    RefName    REG_SZ    Drew
+    Tab Props    REG_SZ    Drew,0,1,-1
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab11\GB0
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12
+    Tab Props    REG_SZ    24281,1,0,30
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB0
+    Btn0    REG_SZ    2,43540
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB1
+    Btn0    REG_SZ    3,43630
+    Btn1    REG_SZ    3,43629
+    Btn2    REG_SZ    3,43628
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB2
+    Btn0    REG_SZ    2,43627
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB3
+    Btn0    REG_SZ    2,43611
+    Btn1    REG_SZ    2,43619
+    Btn2    REG_SZ    2,43618
+    Btn3    REG_SZ    2,42663
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB4
+    Btn0    REG_SZ    3,43625
+    Btn1    REG_SZ    3,43624
+    Btn2    REG_SZ    3,43626
+    Btn3    REG_SZ    3,43621
+    Btn4    REG_SZ    3,43620
+    Btn5    REG_SZ    3,43622
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB5
+    Btn0    REG_SZ    2,43617
+    Btn1    REG_SZ    2,55868
+    Btn2    REG_SZ    2,43616
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12\GB6
+    Btn0    REG_SZ    3,43610
+    Btn1    REG_SZ    3,43609
+    Btn2    REG_SZ    3,43623
+    Btn3    REG_SZ    3,43603
+    Btn4    REG_SZ    3,43602
+    Btn5    REG_SZ    3,43601
+    Btn6    REG_SZ    3,43608
+    Btn7    REG_SZ    3,43607
+    Btn8    REG_SZ    3,43605
+    Btn9    REG_SZ    3,32873
+    Btn10    REG_SZ    3,32886
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13
+    Tab Props    REG_SZ    24282,1,0,22
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB0
+    Btn0    REG_SZ    2,43540
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB1
+    Btn0    REG_SZ    3,43651
+    Btn1    REG_SZ    3,43650
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB2
+    Btn0    REG_SZ    2,43611
+    Btn1    REG_SZ    2,43645
+    Btn2    REG_SZ    2,43644
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB3
+    Btn0    REG_SZ    3,43649
+    Btn1    REG_SZ    3,43648
+    Btn2    REG_SZ    3,43647
+    Btn3    REG_SZ    3,43646
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB4
+    Btn0    REG_SZ    2,43643
+    Btn1    REG_SZ    2,43642
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab13\GB5
+    Btn0    REG_SZ    3,43610
+    Btn1    REG_SZ    3,43609
+    Btn2    REG_SZ    3,43604
+    Btn3    REG_SZ    3,43602
+    Btn4    REG_SZ    3,32873
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14
+    Tab Props    REG_SZ    24283,1,0,22
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB0
+    Btn0    REG_SZ    2,43540
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB1
+    Btn0    REG_SZ    3,43640
+    Btn1    REG_SZ    3,43639
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB2
+    Btn0    REG_SZ    2,43638
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB3
+    Btn0    REG_SZ    2,43611
+    Btn1    REG_SZ    2,43635
+    Btn2    REG_SZ    2,43634
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB4
+    Btn0    REG_SZ    3,43637
+    Btn1    REG_SZ    3,43636
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB5
+    Btn0    REG_SZ    2,43633
+    Btn1    REG_SZ    2,43632
+    Btn2    REG_SZ    2,43631
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab14\GB6
+    Btn0    REG_SZ    3,43610
+    Btn1    REG_SZ    3,43609
+    Btn2    REG_SZ    3,43604
+    Btn3    REG_SZ    3,43603
+    Btn4    REG_SZ    3,43602
+    Btn5    REG_SZ    3,43601
+    Btn6    REG_SZ    3,43608
+    Btn7    REG_SZ    3,43607
+    Btn8    REG_SZ    3,43605
+    Btn9    REG_SZ    3,32873
+    Btn10    REG_SZ    3,32886
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15
+    Tab Props    REG_SZ    29778,1,0,24
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15\GB0
+    Btn0    REG_SZ    2,43540
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15\GB1
+    Btn0    REG_SZ    3,43511
+    Btn1    REG_SZ    3,43510
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15\GB2
+    Btn0    REG_SZ    2,43611
+    Btn1    REG_SZ    2,43507
+    Btn2    REG_SZ    2,43506
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15\GB3
+    Btn0    REG_SZ    3,43509
+    Btn1    REG_SZ    3,43508
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab15\GB4
+    Btn0    REG_SZ    3,43609
+    Btn1    REG_SZ    3,43602
+    Btn2    REG_SZ    3,32873
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16
+    activecontextid    REG_SZ    0
+    Tab Props    REG_SZ    24960,1,0,31
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0
+    contextid    REG_SZ    0
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41055
+    Btn4    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB4
+    Btn0    REG_SZ    3,41174
+    Btn1    REG_SZ    3,41175
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext0\GB5
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1
+    contextid    REG_SZ    1
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext1\GB4
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10
+    contextid    REG_SZ    100
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41055
+    Btn4    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext10\GB4
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext11
+    contextid    REG_SZ    13
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext11\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext11\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41182
+    Btn5    REG_SZ    2,41183
+    Btn6    REG_SZ    2,41173
+    Btn7    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext11\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41050
+    Btn2    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext11\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext12
+    contextid    REG_SZ    105
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext12\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext12\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+    Btn7    REG_SZ    2,41016
+    Btn8    REG_SZ    2,41017
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext12\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext12\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext13
+    contextid    REG_SZ    9899
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext13\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext13\GB1
+    Btn0    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14
+    contextid    REG_SZ    200
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41055
+    Btn4    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB4
+    Btn0    REG_SZ    3,41174
+    Btn1    REG_SZ    3,41175
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext14\GB5
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext15
+    contextid    REG_SZ    9999
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext15\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext15\GB1
+    Btn0    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext15\GB2
+    Btn0    REG_SZ    3,41174
+    Btn1    REG_SZ    3,41175
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16
+    contextid    REG_SZ    300
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41055
+    Btn4    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext16\GB4
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2
+    contextid    REG_SZ    2
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext2\GB4
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3
+    contextid    REG_SZ    3
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41154
+    Btn2    REG_SZ    2,41166
+    Btn3    REG_SZ    2,41172
+    Btn4    REG_SZ    2,41173
+    Btn5    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext3\GB4
+    Btn0    REG_SZ    2,41156
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext4
+    contextid    REG_SZ    4
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext4\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext4\GB1
+    Btn0    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext4\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext4\GB3
+    Btn0    REG_SZ    2,41152
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5
+    contextid    REG_SZ    5
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+    Btn7    REG_SZ    2,41016
+    Btn8    REG_SZ    2,41017
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext5\GB4
+    Btn0    REG_SZ    3,41174
+    Btn1    REG_SZ    3,41175
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext6
+    contextid    REG_SZ    6
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext6\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext6\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41166
+    Btn2    REG_SZ    2,41016
+    Btn3    REG_SZ    2,41173
+    Btn4    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext6\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext6\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7
+    contextid    REG_SZ    7
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7\GB1
+    Btn0    REG_SZ    2,41173
+    Btn1    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext7\GB4
+    Btn0    REG_SZ    2,41157
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext8
+    contextid    REG_SZ    8
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext8\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext8\GB1
+    Btn0    REG_SZ    2,40954
+    Btn1    REG_SZ    2,41161
+    Btn2    REG_SZ    2,41165
+    Btn3    REG_SZ    2,41166
+    Btn4    REG_SZ    2,41172
+    Btn5    REG_SZ    2,41173
+    Btn6    REG_SZ    2,41162
+    Btn7    REG_SZ    2,41016
+    Btn8    REG_SZ    2,41017
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext8\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext8\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext9
+    contextid    REG_SZ    9
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext9\GB0
+    Btn0    REG_SZ    2,41160
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext9\GB1
+    Btn0    REG_SZ    2,41162
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext9\GB2
+    Btn0    REG_SZ    2,41163
+    Btn1    REG_SZ    2,41051
+    Btn2    REG_SZ    2,41050
+    Btn3    REG_SZ    3,41164
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab16\TabContext9\GB3
+    Btn0    REG_SZ    3,40977
+    Btn1    REG_SZ    3,41168
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab17
+    Tab Props    REG_SZ    29434,1,0,30
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab17\GB0
+    Btn0    REG_SZ    2,38377
+    Btn1    REG_SZ    2,55282
+    Btn2    REG_SZ    2,53789
+    Btn3    REG_SZ    2,53119
+    Btn4    REG_SZ    2,53788
+    Btn5    REG_SZ    2,55244
+    Btn6    REG_SZ    2,38548
+    Btn7    REG_SZ    2,53112
+    Btn8    REG_SZ    2,52452
+    Btn9    REG_SZ    2,38549
+    Btn10    REG_SZ    2,53791
+    Btn11    REG_SZ    2,38390
+    Btn12    REG_SZ    2,52453
+    Btn13    REG_SZ    2,38551
+    Btn14    REG_SZ    2,33113
+    Btn15    REG_SZ    2,33301
+    Btn16    REG_SZ    2,32851
+    Btn17    REG_SZ    2,32852
+    Btn18    REG_SZ    2,33946
+    Btn19    REG_SZ    2,32862
+    Btn20    REG_SZ    2,33057
+    Btn21    REG_SZ    2,229
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab17\GB1
+    Btn0    REG_SZ    2,52073
+    Btn1    REG_SZ    2,33230
+    Btn2    REG_SZ    2,21959
+    Btn3    REG_SZ    2,33324
+    Btn4    REG_SZ    2,52096
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab17\GB2
+    Btn0    REG_SZ    2,52053
+    Btn1    REG_SZ    2,4731
+    Btn2    REG_SZ    2,59948
+    Btn3    REG_SZ    2,52266
+    Btn4    REG_SZ    2,55245
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab18
+    Tab Props    REG_SZ    32664,1,0,33
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab18\GB0
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2
+    Tab Props    REG_SZ    23274,1,1,24
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB0
+    Btn0    REG_SZ    2,54100
+    Btn1    REG_SZ    2,54115
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB1
+    Btn0    REG_SZ    1,54101
+    Btn1    REG_SZ    1,54418
+    Btn2    REG_SZ    1,59411
+    Btn3    REG_SZ    1,54419
+    Btn4    REG_SZ    1,54420
+    Btn5    REG_SZ    1,33918
+    Btn6    REG_SZ    1,54103
+    Btn7    REG_SZ    1,54102
+    Btn8    REG_SZ    1,54104
+    Btn9    REG_SZ    1,38627
+    Btn10    REG_SZ    1,33108
+    Btn11    REG_SZ    1,32947
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB2
+    Btn0    REG_SZ    2,54106
+    Btn1    REG_SZ    2,54105
+    Btn2    REG_SZ    2,32964
+    Btn3    REG_SZ    2,21859
+    Btn4    REG_SZ    3,32928
+    Btn5    REG_SZ    3,54108
+    Btn6    REG_SZ    3,54107
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB3
+    Btn0    REG_SZ    2,54114
+    Btn1    REG_SZ    2,37797
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB4
+    Btn0    REG_SZ    2,222
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab2\GB5
+    Btn0    REG_SZ    2,51572
+    Btn1    REG_SZ    2,37848
+    Btn2    REG_SZ    2,37849
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3
+    Tab Props    REG_SZ    30879,1,0,29
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3\GB0
+    Btn0    REG_SZ    2,54100
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3\GB1
+    Btn0    REG_SZ    2,54121
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3\GB2
+    Btn0    REG_SZ    2,54122
+    Btn1    REG_SZ    2,52402
+    Btn2    REG_SZ    2,52403
+    Btn3    REG_SZ    2,52599
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3\GB3
+    Btn0    REG_SZ    2,52559
+    Btn1    REG_SZ    2,52422
+    Btn2    REG_SZ    2,52406
+    Btn3    REG_SZ    2,52407
+    Btn4    REG_SZ    2,52573
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab3\GB4
+    Btn0    REG_SZ    2,37848
+    Btn1    REG_SZ    2,37849
+    Btn2    REG_SZ    2,33594
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab4
+    Tab Props    REG_SZ    32622,1,1,31
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab4\GB0
+    Btn0    REG_SZ    2,52545
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab4\GB1
+    Btn0    REG_SZ    2,52542
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab4\GB2
+    Btn0    REG_SZ    2,52655
+    Btn1    REG_SZ    2,52661
+    Btn2    REG_SZ    2,52543
+    Btn3    REG_SZ    2,52544
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab4\GB3
+    Btn0    REG_SZ    2,52596
+    Btn1    REG_SZ    2,52560
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5
+    Tab Props    REG_SZ    23279,1,1,32
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5\GB0
+    Btn0    REG_SZ    2,60007
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5\GB1
+    Btn0    REG_SZ    2,34126
+    Btn1    REG_SZ    2,54525
+    Btn2    REG_SZ    2,51623
+    Btn3    REG_SZ    2,34125
+    Btn4    REG_SZ    3,33068
+    Btn5    REG_SZ    3,52545
+    Btn6    REG_SZ    3,59804
+    Btn7    REG_SZ    3,37835
+    Btn8    REG_SZ    3,59702
+    Btn9    REG_SZ    3,33551
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5\GB2
+    Btn0    REG_SZ    3,33302
+    Btn1    REG_SZ    3,43548
+    Btn2    REG_SZ    3,52619
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5\GB3
+    Btn0    REG_SZ    1,43543
+    Btn1    REG_SZ    1,59958
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab5\GB4
+    Btn0    REG_SZ    3,52418
+    Btn1    REG_SZ    3,38155
+    Btn2    REG_SZ    3,54422
+    Btn3    REG_SZ    3,54423
+    Btn4    REG_SZ    3,55004
+    Btn5    REG_SZ    3,54507
+    Btn6    REG_SZ    3,53174
+    Btn7    REG_SZ    3,53189
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab6
+    Tab Props    REG_SZ    58635,1,0,33
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab6\GB0
+    Btn0    REG_SZ    2,51616
+    Btn1    REG_SZ    2,28702
+    Btn2    REG_SZ    2,109
+    Btn3    REG_SZ    2,43822
+    Btn4    REG_SZ    2,38670
+    Btn5    REG_SZ    2,52268
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab7
+    Tab Props    REG_SZ    57980,1,0,32
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab7\GB0
+    Btn0    REG_SZ    2,44086
+    Btn1    REG_SZ    2,53243
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab7\GB1
+    Btn0    REG_SZ    2,52861
+    Btn1    REG_SZ    2,52862
+    Btn2    REG_SZ    2,52863
+    Btn3    REG_SZ    2,52864
+    Btn4    REG_SZ    2,52870
+    Btn5    REG_SZ    2,52868
+    Btn6    REG_SZ    2,53156
+    Btn7    REG_SZ    2,52865
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab7\GB2
+    Btn0    REG_SZ    2,53352
+    Btn1    REG_SZ    2,53308
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab8
+    Tab Props    REG_SZ    23682,1,1,27
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab8\GB0
+    Btn0    REG_SZ    2,59820
+    Btn1    REG_SZ    2,38147
+    Btn2    REG_SZ    2,51567
+    Btn3    REG_SZ    2,51568
+    Btn4    REG_SZ    2,38697
+    Btn5    REG_SZ    2,38696
+    Btn6    REG_SZ    2,38152
+    Btn7    REG_SZ    2,59821
+    Btn8    REG_SZ    2,55227
+    Btn9    REG_SZ    2,55228
+    Btn10    REG_SZ    2,55229
+    Btn11    REG_SZ    2,52239
+    Btn12    REG_SZ    2,52419
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab8\GB1
+    Btn0    REG_SZ    1,43557
+    Btn1    REG_SZ    1,43558
+    Btn2    REG_SZ    1,43559
+    Btn3    REG_SZ    2,43560
+    Btn4    REG_SZ    2,43561
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9
+    ModuleName    REG_SZ    {03412BA8-10F6-4D51-AC38-4937CE7BEA5F}
+    RefName    REG_SZ    OnCadTools
+    Tab Props    REG_SZ    OnCadTools,0,1,-1
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB0
+    Btn0    REG_SZ    3,41676
+    Btn1    REG_SZ    3,41677
+    Btn2    REG_SZ    3,41678
+    Btn3    REG_SZ    1,41679
+    Btn4    REG_SZ    1,41680
+    Btn5    REG_SZ    1,41681
+    Btn6    REG_SZ    1,41682
+    Btn7    REG_SZ    1,41683
+    Btn8    REG_SZ    1,41684
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB1
+    Btn0    REG_SZ    3,41685
+    Btn1    REG_SZ    3,41686
+    Btn2    REG_SZ    3,41687
+    Btn3    REG_SZ    1,41688
+    Btn4    REG_SZ    1,41689
+    Btn5    REG_SZ    1,41690
+    Btn6    REG_SZ    1,41691
+    Btn7    REG_SZ    1,41692
+    Btn8    REG_SZ    1,41693
+    Btn9    REG_SZ    1,41694
+    Btn10    REG_SZ    1,41695
+    Btn11    REG_SZ    1,41696
+    Btn12    REG_SZ    1,41697
+    Btn13    REG_SZ    1,41698
+    Btn14    REG_SZ    1,41699
+    Btn15    REG_SZ    3,41700
+    Btn16    REG_SZ    3,41701
+    Btn17    REG_SZ    3,41702
+    Btn18    REG_SZ    1,41703
+    Btn19    REG_SZ    1,41704
+    Btn20    REG_SZ    1,41705
+    Btn21    REG_SZ    1,41706
+    Btn22    REG_SZ    1,41707
+    Btn23    REG_SZ    1,41708
+    Btn24    REG_SZ    1,41709
+    Btn25    REG_SZ    1,41710
+    Btn26    REG_SZ    1,41711
+    Btn27    REG_SZ    1,41712
+    Btn28    REG_SZ    1,41713
+    Btn29    REG_SZ    1,41714
+    Btn30    REG_SZ    1,41715
+    Btn31    REG_SZ    1,41716
+    Btn32    REG_SZ    1,41717
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB2
+    Btn0    REG_SZ    3,41718
+    Btn1    REG_SZ    3,41719
+    Btn2    REG_SZ    3,41720
+    Btn3    REG_SZ    1,41721
+    Btn4    REG_SZ    1,41722
+    Btn5    REG_SZ    1,41723
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB3
+    Btn0    REG_SZ    3,41724
+    Btn1    REG_SZ    3,41725
+    Btn2    REG_SZ    3,41726
+    Btn3    REG_SZ    1,41727
+    Btn4    REG_SZ    1,41728
+    Btn5    REG_SZ    1,41729
+    Btn6    REG_SZ    1,41730
+    Btn7    REG_SZ    1,41731
+    Btn8    REG_SZ    1,41732
+    Btn9    REG_SZ    1,41733
+    Btn10    REG_SZ    1,41734
+    Btn11    REG_SZ    1,41735
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB4
+    Btn0    REG_SZ    3,41736
+    Btn1    REG_SZ    3,41737
+    Btn2    REG_SZ    3,41738
+    Btn3    REG_SZ    1,41739
+    Btn4    REG_SZ    1,41740
+    Btn5    REG_SZ    1,41741
+    Btn6    REG_SZ    1,41742
+    Btn7    REG_SZ    1,41743
+    Btn8    REG_SZ    1,41744
+    Btn9    REG_SZ    1,41745
+    Btn10    REG_SZ    1,41746
+    Btn11    REG_SZ    1,41747
+    Btn12    REG_SZ    3,41748
+    Btn13    REG_SZ    3,41749
+    Btn14    REG_SZ    3,41750
+    Btn15    REG_SZ    3,41751
+    Btn16    REG_SZ    3,41752
+    Btn17    REG_SZ    3,41753
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB5
+    Btn0    REG_SZ    1,41754
+    Btn1    REG_SZ    1,41755
+    Btn2    REG_SZ    1,41756
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB6
+    Btn0    REG_SZ    1,41757
+    Btn1    REG_SZ    1,41758
+    Btn2    REG_SZ    1,41759
+    Btn3    REG_SZ    1,41760
+    Btn4    REG_SZ    1,41761
+    Btn5    REG_SZ    1,41762
+    Btn6    REG_SZ    1,41763
+    Btn7    REG_SZ    1,41764
+    Btn8    REG_SZ    1,41765
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB7
+    Btn0    REG_SZ    3,41766
+    Btn1    REG_SZ    3,41767
+    Btn2    REG_SZ    3,41768
+    Btn3    REG_SZ    1,41769
+    Btn4    REG_SZ    1,41770
+    Btn5    REG_SZ    1,41771
+    Btn6    REG_SZ    1,41772
+    Btn7    REG_SZ    1,41773
+    Btn8    REG_SZ    1,41774
+    Btn9    REG_SZ    1,41775
+    Btn10    REG_SZ    1,41776
+    Btn11    REG_SZ    1,41777
+    Btn12    REG_SZ    1,41778
+    Btn13    REG_SZ    1,41779
+    Btn14    REG_SZ    1,41780
+    Btn15    REG_SZ    3,41781
+    Btn16    REG_SZ    3,41782
+    Btn17    REG_SZ    3,41783
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB8
+    Btn0    REG_SZ    3,41784
+    Btn1    REG_SZ    3,41785
+    Btn2    REG_SZ    3,41786
+    Btn3    REG_SZ    1,41787
+    Btn4    REG_SZ    1,41788
+    Btn5    REG_SZ    1,41789
+    Btn6    REG_SZ    1,41790
+    Btn7    REG_SZ    1,41791
+    Btn8    REG_SZ    1,41792
+    Btn9    REG_SZ    1,41793
+    Btn10    REG_SZ    1,41794
+    Btn11    REG_SZ    1,41795
+
+HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab9\GB9
+    Btn0    REG_SZ    3,41796
+    Btn1    REG_SZ    3,41797
+    Btn2    REG_SZ    3,41798

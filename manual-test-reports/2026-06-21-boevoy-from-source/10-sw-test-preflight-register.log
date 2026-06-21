@@ -1,0 +1,118 @@
+[preflight] normalizing process environment (WINDIR/SystemRoot/ComSpec)
+[preflight] RegAsm available: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe
+[preflight] runtime SWTools.exe sha256 = 1ea92513f7416168d60f168f8d9f323a7b1d8e89182873b4f31e7b786756b9e9
+[preflight] runtime SWTools.dll sha256 = 1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705
+[preflight] verifying SWTools.dll add-in brand metadata
+SwAddinAttribute.Title=SWTools
+SwAddinAttribute.Description=SWTools SolidWorks Add-in
+AddCommandMgr ldstr ZTool=0, SWTools=1, oldDescription=0
+Addin ldstr ZTool=0, SWTools=1
+openZtool internal assembly lookup ZTool=1
+  [OK] SwAddinAttribute.Title is SWTools
+  [OK] SwAddinAttribute.Description is rebranded
+  [OK] AddCommandMgr does not create a ZTool tab
+  [OK] AddCommandMgr creates an SWTools tab
+  [OK] AddCommandMgr tooltip is not legacy branded
+  [OK] manual Addin registration Title is not ZTool
+  [OK] manual Addin registration Title is SWTools
+  [OK] openZtool still searches executable by internal assembly name ZTool
+VERIFY: PASS
+[preflight] stopping SLDWORKS/SWTools processes (if any)
+[preflight] registry backup -> D:\Development\ztool\manual-test-reports\2026-06-21-boevoy-from-source\preflight-live-from-source
+[preflight] cleaning stale SWTools/ZTool CommandManager tabs
+[cmgr-clean] targeted SolidWorks versions: SOLIDWORKS 2025
+[cmgr-clean] report/backup dir: D:\Development\ztool\manual-test-reports\2026-06-21-boevoy-from-source\preflight-live-from-source\commandmanager-cleanup
+[cmgr-clean] backed up HKCU\SOFTWARE\SolidWorks -> D:\Development\ztool\manual-test-reports\2026-06-21-boevoy-from-source\preflight-live-from-source\commandmanager-cleanup\HKCU_SolidWorks.reg
+[cmgr-clean] match (named-swtools): HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12
+[cmgr-clean] removed: HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\AssyContext\Tab12
+[cmgr-clean] match (named-swtools): HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\PartContext\Tab21
+[cmgr-clean] removed: HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\PartContext\Tab21
+[cmgr-clean] match (named-swtools): HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\DrwContext\Tab10
+[cmgr-clean] removed: HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\CommandManager\DrwContext\Tab10
+[cmgr-clean] match (swtools-flyout): HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\Custom API Flyouts\59425
+[cmgr-clean] removed: HKEY_CURRENT_USER\SOFTWARE\SolidWorks\SOLIDWORKS 2025\User Interface\Custom API Flyouts\59425
+[cmgr-clean] report written: D:\Development\ztool\manual-test-reports\2026-06-21-boevoy-from-source\preflight-live-from-source\commandmanager-cleanup\cmgr-cleanup-report.json
+CommandManager cleanup: removed 4 item(s).
+{
+    "timestamp":  "2026-06-21T18:47:53.7438116+05:00",
+    "applied":  true,
+    "includeAddInsStartup":  false,
+    "addinGuid":  "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}",
+    "versions":  [
+                     "SOLIDWORKS 2025"
+                 ],
+    "status":  "APPLIED",
+    "found":  [
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "AssyContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12"
+                  },
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "PartContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21"
+                  },
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "DrwContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10"
+                  },
+                  {
+                      "type":  "custom-api-flyout",
+                      "kind":  "swtools-flyout",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "Custom API Flyouts",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+                  }
+              ],
+    "removed":  [
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+                ],
+    "backups":  [
+                    "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup\\HKCU_SolidWorks.reg"
+                ],
+    "warnings":  [
+
+                 ],
+    "steps":  [
+                  "targeted SolidWorks versions: SOLIDWORKS 2025",
+                  "report/backup dir: D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup",
+                  "backed up HKCU\\SOFTWARE\\SolidWorks -\u003e D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup\\HKCU_SolidWorks.reg",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                  "match (swtools-flyout): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+              ]
+}
+[preflight] scanning registry for stale SWTools CodeBase / AddIn references
+[preflight] stale CodeBase before RegAsm: CodeBase    REG_SZ    file:///D:/Development/ztool/releases/1.1.3/package-7391cc2/SWTools-1.1.3/runtime/SWTools.dll
+[preflight] registering D:\Development\ztool\_local_artifacts\live-runtime\from-source-pr54-20260621\SWTools.dll via RegAsm /codebase
+Microsoft .NET Framework Assembly Registration Utility version 4.8.4084.0
+for Microsoft .NET Framework version 4.8.4084.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+RegAsm : warning RA0000 : Registering an unsigned assembly with /codebase can cause your assembly to interfere with other applications that may be installed on the same computer. The /codebase switch is intended to be used only with signed assemblies. Please give your assembly a strong name and re-register it.
+Types registered successfully
+[preflight] configuring SolidWorks add-in enable/startup keys
+[preflight] verifying CodeBase now points at the runtime DLL
+WARNING: CleanLicenseState requested: deleting SWTools license-state keys (clean-license scenario only)
+
+[preflight] status: PASS_WITH_WARNINGS
+[preflight] report: D:\Development\ztool\manual-test-reports\2026-06-21-boevoy-from-source\preflight-live-from-source\preflight-report.json
+[preflight] warnings:
+  - CleanLicenseState requested: deleting SWTools license-state keys (clean-license scenario only)
+[preflight] next: open TestModel\0614-A00.SLDASM via Explorer, maximize SolidWorks, start SWTools from the ribbon, then follow FULL_TEST_METHODOLOGY_RU.md sec 2.2.

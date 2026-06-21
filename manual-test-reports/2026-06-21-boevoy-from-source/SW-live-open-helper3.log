@@ -1,0 +1,7 @@
+LoadAddIn=2
+GetAddInObject=System.__ComObject
+openZtool=<null>
+
+ProcessName   Id MainWindowTitle  Responding Path
+-----------   -- ---------------  ---------- ----
+SWTools     8464 SWTools 1.0(x64)       True D:\Development\ztool\_local_artifacts\live-runtime\source-bin-with-addi...

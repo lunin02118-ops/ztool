@@ -1,0 +1,65 @@
+﻿{
+    "timestamp":  "2026-06-21T18:47:53.7438116+05:00",
+    "applied":  true,
+    "includeAddInsStartup":  false,
+    "addinGuid":  "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}",
+    "versions":  [
+                     "SOLIDWORKS 2025"
+                 ],
+    "status":  "APPLIED",
+    "found":  [
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "AssyContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12"
+                  },
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "PartContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21"
+                  },
+                  {
+                      "type":  "commandmanager-tab",
+                      "kind":  "named-swtools",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "DrwContext",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10"
+                  },
+                  {
+                      "type":  "custom-api-flyout",
+                      "kind":  "swtools-flyout",
+                      "version":  "SOLIDWORKS 2025",
+                      "context":  "Custom API Flyouts",
+                      "key":  "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+                  }
+              ],
+    "removed":  [
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                    "HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+                ],
+    "backups":  [
+                    "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup\\HKCU_SolidWorks.reg"
+                ],
+    "warnings":  [
+
+                 ],
+    "steps":  [
+                  "targeted SolidWorks versions: SOLIDWORKS 2025",
+                  "report/backup dir: D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup",
+                  "backed up HKCU\\SOFTWARE\\SolidWorks -\u003e D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup\\HKCU_SolidWorks.reg",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\AssyContext\\Tab12",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\PartContext\\Tab21",
+                  "match (named-swtools): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\CommandManager\\DrwContext\\Tab10",
+                  "match (swtools-flyout): HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425",
+                  "removed: HKEY_CURRENT_USER\\SOFTWARE\\SolidWorks\\SOLIDWORKS 2025\\User Interface\\Custom API Flyouts\\59425"
+              ]
+}

@@ -1,0 +1,37 @@
+﻿{
+    "timestamp":  "2026-06-21T18:48:02.0726586+05:00",
+    "status":  "PASS_WITH_WARNINGS",
+    "runtimeDir":  "D:\\Development\\ztool\\_local_artifacts\\live-runtime\\from-source-pr54-20260621",
+    "swtoolsExe":  {
+                       "expected":  "1ea92513f7416168d60f168f8d9f323a7b1d8e89182873b4f31e7b786756b9e9",
+                       "path":  "D:\\Development\\ztool\\_local_artifacts\\live-runtime\\from-source-pr54-20260621\\SWTools.exe",
+                       "sha256":  "1ea92513f7416168d60f168f8d9f323a7b1d8e89182873b4f31e7b786756b9e9"
+                   },
+    "swtoolsDll":  {
+                       "expected":  "1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705",
+                       "path":  "D:\\Development\\ztool\\_local_artifacts\\live-runtime\\from-source-pr54-20260621\\SWTools.dll",
+                       "sha256":  "1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705"
+                   },
+    "registered":  true,
+    "commandManagerCleanup":  "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source\\commandmanager-cleanup",
+    "licenseStateCleaned":  true,
+    "windir":  "C:\\Windows",
+    "steps":  [
+                  "normalizing process environment (WINDIR/SystemRoot/ComSpec)",
+                  "RegAsm available: C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\RegAsm.exe",
+                  "runtime SWTools.exe sha256 = 1ea92513f7416168d60f168f8d9f323a7b1d8e89182873b4f31e7b786756b9e9",
+                  "runtime SWTools.dll sha256 = 1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705",
+                  "verifying SWTools.dll add-in brand metadata",
+                  "stopping SLDWORKS/SWTools processes (if any)",
+                  "registry backup -\u003e D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-from-source",
+                  "cleaning stale SWTools/ZTool CommandManager tabs",
+                  "scanning registry for stale SWTools CodeBase / AddIn references",
+                  "stale CodeBase before RegAsm: CodeBase    REG_SZ    file:///D:/Development/ztool/releases/1.1.3/package-7391cc2/SWTools-1.1.3/runtime/SWTools.dll",
+                  "registering D:\\Development\\ztool\\_local_artifacts\\live-runtime\\from-source-pr54-20260621\\SWTools.dll via RegAsm /codebase",
+                  "configuring SolidWorks add-in enable/startup keys",
+                  "verifying CodeBase now points at the runtime DLL"
+              ],
+    "warnings":  [
+                     "CleanLicenseState requested: deleting SWTools license-state keys (clean-license scenario only)"
+                 ]
+}
