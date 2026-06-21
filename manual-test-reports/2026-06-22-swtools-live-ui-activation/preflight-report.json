@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-06-22T03:26:48.3219141+05:00",
+  "status": "PASS",
+  "runtimeDir": "C:\\Program Files\\SWTools",
+  "swtoolsExe": {
+    "expected": "3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a",
+    "path": "C:\\Program Files\\SWTools\\SWTools.exe",
+    "sha256": "3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a"
+  },
+  "swtoolsDll": {
+    "expected": "1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705",
+    "path": "C:\\Program Files\\SWTools\\SWTools.dll",
+    "sha256": "1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705"
+  },
+  "registered": true,
+  "commandManagerCleanup": "D:\\Development\\ztool\\_local_artifacts\\evidence\\2026-06-22-swtools-live-ui\\preflight-installed-runtime-no-clean\\commandmanager-cleanup",
+  "licenseStateCleaned": false,
+  "windir": "C:\\Windows",
+  "steps": [
+    "normalizing process environment (WINDIR/SystemRoot/ComSpec)",
+    "RegAsm available: C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\RegAsm.exe",
+    "runtime SWTools.exe sha256 = 3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a",
+    "runtime SWTools.dll sha256 = 1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705",
+    "verifying SWTools.dll add-in brand metadata",
+    "stopping SLDWORKS/SWTools processes (if any)",
+    "registry backup -> D:\\Development\\ztool\\_local_artifacts\\evidence\\2026-06-22-swtools-live-ui\\preflight-installed-runtime-no-clean",
+    "cleaning stale SWTools/ZTool CommandManager tabs",
+    "scanning registry for stale SWTools CodeBase / AddIn references",
+    "registering C:\\Program Files\\SWTools\\SWTools.dll via RegAsm /codebase",
+    "configuring SolidWorks add-in enable/startup keys",
+    "verifying CodeBase now points at the runtime DLL"
+  ],
+  "warnings": []
+}
