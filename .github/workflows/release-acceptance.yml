@@ -1,0 +1,83 @@
+name: release-acceptance
+
+# From-source release acceptance gate (Tier 1-2, no SolidWorks required).
+# Adapted from the binary-path gate (PR #28) to the from-source path: instead of
+# verifying hashes of the legacy reinjected bundle, it BUILDS the client from
+# client-src and asserts the produced artifact, then runs the build-method-
+# independent deterministic checks (no-CJK names, BOM template/config pre-flight,
+# BOM export asserter). Visual A/B, hardware licensing and screenshots stay
+# manual (see docs/release/BOEVOY_E2E_TEST_RUNBOOK_RU.md).
+
+on:
+  pull_request:
+    paths:
+      - "client-src/**"
+      - "SWTools.settings"
+      - "client-core/dist/SWTools.settings"
+      - "client-core/tools/check_bom_template.py"
+      - "SolidWorksTemplates/**"
+      - "Шаблоны спецификации/**"
+      - "tools/**"
+      - ".github/workflows/release-acceptance.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "client-src/**"
+      - "SWTools.settings"
+      - "client-core/dist/SWTools.settings"
+      - "client-core/tools/check_bom_template.py"
+      - "SolidWorksTemplates/**"
+      - "Шаблоны спецификации/**"
+      - "tools/**"
+      - ".github/workflows/release-acceptance.yml"
+
+jobs:
+  acceptance:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: python -m pip install --quiet openpyxl
+
+      # --- Artifact (from-source) ---
+      - name: Build from-source client (Release)
+        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
+
+      - name: Assert produced artifact is branded SWTools
+        run: |
+          $exe = "client-src/bin/Release/net48/ZTool.exe"
+          if (-not (Test-Path $exe)) { throw "from-source build did not produce $exe" }
+          $info = (Get-Item $exe).VersionInfo
+          Write-Host ("Built {0}  ProductName='{1}'  ProductVersion='{2}'" -f $exe, $info.ProductName, $info.ProductVersion)
+          if ($info.ProductName -ne "SWTools") { throw "ProductName is '$($info.ProductName)', expected 'SWTools'" }
+
+      # --- Build-method-independent deterministic checks ---
+      - name: Localization name gate (no CJK in tracked paths)
+        run: python tools/check_no_cjk_filenames.py
+
+      - name: BOM export pre-flight - root SWTools.settings
+        run: python client-core/tools/check_bom_template.py SWTools.settings
+
+      - name: BOM export pre-flight - client-core/dist/SWTools.settings
+        run: python client-core/tools/check_bom_template.py client-core/dist/SWTools.settings
+
+      - name: BOM export asserter self-test
+        run: python tools/bom_export_assert.py --self-test
+
+      - name: BOM export asserter - committed example fixture
+        run: python tools/bom_export_assert.py tools/golden/example_bom.xlsx tools/golden/example_bom.golden.json
