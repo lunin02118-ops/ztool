@@ -48,14 +48,70 @@ def esc(s):
 
 
 def strip_comments(src):
-    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+    """Remove C# // and /* */ comments while preserving string/char literals.
+
+    Single pass with explicit state so that // or /* inside a string (or escaped
+    quotes such as "a\\"b") never confuse comment detection. Handles regular,
+    verbatim (@"") and interpolated ($) strings and char literals.
+    """
     out = []
-    for line in src.splitlines():
-        idx = line.find("//")
-        if idx != -1 and line[:idx].count('"') % 2 == 0:
-            line = line[:idx]
-        out.append(line)
-    return "\n".join(out)
+    i, n = 0, len(src)
+    while i < n:
+        c = src[i]
+        # line comment
+        if c == "/" and i + 1 < n and src[i + 1] == "/":
+            j = src.find("\n", i)
+            if j == -1:
+                break
+            i = j
+            continue
+        # block comment
+        if c == "/" and i + 1 < n and src[i + 1] == "*":
+            j = src.find("*/", i + 2)
+            i = n if j == -1 else j + 2
+            continue
+        # string with @ / $ prefixes (verbatim / interpolated)
+        if c in "@$":
+            k, verbatim = i, False
+            while k < n and src[k] in "@$":
+                if src[k] == "@":
+                    verbatim = True
+                k += 1
+            if k < n and src[k] == '"':
+                out.append(src[i:k + 1])
+                i = k + 1
+                if verbatim:
+                    while i < n:
+                        if src[i] == '"' and i + 1 < n and src[i + 1] == '"':
+                            out.append('""'); i += 2; continue
+                        out.append(src[i])
+                        if src[i] == '"':
+                            i += 1; break
+                        i += 1
+                else:
+                    while i < n:
+                        if src[i] == "\\" and i + 1 < n:
+                            out.append(src[i:i + 2]); i += 2; continue
+                        out.append(src[i])
+                        if src[i] == '"':
+                            i += 1; break
+                        i += 1
+                continue
+            out.append(c); i += 1; continue
+        # regular string / char literal (backslash escapes)
+        if c in "\"'":
+            quote = c
+            out.append(c); i += 1
+            while i < n:
+                if src[i] == "\\" and i + 1 < n:
+                    out.append(src[i:i + 2]); i += 2; continue
+                out.append(src[i])
+                if src[i] == quote:
+                    i += 1; break
+                i += 1
+            continue
+        out.append(c); i += 1
+    return "".join(out)
 
 
 def extract_cjk_literals(root):
@@ -203,6 +259,16 @@ def self_test():
         f4, _ = evaluate(extract_cjk_literals(ign), allowed, {})
         assert not any("unregistered" in x for x in f4), \
             "CJK in comments/identifiers must be ignored, got %r" % f4
+
+        # escaped-quote regression: a string with \" must not make a trailing
+        # // comment (containing CJK) survive comment stripping.
+        esc_dir = os.path.join(tmp, "esc")
+        os.makedirs(esc_dir)
+        with open(os.path.join(esc_dir, "E.cs"), "w", encoding="utf-8") as f:
+            f.write('class E { string s = "a\\"b"; } // comment \u4f60\u597d\n')
+        f5, _ = evaluate(extract_cjk_literals(esc_dir), allowed, {})
+        assert not any("unregistered" in x for x in f5), \
+            "CJK in a // comment after an escaped-quote string must be ignored, got %r" % f5
 
         print("SELF-TEST PASS")
         return 0
