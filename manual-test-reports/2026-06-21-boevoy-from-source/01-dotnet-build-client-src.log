@@ -1,0 +1,10 @@
+# dotnet build client-src\ZTool.csproj -c Release -v:minimal
+  Определение проектов для восстановления...
+  Все проекты обновлены для восстановления.
+  ZTool -> D:\Development\ztool\client-src\bin\Release\net48\ZTool.exe
+
+Сборка успешно завершена.
+    Предупреждений: 0
+    Ошибок: 0
+
+Прошло времени 00:00:00.93

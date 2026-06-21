@@ -1,0 +1,30 @@
+[
+  {
+    "file": "S1-standalone-uia.txt",
+    "hasCjk": false,
+    "hasOldVendorDomain": false,
+    "hasLicenseMissing": true,
+    "hasSwtools": true
+  },
+  {
+    "file": "S2-about-uia.txt",
+    "hasCjk": false,
+    "hasOldVendorDomain": true,
+    "hasLicenseMissing": true,
+    "hasSwtools": true
+  },
+  {
+    "file": "S4-update-menu-uia.txt",
+    "hasCjk": false,
+    "hasOldVendorDomain": false,
+    "hasLicenseMissing": true,
+    "hasSwtools": true
+  },
+  {
+    "file": "S4-after-update-click-uia.txt",
+    "hasCjk": false,
+    "hasOldVendorDomain": false,
+    "hasLicenseMissing": true,
+    "hasSwtools": true
+  }
+]

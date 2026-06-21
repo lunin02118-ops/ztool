@@ -1,0 +1,4 @@
+UnloadAddIn=0
+LoadAddIn=0
+GetAddInObject=System.__ComObject
+openZtool=<null>

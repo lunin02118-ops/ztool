@@ -1,0 +1,21 @@
+# python tools\bom_export_assert.py --self-test
+### self-test: GOOD golden (expect PASS) ###
+workbook: C:\Temp\bom_assert_selftest_skgcblj2\export.xlsx
+sheet: BOM
+headers: ['№', 'Наименование', 'Обозначение', 'Материал', 'Количество']
+data rows: 3
+----------------------------------------------------------------------
+RESULT: PASS - all 9 assertion(s) passed.
+
+### self-test: BAD golden (expect FAIL) ###
+workbook: C:\Temp\bom_assert_selftest_skgcblj2\export.xlsx
+sheet: BOM
+headers: ['№', 'Наименование', 'Обозначение', 'Материал', 'Количество']
+data rows: 3
+----------------------------------------------------------------------
+RESULT: FAIL - 2/9 assertion(s) failed:
+  * data-row count: expected 99, got 3
+  * row {'Обозначение': '0614-P001'}: fill_rgb of 'Материал' expected 000000, got C0C0C0
+
+======================================================================
+SELF-TEST PASS: asserter accepts good export and rejects bad one.

@@ -1,0 +1,7 @@
+--- reg query HKCU\SOFTWARE\SWTools ---
+
+HKEY_CURRENT_USER\SOFTWARE\SWTools
+    AppDataPath    REG_SZ    D:\Development\ztool\client-src\bin\Release\net48\ZTool.exe
+
+--- reg query HKCU\SOFTWARE\ZTool ---
+ERROR: The system was unable to find the specified registry key or value.

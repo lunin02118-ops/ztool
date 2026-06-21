@@ -1,0 +1,2 @@
+# python tools\check_no_cjk_filenames.py
+PASS: no CJK characters in any tracked file or directory name.

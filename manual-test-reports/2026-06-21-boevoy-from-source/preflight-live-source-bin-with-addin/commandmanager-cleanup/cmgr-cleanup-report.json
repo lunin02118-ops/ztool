@@ -1,0 +1,27 @@
+﻿{
+    "timestamp":  "2026-06-21T19:04:37.6841388+05:00",
+    "applied":  true,
+    "includeAddInsStartup":  false,
+    "addinGuid":  "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}",
+    "versions":  [
+                     "SOLIDWORKS 2025"
+                 ],
+    "status":  "CLEAN",
+    "found":  [
+
+              ],
+    "removed":  [
+
+                ],
+    "backups":  [
+                    "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-source-bin-with-addin\\commandmanager-cleanup\\HKCU_SolidWorks.reg"
+                ],
+    "warnings":  [
+
+                 ],
+    "steps":  [
+                  "targeted SolidWorks versions: SOLIDWORKS 2025",
+                  "report/backup dir: D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-source-bin-with-addin\\commandmanager-cleanup",
+                  "backed up HKCU\\SOFTWARE\\SolidWorks -\u003e D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\preflight-live-source-bin-with-addin\\commandmanager-cleanup\\HKCU_SolidWorks.reg"
+              ]
+}

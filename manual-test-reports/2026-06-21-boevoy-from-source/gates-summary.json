@@ -1,0 +1,83 @@
+[
+  {
+    "name": "01-dotnet-build-client-src",
+    "command": "dotnet build client-src\\ZTool.csproj -c Release -v:minimal",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:42",
+    "finished": "2026-06-21T18:33:43",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\01-dotnet-build-client-src.log"
+  },
+  {
+    "name": "02-source-string-self-test",
+    "command": "python tools\\check_source_string_invariants.py --self-test",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:43",
+    "finished": "2026-06-21T18:33:44",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\02-source-string-self-test.log"
+  },
+  {
+    "name": "03-source-string-client-src",
+    "command": "python tools\\check_source_string_invariants.py --root client-src",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:44",
+    "finished": "2026-06-21T18:33:45",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\03-source-string-client-src.log"
+  },
+  {
+    "name": "04-no-cjk-filenames",
+    "command": "python tools\\check_no_cjk_filenames.py",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:45",
+    "finished": "2026-06-21T18:33:46",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\04-no-cjk-filenames.log"
+  },
+  {
+    "name": "05-bom-template-root",
+    "command": "python client-core\\tools\\check_bom_template.py SWTools.settings",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:46",
+    "finished": "2026-06-21T18:33:47",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\05-bom-template-root.log"
+  },
+  {
+    "name": "06-bom-template-dist",
+    "command": "python client-core\\tools\\check_bom_template.py client-core\\dist\\SWTools.settings",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:47",
+    "finished": "2026-06-21T18:33:48",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\06-bom-template-dist.log"
+  },
+  {
+    "name": "07-bom-export-self-test",
+    "command": "python tools\\bom_export_assert.py --self-test",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:48",
+    "finished": "2026-06-21T18:33:49",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\07-bom-export-self-test.log"
+  },
+  {
+    "name": "08-pytest-license-server",
+    "command": "python -m pytest license-server -q",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:49",
+    "finished": "2026-06-21T18:33:59",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\08-pytest-license-server.log"
+  },
+  {
+    "name": "09-secret-scan",
+    "command": "python tools\\secret_scan.py",
+    "status": "PASS",
+    "exitCode": 0,
+    "started": "2026-06-21T18:33:59",
+    "finished": "2026-06-21T18:34:00",
+    "log": "D:\\Development\\ztool\\manual-test-reports\\2026-06-21-boevoy-from-source\\09-secret-scan.log"
+  }
+]

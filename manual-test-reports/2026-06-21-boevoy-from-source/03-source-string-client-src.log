@@ -1,0 +1,42 @@
+# python tools\check_source_string_invariants.py --root client-src
+from-source string invariants (root=client-src)
+  distinct CJK literals found : 32
+  allow-list entries          : 32
+  required crypto keys        : 6
+    role control-name     : 7
+    role crypto-passphrase : 6
+    role font             : 4
+    role format-fragment  : 7
+    role help-path        : 3
+    role image-name       : 1
+    role log-text         : 1
+    role semantic-key     : 1
+    role symbol-palette   : 2
+  REVIEW (allowed, planned/confirm) : 26
+    [help-path] '/基本操作/保存数据到SolidWorks.htm'  (ZTool\FrmSaveOption.cs)
+    [help-path] '/进阶操作/BOM表模板制作和导出.htm'  (ZTool\Frmexportbom.cs)
+    [help-path] '/进阶操作/缩略图显示及操作.htm'  (ZTool\FrmPreview.cs)
+    [log-text] 'Application UnhandledException:{ex3.Message};\\\\n\\\\r堆栈信息:{ex3.StackTrace}'  (ZTool\Program.cs)
+    [format-fragment] 'DPI：'  (ZTool\FrmOutputoptions.cs)
+    [format-fragment] '\\\\\\\\A.*?(?=_|\\\\\\\\(|\\\\\\\\（|\\\\\\\\[|\\\\\\\\【|\\\\\\\\s|\\\\\\\\z)'  (ZTool\FrmSplitcloumn.cs)
+    [symbol-palette] '°,℃,℉,%,‰,≤,≥,《,》,≈,≠,±,×,÷,∠,＃,ø,§,@,＆,￡,∮,$,:,Α,Β,Γ,Δ,Ε,Ζ,Η,Θ,Ι,Κ,Λ,Μ,Ν,Ξ,Ο,Π,Ρ,Σ,Τ,Υ,Φ,Χ,Ψ,Ω,α,β,γ,δ,ε,ζ,ν,ξ,ο,π,ρ,σ,η,θ,ι,κ,λ,μ,τ,υ,φ,χ,ψ,ω'  (ZTool\Frmsymbol.cs)
+    [symbol-palette] 'От начала до _ | ( （ [ 【, пробела или конца'  (ZTool\FrmSplitcloumn.cs)
+    [control-name] '修改ToolStripMenuItem'  (ZTool\FrmReplacePartslist.cs)
+    [control-name] '列表ToolStripMenuItem'  (ZTool\toolbox.cs)
+    [control-name] '列表ToolStripMenuItem1'  (ZTool\toolbox.cs)
+    [font] '华文行楷'  (ZTool\FrmAbout.cs)
+    [control-name] '在solidworks中打开ToolStripMenuItem'  (ZTool\FrmReplacePartslist.cs)
+    [control-name] '在文件夹中打开ToolStripMenuItem'  (ZTool\FrmReplacePartslist.cs)
+    [font] '宋体'  (ZTool\DGVPrinter.cs)
+    [control-name] '小图标ToolStripMenuItem'  (ZTool\toolbox.cs)
+    [image-name] '工具箱.png'  (ZTool\toolbox.cs)
+    [control-name] '平铺ToolStripMenuItem'  (ZTool\toolbox.cs)
+    [font] '微软雅黑'  (ZTool\FrmAbout.cs)
+    [format-fragment] '提供一个Vista样式的选择文件对话框'  (ZTool.CustomFileBorser1\FileBorser.cs)
+    [font] '楷体'  (ZTool\CheckUpdate.cs)
+    [semantic-key] '零件'  (ZTool\Frmmain.cs)
+    [format-fragment] '（x64）\\\\u001e\\\\u001c'  (ZTool\FrmRverify.cs)
+    [format-fragment] '（x86）\\\\u001e\\\\u001c'  (ZTool\FrmRverify.cs)
+    [format-fragment] '）|*'  (ZTool\Frmmain.cs)
+    [format-fragment] '；'  (ZTool\Frmmain.cs)
+PASS: all CJK literals registered; all required crypto passphrases present.

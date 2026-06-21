@@ -1,0 +1,4 @@
+GetActiveObject typed OK
+LoadAddIn=2
+GetAddInObject(ZTool.SwAddin)=System.__ComObject
+openZtool(0)=<null>
