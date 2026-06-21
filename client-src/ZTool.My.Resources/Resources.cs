@@ -644,6 +644,12 @@ public sealed class Resources
 		}
 	}
 
+	private static Icon _swToolsAppIcon;
+
+	private static Bitmap _maxQr;
+
+	private static System.IO.Stream _maxQrStream;
+
 	public static Icon ztool_11
 	{
 		get
@@ -651,8 +657,18 @@ public sealed class Resources
 			// Phase 3 rebrand: the application / window icon is the SWTools logo,
 			// loaded from the embedded "SWToolsApp.ico" manifest resource instead of
 			// the vendor cube that used to live in the ZTool.Resources resource set.
-			System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("SWToolsApp.ico");
-			return new Icon(stream);
+			// Cached so the manifest stream is opened once; the stream is disposed
+			// right after the Icon is built (Icon copies the data on construction).
+			if (_swToolsAppIcon == null)
+			{
+				using System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("SWToolsApp.ico");
+				if (stream == null)
+				{
+					throw new System.InvalidOperationException("Встроенный ресурс \"SWToolsApp.ico\" не найден");
+				}
+				_swToolsAppIcon = new Icon(stream);
+			}
+			return _swToolsAppIcon;
 		}
 	}
 
@@ -662,8 +678,19 @@ public sealed class Resources
 		{
 			// Phase 3: the vendor contact QR (淘宝/公众号/QQ群 captions) is replaced by
 			// the user's MAX contact QR, embedded as the "MaxQr.png" manifest resource.
-			System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("MaxQr.png");
-			return new Bitmap(stream);
+			// Cached; on .NET Framework a Bitmap built from a Stream requires the
+			// stream to stay alive for the Bitmap's lifetime, so both are retained.
+			if (_maxQr == null)
+			{
+				System.IO.Stream stream = typeof(Resources).Assembly.GetManifestResourceStream("MaxQr.png");
+				if (stream == null)
+				{
+					throw new System.InvalidOperationException("Встроенный ресурс \"MaxQr.png\" не найден");
+				}
+				_maxQrStream = stream;
+				_maxQr = new Bitmap(stream);
+			}
+			return _maxQr;
 		}
 	}
 }

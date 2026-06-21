@@ -1833,7 +1833,7 @@ public class Frmbom : Form
 						num6++;
 					}
 				}
-				StatusLabel1.Text = "Всего" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего " + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 				Process.Start(fileName);
 			}
 			catch (Exception ex3)
@@ -2045,7 +2045,7 @@ public class Frmbom : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "Всего" + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(TGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}

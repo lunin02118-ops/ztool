@@ -1154,7 +1154,7 @@ public class FrmSyncDrwName : Form
 			ListView1.AddData(list);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -1532,7 +1532,7 @@ public class FrmSyncDrwName : Form
 			}
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + " поз.";
 			}
 			else
 			{

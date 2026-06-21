@@ -1960,7 +1960,7 @@ public class FrmPrintlist : Form
 			ListView1.AddData(list4);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2079,7 +2079,7 @@ public class FrmPrintlist : Form
 			loadview(list);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2440,7 +2440,7 @@ public class FrmPrintlist : Form
 			}
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(num) + " поз.";
 			}
 			else
 			{
@@ -2521,7 +2521,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(1);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + " поз.";
 		}
 		else
 		{
@@ -2534,7 +2534,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(2);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + " поз.";
 		}
 		else
 		{
@@ -2547,7 +2547,7 @@ public class FrmPrintlist : Form
 		ListView1.CheckItems(3);
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + " поз.";
 		}
 		else
 		{
@@ -2566,7 +2566,7 @@ public class FrmPrintlist : Form
 		{
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + " поз.";
 			}
 			else
 			{
@@ -2579,7 +2579,7 @@ public class FrmPrintlist : Form
 	{
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + "поз.";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов, отмечено " + Conversions.ToString(ListView1.GetCheckedItemsCount()) + " поз.";
 		}
 		else
 		{

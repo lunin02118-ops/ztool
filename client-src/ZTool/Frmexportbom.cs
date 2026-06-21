@@ -2288,7 +2288,7 @@ public class Frmexportbom : Form
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = false;
 		openFileDialog.SupportMultiDottedExtensions = true;
-		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Шаблон спецификации");
+		openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Шаблоны спецификации");
 		openFileDialog.Filter = "Файл шаблона спецификации (*.xls;*.xlsx)|*.xls;*.xlsx";
 		if (openFileDialog.ShowDialog() != DialogResult.Cancel)
 		{

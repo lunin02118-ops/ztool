@@ -1638,7 +1638,7 @@ public class toolbox : Form
 				LV1.AddData(list);
 				if (LV1.Items.Count > 0)
 				{
-					ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(LV1.Items.Count) + "поз.";
+					ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(LV1.Items.Count) + " поз.";
 				}
 				else
 				{
@@ -1784,7 +1784,7 @@ public class toolbox : Form
 			LV1.AddData(list);
 			if (LV1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(LV1.Items.Count) + "поз.";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(LV1.Items.Count) + " поз.";
 			}
 			else
 			{

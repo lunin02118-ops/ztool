@@ -2771,7 +2771,7 @@ public class FrmReplacePartslist : Form
 			loadview(list);
 			if (ListView2.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView2.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2807,7 +2807,7 @@ public class FrmReplacePartslist : Form
 			loadview(list);
 			if (ListView2.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView2.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2840,7 +2840,7 @@ public class FrmReplacePartslist : Form
 				loadview(list);
 				if (ListView2.Items.Count > 0)
 				{
-					ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+					ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView2.Items.Count) + " файлов";
 				}
 				else
 				{
@@ -2882,7 +2882,7 @@ public class FrmReplacePartslist : Form
 		loadview(list);
 		if (ListView2.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView2.Items.Count) + " файлов";
 		}
 		else
 		{
@@ -2998,7 +2998,7 @@ public class FrmReplacePartslist : Form
 		ListView2.DelSpecificItems(selrow);
 		if (ListView2.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView2.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView2.Items.Count) + " файлов";
 		}
 		else
 		{
@@ -3176,7 +3176,7 @@ public class FrmReplacePartslist : Form
 					lvi1[num2].SubItems[2].Text = list[0];
 					if (list.Count > 1)
 					{
-						lvi1[num2].SubItems[3].Text = "Есть" + Conversions.ToString(list.Count) + "файлов с тем же именем";
+						lvi1[num2].SubItems[3].Text = "Есть " + Conversions.ToString(list.Count) + " файлов с тем же именем";
 						lvi1[num2].SubItems[3].ForeColor = Color.Blue;
 						lvi1[num2].UseItemStyleForSubItems = false;
 					}

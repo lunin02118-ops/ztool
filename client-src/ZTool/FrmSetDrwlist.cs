@@ -1518,7 +1518,7 @@ public class FrmSetDrwlist : Form
 			ListView1.AddData(list2);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2076,7 +2076,7 @@ public class FrmSetDrwlist : Form
 		ListView1.DelSelectItems();
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 		}
 		else
 		{

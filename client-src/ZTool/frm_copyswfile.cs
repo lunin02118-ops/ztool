@@ -1260,7 +1260,7 @@ public class frm_copyswfile : Form
 		MyProject.Forms.Frmmain.ToolStripProgressBar1.Visible = false;
 		MyProject.Forms.Frmmain.IsStop.Visible = false;
 		MyProject.Forms.Frmmain.ToolStripProgressBar1.Value = 0;
-		MyProject.Forms.Frmmain.StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+		MyProject.Forms.Frmmain.StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(MyProject.Forms.Frmmain.DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 	}
 
 	private void Cancel_Button_Click(object sender, EventArgs e)

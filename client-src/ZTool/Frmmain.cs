@@ -6824,7 +6824,7 @@ public class Frmmain : Form
 			finally
 			{
 				DGV1.Enabled = true;
-				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 				IsStop.Visible = false;
 				ToolStripProgressBar1.Visible = false;
 				ToolStripProgressBar1.Value = 0;
@@ -6914,7 +6914,7 @@ public class Frmmain : Form
 				DGV1.Enabled = true;
 				ToolStripProgressBar1.Visible = false;
 				ToolStripProgressBar1.Value = 0;
-				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 				IsStop.Visible = false;
 			}
 		}
@@ -7282,7 +7282,7 @@ public class Frmmain : Form
 					DGV1.Enabled = true;
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
-					StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего сейчас" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					IsStop.Visible = false;
 				}
 			}
@@ -14091,7 +14091,7 @@ public class Frmmain : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 					NewLateBinding.LateCall(objectValue2, null, "Close", new object[1] { false }, null, null, null, IgnoreReturn: true);
@@ -14496,7 +14496,7 @@ public class Frmmain : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 					NewLateBinding.LateCall(objectValue2, null, "Close", new object[1] { false }, null, null, null, IgnoreReturn: true);
@@ -14800,7 +14800,7 @@ public class Frmmain : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}
@@ -15159,7 +15159,7 @@ public class Frmmain : Form
 			{
 				try
 				{
-					StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+					StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 					ToolStripProgressBar1.Visible = false;
 					ToolStripProgressBar1.Value = 0;
 				}
@@ -15294,7 +15294,7 @@ public class Frmmain : Form
 						num9++;
 					}
 				}
-				StatusLabel1.Text = "Всего" + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + "поз.";
+				StatusLabel1.Text = "Всего " + Conversions.ToString(DGV1.Rows.GetRowCount(DataGridViewElementStates.Visible)) + " поз.";
 				Process.Start("NotePad.exe", fileName);
 			}
 			catch (Exception ex3)

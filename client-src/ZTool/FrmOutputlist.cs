@@ -1783,7 +1783,7 @@ public class FrmOutputlist : Form
 			ListView1.AddData(list4);
 			if (ListView1.Items.Count > 0)
 			{
-				ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+				ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 			}
 			else
 			{
@@ -2402,7 +2402,7 @@ public class FrmOutputlist : Form
 		ListView1.DelSelectItems();
 		if (ListView1.Items.Count > 0)
 		{
-			ToolStripStatusLabel1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+			ToolStripStatusLabel1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 		}
 		else
 		{

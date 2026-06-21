@@ -940,7 +940,7 @@ public class FrmFileList : Form
 				loadview(list);
 				if (ListView1.Items.Count > 0)
 				{
-					Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+					Label1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 				}
 				else
 				{
@@ -972,7 +972,7 @@ public class FrmFileList : Form
 		ListView1.DelSelectItems();
 		if (ListView1.Items.Count > 0)
 		{
-			Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+			Label1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 		}
 		else
 		{
@@ -1138,7 +1138,7 @@ public class FrmFileList : Form
 				loadview(list);
 				if (ListView1.Items.Count > 0)
 				{
-					Label1.Text = "Всего" + Conversions.ToString(ListView1.Items.Count) + "файлов";
+					Label1.Text = "Всего " + Conversions.ToString(ListView1.Items.Count) + " файлов";
 				}
 				else
 				{

@@ -1782,7 +1782,7 @@ public class FrmSetDrwOption : Form
 					return;
 				}
 				Hide();
-				MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count) + "файлов";
+				MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count) + " файлов";
 				MyProject.Forms.FrmSetDrwlist.ListView1.MultiSelect = false;
 				MyProject.Forms.FrmSetDrwlist.ListView1.Items[0].Selected = true;
 				MyProject.Forms.FrmSetDrwlist.ToolStripProgressBar1.Maximum = MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count;
@@ -2275,7 +2275,7 @@ public class FrmSetDrwOption : Form
 					MyProject.Forms.FrmSetDrwlist.ListView1.Items[e.ProgressPercentage].Selected = true;
 					MyProject.Forms.FrmSetDrwlist.ListView1.Items[e.ProgressPercentage].EnsureVisible();
 					MyProject.Forms.FrmSetDrwlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmSetDrwlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(MyProject.Forms.FrmSetDrwlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + " файлов";
 					CallInProgress = false;
 				}
 			}

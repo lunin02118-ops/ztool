@@ -4172,7 +4172,7 @@ public class FrmOutputoptions : Form
 					num9++;
 				}
 				outset();
-				frmOutputlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(frmOutputlist.ListView1.Items.Count) + "файлов";
+				frmOutputlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(frmOutputlist.ListView1.Items.Count) + " файлов";
 				frmOutputlist.ListView1.MultiSelect = false;
 				frmOutputlist.ListView1.Items[indexlist[0]].Selected = true;
 				frmOutputlist.ToolStripProgressBar1.Maximum = frmOutputlist.ListView1.Items.Count;
@@ -5611,7 +5611,7 @@ public class FrmOutputoptions : Form
 					MyProject.Forms.FrmOutputlist.ListView1.Items[indexlist[e.ProgressPercentage]].Selected = true;
 					MyProject.Forms.FrmOutputlist.ListView1.Items[indexlist[e.ProgressPercentage]].EnsureVisible();
 					MyProject.Forms.FrmOutputlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmOutputlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmOutputlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmOutputlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(MyProject.Forms.FrmOutputlist.ListView1.Items.Count - 1 - e.ProgressPercentage) + " файлов";
 					CallInProgress = false;
 				}
 			}

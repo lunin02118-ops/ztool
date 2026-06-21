@@ -1461,7 +1461,7 @@ public class FrmPrintoptions : Form
 					Interaction.MsgBox("Нет элементов для печати", MsgBoxStyle.Information, "Информация");
 					return;
 				}
-				MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount()) + "файлов";
+				MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount()) + " файлов";
 				MyProject.Forms.FrmPrintlist.ListView1.MultiSelect = false;
 				MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[0]].Selected = true;
 				MyProject.Forms.FrmPrintlist.ToolStripProgressBar1.Maximum = MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount();
@@ -1824,7 +1824,7 @@ public class FrmPrintoptions : Form
 					MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[e.ProgressPercentage]].Selected = true;
 					MyProject.Forms.FrmPrintlist.ListView1.Items[indexlist[e.ProgressPercentage]].EnsureVisible();
 					MyProject.Forms.FrmPrintlist.ToolStripProgressBar1.Value = e.ProgressPercentage + 1;
-					MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось" + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount() - 1 - e.ProgressPercentage) + "файлов";
+					MyProject.Forms.FrmPrintlist.ToolStripStatusLabel1.Text = "Осталось " + Conversions.ToString(MyProject.Forms.FrmPrintlist.ListView1.GetCheckedItemsCount() - 1 - e.ProgressPercentage) + " файлов";
 					CallInProgress = false;
 				}
 			}
