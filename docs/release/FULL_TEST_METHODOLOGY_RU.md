@@ -369,6 +369,35 @@ Native `SetWindowText`/`GetWindowText` на WinForms `TextBox` может пок
 password-protected activation проверяется отдельным ручным gate. Полный ключ и
 пароль запрещено писать в отчёт: только маска, длина и SHA12.
 
+**Инцидент 2026-06-21: production backend оказался MySQL, не SQLite.**
+Перед генерацией/удалением/проверкой ключа обязательно читать backend из
+`ztool-tcp-server.service` runtime environment (`/proc/<MainPID>/environ`), а не
+из предположений и не из наличия `/opt/ztool-tcp-server/licenses.db`. Если
+`ZTOOL_DB_BACKEND=mysql`, единственный источник истины — таблица MySQL
+`license_keys`; SQLite-файл может содержать похожий ключ, но клиент его никогда
+не увидит. Симптом ошибки: локально созданный ключ есть в `licenses.db`, клиент
+подключается к `license.vizbuka.ru:58000`, сервер отвечает
+`Недопустимый регистрационный код`, а MySQL `activation_log` не содержит
+успешной попытки для этого ключа.
+
+Для production clean-install gate использовать один и тот же test-key secret из
+`_local_artifacts\secrets\licenses\...` на весь прогон. Рекомендуемый helper:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File scripts\swtools_activation_acceptance.ps1 `
+  -SecretPath _local_artifacts\secrets\licenses\swtools-1.1.5-clean-install-license-*.txt `
+  -ReportDir manual-test-reports\YYYY-MM-DD-clean-install-X.Y.Z `
+  -ProvisionProductionKey `
+  -ClickActivate
+```
+
+Helper обязан печатать только mask/SHA12/length, добавлять ключ в фактический
+backend production-сервиса, заполнять форму без `SetWindowText` и затем
+подтверждать результат server-side состоянием `current_activations=1`,
+`machine_bound=true`. Скриншоты с полным ключом/паролем считаются секретными
+локальными артефактами и не коммитятся.
+
 Обязательный порядок:
 
 1. Открыть `TestModel/0614-A00.SLDASM` через проводник/ассоциацию `.SLDASM`.
@@ -514,6 +543,9 @@ $r = New-Object WinRect+RECT
   production `ztool-tcp-server.service` это MySQL-таблица `license_keys`; старый
   `/opt/ztool-tcp-server/licenses.db` может быть stale и не доказывает состояние
   лицензии.
+- Если ключ создан в SQLite при активном `ZTOOL_DB_BACKEND=mysql`, gate считается
+  `FAIL`: клиент такой ключ не увидит. Нужно добавить/удалить ключ в MySQL через
+  production DB adapter и повторить активацию тем же test-key secret.
 - Нельзя деплоить локальный checkout поверх production, пока production-only
   backend/adapters не синхронизированы в репозиторий или не зафиксированы в
   отдельном deployment plan.
