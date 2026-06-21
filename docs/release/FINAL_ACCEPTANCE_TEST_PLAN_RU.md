@@ -24,6 +24,9 @@
 - Key load через `ZTOOL_PRIVATE_KEY_FILE` / `ZTOOL_PUBLIC_KEY_FILE`.
 - Database source of truth matches `ZTOOL_DB_BACKEND`. On production this is
   MySQL `license_keys`; stale SQLite files are not valid evidence.
+- Production activation key is provisioned into the runtime backend selected by
+  `ztool-tcp-server.service` (`ZTOOL_DB_BACKEND` from `/proc/<MainPID>/environ`),
+  not into a guessed local DB file.
 - `python -m ztool_license_server.cli healthcheck` PASS.
 - `backup` + `verify-backup` PASS.
 - Valid online activation PASS.
@@ -52,6 +55,10 @@
 - Activation field input is manual copy/paste or UIA `ValuePattern.SetValue`
   with read-back. Native `SetWindowText` / `GetWindowText` does not count because
   it can leave managed WinForms `TextBox.Text` stale.
+- For automated clean-install runs, use `scripts\swtools_activation_acceptance.ps1`
+  with the one local test-key secret and redacted evidence. The script must add
+  the key to the actual production backend and verify `current_activations=1`
+  after activation.
 - Online activation succeeds and server audit shows the expected license row.
 - Success `OK` closes the activation dialog, old PID exits, new PID starts, and
   the restarted app remains licensed without showing the registration dialog.
