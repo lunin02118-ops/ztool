@@ -378,8 +378,11 @@ internal static class Program
     // PropResolvedVal_ columns. Computed service columns such as Col_Weight and
     // Col_bound have Excel-invalid headers ("Масса ед._кг",
     // "Габаритные размеры"), so they need the same mapping fallback by
-    // DataGridViewColumn.Name. Also let Frmmapping display only those two
-    // calculated columns in addition to normal PropVal_* rows.
+    // DataGridViewColumn.Name. The export fallback below re-runs the
+    // namemappinglist lookup (matched by column Name + header text), so it is
+    // already generic for any column; Frmmapping is widened to display every
+    // calculated/service column (every "Col_" column except the non-data
+    // checkbox/new-folder columns) so users can map them by hand.
     private static int PatchBomCalculatedColumnMapping(ModuleDefMD mod)
     {
         int changes = 0;
@@ -494,11 +497,44 @@ internal static class Program
                         && m.DeclaringType?.FullName == "System.String"
                         && m.MethodSig?.Params.Count == 2);
 
+                var stringStartsWith = mod.GetTypes()
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.Body != null)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Select(i => i.Operand as IMethod)
+                    .FirstOrDefault(m => m != null
+                        && m.Name == "StartsWith"
+                        && m.DeclaringType?.FullName == "System.String"
+                        && m.MethodSig?.Params.Count == 2);
+
+                // Used to drop calculated columns that carry no header text (they
+                // would otherwise show up as blank, unmappable rows in the grid).
+                var getHeaderText = mod.GetTypes()
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.Body != null)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Select(i => i.Operand as IMethod)
+                    .FirstOrDefault(m => m != null && m.Name == "get_HeaderText");
+                if (getHeaderText == null && getItem != null)
+                {
+                    var colType = getItem.MethodSig?.RetType?.ToTypeDefOrRef();
+                    if (colType != null)
+                        getHeaderText = new MemberRefUser(mod, "get_HeaderText",
+                            MethodSig.CreateInstance(mod.CorLibTypes.String), colType);
+                }
+                var isNullOrWhiteSpace = stringEquals == null ? null
+                    : new MemberRefUser(mod, "IsNullOrWhiteSpace",
+                        MethodSig.CreateStatic(mod.CorLibTypes.Boolean, mod.CorLibTypes.String),
+                        stringEquals.DeclaringType);
+
                 if (skipLocal != null && getForms != null && getFrmmain != null
                     && getDgv1 != null && getColumns != null && getItem != null
-                    && getName != null && columnIndexLocal != null && stringEquals != null)
+                    && getName != null && columnIndexLocal != null && stringEquals != null
+                    && stringStartsWith != null && getHeaderText != null && isNullOrWhiteSpace != null)
                 {
-                    var allow = Instruction.Create(OpCodes.Nop);
+                    // Show every calculated/service column (Name starts with
+                    // "Col_") in the mapping grid, excluding the two non-data
+                    // columns that have no meaningful header to map.
                     var after = Instruction.Create(OpCodes.Nop);
                     var add = new List<Instruction>
                     {
@@ -506,17 +542,23 @@ internal static class Program
                         Instruction.Create(OpCodes.Brfalse, after),
                     };
                     add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
-                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_Weight"));
+                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_"));
                     add.Add(Instruction.CreateLdcI4(5)); // StringComparison.OrdinalIgnoreCase
-                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
-                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
-                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
-                    add.Add(Instruction.Create(OpCodes.Ldstr, "Col_bound"));
-                    add.Add(Instruction.CreateLdcI4(5));
-                    add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
-                    add.Add(Instruction.Create(OpCodes.Brtrue, allow));
-                    add.Add(Instruction.Create(OpCodes.Br, after));
-                    add.Add(allow);
+                    add.Add(Instruction.Create(OpCodes.Callvirt, stringStartsWith));
+                    add.Add(Instruction.Create(OpCodes.Brfalse, after));
+                    foreach (var excluded in new[] { "Col_Checkbox", "Col_NewFolder" })
+                    {
+                        add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getName));
+                        add.Add(Instruction.Create(OpCodes.Ldstr, excluded));
+                        add.Add(Instruction.CreateLdcI4(5));
+                        add.Add(Instruction.Create(OpCodes.Callvirt, stringEquals));
+                        add.Add(Instruction.Create(OpCodes.Brtrue, after));
+                    }
+                    // Skip columns whose header text is empty/whitespace so they
+                    // don't appear as blank rows in the mapping grid.
+                    add.AddRange(LoadFrmmainColumnName(getForms, getFrmmain, getDgv1, getColumns, columnIndexLocal, getItem, getHeaderText));
+                    add.Add(Instruction.Create(OpCodes.Call, isNullOrWhiteSpace));
+                    add.Add(Instruction.Create(OpCodes.Brtrue, after));
                     add.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                     add.Add(Instruction.Create(OpCodes.Stloc, skipLocal));
                     add.Add(after);
@@ -528,8 +570,58 @@ internal static class Program
             }
         }
 
-        Console.WriteLine($"  BOM mapping: enabled calculated columns Col_Weight/Col_bound in mapping/export (edits={changes})");
+        Console.WriteLine($"  BOM mapping: enabled all calculated/service (Col_*) columns in mapping/export (edits={changes})");
         return changes;
+    }
+
+    // The mapping / split-column grids validate the "mapping name" cell in their
+    // dgv1_CellValueChanged handler and pop a modal "Повторяющееся имя" MessageBox
+    // on any duplicate. That handler also fires while the grid is being populated
+    // programmatically in *_Load (one MessageBox per pre-filled row), which is
+    // pure noise -- the user never edited anything. Guard the handler so it only
+    // runs when the grid actually has user focus; during Load the form is not yet
+    // shown/focused, so the spurious pop-ups disappear while real user edits are
+    // still validated.
+    private static int PatchSuppressGridDupPopupDuringLoad(ModuleDefMD mod)
+    {
+        int total = 0;
+        foreach (var typeName in new[] { "Frmmapping", "FrmSplitcloumn" })
+        {
+            var t = mod.GetTypes().FirstOrDefault(x => x.Name == typeName);
+            var m = t?.Methods.FirstOrDefault(x => x.Name == "dgv1_CellValueChanged" && x.HasBody);
+            if (m?.Body == null) { Console.WriteLine($"  dup-popup: {typeName}::dgv1_CellValueChanged not found"); continue; }
+            var ins = m.Body.Instructions;
+            if (ins.Any(i => i.Operand is IMethod gm && gm.Name == "get_ContainsFocus")) { continue; } // idempotent
+
+            var cast = ins.FirstOrDefault(i => i.OpCode.Code == Code.Castclass
+                && (i.Operand as ITypeDefOrRef)?.Name == "DataGridView");
+            if (!(cast?.Operand is TypeRef dgvTr)) { Console.WriteLine($"  dup-popup: {typeName}: no DataGridView cast"); continue; }
+            int castIdx = ins.IndexOf(cast);
+            Instruction store = null; int storeIdx = -1;
+            for (int i = castIdx + 1; i < ins.Count; i++)
+                if (ins[i].OpCode.Code == Code.Stloc_0 || ins[i].OpCode.Code == Code.Stloc || ins[i].OpCode.Code == Code.Stloc_S)
+                { store = ins[i]; storeIdx = i; break; }
+            if (store == null) { Console.WriteLine($"  dup-popup: {typeName}: no sender store"); continue; }
+            var leaveTarget = ins.FirstOrDefault(i => i.OpCode.Code == Code.Leave || i.OpCode.Code == Code.Leave_S);
+            if (leaveTarget == null) { Console.WriteLine($"  dup-popup: {typeName}: no leave target"); continue; }
+            var lv = store.OpCode.Code == Code.Stloc_0 ? m.Body.Variables[0] : (Local)store.Operand;
+
+            var controlRef = new TypeRefUser(mod, "System.Windows.Forms", "Control", dgvTr.ResolutionScope);
+            var getContainsFocus = new MemberRefUser(mod, "get_ContainsFocus",
+                MethodSig.CreateInstance(mod.CorLibTypes.Boolean), controlRef);
+
+            var guard = new[]
+            {
+                Instruction.Create(OpCodes.Ldloc, lv),
+                Instruction.Create(OpCodes.Callvirt, getContainsFocus),
+                Instruction.Create(OpCodes.Brfalse, leaveTarget),
+            };
+            for (int i = 0; i < guard.Length; i++) ins.Insert(storeIdx + 1 + i, guard[i]);
+            m.Body.UpdateInstructionOffsets();
+            Console.WriteLine($"  dup-popup: guarded {typeName}::dgv1_CellValueChanged with grid-focus check");
+            total++;
+        }
+        return total;
     }
 
     // The original split-column dialog lets users add mapping rows, but it has
@@ -694,6 +786,237 @@ internal static class Program
         return changes;
     }
 
+    private const int RT_ICON = 3;
+    private const int RT_GROUP_ICON = 14;
+
+    // Replace the Win32 application icon (taskbar / Alt-Tab / Explorer) with the
+    // images inside <icoPath>, rebuilding the RT_ICON + RT_GROUP_ICON resource
+    // trees on mod.Win32Resources in place. Keeps the original group-icon name +
+    // language so the shell keeps treating it as the app's default icon.
+    private static int ReplaceWin32AppIcon(ModuleDefMD mod, string icoPath)
+    {
+        if (string.IsNullOrEmpty(icoPath) || !System.IO.File.Exists(icoPath)) { Console.WriteLine($"  app icon: .ico not found: {icoPath}"); return 0; }
+        var res = mod.Win32Resources;
+        if (res?.Root == null) { Console.WriteLine("  app icon: module has no Win32 resources"); return 0; }
+        byte[] ico = System.IO.File.ReadAllBytes(icoPath);
+        ushort count = BitConverter.ToUInt16(ico, 4);
+        if (count == 0) { Console.WriteLine("  app icon: .ico has no images"); return 0; }
+        var groupName = IconFindGroupName(res.Root, out var langName);
+        var images = new List<(byte w, byte h, byte cc, byte rs, ushort planes, ushort bits, byte[] data)>();
+        for (int i = 0; i < count; i++)
+        {
+            int e = 6 + i * 16;
+            ushort planes = BitConverter.ToUInt16(ico, e + 4);
+            ushort bits = BitConverter.ToUInt16(ico, e + 6);
+            uint bytesInRes = BitConverter.ToUInt32(ico, e + 8);
+            uint off = BitConverter.ToUInt32(ico, e + 12);
+            var data = new byte[bytesInRes];
+            Array.Copy(ico, off, data, 0, (int)bytesInRes);
+            images.Add((ico[e + 0], ico[e + 1], ico[e + 2], ico[e + 3], planes, bits, data));
+        }
+        byte[] grp;
+        using (var ms = new System.IO.MemoryStream())
+        using (var bw = new System.IO.BinaryWriter(ms))
+        {
+            bw.Write((ushort)0); bw.Write((ushort)1); bw.Write((ushort)count); // GRPICONDIR header
+            for (int i = 0; i < count; i++)
+            {
+                var im = images[i];
+                bw.Write(im.w); bw.Write(im.h); bw.Write(im.cc); bw.Write(im.rs);
+                bw.Write(im.planes); bw.Write(im.bits);
+                bw.Write((uint)im.data.Length); bw.Write((ushort)(i + 1)); // -> RT_ICON id
+            }
+            bw.Flush(); grp = ms.ToArray();
+        }
+        IconRemoveType(res.Root, RT_ICON);
+        IconRemoveType(res.Root, RT_GROUP_ICON);
+        var iconType = new ResourceDirectoryUser(new ResourceName(RT_ICON));
+        for (int i = 0; i < count; i++)
+        {
+            var nameDir = new ResourceDirectoryUser(new ResourceName(i + 1));
+            nameDir.Data.Add(IconMakeData(langName, images[i].data));
+            iconType.Directories.Add(nameDir);
+        }
+        var grpType = new ResourceDirectoryUser(new ResourceName(RT_GROUP_ICON));
+        var grpNameDir = new ResourceDirectoryUser(groupName);
+        grpNameDir.Data.Add(IconMakeData(langName, grp));
+        grpType.Directories.Add(grpNameDir);
+        res.Root.Directories.Add(iconType);
+        res.Root.Directories.Add(grpType);
+        Console.WriteLine($"  app icon: replaced Win32 icon group with {count} image(s)");
+        return count;
+    }
+
+    // Retarget every WinForms form whose InitializeComponent sets this.Icon (from
+    // the vendor's "$this.Icon" designer resource) to instead load the embedded
+    // AppIcon.ico, so window title bars show the new logo. Mirrors InjectMaxQr's
+    // embed-resource + reflection-IL pattern.
+    private static int RetargetFormIcons(ModuleDefMD mod, string icoPath)
+    {
+        if (string.IsNullOrEmpty(icoPath) || !System.IO.File.Exists(icoPath)) return 0;
+        const string resName = "AppIcon.ico";
+        if (!mod.Resources.Any(r => r.Name == resName))
+            mod.Resources.Add(new EmbeddedResource(resName, System.IO.File.ReadAllBytes(icoPath), ManifestResourceAttributes.Public));
+        var corlib = mod.CorLibTypes.AssemblyRef;
+        var typeRef = new TypeRefUser(mod, "System", "Type", corlib);
+        var rthRef = new TypeRefUser(mod, "System", "RuntimeTypeHandle", corlib);
+        var asmRef = new TypeRefUser(mod, "System.Reflection", "Assembly", corlib);
+        var streamRef = new TypeRefUser(mod, "System.IO", "Stream", corlib);
+        var streamSig = new ClassSig(streamRef);
+        var mGetTypeFromHandle = new MemberRefUser(mod, "GetTypeFromHandle", MethodSig.CreateStatic(new ClassSig(typeRef), new ValueTypeSig(rthRef)), typeRef);
+        var mGetAssembly = new MemberRefUser(mod, "get_Assembly", MethodSig.CreateInstance(new ClassSig(asmRef)), typeRef);
+        var mGetStream = new MemberRefUser(mod, "GetManifestResourceStream", MethodSig.CreateInstance(streamSig, mod.CorLibTypes.String), asmRef);
+
+        // Resolve the Drawing.Icon type and a Form::set_Icon reference once, so we
+        // can ALSO inject an icon assignment into Form-derived types whose
+        // designer never set this.Icon (those keep the default WinForms icon).
+        ITypeDefOrRef sharedIconType = mod.GetTypes().SelectMany(t => t.Methods)
+            .Where(m => m.Name == "get_ztool_11" && m.MethodSig?.RetType?.ToTypeDefOrRef()?.Name == "Icon")
+            .Select(m => m.MethodSig.RetType.ToTypeDefOrRef())
+            .FirstOrDefault();
+        if (sharedIconType == null)
+            sharedIconType = mod.GetTypes().SelectMany(t => t.Methods).Where(m => m.HasBody)
+                .SelectMany(m => m.Body.Instructions)
+                .Where(i => (i.OpCode.Code == Code.Callvirt || i.OpCode.Code == Code.Call) && i.Operand is IMethod im && im.Name == "set_Icon")
+                .Select(i => ((IMethod)i.Operand).MethodSig.Params.LastOrDefault()?.ToTypeDefOrRef())
+                .FirstOrDefault(x => x != null);
+        var wfAsm = FindAssemblyRef(mod, "System.Windows.Forms");
+        IMethod formSetIcon = (sharedIconType != null && wfAsm != null)
+            ? new MemberRefUser(mod, "set_Icon", MethodSig.CreateInstance(mod.CorLibTypes.Void, sharedIconType.ToTypeSig()),
+                new TypeRefUser(mod, "System.Windows.Forms", "Form", wfAsm))
+            : null;
+
+        int patched = 0, injected = 0;
+        foreach (var t in mod.GetTypes())
+        {
+            var init = t.Methods.FirstOrDefault(m => m.Name == "InitializeComponent" && m.HasBody);
+            if (init == null) continue;
+            var body = init.Body;
+            IMethod setIcon = body.Instructions
+                .Where(i => (i.OpCode.Code == Code.Callvirt || i.OpCode.Code == Code.Call) && i.Operand is IMethod im && im.Name == "set_Icon")
+                .Select(i => (IMethod)i.Operand).FirstOrDefault();
+            if (body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (i.Operand as string) == resName)) continue; // idempotent
+            bool injecting = false;
+            if (setIcon == null)
+            {
+                // No designer icon assignment: only inject one for Form-derived types.
+                if (formSetIcon == null || !InheritsForm(t)) continue;
+                setIcon = formSetIcon;
+                injecting = true;
+            }
+            var iconTypeRef = setIcon.MethodSig.Params.LastOrDefault()?.ToTypeDefOrRef();
+            if (iconTypeRef == null) continue;
+            var mIconCtor = new MemberRefUser(mod, ".ctor", MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), iconTypeRef);
+            var ret = body.Instructions.LastOrDefault(i => i.OpCode.Code == Code.Ret);
+            if (ret == null) continue;
+            int idx = body.Instructions.IndexOf(ret);
+            var add = new List<Instruction>
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldtoken, (ITypeDefOrRef)t),
+                Instruction.Create(OpCodes.Call, mGetTypeFromHandle),
+                Instruction.Create(OpCodes.Callvirt, mGetAssembly),
+                Instruction.Create(OpCodes.Ldstr, resName),
+                Instruction.Create(OpCodes.Callvirt, mGetStream),
+                Instruction.Create(OpCodes.Newobj, mIconCtor),
+                Instruction.Create(OpCodes.Callvirt, setIcon),
+            };
+            for (int i = 0; i < add.Count; i++)
+                body.Instructions.Insert(idx + i, add[i]);
+            body.UpdateInstructionOffsets();
+            if (injecting) injected++; else patched++;
+        }
+        Console.WriteLine($"  app icon: retargeted {patched} form title-bar icon(s), injected {injected} missing form icon(s) -> {resName}");
+        return patched + injected;
+    }
+
+    // True if the type derives (directly or transitively) from System.Windows.Forms.Form.
+    private static bool InheritsForm(TypeDef t)
+    {
+        var bt = t?.BaseType;
+        int guard = 0;
+        while (bt != null && guard++ < 32)
+        {
+            if (bt.FullName == "System.Windows.Forms.Form") return true;
+            var def = bt.ResolveTypeDef();
+            bt = def?.BaseType;
+        }
+        return false;
+    }
+
+    // The main window (Frmmain) does NOT set its icon in InitializeComponent; it
+    // assigns this.Icon = My.Resources.ztool_11 at runtime (in loadfrm), which the
+    // form-icon retarget above does not cover. Rewrite that brand-icon resource
+    // getter to return the embedded AppIcon.ico so the main window title bar (and
+    // any other consumer of the brand icon) shows the new logo too.
+    private static int RetargetBrandIconGetter(ModuleDefMD mod, string icoPath)
+    {
+        if (string.IsNullOrEmpty(icoPath) || !System.IO.File.Exists(icoPath)) return 0;
+        const string resName = "AppIcon.ico";
+        if (!mod.Resources.Any(r => r.Name == resName))
+            mod.Resources.Add(new EmbeddedResource(resName, System.IO.File.ReadAllBytes(icoPath), ManifestResourceAttributes.Public));
+        var corlib = mod.CorLibTypes.AssemblyRef;
+        var asmRef = new TypeRefUser(mod, "System.Reflection", "Assembly", corlib);
+        var streamRef = new TypeRefUser(mod, "System.IO", "Stream", corlib);
+        var streamSig = new ClassSig(streamRef);
+        var mGetExec = new MemberRefUser(mod, "GetExecutingAssembly",
+            MethodSig.CreateStatic(new ClassSig(asmRef)), asmRef);
+        var mGetStream = new MemberRefUser(mod, "GetManifestResourceStream",
+            MethodSig.CreateInstance(streamSig, mod.CorLibTypes.String), asmRef);
+        int patched = 0;
+        foreach (var m in mod.GetTypes().SelectMany(t => t.Methods)
+            .Where(x => x.Name == "get_ztool_11" && x.HasBody
+                && x.MethodSig?.RetType?.ToTypeDefOrRef()?.Name == "Icon"))
+        {
+            if (m.Body.Instructions.Any(i => i.OpCode.Code == Code.Ldstr && (i.Operand as string) == resName)) continue; // idempotent
+            var iconTypeRef = m.MethodSig.RetType.ToTypeDefOrRef();
+            var mIconCtor = new MemberRefUser(mod, ".ctor",
+                MethodSig.CreateInstance(mod.CorLibTypes.Void, streamSig), iconTypeRef);
+            var b = m.Body;
+            b.ExceptionHandlers.Clear();
+            b.Variables.Clear();
+            b.Instructions.Clear();
+            b.Instructions.Add(Instruction.Create(OpCodes.Call, mGetExec));
+            b.Instructions.Add(Instruction.Create(OpCodes.Ldstr, resName));
+            b.Instructions.Add(Instruction.Create(OpCodes.Callvirt, mGetStream));
+            b.Instructions.Add(Instruction.Create(OpCodes.Newobj, mIconCtor));
+            b.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            b.UpdateInstructionOffsets();
+            patched++;
+        }
+        Console.WriteLine($"  app icon: retargeted {patched} brand icon getter(s) to {resName}");
+        return patched;
+    }
+
+    private static ResourceData IconMakeData(ResourceName lang, byte[] data)
+        => new ResourceData(lang, ByteArrayDataReaderFactory.Create(data, null), 0, (uint)data.Length);
+
+    private static void IconRemoveType(ResourceDirectory root, int typeId)
+    {
+        for (int i = root.Directories.Count - 1; i >= 0; i--)
+            if (root.Directories[i].Name.HasId && root.Directories[i].Name.Id == typeId)
+                root.Directories.RemoveAt(i);
+    }
+
+    private static ResourceName IconFindGroupName(ResourceDirectory root, out ResourceName lang)
+    {
+        lang = new ResourceName(1033);
+        foreach (var typeDir in root.Directories)
+        {
+            if (typeDir.Name.HasId && typeDir.Name.Id == RT_GROUP_ICON)
+            {
+                var nd = typeDir.Directories.FirstOrDefault();
+                if (nd != null)
+                {
+                    var d = nd.Data.FirstOrDefault();
+                    if (d != null) lang = d.Name;
+                    return nd.Name;
+                }
+            }
+        }
+        return new ResourceName(32512);
+    }
+
     private sealed class DialogLayout
     {
         public DialogLayout(int width, int height)
@@ -716,6 +1039,10 @@ internal static class Program
             ["FrmFilling"] = new DialogLayout(760, 540),
             ["FrmSWUnit"] = new DialogLayout(640, 650),
             ["FrmOptions"] = new DialogLayout(760, 560),
+            // Wide enough to fit the long single-line hint label (AutoSize) so
+            // the form doesn't overflow into an AutoScroll canvas; that canvas
+            // would otherwise push the bottom-right OK/Cancel panel off-screen.
+            ["Frmsetpropname"] = new DialogLayout(760, 460),
         };
 
     private sealed class ControlPatch
@@ -728,7 +1055,8 @@ internal static class Program
             int? height = null,
             string text = null,
             int? anchor = null,
-            int? dock = null)
+            int? dock = null,
+            bool? autoSize = null)
         {
             Name = name;
             Left = left;
@@ -738,6 +1066,7 @@ internal static class Program
             Text = text;
             Anchor = anchor;
             Dock = dock;
+            AutoSize = autoSize;
         }
 
         public string Name { get; }
@@ -748,6 +1077,7 @@ internal static class Program
         public string Text { get; }
         public int? Anchor { get; }
         public int? Dock { get; }
+        public bool? AutoSize { get; }
     }
 
     private static readonly Dictionary<string, ControlPatch[]> ControlLayoutPatches =
@@ -813,6 +1143,20 @@ internal static class Program
             {
                 new ControlPatch("DGV1", width: 760, height: 360),
                 new ControlPatch("Label1", top: 380, width: 760, height: 80),
+            },
+            ["Frmsetpropname"] = new[]
+            {
+                // "Импорт..." pinned to the bottom-left corner (Bottom|Left = 6);
+                // the OK/Cancel TableLayoutPanel pinned to the bottom-right
+                // (Bottom|Right = 10). Both ship as AnchorStyles.None and would
+                // otherwise drift toward the centre once the form is resizable.
+                new ControlPatch("Button1", left: 12, top: 425, width: 90, anchor: 6),
+                // The OK/Cancel TableLayoutPanel ships with AutoSize=true, which
+                // makes WinForms ignore a Right/Bottom anchor and snap the panel
+                // back to its Left/Top. Disable AutoSize so the explicit 165x33
+                // size and the Bottom|Right anchor are honoured on resize.
+                // Left = 760(ClientWidth) - 165(width) - 12(margin) = 583.
+                new ControlPatch("TableLayoutPanel1", left: 583, top: 423, anchor: 10, autoSize: false),
             },
             ["FrmFilterrules"] = new[]
             {
@@ -1029,7 +1373,8 @@ internal static class Program
         IMethod setHeight,
         IMethod setText,
         IMethod setAnchor,
-        IMethod setDock)
+        IMethod setDock,
+        IMethod setAutoSize)
     {
         if (!ControlLayoutPatches.TryGetValue(formName, out var patches)) return 0;
         int edits = 0;
@@ -1075,6 +1420,13 @@ internal static class Program
                 AddFindControl(add, getControls, findControl, patch.Name);
                 add.Add(Instruction.Create(OpCodes.Ldstr, patch.Text));
                 add.Add(Instruction.Create(OpCodes.Callvirt, setText));
+                edits += 8;
+            }
+            if (patch.AutoSize.HasValue && setAutoSize != null)
+            {
+                AddFindControl(add, getControls, findControl, patch.Name);
+                add.Add(Instruction.CreateLdcI4(patch.AutoSize.Value ? 1 : 0));
+                add.Add(Instruction.Create(OpCodes.Callvirt, setAutoSize));
                 edits += 8;
             }
             if (patch.Anchor.HasValue && setAnchor != null)
@@ -1218,6 +1570,9 @@ internal static class Program
         var setText = controlType != null ? MakeControlTextSetter(mod, controlType) : null;
         var setAnchor = FindMethodRef(mod, "set_Anchor", "Control", 1);
         var setDock = FindMethodRef(mod, "set_Dock", "Control", 1);
+        var setAutoSize = MakeWinFormsSetter(mod, "Control", "set_AutoSize", mod.CorLibTypes.Boolean);
+        var suspendLayout = controlType != null ? new MemberRefUser(mod, "SuspendLayout", MethodSig.CreateInstance(mod.CorLibTypes.Void), controlType) : null;
+        var resumeLayout = controlType != null ? new MemberRefUser(mod, "ResumeLayout", MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Boolean), controlType) : null;
 
         if (setFormBorderStyle == null || setClientSize == null || sizeCtor == null || setMinimumSize == null)
         {
@@ -1240,6 +1595,15 @@ internal static class Program
             if (targetW <= 0 || targetH <= 0) continue;
 
             var add = new List<Instruction>();
+            // Suspend layout so the explicit positions/anchors we append below are
+            // cached by WinForms against the design-time ClientSize, exactly like
+            // the designer's own SuspendLayout/ResumeLayout block. Without this,
+            // anchors set after the designer's ResumeLayout never track resize.
+            if (suspendLayout != null)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.Create(OpCodes.Callvirt, suspendLayout));
+            }
             if (setAutoScroll != null)
             {
                 add.Add(Instruction.Create(OpCodes.Ldarg_0));
@@ -1293,7 +1657,15 @@ internal static class Program
                     setHeight,
                     setText,
                     setAnchor,
-                    setDock);
+                    setDock,
+                    setAutoSize);
+            }
+
+            if (resumeLayout != null)
+            {
+                add.Add(Instruction.Create(OpCodes.Ldarg_0));
+                add.Add(Instruction.CreateLdcI4(1)); // performLayout: true -> recompute anchor deltas now
+                add.Add(Instruction.Create(OpCodes.Callvirt, resumeLayout));
             }
 
             int inserted = InsertBeforeRet(init, add);
@@ -1758,10 +2130,15 @@ internal static class Program
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
             int splitDeleteChanges = PatchSplitColumnDeleteRows(mod);
             int bomMappingChanges = PatchBomCalculatedColumnMapping(mod);
+            int dupPopupChanges = PatchSuppressGridDupPopupDuringLoad(mod);
             int uiTextChanges = NormalizeLongRussianUiStrings(mod);
             int dialogLayoutChanges = PatchDialogReadabilityLayout(mod);
             int aboutBoxChanges = PatchAboutBox(mod,
                 System.IO.Path.Combine(assetDir, "swtools_logo.png"));
+            string appIcoPath = System.IO.Path.Combine(assetDir, "swtools_app.ico");
+            int win32IconChanges = ReplaceWin32AppIcon(mod, appIcoPath);
+            int formIconChanges = RetargetFormIcons(mod, appIcoPath);
+            int brandIconChanges = RetargetBrandIconGetter(mod, appIcoPath);
             // Strong-name handling: KEEP both the public key AND the COR20 "StrongNameSigned"
             // header bit. The licensing IPC handshake derives a token from
             // GetEntryAssembly().GetName().GetPublicKeyToken() (code::Getpkt) which the add-in
@@ -1783,7 +2160,7 @@ internal static class Program
             // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
             // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, dup-popup guards={dupPopupChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped}, win32-icon={win32IconChanges}, form-icons={formIconChanges}, brand-icon={brandIconChanges} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");
