@@ -1,0 +1,520 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+<resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>1.3</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader><data name="&gt;&gt;_Ribbon.Name" xml:space="preserve"><value>_Ribbon</value></data>
+  <data name="&gt;&gt;_Ribbon.Type" xml:space="preserve"><value>RibbonLib.Ribbon, Ribbon, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d52b47d9ca0ae3d3</value></data>
+  <data name="DataGridViewTextBoxColumn3.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Path.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Path.HeaderText" xml:space="preserve"><value>Путь</value></data>
+  <data name="&gt;&gt;Col_partnumber.Name" xml:space="preserve"><value>Col_partnumber</value></data>
+  <data name="&gt;&gt;Col_partnumber.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;treecmsp1.Type" xml:space="preserve"><value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;treecmsp1.Name" xml:space="preserve"><value>treecmsp1</value></data>
+  <data name="&gt;&gt;Col_Number.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Number.Name" xml:space="preserve"><value>Col_Number</value></data>
+  <data name="tree_suppress.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_suppress.Text" xml:space="preserve"><value>Погасить компонент(&amp;S) (множественный выбор)</value></data>
+  <data name="&gt;&gt;StatusLabel1.Name" xml:space="preserve"><value>StatusLabel1</value></data>
+  <data name="&gt;&gt;StatusLabel1.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Author.Name" xml:space="preserve"><value>Col_Author</value></data>
+  <data name="&gt;&gt;Col_Author.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_CreationTime.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>100</value></data>
+  <data name="tree_hideselnode2.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_hideselnode2.Text" xml:space="preserve"><value>Скрыть подэлементы этого узла (множественный выбор)</value></data>
+  <data name="&gt;&gt;StatusLabel2.Name" xml:space="preserve"><value>StatusLabel2</value></data>
+  <data name="&gt;&gt;StatusLabel2.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn12.HeaderText" xml:space="preserve"><value>Время сохранения</value></data>
+  <data name="Col_Checkbox.HeaderText" xml:space="preserve"><value /></data>
+  <data name="StatusLabel2.TextAlign" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAAB9TeXN0
+ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="StatusStrip1.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>26</value></data>
+  <data name="ToolStripProgressBar1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAMgAAAARAAAACw==</value></data><data name="Col_Author.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="DataGridViewTextBoxColumn9.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_FileName.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>150</value></data>
+  <data name="Col_SaveTime.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>100</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM.Name" xml:space="preserve"><value>tree_DisplayInBOM</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="tree_hideselnode1.Text" xml:space="preserve"><value>Скрыть этот узел (множественный выбор)</value></data>
+  <data name="tree_hideselnode1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="&gt;&gt;Col_Title.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Title.Name" xml:space="preserve"><value>Col_Title</value></data>
+  <data name="$this.Font" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5Gb250BAAAAAROYW1lBFNpemUFU3R5bGUEVW5pdAEABAQLGFN5c3RlbS5EcmF3
+aW5nLkZvbnRTdHlsZQIAAAAbU3lzdGVtLkRyYXdpbmcuR3JhcGhpY3NVbml0AgAAAAIAAAAGAwAA
+AAzlvq7ova/pm4Xpu5EAAChBBfz///8YU3lzdGVtLkRyYXdpbmcuRm9udFN0eWxlAQAAAAd2YWx1
+ZV9fAAgCAAAAAAAAAAX7////G1N5c3RlbS5EcmF3aW5nLkdyYXBoaWNzVW5pdAEAAAAHdmFsdWVf
+XwAIAgAAAAMAAAAL</value></data><data name="Column1.HeaderText" xml:space="preserve"><value /></data>
+  <data name="TV1.SelectedImageIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>0</value></data>
+  <data name="TV1.ImageIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>0</value></data>
+  <data name="&gt;&gt;Col_Weight.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Weight.Name" xml:space="preserve"><value>Col_Weight</value></data>
+  <data name="DataGridViewTextBoxColumn7.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Preview.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>68</value></data>
+  <data name="&gt;&gt;Col_Checkbox.Name" xml:space="preserve"><value>Col_Checkbox</value></data>
+  <data name="&gt;&gt;Col_Checkbox.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewCheckBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_Quantity.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Extname.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>22</value></data>
+  <data name="&gt;&gt;tree_hideselnode2.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_hideselnode2.Name" xml:space="preserve"><value>tree_hideselnode2</value></data>
+  <data name="&gt;&gt;Col_Subject.Name" xml:space="preserve"><value>Col_Subject</value></data>
+  <data name="&gt;&gt;Col_Subject.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn10.HeaderText" xml:space="preserve"><value>Уровень</value></data>
+  <data name="&gt;&gt;Col_Level.Name" xml:space="preserve"><value>Col_Level</value></data>
+  <data name="&gt;&gt;Col_Level.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="ImageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+ACZTeXN0ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkD
+AAAADwMAAACyCQAAAk1TRnQBSQFMAgEBAgEAAdgBIgHcASIBEAEAARABAAT/AQkBEAj/AUIBTQE2
+AQQGAAE2AQQCAAEoAwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYAB
+AAKAAgADwAEAAcAB3AHAAQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEA
+AykBAANVAQADTQEAA0IBAAM5AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8B
+AAHWAucBAAGQAakBrQIAAf8BMwMAAWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHM
+AgABMwH/AgABZgMAAWYBMwIAAmYCAAFmAZkCAAFmAcwCAAFmAf8CAAGZAwABmQEzAgABmQFmAgAC
+mQIAAZkBzAIAAZkB/wIAAcwDAAHMATMCAAHMAWYCAAHMAZkCAALMAgABzAH/AgAB/wFmAgAB/wGZ
+AgAB/wHMAQABMwH/AgAB/wEAATMBAAEzAQABZgEAATMBAAGZAQABMwEAAcwBAAEzAQAB/wEAAf8B
+MwIAAzMBAAIzAWYBAAIzAZkBAAIzAcwBAAIzAf8BAAEzAWYCAAEzAWYBMwEAATMCZgEAATMBZgGZ
+AQABMwFmAcwBAAEzAWYB/wEAATMBmQIAATMBmQEzAQABMwGZAWYBAAEzApkBAAEzAZkBzAEAATMB
+mQH/AQABMwHMAgABMwHMATMBAAEzAcwBZgEAATMBzAGZAQABMwLMAQABMwHMAf8BAAEzAf8BMwEA
+ATMB/wFmAQABMwH/AZkBAAEzAf8BzAEAATMC/wEAAWYDAAFmAQABMwEAAWYBAAFmAQABZgEAAZkB
+AAFmAQABzAEAAWYBAAH/AQABZgEzAgABZgIzAQABZgEzAWYBAAFmATMBmQEAAWYBMwHMAQABZgEz
+Af8BAAJmAgACZgEzAQADZgEAAmYBmQEAAmYBzAEAAWYBmQIAAWYBmQEzAQABZgGZAWYBAAFmApkB
+AAFmAZkBzAEAAWYBmQH/AQABZgHMAgABZgHMATMBAAFmAcwBmQEAAWYCzAEAAWYBzAH/AQABZgH/
+AgABZgH/ATMBAAFmAf8BmQEAAWYB/wHMAQABzAEAAf8BAAH/AQABzAEAApkCAAGZATMBmQEAAZkB
+AAGZAQABmQEAAcwBAAGZAwABmQIzAQABmQEAAWYBAAGZATMBzAEAAZkBAAH/AQABmQFmAgABmQFm
+ATMBAAGZATMBZgEAAZkBZgGZAQABmQFmAcwBAAGZATMB/wEAApkBMwEAApkBZgEAA5kBAAKZAcwB
+AAKZAf8BAAGZAcwCAAGZAcwBMwEAAWYBzAFmAQABmQHMAZkBAAGZAswBAAGZAcwB/wEAAZkB/wIA
+AZkB/wEzAQABmQHMAWYBAAGZAf8BmQEAAZkB/wHMAQABmQL/AQABzAMAAZkBAAEzAQABzAEAAWYB
+AAHMAQABmQEAAcwBAAHMAQABmQEzAgABzAIzAQABzAEzAWYBAAHMATMBmQEAAcwBMwHMAQABzAEz
+Af8BAAHMAWYCAAHMAWYBMwEAAZkCZgEAAcwBZgGZAQABzAFmAcwBAAGZAWYB/wEAAcwBmQIAAcwB
+mQEzAQABzAGZAWYBAAHMApkBAAHMAZkBzAEAAcwBmQH/AQACzAIAAswBMwEAAswBZgEAAswBmQEA
+A8wBAALMAf8BAAHMAf8CAAHMAf8BMwEAAZkB/wFmAQABzAH/AZkBAAHMAf8BzAEAAcwC/wEAAcwB
+AAEzAQAB/wEAAWYBAAH/AQABmQEAAcwBMwIAAf8CMwEAAf8BMwFmAQAB/wEzAZkBAAH/ATMBzAEA
+Af8BMwH/AQAB/wFmAgAB/wFmATMBAAHMAmYBAAH/AWYBmQEAAf8BZgHMAQABzAFmAf8BAAH/AZkC
+AAH/AZkBMwEAAf8BmQFmAQAB/wKZAQAB/wGZAcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHM
+AWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEzAQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8B
+AAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFmAQABIQEAAaUBAANfAQADdwEAA4YBAAOW
+AQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHwAfsB/wEAAaQCoAEAA4ADAAH/AgAB
+/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/wwAAewPAAESLgABKgEjAQAB7AsAASoBAAExASoB7CoA
+ASkBAAE4AXQBKgEjAQAB7AgAAjEBAAI4ATEpAAEpATgBAAE4AeUBWQE4ASoIAAExATgBMQEAAzgB
+MScAASkB+wE4AQABOAHDAaAB5QE4BwABMQI4ATEBAAI4AfsBOCYAASkC+wE4AQABDgFKATgBWQE4
+BgABcwL7ATgCAAEqATcC+yUAASoBXgH7ATgCAAEtAUkBIQFKASoFAAFzA/sBAAEjASoBIwEiASkB
+NyQAASoB5QFeATgBAAEtAQACMwEtAUkBIQQAAXMD+wEAASkDMQEqASkBAAHsIgABKgGgAeUBXgEA
+AS0BMwEAATMBfQMzAwABcwGgAvsCAAEjBDEBAAHsIgABKgHDAaABeQHlAQABewHkAQABMwHCAZ4C
+MwEAARIBcwKgAXMB+wEAASoBKQEjAQABIwEAAewjAALDAVEBAAHlAQAB4gF7AQABIQFJAS0CMwIA
+AcMBoAFzAQABoAEAATEBWQE4ASMBAAHsJAABwwFRAgABoAEAAXsBEAMzAUkBIQEOAgABwwFzAgAB
+oAEAATEDOCYAAVIBAAEqAQABoAEQAQ4BMwKeAjMBIQESAewBAAE4AQABSwEAAcMBAAEjATEBOAH7
+JgABIgI4AQABOAEiASoBSQIhAUkBEgHsAwABIgE4ASoBAAE4ASIBKgEpASMBMQESJAAC7AFtARIB
+AAEiAfsCOAEqARIB7AQAAuwBbQESAQABIgH7AjgBMQESAewoAALsAxIB7AsAAewDEgHsJgABQgFN
+AT4HAAE+AwABKAMAAUADAAEQAwABAQEAAQEFAAGAFwAD/wEAAf8BjwH/AY8EAAH/AQMB/wEDBAAB
+/gEAAf4BAQQAAfwBAAH8BQAB+AEAAfgFAAHwAQAB8AUAAeABAAHgBQABwAEAAcAFAAGAAQABgAEB
+BwABAwcAAQcHAAEPBwABDwUAAQMBAAEPBQABDwEAAQ8EAAHwAT8B+AE/GgAL</value></data><data name="DataGridViewTextBoxColumn16.HeaderText" xml:space="preserve"><value>Сводка_Заголовок</value></data>
+  <data name="_Ribbon.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAAAAAAAAs=</value></data><data name="Col_Comment.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Levelbom.Image" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABVTeXN0
+ZW0uRHJhd2luZy5CaXRtYXABAAAABERhdGEHAgIAAAAJAwAAAA8DAAAATwIAAAKJUE5HDQoaCgAA
+AA1JSERSAAAAIAAAACAIBgAAAHN6evQAAAAEZ0FNQQAAsY8L/GEFAAACBklEQVRYR+2XS0sCURiG
+3ek4jkwXKrPIQNoURBKuJSKof9CuG2FB1Mp1ab/AjUEtJLpQDURXXBSzaBdBi9AiqSiXLS1tRD3N
+OUz2TZwMmmG6vvAszivH7xnOKDOm/2hNOOk2rySbBcjyVVMf/sy/w3jHthkBMr7H1pGNemYl6UIq
+Ll39uPdvWnzyUAQZ2WJrySY9Iw8tGCbwdM61ZM9sPog8sAgFxAtHCPdLIjOlu0Aubj/OJewIsgqG
+Y67Oq0kfP7GphusjIH8xvjplSSIPNe4IvqvA6/AvEbh0BSCLicY23I/GrA7/FhOAkA3lkulqcEKU
+uhSaQGa9yglRapJMhHFClJqedE9tzWNPPYKku+tUw2gC0gaPVKxVkCPIRmw+aY5DkIf5MkegQaDw
+ewWe1vjTXIITX8F/PnDNiZLAF6FA7oiPk/7IdqpZIDtfGZXi9ukXsABcE94ISCIvkP6Ai2oW+L8H
+DP0Z4qBetxmi1KXQBNC+yQxRahIUljuAUn8+NAFPsBCAtAdRK+6to/cOdvA2ACEbtIQuUESQjpk8
+OQLLwI3POnSHIOzIdfkj+CjvCBT+kADlkawzlC8Nx+zGBkl/GOtSDddFgPZQKt94RSgwubBJHkon
+wrNTugvQIg817ghogcMNF3CHkdkTRAKkM4TIqxkznPJah1IChB240f/V7AfHZHoGBV/HjQ9IblgA
+AAAASUVORK5CYIIL</value></data><data name="&gt;&gt;tree_hideselnode1.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_hideselnode1.Name" xml:space="preserve"><value>tree_hideselnode1</value></data>
+  <data name="DataGridViewTextBoxColumn8.HeaderText" xml:space="preserve"><value>Масса ед. (кг)</value></data>
+  <data name="$this.ClientSize" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAFkDAABGAgAACw==</value></data><data name="_Ribbon.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAFkDAAB+AAAACw==</value></data><data name="Col_Quantity.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="TV1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAACwBAACxAQAACw==</value></data><data name="TV1.Font" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5Gb250BAAAAAROYW1lBFNpemUFU3R5bGUEVW5pdAEABAQLGFN5c3RlbS5EcmF3
+aW5nLkZvbnRTdHlsZQIAAAAbU3lzdGVtLkRyYXdpbmcuR3JhcGhpY3NVbml0AgAAAAIAAAAGAwAA
+AAzlvq7ova/pm4Xpu5EAABBBBfz///8YU3lzdGVtLkRyYXdpbmcuRm9udFN0eWxlAQAAAAd2YWx1
+ZV9fAAgCAAAAAAAAAAX7////G1N5c3RlbS5EcmF3aW5nLkdyYXBoaWNzVW5pdAEAAAAHdmFsdWVf
+XwAIAgAAAAMAAAAL</value></data><data name="TV1.Dock" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+AB5TeXN0ZW0uV2luZG93cy5Gb3Jtcy5Eb2NrU3R5bGUBAAAAB3ZhbHVlX18ACAIAAAAFAAAACw==</value></data><data name="$this.Margin" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+ABxTeXN0ZW0uV2luZG93cy5Gb3Jtcy5QYWRkaW5nBQAAAARfYWxsBF90b3AFX2xlZnQGX3JpZ2h0
+B19ib3R0b20AAAAAAAEICAgIAgAAAAEEAAAABAAAAAQAAAAEAAAACw==</value></data><data name="DGV1.RowHeadersWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>20</value></data>
+  <data name="&gt;&gt;Col_FileName.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_FileName.Name" xml:space="preserve"><value>Col_FileName</value></data>
+  <data name="DataGridViewTextBoxColumn10.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;Col_Drw.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewImageColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn8.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="&gt;&gt;Col_Drw.Name" xml:space="preserve"><value>Col_Drw</value></data>
+  <data name="&gt;&gt;tree_showselnode1.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_showselnode1.Name" xml:space="preserve"><value>tree_showselnode1</value></data>
+  <data name="DataGridViewTextBoxColumn14.HeaderText" xml:space="preserve"><value>Сводка_Ключевые слова</value></data>
+  <data name="DataGridViewTextBoxColumn4.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;TV1.ZOrder" xml:space="preserve"><value>0</value></data>
+  <data name="Col_Checkbox.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>20</value></data>
+  <data name="DataGridViewTextBoxColumn13.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="DataGridViewTextBoxColumn5.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="Col_Level.HeaderText" xml:space="preserve"><value>Уровень</value></data>
+  <data name="&gt;&gt;TV1.Parent" xml:space="preserve"><value>SplitContainerEx1.Panel1</value></data>
+  <data name="&gt;&gt;tree_showselnode3.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_showselnode3.Name" xml:space="preserve"><value>tree_showselnode3</value></data>
+  <data name="Col_Drw.HeaderText" xml:space="preserve"><value /></data>
+  <data name="Col_Preview.HeaderText" xml:space="preserve"><value>Эскиз</value></data>
+  <data name="Col_Checkbox.ToolTipText" xml:space="preserve"><value>Флажок</value></data>
+  <data name="Column2.HeaderText" xml:space="preserve"><value>Количество</value></data>
+  <data name="StatusLabel1.AutoSize" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="Col_Extname.HeaderText" xml:space="preserve"><value /></data>
+  <data name="&gt;&gt;tree_showselnode2.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_showselnode2.Name" xml:space="preserve"><value>tree_showselnode2</value></data>
+  <data name="Col_Checkbox.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>20</value></data>
+  <data name="Col_partnumber.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>150</value></data>
+  <data name="DataGridViewTextBoxColumn1.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>45</value></data>
+  <data name="Col_FileName.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_FileName.HeaderText" xml:space="preserve"><value>Имя файла на диске</value></data>
+  <data name="&gt;&gt;tree_openinsw.Name" xml:space="preserve"><value>tree_openinsw</value></data>
+  <data name="&gt;&gt;tree_openinsw.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn8.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn8</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn8.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Levelbom.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Levelbom.Name" xml:space="preserve"><value>Levelbom</value></data>
+  <data name="StatusLabel1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAPoAAAASAAAACw==</value></data><data name="Col_Path.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>200</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn6.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn6</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn6.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Parent" xml:space="preserve"><value>$this</value></data>
+  <data name="StatusLabel2.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAJYAAAASAAAACw==</value></data><data name="SplitContainerEx1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAFkDAACxAQAACw==</value></data><data name="SplitContainerEx1.Dock" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+AB5TeXN0ZW0uV2luZG93cy5Gb3Jtcy5Eb2NrU3R5bGUBAAAAB3ZhbHVlX18ACAIAAAAFAAAACw==</value></data><data name="&gt;&gt;DataGridViewTextBoxColumn9.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn9</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn9.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Column1.Name" xml:space="preserve"><value>Column1</value></data>
+  <data name="&gt;&gt;Column1.Type" xml:space="preserve"><value>AdvancedDataGridView.TreeGridColumn, ExpandableGridView, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cbf10eeec07b799b</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn4.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn4</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn4.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn17.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;Column2.Name" xml:space="preserve"><value>Column2</value></data>
+  <data name="&gt;&gt;Column2.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn7.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn7</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn7.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.ZOrder" xml:space="preserve"><value>1</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn2.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn2</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn2.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_SaveTime.Name" xml:space="preserve"><value>Col_SaveTime</value></data>
+  <data name="&gt;&gt;Col_SaveTime.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn5.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn5</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn5.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn1.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>45</value></data>
+  <data name="Col_Extname.ToolTipText" xml:space="preserve"><value>Тип документа</value></data>
+  <data name="StatusLabel1.TextImageRelation" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+ACZTeXN0ZW0uV2luZG93cy5Gb3Jtcy5UZXh0SW1hZ2VSZWxhdGlvbgEAAAAHdmFsdWVfXwAIAgAA
+AAgAAAAL</value></data><data name="PropSwitchLabel.AutoSize" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="Col_Title.HeaderText" xml:space="preserve"><value>Сводка_Заголовок</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn3.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn3</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn3.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="tree_unsuppress.Text" xml:space="preserve"><value>Высветить(&amp;U) (множественный выбор)</value></data>
+  <data name="tree_unsuppress.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="&gt;&gt;Col_Extname.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewImageColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Extname.Name" xml:space="preserve"><value>Col_Extname</value></data>
+  <data name="DataGridViewTextBoxColumn5.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="Col_Cfg.HeaderText" xml:space="preserve"><value>Конфигурация</value></data>
+  <data name="DataGridViewTextBoxColumn12.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>100</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn1.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn1</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn1.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_NewFolder.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="StatusLabel1.ImageAlign" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAAB9TeXN0
+ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="&gt;&gt;PropSwitchLabel.Name" xml:space="preserve"><value>PropSwitchLabel</value></data>
+  <data name="&gt;&gt;PropSwitchLabel.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="treecmsp1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABwBAAB8AQAACw==</value></data><data name="DataGridViewTextBoxColumn9.HeaderText" xml:space="preserve"><value>Габаритные размеры</value></data>
+  <data name="DGV1.Margin" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+ABxTeXN0ZW0uV2luZG93cy5Gb3Jtcy5QYWRkaW5nBQAAAARfYWxsBF90b3AFX2xlZnQGX3JpZ2h0
+B19ib3R0b20AAAAAAAEICAgIAgAAAAEEAAAABAAAAAQAAAAEAAAACw==</value></data><data name="Col_Drw.ToolTipText" xml:space="preserve"><value>Чертёж</value></data>
+  <data name="_Ribbon.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>25</value></data>
+  <data name="Col_NewFolder.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>160</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_hide.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_hide.Name" xml:space="preserve"><value>tree_DisplayInBOM_hide</value></data>
+  <data name="Col_Title.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Type" xml:space="preserve"><value>ZTool.SplitContainerEx, ZTool, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f08fc7047657204e</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Name" xml:space="preserve"><value>SplitContainerEx1</value></data>
+  <data name="&gt;&gt;Col_Preview.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewImageColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Preview.Name" xml:space="preserve"><value>Col_Preview</value></data>
+  <data name="DataGridViewTextBoxColumn16.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Weight.HeaderText" xml:space="preserve"><value>Масса ед._кг</value></data>
+  <data name="&gt;&gt;Timer1.Type" xml:space="preserve"><value>System.Windows.Forms.Timer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Timer1.Name" xml:space="preserve"><value>Timer1</value></data>
+  <data name="DataGridViewTextBoxColumn11.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>100</value></data>
+  <data name="tree_ExpandAll.Text" xml:space="preserve"><value>Развернуть всё</value></data>
+  <data name="tree_ExpandAll.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="Col_Number.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>45</value></data>
+  <data name="tree_DisplayInBOM_Promote.Text" xml:space="preserve"><value>Повысить</value></data>
+  <data name="tree_DisplayInBOM_Promote.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAGQAAAAWAAAACw==</value></data><data name="DataGridViewTextBoxColumn2.HeaderText" xml:space="preserve"><value>Имя файла на диске</value></data>
+  <data name="DGV1.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAAAAAAAAs=</value></data><data name="Col_Comment.HeaderText" xml:space="preserve"><value>Сводка_Примечание</value></data>
+  <data name="&gt;&gt;tree_unsuppress.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_unsuppress.Name" xml:space="preserve"><value>tree_unsuppress</value></data>
+  <data name="Col_partnumber.HeaderText" xml:space="preserve"><value>Номер детали в спецификации</value></data>
+  <data name="Col_Keywords.HeaderText" xml:space="preserve"><value>Сводка_Ключевые слова</value></data>
+  <data name="StatusStrip1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAFkDAAAXAAAACw==</value></data><data name="StatusStrip1.Text" xml:space="preserve"><value>StatusStrip1</value></data>
+  <data name="&gt;&gt;_Ribbon.ZOrder" xml:space="preserve"><value>3</value></data>
+  <data name="Col_bound.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;DGV1.ZOrder" xml:space="preserve"><value>0</value></data>
+  <data name="tree_selectinsw.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_selectinsw.Text" xml:space="preserve"><value>Выбрать в SolidWorks</value></data>
+  <data name="Col_Number.HeaderText" xml:space="preserve"><value>Номер</value></data>
+  <data name="&gt;&gt;tree_excludebom.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_excludebom.Name" xml:space="preserve"><value>tree_excludebom</value></data>
+  <data name="&gt;&gt;tree_suppress.Name" xml:space="preserve"><value>tree_suppress</value></data>
+  <data name="&gt;&gt;tree_suppress.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;TV1.Type" xml:space="preserve"><value>ZTool.MultiSelectTreeView, ZTool, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f08fc7047657204e</value></data>
+  <data name="&gt;&gt;TV1.Name" xml:space="preserve"><value>TV1</value></data>
+  <data name="&gt;&gt;Col_bound.Name" xml:space="preserve"><value>Col_bound</value></data>
+  <data name="&gt;&gt;Col_bound.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_CreationTime.Name" xml:space="preserve"><value>Col_CreationTime</value></data>
+  <data name="&gt;&gt;Col_CreationTime.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_bound.HeaderText" xml:space="preserve"><value>Габаритные размеры</value></data>
+  <data name="TV1.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>0</value></data>
+  <data name="DataGridViewTextBoxColumn15.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="Col_Keywords.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;DGV1.Parent" xml:space="preserve"><value>SplitContainerEx1.Panel2</value></data>
+  <data name="tree_showselnode1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_showselnode1.Text" xml:space="preserve"><value>Показывать только верхние подэлементы этого узла</value></data>
+  <data name="&gt;&gt;Col_Keywords.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Keywords.Name" xml:space="preserve"><value>Col_Keywords</value></data>
+  <data name="DataGridViewTextBoxColumn6.HeaderText" xml:space="preserve"><value>Путь</value></data>
+  <data name="&gt;&gt;Col_Comment.Name" xml:space="preserve"><value>Col_Comment</value></data>
+  <data name="&gt;&gt;Col_Comment.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="ToolStripProgressBar1.AutoSize" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="tree_showselnode3.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_showselnode3.Text" xml:space="preserve"><value>Показывать только подэлементы этого узла</value></data>
+  <data name="tree_excludebom.Text" xml:space="preserve"><value>Не включать в спецификацию материалов(&amp;E) (множественный выбор)</value></data>
+  <data name="tree_excludebom.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_DisplayInBOM_hide.Text" xml:space="preserve"><value>Скрыть</value></data>
+  <data name="tree_DisplayInBOM_hide.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAGQAAAAWAAAACw==</value></data><data name="tree_showselnode2.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_showselnode2.Text" xml:space="preserve"><value>Показывать только этот узел и его подэлементы</value></data>
+  <data name="DataGridViewTextBoxColumn10.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn17.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn17.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn17</value></data>
+  <data name="StatusStrip1.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAALwIAAAs=</value></data><data name="Col_Quantity.HeaderText" xml:space="preserve"><value>Количество</value></data>
+  <data name="DataGridViewTextBoxColumn7.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="SplitContainerEx1.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>27</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn15.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_Weight.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn15.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn15</value></data>
+  <data name="&gt;&gt;_Ribbon.Parent" xml:space="preserve"><value>$this</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn16.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn16.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn16</value></data>
+  <data name="Col_Level.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;tree_unexcludebom.Name" xml:space="preserve"><value>tree_unexcludebom</value></data>
+  <data name="&gt;&gt;tree_unexcludebom.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn13.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn13.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn13</value></data>
+  <data name="Col_Material.HeaderText" xml:space="preserve"><value>Материал</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn14.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_Number.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>45</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn14.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn14</value></data>
+  <data name="DataGridViewTextBoxColumn4.HeaderText" xml:space="preserve"><value>Материал</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn11.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn11.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn11</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn12.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn12.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn12</value></data>
+  <data name="SplitContainerEx1.SplitterDistance" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>300</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_Promote.Name" xml:space="preserve"><value>tree_DisplayInBOM_Promote</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_Promote.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_ExpandAll.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_ExpandAll.Name" xml:space="preserve"><value>tree_ExpandAll</value></data>
+  <data name="&gt;&gt;ToolStripProgressBar1.Name" xml:space="preserve"><value>ToolStripProgressBar1</value></data>
+  <data name="&gt;&gt;ToolStripProgressBar1.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripProgressBar, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_Cfg.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>70</value></data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve"><value>Frmmain</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn10.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve"><value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;DataGridViewTextBoxColumn10.Name" xml:space="preserve"><value>DataGridViewTextBoxColumn10</value></data>
+  <data name="$this.MinimumSize" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAGkDAABtAgAACw==</value></data><data name="DGV1.TabIndex" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>2</value></data>
+  <data name="PropSwitchLabel.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAFAAAAASAAAACw==</value></data><data name="PropSwitchLabel.Text" xml:space="preserve"><value>Выражение свойства</value></data>
+  <data name="&gt;&gt;StatusStrip1.Name" xml:space="preserve"><value>StatusStrip1</value></data>
+  <data name="&gt;&gt;StatusStrip1.Type" xml:space="preserve"><value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="DataGridViewTextBoxColumn14.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="tree_CollapseAll.Text" xml:space="preserve"><value>Свернуть всё</value></data>
+  <data name="tree_CollapseAll.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="&gt;&gt;tree_CollapseAll.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_CollapseAll.Name" xml:space="preserve"><value>tree_CollapseAll</value></data>
+  <data name="&gt;&gt;Col_Quantity.Name" xml:space="preserve"><value>Col_Quantity</value></data>
+  <data name="&gt;&gt;Col_Quantity.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="Col_CreationTime.HeaderText" xml:space="preserve"><value>Время создания</value></data>
+  <data name="SplitContainerEx1.Panel2MinSize" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>0</value></data>
+  <data name="SplitContainerEx1.Panel1MinSize" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>0</value></data>
+  <data name="Col_Extname.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>22</value></data>
+  <data name="DataGridViewTextBoxColumn13.HeaderText" xml:space="preserve"><value>Сводка_Автор</value></data>
+  <data name="Col_Weight.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="tree_DisplayInBOM_show.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAAGQAAAAWAAAACw==</value></data><data name="tree_DisplayInBOM_show.Text" xml:space="preserve"><value>Показать</value></data>
+  <data name="DataGridViewTextBoxColumn6.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>200</value></data>
+  <data name="DataGridViewTextBoxColumn3.HeaderText" xml:space="preserve"><value>Сохранить в папку</value></data>
+  <data name="DGV1.ColumnHeadersHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>25</value></data>
+  <data name="&gt;&gt;Col_Material.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Material.Name" xml:space="preserve"><value>Col_Material</value></data>
+  <data name="DataGridViewTextBoxColumn3.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>160</value></data>
+  <data name="$this.StartPosition" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+ACZTeXN0ZW0uV2luZG93cy5Gb3Jtcy5Gb3JtU3RhcnRQb3NpdGlvbgEAAAAHdmFsdWVfXwAIAgAA
+AAEAAAAL</value></data><data name="Col_NewFolder.HeaderText" xml:space="preserve"><value>Сохранить в папку</value></data>
+  <data name="StatusLabel1.TextAlign" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAAB9TeXN0
+ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="SplitContainerEx1.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAAfgAAAAs=</value></data><data name="DGV1.Dock" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAu
+MC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAA
+AB5TeXN0ZW0uV2luZG93cy5Gb3Jtcy5Eb2NrU3R5bGUBAAAAB3ZhbHVlX18ACAIAAAAFAAAACw==</value></data><data name="DGV1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAACQCAACxAQAACw==</value></data><data name="&gt;&gt;ToolStripSeparator4.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;ToolStripSeparator4.Name" xml:space="preserve"><value>ToolStripSeparator4</value></data>
+  <data name="&gt;&gt;StatusStrip1.Parent" xml:space="preserve"><value>$this</value></data>
+  <data name="&gt;&gt;Col_NewFolder.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_NewFolder.Name" xml:space="preserve"><value>Col_NewFolder</value></data>
+  <data name="Col_Level.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel1.ZOrder" xml:space="preserve"><value>0</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel2.ZOrder" xml:space="preserve"><value>1</value></data>
+  <data name="StatusLabel2.AutoSize" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="DataGridViewTextBoxColumn2.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;Col_Cfg.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Cfg.Name" xml:space="preserve"><value>Col_Cfg</value></data>
+  <data name="Col_Drw.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>22</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel2.Parent" xml:space="preserve"><value>SplitContainerEx1</value></data>
+  <data name="Col_Author.HeaderText" xml:space="preserve"><value>Сводка_Автор</value></data>
+  <data name="&gt;&gt;ToolStripSeparator1.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;ToolStripSeparator1.Name" xml:space="preserve"><value>ToolStripSeparator1</value></data>
+  <data name="DataGridViewTextBoxColumn11.HeaderText" xml:space="preserve"><value>Время создания</value></data>
+  <data name="&gt;&gt;StatusStrip1.ZOrder" xml:space="preserve"><value>2</value></data>
+  <data name="DataGridViewTextBoxColumn17.HeaderText" xml:space="preserve"><value>Сводка_Тема</value></data>
+  <data name="DataGridViewTextBoxColumn1.HeaderText" xml:space="preserve"><value>Номер</value></data>
+  <data name="Col_Preview.Visible" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="&gt;&gt;DGV1.Name" xml:space="preserve"><value>DGV1</value></data>
+  <data name="&gt;&gt;DGV1.Type" xml:space="preserve"><value>ZTool.DataGridViewEX, ZTool, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f08fc7047657204e</value></data>
+  <data name="&gt;&gt;ToolStripSeparator3.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;ToolStripSeparator3.Name" xml:space="preserve"><value>ToolStripSeparator3</value></data>
+  <data name="DataGridViewTextBoxColumn7.HeaderText" xml:space="preserve"><value>Конфигурация</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel1.Type" xml:space="preserve"><value>System.Windows.Forms.SplitterPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel1.Name" xml:space="preserve"><value>SplitContainerEx1.Panel1</value></data>
+  <data name="&gt;&gt;ToolStripSeparator2.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;ToolStripSeparator2.Name" xml:space="preserve"><value>ToolStripSeparator2</value></data>
+  <data name="Col_Subject.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_show.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_DisplayInBOM_show.Name" xml:space="preserve"><value>tree_DisplayInBOM_show</value></data>
+  <data name="Col_Checkbox.Visible" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="ToolStripSeparator4.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABgBAAAGAAAACw==</value></data><data name="&gt;&gt;SplitContainerEx1.Panel1.Parent" xml:space="preserve"><value>SplitContainerEx1</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel2.Type" xml:space="preserve"><value>System.Windows.Forms.SplitterPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;SplitContainerEx1.Panel2.Name" xml:space="preserve"><value>SplitContainerEx1.Panel2</value></data>
+  <data name="&gt;&gt;Col_Path.Type" xml:space="preserve"><value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;Col_Path.Name" xml:space="preserve"><value>Col_Path</value></data>
+  <data name="&gt;&gt;ImageList1.Type" xml:space="preserve"><value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;ImageList1.Name" xml:space="preserve"><value>ImageList1</value></data>
+  <data name="DataGridViewTextBoxColumn8.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="DataGridViewTextBoxColumn2.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>150</value></data>
+  <data name="Col_Cfg.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="TV1.Location" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5Qb2ludAIAAAABeAF5AAAICAIAAAAAAAAAAAAAAAs=</value></data><data name="tree_unexcludebom.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_unexcludebom.Text" xml:space="preserve"><value>Включать в спецификацию материалов(&amp;I) (множественный выбор)</value></data>
+  <data name="$this.AutoScaleDimensions" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABRTeXN0
+ZW0uRHJhd2luZy5TaXplRgIAAAAFd2lkdGgGaGVpZ2h0AAALCwIAAAAAAMBCAADAQgs=</value></data><data name="Levelbom.Text" xml:space="preserve"><value>Отчёт спецификации</value></data>
+  <data name="Levelbom.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="&gt;&gt;tree_selectinsw.Type" xml:space="preserve"><value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></data>
+  <data name="&gt;&gt;tree_selectinsw.Name" xml:space="preserve"><value>tree_selectinsw</value></data>
+  <data name="ToolStripSeparator1.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABgBAAAGAAAACw==</value></data><data name="tree_openinsw.Text" xml:space="preserve"><value>Открыть в SolidWorks</value></data>
+  <data name="tree_openinsw.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_DisplayInBOM.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABsBAAAWAAAACw==</value></data><data name="tree_DisplayInBOM.Text" xml:space="preserve"><value>Отображение подкомпонентов при использовании в качестве подсборки</value></data>
+  <data name="Col_SaveTime.HeaderText" xml:space="preserve"><value>Время сохранения</value></data>
+  <data name="Col_Material.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="ToolStripProgressBar1.Visible" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>False</value></data>
+  <data name="ToolStripSeparator3.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABgBAAAGAAAACw==</value></data><data name="DataGridViewTextBoxColumn6.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="ToolStripSeparator2.Size" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAABNTeXN0
+ZW0uRHJhd2luZy5TaXplAgAAAAV3aWR0aAZoZWlnaHQAAAgIAgAAABgBAAAGAAAACw==</value></data><data name="Col_Subject.HeaderText" xml:space="preserve"><value>Сводка_Тема</value></data>
+  <data name="DataGridViewTextBoxColumn15.HeaderText" xml:space="preserve"><value>Сводка_Примечание</value></data>
+  <data name="Col_Drw.Width" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>22</value></data>
+  <data name="PropSwitchLabel.TextAlign" mimetype="application/x-microsoft.net.object.binary.base64"><value>AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBD
+dWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWIwM2Y1ZjdmMTFkNTBhM2EFAQAAAB9TeXN0
+ZW0uRHJhd2luZy5Db250ZW50QWxpZ25tZW50AQAAAAd2YWx1ZV9fAAgCAAAAEAAAAAs=</value></data><data name="DataGridViewTextBoxColumn5.HeaderText" xml:space="preserve"><value>Количество</value></data>
+  <data name="Col_partnumber.MinimumWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>50</value></data>
+  <data name="SplitContainerEx1.SplitterWidth" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><value>9</value></data>
+  </root>
