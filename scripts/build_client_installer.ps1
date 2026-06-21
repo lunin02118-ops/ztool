@@ -55,11 +55,13 @@ $runtimeDir = Join-Path $root 'runtime'
 $manifestPath = Join-Path $root 'manifest.json'
 $templatePath = Join-Path $repoRoot 'installer\windows-client\SWToolsClient.nsi.in'
 $cmgrCleanupScript = Join-Path $repoRoot 'scripts\clean_swtools_commandmanager_tabs.ps1'
+$setRuntimePathsScript = Join-Path $repoRoot 'client-core\tools\set_bom_template_path.ps1'
 
 if (-not (Test-Path -LiteralPath $runtimeDir -PathType Container)) { Fail "runtime directory missing: $runtimeDir" }
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { Fail "manifest missing: $manifestPath" }
 if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) { Fail "NSIS template missing: $templatePath" }
 if (-not (Test-Path -LiteralPath $cmgrCleanupScript -PathType Leaf)) { Fail "CommandManager cleanup script missing: $cmgrCleanupScript" }
+if (-not (Test-Path -LiteralPath $setRuntimePathsScript -PathType Leaf)) { Fail "runtime path patch script missing: $setRuntimePathsScript" }
 if (-not (Test-Path -LiteralPath $MakensisPath -PathType Leaf)) { Fail "makensis not found: $MakensisPath" }
 
 $manifest = Get-Content -LiteralPath $manifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
@@ -100,6 +102,7 @@ $replacements = @{
     '@@SOURCE_RUNTIME@@' = ConvertTo-NsisLiteral $runtimeDir
     '@@OUTPUT_SETUP@@' = ConvertTo-NsisLiteral $setupPath
     '@@CLEAN_CMGR_SCRIPT@@' = ConvertTo-NsisLiteral $cmgrCleanupScript
+    '@@SET_RUNTIME_PATHS_SCRIPT@@' = ConvertTo-NsisLiteral $setRuntimePathsScript
 }
 $generated = $template
 foreach ($key in $replacements.Keys) {
@@ -148,6 +151,7 @@ $installerManifest = [ordered]@{
         requires_64_bit_windows = $true
         registers_com_with_regasm = $true
         configures_solidworks_addin = $true
+        patches_runtime_settings_paths_on_install = $true
         preserves_license_state_on_uninstall = $true
     }
     tooling = [ordered]@{

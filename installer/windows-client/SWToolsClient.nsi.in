@@ -12,6 +12,7 @@ Unicode true
 !define SOURCE_RUNTIME "@@SOURCE_RUNTIME@@"
 !define OUTPUT_SETUP "@@OUTPUT_SETUP@@"
 !define CLEAN_CMGR_SCRIPT "@@CLEAN_CMGR_SCRIPT@@"
+!define SET_RUNTIME_PATHS_SCRIPT "@@SET_RUNTIME_PATHS_SCRIPT@@"
 !define ADDIN_GUID "{59959DFA-3229-4B86-852E-52ABF2BDB8C0}"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\SWTools"
 
@@ -57,9 +58,8 @@ Function .onInit
 FunctionEnd
 
 Function RequireNoRunningSWTools
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,SWTools -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
+  nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,SWTools -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
   Pop $0
-  Pop $1
   ${If} $0 == 42
     MessageBox MB_ICONSTOP "Закройте SolidWorks и SWTools перед установкой."
     Abort
@@ -70,11 +70,22 @@ Function RunCommandManagerCleanup
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
   File /oname=clean_swtools_commandmanager_tabs.ps1 "${CLEAN_CMGR_SCRIPT}"
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -ReportDir "$TEMP\SWTools-cmgr-cleanup"'
+  nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -ReportDir "$TEMP\SWTools-cmgr-cleanup"'
   Pop $0
-  Pop $1
   ${If} $0 != 0
-    MessageBox MB_ICONSTOP "Не удалось очистить кеш вкладок SolidWorks. Код: $0$\r$\n$1"
+    MessageBox MB_ICONSTOP "Не удалось очистить кеш вкладок SolidWorks. Код: $0"
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function PatchInstalledSettingsPaths
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File /oname=set_bom_template_path.ps1 "${SET_RUNTIME_PATHS_SCRIPT}"
+  nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\set_bom_template_path.ps1" -Folder "$INSTDIR" -Settings "$INSTDIR\SWTools.settings"'
+  Pop $0
+  ${If} $0 != 0
+    MessageBox MB_ICONSTOP "Не удалось обновить пути шаблонов SWTools.settings. Код: $0"
     Abort
   ${EndIf}
 FunctionEnd
@@ -98,6 +109,10 @@ Section "SWTools client" SecMain
 
   IfFileExists "$INSTDIR\SWTools.exe" 0 missing_payload
   IfFileExists "$INSTDIR\SWTools.dll" 0 missing_payload
+  IfFileExists "$INSTDIR\SWTools.settings" 0 missing_payload
+
+  Call PatchInstalledSettingsPaths
+  StrCpy $0 "$WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
 
   ExecWait '"$0" "$INSTDIR\SWTools.dll" /codebase /silent' $1
   ${If} $1 != 0
@@ -153,9 +168,8 @@ Function un.onInit
 FunctionEnd
 
 Function un.RequireNoRunningSWTools
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,SWTools -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
+  nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Process SLDWORKS,SWTools -ErrorAction SilentlyContinue) { exit 42 } else { exit 0 }"'
   Pop $0
-  Pop $1
   ${If} $0 == 42
     MessageBox MB_ICONSTOP "Закройте SolidWorks и SWTools перед удалением."
     Abort
@@ -166,11 +180,10 @@ Function un.RunCommandManagerCleanup
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
   File /oname=clean_swtools_commandmanager_tabs.ps1 "${CLEAN_CMGR_SCRIPT}"
-  nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -IncludeAddInsStartup -ReportDir "$TEMP\SWTools-cmgr-cleanup-uninstall"'
+  nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\clean_swtools_commandmanager_tabs.ps1" -Apply -IncludeAddInsStartup -ReportDir "$TEMP\SWTools-cmgr-cleanup-uninstall"'
   Pop $0
-  Pop $1
   ${If} $0 != 0
-    DetailPrint "CommandManager cleanup warning: $1"
+    DetailPrint "CommandManager cleanup warning: exit code $0"
   ${EndIf}
 FunctionEnd
 

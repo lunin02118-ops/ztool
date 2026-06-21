@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-06-22T03:19:28",
+  "process_id": 19272,
+  "process_path": "C:\\Program Files\\SWTools\\SWTools.exe",
+  "code_mask": "PTV3...M46B",
+  "code_sha12": "7ac6015ac4d2",
+  "method": "EM_REPLACESEL input + WM_GETTEXT readback; SetWindowText forbidden",
+  "fields": [
+    {
+      "index": 1,
+      "hwnd": 10035586,
+      "expected_length": 8,
+      "actual_length": 8,
+      "exact_match": true
+    },
+    {
+      "index": 2,
+      "hwnd": 34218348,
+      "expected_length": 5,
+      "actual_length": 5,
+      "exact_match": true
+    },
+    {
+      "index": 3,
+      "hwnd": 6755552,
+      "expected_length": 5,
+      "actual_length": 5,
+      "exact_match": true
+    },
+    {
+      "index": 4,
+      "hwnd": 2888890,
+      "expected_length": 5,
+      "actual_length": 5,
+      "exact_match": true
+    },
+    {
+      "index": 5,
+      "hwnd": 43258772,
+      "expected_length": 9,
+      "actual_length": 9,
+      "exact_match": true
+    }
+  ],
+  "password_length": 12,
+  "password_exact_match": true,
+  "all_exact_match": true
+}

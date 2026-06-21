@@ -1,0 +1,9 @@
+{
+  "service": "ztool-tcp-server.service",
+  "pid": "251039",
+  "env": {
+    "SWTOOLS_CLIENT_VERSION": "1.1.6",
+    "ZTOOL_CLIENT_VERSION": "1.1.6",
+    "ZTOOL_DB_BACKEND": "mysql"
+  }
+}

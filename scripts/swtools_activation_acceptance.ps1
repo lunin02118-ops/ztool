@@ -25,10 +25,17 @@ param(
 
     [switch]$ProvisionProductionKey,
 
+    [switch]$ResetProductionBinding,
+
+    [switch]$ServerOnly,
+
     [switch]$ClickActivate
 )
 
 $ErrorActionPreference = "Stop"
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    throw "Run this script with PowerShell 7+ (pwsh). Windows PowerShell can misread UTF-8 Cyrillic literals and target the wrong UI."
+}
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot "swtools_acceptance_ui.ps1")
@@ -176,6 +183,78 @@ db.close()
 "@ | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Write-RemoteResetScript {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Secret,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+@"
+import os, sys, json, hashlib, subprocess
+sys.path.insert(0, '/opt/ztool-tcp-server')
+from ztool_license_server.db_mysql import MySQLLicenseDB
+
+service = '$ServiceName'
+pid = subprocess.check_output(['systemctl', 'show', service, '-p', 'MainPID', '--value'], text=True).strip()
+env = {}
+with open(f'/proc/{pid}/environ', 'rb') as f:
+    for item in f.read().split(b'\x00'):
+        if b'=' in item:
+            k, v = item.split(b'=', 1)
+            env[k.decode()] = v.decode()
+
+code = '''$($Secret.code)'''
+backend = env.get('ZTOOL_DB_BACKEND', 'sqlite')
+if backend != 'mysql':
+    raise SystemExit(json.dumps({'error': 'production backend is not mysql', 'backend': backend}, ensure_ascii=False))
+
+db = MySQLLicenseDB(
+    host=env.get('ZTOOL_MYSQL_HOST', 'localhost'),
+    port=int(env.get('ZTOOL_MYSQL_PORT', '3306')),
+    database=env['ZTOOL_MYSQL_DB'],
+    user=env['ZTOOL_MYSQL_USER'],
+    password=env['ZTOOL_MYSQL_PASSWORD'],
+)
+before = db._fetchone(
+    'SELECT current_activations, max_activations, machine_id, is_active, is_revoked '
+    'FROM license_keys WHERE license_key=%s',
+    (code,),
+)
+cur = db._cursor()
+cur.execute(
+    'UPDATE license_keys SET current_activations=0, machine_id=NULL, machine_meta=NULL, '
+    'activated_at=NULL, last_check_at=NULL WHERE license_key=%s',
+    (code,),
+)
+db._conn.commit()
+cur.close()
+after = db._fetchone(
+    'SELECT current_activations, max_activations, machine_id, is_active, is_revoked '
+    'FROM license_keys WHERE license_key=%s',
+    (code,),
+)
+out = {
+    'backend': backend,
+    'mask': code[:4] + '...' + code[-4:],
+    'sha12': hashlib.sha256(code.encode()).hexdigest()[:12],
+    'before': {
+        'current_activations': before.get('current_activations') if before else None,
+        'machine_bound': bool(before and before.get('machine_id')),
+        'is_active': before.get('is_active') if before else None,
+        'is_revoked': before.get('is_revoked') if before else None,
+    },
+    'after': {
+        'current_activations': after.get('current_activations') if after else None,
+        'machine_bound': bool(after and after.get('machine_id')),
+        'is_active': after.get('is_active') if after else None,
+        'is_revoked': after.get('is_revoked') if after else None,
+    },
+}
+print(json.dumps(out, ensure_ascii=False, indent=2, default=str))
+db.close()
+"@ | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
 function Write-RemoteStateScript {
     param(
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Secret,
@@ -299,6 +378,18 @@ if ($ProvisionProductionKey) {
     $provision
 }
 
+if ($ResetProductionBinding) {
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) ("swtools_reset_" + [Guid]::NewGuid().ToString("N") + ".py")
+    Write-RemoteResetScript -Secret $secret -Path $tmp
+    $reset = Invoke-RemotePython -ScriptPath $tmp -RemoteName "swtools_reset_binding.py" -StdoutName "activation-reset-binding-redacted.out.log" -StderrName "activation-reset-binding-redacted.err.log"
+    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+    $reset
+}
+
+if ($ServerOnly) {
+    return
+}
+
 $process = Get-Process SWTools -ErrorAction Stop | Sort-Object StartTime -Descending | Select-Object -First 1
 $controls = @(
     Get-SWToolsWindowControls -ProcessId $process.Id -ClassContains "EDIT" -WindowTitleContains "Регистрация" |
@@ -360,21 +451,33 @@ if ($ClickActivate) {
     Export-SWToolsWindowTree -ProcessId $oldPid -Path $treePath
     $treeText = Get-Content -LiteralPath $treePath -Raw
     $successModal = $treeText -match "Регистрация выполнена"
-    if ($successModal) {
-        Invoke-SWToolsButtonByText -ProcessId $oldPid -Text "ОК" -ClassContains "Button" -Async | Out-Null
-        Start-Sleep -Seconds 10
-        $newProcesses = @(
-            Get-Process SWTools -ErrorAction SilentlyContinue |
-                Sort-Object StartTime -Descending |
-                Select-Object Id, StartTime, MainWindowTitle, Path
-        )
+    if (-not $successModal) {
         [ordered]@{
             timestamp = (Get-Date).ToString("s")
             old_pid = $oldPid
-            success_modal_seen = $true
-            old_pid_still_running = [bool](Get-Process -Id $oldPid -ErrorAction SilentlyContinue)
-            processes = $newProcesses
+            success_modal_seen = $false
+            tree_path = $treePath
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $ReportDir "activation-restart-redacted.json") -Encoding UTF8
+        throw "Activation did not show the success modal. See activation-after-click-window-tree.txt"
+    }
+
+    Invoke-SWToolsButtonByText -ProcessId $oldPid -Text "ОК" -ClassContains "Button" -Async | Out-Null
+    Start-Sleep -Seconds 10
+    $newProcesses = @(
+        Get-Process SWTools -ErrorAction SilentlyContinue |
+            Sort-Object StartTime -Descending |
+            Select-Object Id, StartTime, MainWindowTitle, Path
+    )
+    $oldPidStillRunning = [bool](Get-Process -Id $oldPid -ErrorAction SilentlyContinue)
+    [ordered]@{
+        timestamp = (Get-Date).ToString("s")
+        old_pid = $oldPid
+        success_modal_seen = $true
+        old_pid_still_running = $oldPidStillRunning
+        processes = $newProcesses
+    } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $ReportDir "activation-restart-redacted.json") -Encoding UTF8
+    if ($oldPidStillRunning -or -not ($newProcesses | Where-Object { $_.Id -ne $oldPid })) {
+        throw "Activation success modal was shown, but restart evidence is invalid. See activation-restart-redacted.json"
     }
 
     $stateTmp = Join-Path ([IO.Path]::GetTempPath()) ("swtools_state_" + [Guid]::NewGuid().ToString("N") + ".py")

@@ -1,0 +1,73 @@
+{
+  "date": "2026-06-22",
+  "status": "L2_PASS_FULL_SW_BOM_NOT_RUN",
+  "branch": "codex/full-acceptance-1.1.6",
+  "commit": "52e0f13388c6",
+  "package": "releases/1.1.6/SWTools-1.1.6-Setup.exe",
+  "setup_sha256": "29ffc4749c93c6c64e6da783c5cb65ddde96cdc4133d350d68879f240d43deae",
+  "runtime_swtools_exe_sha256": "3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a",
+  "gates": [
+    {
+      "name": "verify_release_package -RequireSolidWorksTools",
+      "status": "PASS"
+    },
+    {
+      "name": "dotnet build client-src/ZTool.csproj -c Release",
+      "status": "PASS_WITH_EXISTING_WARNINGS"
+    },
+    {
+      "name": "check_source_string_invariants --self-test",
+      "status": "PASS"
+    },
+    {
+      "name": "check_source_string_invariants --root client-src",
+      "status": "PASS"
+    },
+    {
+      "name": "check_no_cjk_filenames",
+      "status": "PASS"
+    },
+    {
+      "name": "check_bom_template SWTools.settings",
+      "status": "PASS"
+    },
+    {
+      "name": "check_bom_template client-core/dist/SWTools.settings",
+      "status": "PASS"
+    },
+    {
+      "name": "bom_export_assert --self-test",
+      "status": "PASS"
+    },
+    {
+      "name": "pytest license-server",
+      "status": "PASS",
+      "details": "117 passed, 2 skipped"
+    },
+    {
+      "name": "secret_scan",
+      "status": "PASS"
+    },
+    {
+      "name": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "name": "sw_test_preflight installed runtime no clean",
+      "status": "PASS"
+    }
+  ],
+  "live_activation": {
+    "status": "PASS",
+    "server_backend": "mysql",
+    "server_env": {
+      "ZTOOL_CLIENT_VERSION": "1.1.6",
+      "SWTOOLS_CLIENT_VERSION": "1.1.6"
+    },
+    "input_method": "EM_REPLACESEL + WM_GETTEXT readback",
+    "success_modal_seen": true,
+    "restart_verified": true,
+    "server_current_activations": 1,
+    "server_machine_bound": true
+  }
+}

@@ -26,7 +26,7 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256             = 'ac6bd349b8f6875f597a68cd482e3d86b6f31d719c519694d5749e27c539620d'
+        client_exe_sha256             = '3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a'
         addin_dll_sha256              = '1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705'
         ribbon_dll_sha256             = '57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e'
         expandable_grid_view_sha256   = '89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0'
@@ -184,6 +184,14 @@ $expandableGridViewDll = Join-Path $runtimeDir 'ExpandableGridView.dll'
 $ztoolRsaDll = Join-Path $runtimeDir 'ZTool_rsa.dll'
 $settingsPath = Join-Path $runtimeDir 'SWTools.settings'
 $materialLibrary = Join-Path $runtimeDir 'SolidWorksTemplates\MyMaterials.sldmat'
+$clientConfigPath = Join-Path $runtimeDir 'SWTools.exe.config'
+$clientRuntimeDependencies = @(
+    'System.Buffers.dll',
+    'System.Memory.dll',
+    'System.Numerics.Vectors.dll',
+    'System.Resources.Extensions.dll',
+    'System.Runtime.CompilerServices.Unsafe.dll'
+)
 
 function Test-HasCjk {
     param([string] $Text)
@@ -215,6 +223,18 @@ Assert-Hash $expandableGridViewDll $ExpectedExpandableGridViewSha256
 Assert-Hash $ztoolRsaDll $ExpectedZToolRsaSha256
 Assert-File $settingsPath
 Assert-File $materialLibrary
+Assert-File $clientConfigPath
+foreach ($dep in $clientRuntimeDependencies) {
+    Assert-File (Join-Path $runtimeDir $dep)
+}
+
+[xml]$clientConfigXml = Get-Content -LiteralPath $clientConfigPath -Encoding UTF8 -Raw
+$resourceRedirect = $clientConfigXml.configuration.runtime.assemblyBinding.dependentAssembly | Where-Object {
+    $_.assemblyIdentity.name -eq 'System.Resources.Extensions'
+}
+if (-not $resourceRedirect) {
+    Fail 'runtime/SWTools.exe.config must contain a bindingRedirect for System.Resources.Extensions'
+}
 
 [xml]$settingsXml = Get-Content -LiteralPath $settingsPath -Encoding UTF8 -Raw
 $settingsMaterialPath = Get-XmlText $settingsXml 'materialpath'

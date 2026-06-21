@@ -1,0 +1,15 @@
+{
+  "code_mask": "PTV3...M46B",
+  "code_sha12": "7ac6015ac4d2",
+  "client_version": "1.1.6",
+  "result_code": 13,
+  "response_body_length": 14808,
+  "transport_decrypt_length": 5546,
+  "transport_branch_count": 4,
+  "transport_branch_lengths": [
+    2072,
+    2025,
+    723,
+    723
+  ]
+}

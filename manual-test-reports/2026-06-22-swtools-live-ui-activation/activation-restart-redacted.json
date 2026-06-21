@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-06-22T03:19:47",
+  "old_pid": 19272,
+  "success_modal_seen": true,
+  "old_pid_still_running": false,
+  "processes": [
+    {
+      "Id": 21240,
+      "StartTime": "2026-06-22T03:19:37.0125464+05:00",
+      "MainWindowTitle": "SWTools 1.1.6(x64)",
+      "Path": "C:\\Program Files\\SWTools\\SWTools.exe"
+    }
+  ]
+}

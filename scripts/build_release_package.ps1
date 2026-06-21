@@ -71,6 +71,33 @@ function Copy-OptionalSolidWorksTools {
     throw "SolidWorksTools.dll is required for production package. Pass -SolidWorksToolsDll or -AllowMissingSolidWorksTools for dry-run."
 }
 
+function Copy-ClientRuntimeDependencies([string]$ClientExePath) {
+    $clientDir = Split-Path -Parent ([System.IO.Path]::GetFullPath($ClientExePath))
+    $deps = @(
+        'System.Buffers.dll',
+        'System.Memory.dll',
+        'System.Numerics.Vectors.dll',
+        'System.Resources.Extensions.dll',
+        'System.Runtime.CompilerServices.Unsafe.dll'
+    )
+
+    $copiedDeps = @()
+    foreach ($dep in $deps) {
+        $source = Join-Path $clientDir $dep
+        $copiedDeps += Copy-RequiredFile $source $runtimeDir
+    }
+
+    $configSource = Join-Path $clientDir 'ZTool.exe.config'
+    if (Test-Path -LiteralPath $configSource -PathType Leaf) {
+        $copiedDeps += Copy-RequiredFile $configSource $runtimeDir 'SWTools.exe.config'
+    }
+    else {
+        throw "required client config missing: $configSource"
+    }
+
+    return $copiedDeps
+}
+
 function Copy-TreeFiltered([string]$Source, [string]$Destination) {
     if (-not (Test-Path -LiteralPath $Source)) { throw "required directory missing: $Source" }
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
@@ -84,6 +111,7 @@ New-Item -ItemType Directory -Force -Path $runtimeDir, $serverDir, $docsDir | Ou
 
 $copied = @()
 $copied += Copy-RequiredFile $ClientExe $runtimeDir 'SWTools.exe'
+$copied += Copy-ClientRuntimeDependencies $ClientExe
 $addinRuntimeDll = Copy-RequiredFile $AddinDll $runtimeDir 'SWTools.dll'
 $addinPatchProject = Join-Path $repoRoot 'client-core\tools\AddinBrandPatch\AddinBrandPatch.csproj'
 $addinPatchTmp = "$addinRuntimeDll.brand.tmp"
