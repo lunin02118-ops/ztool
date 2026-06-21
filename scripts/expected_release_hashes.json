@@ -1,7 +1,7 @@
 {
-  "_comment": "Single source of truth for the accepted SWTools runtime artifact hashes. Current accepted package: releases/1.1.6/SWTools-1.1.6-Setup.exe, setup sha256 e79cc0cedb9e01e9601c33d4acfe35a266cb4013d8fd7bcb3181ce08c3151744. Both scripts/verify_release_package.ps1 and scripts/sw_test_preflight.ps1 load their default expected hashes from this file. Update here when the accepted build changes.",
+  "_comment": "Single source of truth for the accepted SWTools runtime artifact hashes. Current accepted package: releases/1.1.6/SWTools-1.1.6-Setup.exe, setup sha256 b15676b042d522480fcfb2968f36bff139e5579654a26b77841365f3b1b54d59. Both scripts/verify_release_package.ps1 and scripts/sw_test_preflight.ps1 load their default expected hashes from this file. Update here when the accepted build changes.",
   "version": "1.1.6",
-  "setup_sha256": "e79cc0cedb9e01e9601c33d4acfe35a266cb4013d8fd7bcb3181ce08c3151744",
+  "setup_sha256": "b15676b042d522480fcfb2968f36bff139e5579654a26b77841365f3b1b54d59",
   "client_exe_sha256": "5a9c43e3559064ce3a2a913e3297d117ec0f9ecd4c9867b6367b86b256362397",
   "addin_dll_sha256": "1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705",
   "ribbon_dll_sha256": "57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e",
