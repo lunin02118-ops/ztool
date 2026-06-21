@@ -4201,6 +4201,7 @@ public static class code
 		MemoryStream memoryStream = new MemoryStream(buf);
 		memoryStream.Position = 0L;
 		BinaryFormatter binaryFormatter = new BinaryFormatter();
+		binaryFormatter.Binder = new VTBinder();
 		object objectValue = RuntimeHelpers.GetObjectValue(binaryFormatter.Deserialize(memoryStream));
 		memoryStream.Close();
 		return objectValue;
@@ -4223,7 +4224,8 @@ public static class code
 
 	public static object DeserializeObject(string str)
 	{
-		IFormatter formatter = new BinaryFormatter();
+		BinaryFormatter formatter = new BinaryFormatter();
+		formatter.Binder = new VTBinder();
 		byte[] array = Convert.FromBase64String(str);
 		object result = null;
 		using (Stream stream = new MemoryStream(array, 0, array.Length))
