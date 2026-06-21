@@ -70,6 +70,12 @@ jobs:
       - name: Localization name gate (no CJK in tracked paths)
         run: python tools/check_no_cjk_filenames.py
 
+      - name: String invariants self-test (from-source gate)
+        run: python tools/check_source_string_invariants.py --self-test
+
+      - name: String invariants - from-source source tree
+        run: python tools/check_source_string_invariants.py --root client-src
+
       - name: BOM export pre-flight - root SWTools.settings
         run: python client-core/tools/check_bom_template.py SWTools.settings
 
