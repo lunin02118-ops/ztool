@@ -6,8 +6,8 @@
 
 ## Артефакты
 
-- Installer SHA256: `a18318f51e4f15a070dd3c6481384ff0ad19d262563c3b163f02bf036bde8eb6`
-- Installed `SWTools.exe` SHA256: `32c2f202fd6c272d9fce25e81baedcbbebafa89429467c3190b1af48b45610eb`
+- Installer SHA256: `b15676b042d522480fcfb2968f36bff139e5579654a26b77841365f3b1b54d59`
+- Installed `SWTools.exe` SHA256: `5a9c43e3559064ce3a2a913e3297d117ec0f9ecd4c9867b6367b86b256362397`
 - `SWTools.dll` SHA256: `1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705`
 - FileVersion/ProductVersion: `1.1.6`
 - Runtime path after clean install: `C:\Program Files\SWTools\SWTools.exe`
@@ -90,6 +90,43 @@ Evidence:
 - `manual-test-reports\2026-06-21-clean-install-1.1.6\30-connect-sw-uia-candidates-1.1.6.json`
 - `manual-test-reports\2026-06-21-clean-install-1.1.6\34-connect-second-split-summary-1.1.6.json`
 - `manual-test-reports\2026-06-21-clean-install-1.1.6\35-grid-and-export-targets-1.1.6.json`
+
+## Property Import Button Click
+
+Статус: PASS.
+
+- Проверен установленный runtime: `C:\Program Files\SWTools\SWTools.exe`.
+- SHA256 установленного exe:
+  `5a9c43e3559064ce3a2a913e3297d117ec0f9ecd4c9867b6367b86b256362397`.
+- Через WinForms/Reflection harness открыта реальная форма
+  `ZTool.Frmsetpropname` (`Задать имя свойства`).
+- До клика проверено состояние `MySWDM`: `isok=true`, `err=null`.
+- Выполнен реальный путь кнопки:
+  - `Button1.PerformClick()` для кнопки `Импорт...`;
+  - `AddPropertyNamesFromfile.PerformClick()` для пункта `Получить из файла`.
+- Результат: стандартный file dialog открылся, окно `Ошибка` не появилось.
+- Это закрывает конкретный регресс из лога:
+  `ISwDMClassFactory.GetApplication()` / `MySWDM..ctor()` больше не отдаёт
+  `System.Object` из `ZTool, PublicKeyToken=f08fc...` на установленном 1.1.6.
+
+Evidence summary:
+
+```json
+{
+  "exe": "C:\\Program Files\\SWTools\\SWTools.exe",
+  "exe_sha256": "5a9c43e3559064ce3a2a913e3297d117ec0f9ecd4c9867b6367b86b256362397",
+  "form_created": true,
+  "my_swdm_isok_before_click": true,
+  "my_swdm_err_before_click": null,
+  "import_button_text": "Импорт...",
+  "menu_item_text": "Получить из файла",
+  "import_button_perform_click": true,
+  "menu_item_perform_click": true,
+  "saw_open_file_dialog": true,
+  "saw_error_dialog": false,
+  "pass": true
+}
+```
 
 ## BOM/Excel Export
 
