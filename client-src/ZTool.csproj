@@ -40,6 +40,12 @@
     <EmbeddedResource Include="SWToolsLogo.png" LogicalName="SWToolsLogo.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\SWToolsARM.dll">
+      <Link>SWToolsARM.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="ExpandableGridView">
