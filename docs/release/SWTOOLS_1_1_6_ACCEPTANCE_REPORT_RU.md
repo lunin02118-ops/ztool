@@ -6,7 +6,7 @@
 
 ## Артефакты
 
-- Installer SHA256: `2e742abd6dd114848ff3b92e8a007d68b0bce97e15602889670948324374f712`
+- Installer SHA256: `26aabcfbb6dec8538e96076df79d235a2b729bb73f2519d8b0513a03f155ab13`
 - Installed `SWTools.exe` SHA256: `f418c7d81a735c309b4fb0709c8bd81333d95cfab9c7468aa2329add0a364e09`
 - `SWTools.dll` SHA256: `5dbf9986a4fbce5e6ab8fa4269705732c6ba891d1b27988e60e10c191ae290c1`
 - FileVersion/ProductVersion: `1.1.6`
