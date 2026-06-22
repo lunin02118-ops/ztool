@@ -20,6 +20,8 @@
     <Compile Include="src\SecurityCenter.cs" />
     <Compile Include="src\TCPClient.cs" />
     <Compile Include="src\GetRegistrycreatedtime.cs" />
+    <Compile Include="src\MySWDM.cs" />
+    <Compile Include="..\client-src\SolidWorks.Interop.swdocumentmgr\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
