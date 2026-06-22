@@ -283,8 +283,13 @@ internal static class Program
     private static bool IsSerializable(TypeDef type)
     {
         if (type.IsSerializable) return true;
-        var bt = type.BaseType;
-        return bt != null && bt.FullName == "System.Runtime.Serialization.ISerializable";
+        // ISerializable is an interface, so it lives in TypeDef.Interfaces, not
+        // BaseType (which is always the parent class). Walk the implemented
+        // interfaces so types that opt into custom serialization are protected.
+        foreach (var iface in type.Interfaces)
+            if (iface.Interface?.FullName == "System.Runtime.Serialization.ISerializable")
+                return true;
+        return false;
     }
 
     // "Clean" == a name a human could have written and the obfuscator would not

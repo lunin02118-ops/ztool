@@ -12,6 +12,7 @@ on:
   pull_request:
     paths:
       - "client-src/**"
+      - "client-src-addin/**"
       - "SWTools.settings"
       - "client-core/dist/SWTools.settings"
       - "client-core/tools/check_bom_template.py"
@@ -25,6 +26,7 @@ on:
       - "hardening/**"
     paths:
       - "client-src/**"
+      - "client-src-addin/**"
       - "SWTools.settings"
       - "client-core/dist/SWTools.settings"
       - "client-core/tools/check_bom_template.py"
