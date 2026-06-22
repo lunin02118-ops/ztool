@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "generated_for": "SWTools 1.1.6 P4 readiness",
+  "items": [
+    {
+      "name": "ZTool/SWTools runtime",
+      "paths": ["SWTools.exe", "SWTools.dll", "SWTools-base.exe", "help_ru.chm"],
+      "origin_class": "modified-third-party-runtime",
+      "license": "LEGAL-APPROVAL-PENDING",
+      "status": "review_required",
+      "exception_id": "LEGAL-PENDING-ZTOOL-RUNTIME",
+      "notes": "Право на modification/rekey/rebrand/distribution должно быть подтверждено до P4 GO."
+    },
+    {
+      "name": "Ribbon.dll",
+      "paths": ["Ribbon.dll", "client-src/ZTool.Ribbon.dll"],
+      "origin_class": "bundled-third-party-runtime",
+      "license": "UNKNOWN",
+      "status": "review_required",
+      "exception_id": "LEGAL-PENDING-RIBBON",
+      "notes": "Нужен точный upstream/source/license для bundled Ribbon runtime."
+    },
+    {
+      "name": "ExpandableGridView.dll",
+      "paths": ["ExpandableGridView.dll", "client-src/ZTool.ExpandableGridView.dll"],
+      "origin_class": "bundled-third-party-runtime",
+      "license": "UNKNOWN",
+      "status": "review_required",
+      "exception_id": "LEGAL-PENDING-EXPANDABLEGRIDVIEW",
+      "notes": "Нужен точный upstream/source/license."
+    },
+    {
+      "name": "ICSharpCode.SharpZipLib",
+      "paths": ["ICSharpCode.SharpZipLib.dll", "client-src/ZTool.ICSharpCode.SharpZipLib.dll"],
+      "origin_class": "third-party-library",
+      "license": "MIT",
+      "status": "allowed",
+      "exception_id": "",
+      "notes": "Notice required."
+    },
+    {
+      "name": "iTextSharp",
+      "paths": ["itextsharp.dll"],
+      "origin_class": "third-party-library",
+      "license": "AGPL-3.0-only",
+      "status": "review_required",
+      "exception_id": "LEGAL-PENDING-ITEXTSHARP",
+      "notes": "AGPL/commercial-license decision required before public/commercial distribution."
+    },
+    {
+      "name": "NPOI",
+      "paths": ["NPOI.dll", "NPOI.OOXML.dll", "NPOI.OpenXml4Net.dll", "NPOI.OpenXmlFormats.dll"],
+      "origin_class": "third-party-library",
+      "license": "Apache-2.0",
+      "status": "allowed",
+      "exception_id": "",
+      "notes": "Apache-2.0 notice required."
+    },
+    {
+      "name": "ZTool_rsa.dll",
+      "paths": ["client-core/ref/ZTool_rsa.dll", "client-src/ZTool.ZTool_rsa.dll"],
+      "origin_class": "bundled-third-party-runtime",
+      "license": "LEGAL-APPROVAL-PENDING",
+      "status": "review_required",
+      "exception_id": "LEGAL-PENDING-ZTOOL-RSA",
+      "notes": "Part of accepted runtime lineage; distribution rights must follow ZTool/SWTools approval."
+    },
+    {
+      "name": "pycryptodome",
+      "paths": ["license-server/pyproject.toml"],
+      "origin_class": "python-dependency",
+      "license": "BSD-2-Clause",
+      "status": "allowed",
+      "exception_id": "",
+      "notes": "Runtime dependency of license-server."
+    },
+    {
+      "name": "pytest / pytest-asyncio / pytest-cov / ruff / bandit",
+      "paths": ["license-server/pyproject.toml"],
+      "origin_class": "python-dev-dependency",
+      "license": "MIXED-OSS-DEV-ONLY",
+      "status": "allowed",
+      "exception_id": "",
+      "notes": "Development/test dependencies; not bundled into client runtime package."
+    }
+  ]
+}
