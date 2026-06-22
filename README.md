@@ -17,14 +17,23 @@
 
 ## Рекомендуемая связка для развёртывания
 
-Актуально для текущей release-candidate ветки 1.1.1. Offline/release
-gates ожидают следующие runtime-хеши; полный production GO требует живого
-прогона по [`docs/release/FULL_TEST_METHODOLOGY_RU.md`](docs/release/FULL_TEST_METHODOLOGY_RU.md):
+Актуально для текущей release-candidate ветки 1.1.6 (см. `VERSION`).
+Единый источник правды по принятым runtime-хешам —
+[`scripts/expected_release_hashes.json`](scripts/expected_release_hashes.json)
+(его читают `verify_release_package.ps1` и `sw_test_preflight.ps1`); полный
+production GO требует живого прогона по
+[`docs/release/FULL_TEST_METHODOLOGY_RU.md`](docs/release/FULL_TEST_METHODOLOGY_RU.md):
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
 | `SWTools.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | см. `scripts/expected_release_hashes.json` |
-| `SWTools.dll` | надстройка SolidWorks (`pmpguard2`)| `D053542…92EB9`        |
+| `SWTools.dll` | надстройка SolidWorks (`pmpguard2`)| см. `scripts/expected_release_hashes.json` |
+
+> Примечание: loose-бинари в корне (`SWTools.exe`/`SWTools.dll`) исторические и
+> могут отставать от принятого пакета `releases/1.1.6/`. Сверяйтесь с
+> `expected_release_hashes.json`. Переход на сборку из исходников (`client-src`,
+> `client-src-addin`) выводит loose-бинари из эксплуатации — см.
+> [`docs/audit/from-source-roadmap_RU.md`](docs/audit/from-source-roadmap_RU.md).
 
 Что внесено в PR #8:
 
