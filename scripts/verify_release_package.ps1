@@ -26,8 +26,8 @@ $ErrorActionPreference = 'Stop'
 # The fallback literals below must mirror that file; they only apply if it is missing.
 function Get-ExpectedHashes {
     $fallback = [ordered]@{
-        client_exe_sha256             = '081a98d1401ba376f81d9c5bbbb2b917a4f9e69202e1312ff4861e4c0cac8331'
-        addin_dll_sha256              = 'fcedb41902622c7e0dc452db4b9a6f1190638181e468c09ee72e378158353274'
+        client_exe_sha256             = 'f418c7d81a735c309b4fb0709c8bd81333d95cfab9c7468aa2329add0a364e09'
+        addin_dll_sha256              = '5dbf9986a4fbce5e6ab8fa4269705732c6ba891d1b27988e60e10c191ae290c1'
         ribbon_dll_sha256             = '57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e'
         expandable_grid_view_sha256   = '89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0'
         ztool_rsa_dll_sha256          = '274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90'

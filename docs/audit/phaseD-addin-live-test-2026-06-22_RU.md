@@ -29,7 +29,7 @@
 Факты:
 - Release runtime `releases\1.1.6\package\SWTools-1.1.6\runtime\SWTools.exe` сначала имел корректную версию `1.1.6`, но старый SHA256 `3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a` и не содержал прошитый IPC handshake token `9EF1CBF0BCFAD9F118EA30863B1874`.
 - На stale exe штатный handler `_ConnectSW_ExecuteEvent` стабильно давал `Подключение завершено, затрачено 0,1 сек, всего 0 поз.`
-- После замены exe на from-source сборку `1.1.6` SHA256 `b615bf0dd17eedec22227dcf8ebcdc67078b3d9e1de21a488806aa11a0f3787e` `sw_test_preflight.ps1` проходит без override по `expected_release_hashes.json`.
+- После замены exe на from-source сборку `1.1.6` SHA256 `f418c7d81a735c309b4fb0709c8bd81333d95cfab9c7468aa2329add0a364e09` `sw_test_preflight.ps1` проходит без override по `expected_release_hashes.json`.
 - Живой прогон: SolidWorks 2025, `TestModel\0614-A00.SLDASM`, `LoadAddIn=0`, `GetAddInObject('ZTool.SwAddin')=True`, запуск через `openZtool(0)`.
 - Результат после `Подключить SW`: UIA `rows=29 cols=40`; статус bar `Подключение завершено, затрачено 0,2 сек.`
 - Доказательства: `_local_artifacts\test-runs\release-1.1.6-ab-20260622\evidence\b328-after-connect.png`.

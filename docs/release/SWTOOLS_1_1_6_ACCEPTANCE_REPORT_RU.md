@@ -6,9 +6,9 @@
 
 ## Артефакты
 
-- Installer SHA256: `07419a463375b780e6fcea8b0d8b4f9a6e97a148ed5fc4d8e1198d8574978333`
-- Installed `SWTools.exe` SHA256: `081a98d1401ba376f81d9c5bbbb2b917a4f9e69202e1312ff4861e4c0cac8331`
-- `SWTools.dll` SHA256: `fcedb41902622c7e0dc452db4b9a6f1190638181e468c09ee72e378158353274`
+- Installer SHA256: `2d2fe0c9cc7807284a29dfaae2cdc8d7a8f7edf9b4d91f4da9f93ebc096b1e8c`
+- Installed `SWTools.exe` SHA256: `f418c7d81a735c309b4fb0709c8bd81333d95cfab9c7468aa2329add0a364e09`
+- `SWTools.dll` SHA256: `5dbf9986a4fbce5e6ab8fa4269705732c6ba891d1b27988e60e10c191ae290c1`
 - FileVersion/ProductVersion: `1.1.6`
 - Runtime path after clean install: `C:\Program Files\SWTools\SWTools.exe`
 - Expected hashes source of truth: `scripts/expected_release_hashes.json`, version `1.1.6`
