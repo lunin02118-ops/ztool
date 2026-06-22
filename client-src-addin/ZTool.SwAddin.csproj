@@ -100,4 +100,11 @@
     <EmbeddedResource Include="ZTool.flyGroupiconlist_24.png" LogicalName="ZTool.flyGroupiconlist_24.png" />
     <EmbeddedResource Include="ZTool.flyGroupiconlist_32.png" LogicalName="ZTool.flyGroupiconlist_32.png" />
   </ItemGroup>
+  <!-- The assembly's internal name must stay "ZTool" (COM identity + the add-in
+       launcher matches the exe by internal AssemblyName.Name). The shipped
+       product is "SWTools", so emit a byte-identical SWTools.dll next to the
+       build output; the release/installer scripts register this name. -->
+  <Target Name="BrandReleaseArtifact" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)SWTools$(TargetExt)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
