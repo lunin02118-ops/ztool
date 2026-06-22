@@ -1,14 +1,14 @@
 # SWTools 1.1.6 acceptance report
 
 Дата: 2026-06-21/22
-Ветка: `codex/full-acceptance-1.1.6`
+Ветка: `devin/1782091728-phaseD-addin-source`
 Пакет: `releases/1.1.6/SWTools-1.1.6-Setup.exe`
 
 ## Артефакты
 
-- Installer SHA256: `b15676b042d522480fcfb2968f36bff139e5579654a26b77841365f3b1b54d59`
-- Installed `SWTools.exe` SHA256: `5a9c43e3559064ce3a2a913e3297d117ec0f9ecd4c9867b6367b86b256362397`
-- `SWTools.dll` SHA256: `1828b2904d1266aebb531302e222d07ac87ba1c292966937be6a0b73ad254705`
+- Installer SHA256: `07419a463375b780e6fcea8b0d8b4f9a6e97a148ed5fc4d8e1198d8574978333`
+- Installed `SWTools.exe` SHA256: `081a98d1401ba376f81d9c5bbbb2b917a4f9e69202e1312ff4861e4c0cac8331`
+- `SWTools.dll` SHA256: `fcedb41902622c7e0dc452db4b9a6f1190638181e468c09ee72e378158353274`
 - FileVersion/ProductVersion: `1.1.6`
 - Runtime path after clean install: `C:\Program Files\SWTools\SWTools.exe`
 - Expected hashes source of truth: `scripts/expected_release_hashes.json`, version `1.1.6`

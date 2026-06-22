@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -52,10 +53,12 @@ public class CConfigMng
 				object objectValue = RuntimeHelpers.GetObjectValue(xmlSerializer.Deserialize(streamReader));
 				m_Config = (CConfigDO)objectValue;
 				streamReader.Close();
+				EnsureRequiredBomMappings();
 			}
 			else
 			{
 				m_Config.InitDefaults();
+				EnsureRequiredBomMappings();
 			}
 		}
 		catch (Exception ex)
@@ -65,6 +68,35 @@ public class CConfigMng
 			logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 			ProjectData.ClearProjectError();
 		}
+	}
+
+	private static void EnsureRequiredBomMappings()
+	{
+		if (m_Config.namemappinglist == null)
+		{
+			m_Config.namemappinglist = new List<columnnamemapping>();
+		}
+		EnsureBomMapping("Col_Weight", "Масса ед._кг", "МассаЕдКг");
+		EnsureBomMapping("Col_bound", "Габаритные размеры", "ГабаритныеРазмеры");
+	}
+
+	private static void EnsureBomMapping(string name, string text, string mappingname)
+	{
+		columnnamemapping columnnamemapping2 = m_Config.namemappinglist.Find((columnnamemapping s) => string.Equals(s.name ?? "", name, StringComparison.OrdinalIgnoreCase));
+		if (columnnamemapping2 == null)
+		{
+			m_Config.namemappinglist.Add(new columnnamemapping
+			{
+				name = name,
+				name2 = "",
+				text = text,
+				mappingname = mappingname
+			});
+			return;
+		}
+		columnnamemapping2.name2 = "";
+		columnnamemapping2.text = text;
+		columnnamemapping2.mappingname = mappingname;
 	}
 
 	public static void SaveConfig()

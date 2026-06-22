@@ -13772,6 +13772,22 @@ public class Frmmain : Form
 		}
 	}
 
+	private string ResolveBomTemplateMappingName(int columnIndex)
+	{
+		string headerText = DGV1.Columns[columnIndex].HeaderText;
+		string columnName = DGV1.Columns[columnIndex].Name;
+		columnnamemapping columnnamemapping2 = CConfigMng.Config.namemappinglist.Find((columnnamemapping s) => string.Equals(s.text ?? "", headerText ?? "", StringComparison.OrdinalIgnoreCase) && (string.Equals(s.name ?? "", columnName ?? "", StringComparison.OrdinalIgnoreCase) || string.Equals(s.name2 ?? "", columnName ?? "", StringComparison.OrdinalIgnoreCase)));
+		if (Information.IsNothing(columnnamemapping2))
+		{
+			columnnamemapping2 = CConfigMng.Config.namemappinglist.Find((columnnamemapping s) => string.Equals(s.name ?? "", columnName ?? "", StringComparison.OrdinalIgnoreCase) || string.Equals(s.name2 ?? "", columnName ?? "", StringComparison.OrdinalIgnoreCase));
+		}
+		if (!Information.IsNothing(columnnamemapping2) && Operators.CompareString(columnnamemapping2.mappingname, "", TextCompare: false) != 0)
+		{
+			return columnnamemapping2.mappingname;
+		}
+		return headerText;
+	}
+
 	public void ExportBom_xls1(bomsetting bst)
 	{
 		_Closure_0024__53 closure_0024__ = new _Closure_0024__53();
@@ -13849,26 +13865,7 @@ public class Frmmain : Form
 						closure_0024__2._0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_1A36_2F = closure_0024__;
 						if ((!DGV1.Columns[num5].Name.Contains("PropVal_") || !bst.Propertyvalue) && 0 == 0 && (!DGV1.Columns[num5].Name.Contains("PropResolvedVal_") || bst.Propertyvalue) && 0 == 0)
 						{
-							closure_0024__._0024VB_0024Local_coltitle = DGV1.Columns[num5].HeaderText;
-							closure_0024__2._0024VB_0024Local_colname = DGV1.Columns[num5].Name;
-							string text2 = "";
-							columnnamemapping columnnamemapping2 = null;
-							if (DGV1.Columns[num5].Name.Contains("PropVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__2._Lambda_0024__107);
-							}
-							else if (DGV1.Columns[num5].Name.Contains("PropResolvedVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__2._Lambda_0024__108);
-							}
-							if (!Information.IsNothing(columnnamemapping2))
-							{
-								text2 = columnnamemapping2.mappingname;
-							}
-							if (Operators.CompareString(text2, "", TextCompare: false) == 0)
-							{
-								text2 = closure_0024__._0024VB_0024Local_coltitle;
-							}
+							string text2 = ResolveBomTemplateMappingName(num5);
 							object instance2 = objectValue2;
 							object[] array3 = new object[1] { text2 };
 							object[] arguments2 = array3;
@@ -14219,26 +14216,7 @@ public class Frmmain : Form
 						closure_0024__3._0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_1AE0_4E = closure_0024__;
 						if ((!DGV1.Columns[num8].Name.Contains("PropVal_") || !bst.Propertyvalue) && 0 == 0 && (!DGV1.Columns[num8].Name.Contains("PropResolvedVal_") || bst.Propertyvalue) && 0 == 0)
 						{
-							closure_0024__._0024VB_0024Local_coltitle = DGV1.Columns[num8].HeaderText;
-							closure_0024__3._0024VB_0024Local_colname = DGV1.Columns[num8].Name;
-							string text2 = "";
-							columnnamemapping columnnamemapping2 = null;
-							if (DGV1.Columns[num8].Name.Contains("PropVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__3._Lambda_0024__110);
-							}
-							else if (DGV1.Columns[num8].Name.Contains("PropResolvedVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__3._Lambda_0024__111);
-							}
-							if (!Information.IsNothing(columnnamemapping2))
-							{
-								text2 = columnnamemapping2.mappingname;
-							}
-							if (Operators.CompareString(text2, "", TextCompare: false) == 0)
-							{
-								text2 = closure_0024__._0024VB_0024Local_coltitle;
-							}
+							string text2 = ResolveBomTemplateMappingName(num8);
 							object instance2 = objectValue2;
 							object[] array3 = new object[1] { text2 };
 							object[] arguments2 = array3;
@@ -14601,26 +14579,7 @@ public class Frmmain : Form
 						closure_0024__2._0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_1BB6_2F = closure_0024__;
 						if ((!DGV1.Columns[num3].Name.Contains("PropVal_") || !bst.Propertyvalue) && 0 == 0 && (!DGV1.Columns[num3].Name.Contains("PropResolvedVal_") || bst.Propertyvalue) && 0 == 0)
 						{
-							closure_0024__._0024VB_0024Local_coltitle = DGV1.Columns[num3].HeaderText;
-							closure_0024__2._0024VB_0024Local_colname = DGV1.Columns[num3].Name;
-							string text = "";
-							columnnamemapping columnnamemapping2 = null;
-							if (DGV1.Columns[num3].Name.Contains("PropVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__2._Lambda_0024__112);
-							}
-							else if (DGV1.Columns[num3].Name.Contains("PropResolvedVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__2._Lambda_0024__113);
-							}
-							if (!Information.IsNothing(columnnamemapping2))
-							{
-								text = columnnamemapping2.mappingname;
-							}
-							if (Operators.CompareString(text, "", TextCompare: false) == 0)
-							{
-								text = closure_0024__._0024VB_0024Local_coltitle;
-							}
+							string text = ResolveBomTemplateMappingName(num3);
 							IName name = workbook.GetName(text);
 							if (!Information.IsNothing(name))
 							{
@@ -14931,26 +14890,7 @@ public class Frmmain : Form
 						closure_0024__3._0024VB_0024NonLocal__0024VB_0024Closure_ClosureVariable_1C9C_4E = closure_0024__;
 						if ((!DGV1.Columns[num6].Name.Contains("PropVal_") || !bst.Propertyvalue) && 0 == 0 && (!DGV1.Columns[num6].Name.Contains("PropResolvedVal_") || bst.Propertyvalue) && 0 == 0)
 						{
-							closure_0024__._0024VB_0024Local_coltitle = DGV1.Columns[num6].HeaderText;
-							closure_0024__3._0024VB_0024Local_colname = DGV1.Columns[num6].Name;
-							string text = "";
-							columnnamemapping columnnamemapping2 = null;
-							if (DGV1.Columns[num6].Name.Contains("PropVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__3._Lambda_0024__115);
-							}
-							else if (DGV1.Columns[num6].Name.Contains("PropResolvedVal_"))
-							{
-								columnnamemapping2 = CConfigMng.Config.namemappinglist.Find(closure_0024__3._Lambda_0024__116);
-							}
-							if (!Information.IsNothing(columnnamemapping2))
-							{
-								text = columnnamemapping2.mappingname;
-							}
-							if (Operators.CompareString(text, "", TextCompare: false) == 0)
-							{
-								text = closure_0024__._0024VB_0024Local_coltitle;
-							}
+							string text = ResolveBomTemplateMappingName(num6);
 							IName name = workbook.GetName(text);
 							if (!Information.IsNothing(name))
 							{
