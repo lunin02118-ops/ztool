@@ -62,6 +62,7 @@
 | [`audit/prod-readiness-audit-followup-2026-06-15.md`](audit/prod-readiness-audit-followup-2026-06-15.md) | Follow-up по блокерам B-1/B-2 из production readiness audit | актуален |
 | [`audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md`](audit/refactor-production-readiness-gap-audit-2026-06-16_RU.md) | Gap-аудит: почему hardening не закрыл клиентский SolidWorks-паритет и цвет/запуск | актуален |
 | [`audit/current-state-audit-2026-06-17_RU.md`](audit/current-state-audit-2026-06-17_RU.md) | Текущий аудит ветки PR #33: offline gates, найденные фиксы, блокеры `FULL PASS` | актуален |
+| [`audit/from-source-build-audit-2026-06-22_RU.md`](audit/from-source-build-audit-2026-06-22_RU.md) | Аудит сборки из исходников @1.1.6: локальная перепроверка EXE+аддина, фиксы PR #62, дрейф документации/бинарей, остаточные риски | актуален |
 | [`../AUDIT_ru.md`](<../AUDIT_ru.md>) | Аудит дистрибутива и методика русификации | исторический (см. раздел «Актуализация PR #8» в конце) |
 | [`../AUDIT_REPORT_RU.md`](<../AUDIT_REPORT_RU.md>) | Отчёт аудита: русификация + сервер лицензий | исторический (см. раздел «Актуализация PR #8» в конце) |
 
