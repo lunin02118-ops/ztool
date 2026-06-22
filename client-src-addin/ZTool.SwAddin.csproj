@@ -7,9 +7,10 @@
          exactly as in the accepted binary, so COM interfaces resolve by GUID at runtime.
        * SolidWorksTools.dll is the SDK helper that ships with SolidWorks; it is referenced
          via $(SolidWorksToolsPath) (auto-derived from $(SolidWorksDir) on a SolidWorks
-         machine). When that assembly is unavailable (e.g. CI), pass the compile shim from
-         sdk-shim/ via /p:SolidWorksToolsPath=... — it is referenced with Private=false and
-         never copied next to the add-in. -->
+         machine). It is copied next to the add-in by default because RegAsm and SolidWorks
+         need the helper resolvable from the add-in folder, matching the accepted installed
+         runtime. When that assembly is unavailable (e.g. CI), pass the compile shim from
+         sdk-shim/ via /p:SolidWorksToolsPath=.... -->
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <AssemblyName>ZTool</AssemblyName>
@@ -28,6 +29,9 @@
   <!-- The SDK shim is its own assembly; never compile it into the add-in. -->
   <ItemGroup>
     <Compile Remove="sdk-shim/**/*.cs" />
+    <None Remove="sdk-shim/**" />
+    <Content Remove="sdk-shim/**" />
+    <EmbeddedResource Remove="sdk-shim/**" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -35,6 +39,7 @@
     <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != '' and Exists('$(_SolidWorksDirNormalized)\SolidWorksTools.dll')">$(_SolidWorksDirNormalized)\SolidWorksTools.dll</SolidWorksToolsPath>
     <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != '' and Exists('$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll')">$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
     <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != ''">$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
+    <CopySolidWorksTools Condition="'$(CopySolidWorksTools)' == ''">true</CopySolidWorksTools>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,7 +50,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="SolidWorksTools" Condition="'$(SolidWorksToolsPath)' != ''">
       <HintPath>$(SolidWorksToolsPath)</HintPath>
-      <Private>false</Private>
+      <Private>$(CopySolidWorksTools)</Private>
     </Reference>
   </ItemGroup>
 
