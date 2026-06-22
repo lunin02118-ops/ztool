@@ -48,6 +48,9 @@ jobs:
           dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
 
       - name: Verify produced add-in
+        # Windows PowerShell (desktop .NET Framework): ReflectionOnlyLoadFrom is
+        # not available under pwsh (.NET) on the runner.
+        shell: powershell
         run: |
           $dll = "client-src-addin/bin/Release/net48/ZTool.dll"
           if (-not (Test-Path $dll)) { throw "from-source add-in build did not produce $dll" }
