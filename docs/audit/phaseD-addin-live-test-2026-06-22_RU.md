@@ -24,26 +24,27 @@
 
 ## Живой S7
 
-Статус: **FAIL, merge blocker**.
+Статус: **PASS** после замены stale release exe.
 
 Факты:
-- Штатный handler `_ConnectSW_ExecuteEvent` был вызван через `Ctrl+L` на runtime с `GetDataOption=0`.
-- Результат в status bar: `Подключение завершено, затрачено 0,1 сек, всего 0 поз.`
-- Ожидаемый критерий S7: таблица должна заполниться компонентами тестовой сборки, не нулём.
-- Повтор с локальным `GetDataOption=1` не дал зачётного результата: второй процесс не обрабатывал `Ctrl+L`/Ribbon click устойчиво; UIA видел заголовки таблицы, но строк с компонентами не появилось.
+- Release runtime `releases\1.1.6\package\SWTools-1.1.6\runtime\SWTools.exe` сначала имел корректную версию `1.1.6`, но старый SHA256 `3a90a13ce358a99411f922ca3bffff44d79c75aacc7ea2b70cc55edc63c72e0a` и не содержал прошитый IPC handshake token `9EF1CBF0BCFAD9F118EA30863B1874`.
+- На stale exe штатный handler `_ConnectSW_ExecuteEvent` стабильно давал `Подключение завершено, затрачено 0,1 сек, всего 0 поз.`
+- После замены exe на from-source сборку `1.1.6` SHA256 `b328e8c36827f8900067c8c66d795a703783f2b8e0610cbf1743917d616673ce` `sw_test_preflight.ps1` проходит без override по `expected_release_hashes.json`.
+- Живой прогон: SolidWorks 2025, `TestModel\0614-A00.SLDASM`, `LoadAddIn=0`, `GetAddInObject('ZTool.SwAddin')=True`, запуск через `openZtool(0)`.
+- Результат после `Подключить SW`: UIA `rows=29 cols=40`; статус bar `Подключение завершено, затрачено 0,2 сек.`
+- Доказательства: `_local_artifacts\test-runs\release-1.1.6-ab-20260622\evidence\b328-after-connect.png`.
 
 ## Дополнительные замечания
 
 - При регистрации bare output `client-src-addin\bin\Release\net48\ZTool.dll` кнопка SolidWorks пыталась открыть `ZTool.exe` из той же папки и падала, потому что `ZTool.exe` там отсутствует. Для живого теста нужен coherent runtime: `ZTool.dll`, `ZTool.exe` и runtime DLL в одной папке.
-- Заголовок from-source `ZTool.exe` остаётся `SWTools 1.0(x64)`, что не соответствует текущей версии релиза 1.1.6.
+- Заголовок from-source/release exe после фикса: `SWTools 1.1.6(x64)`.
 - `RegisterFunction` from-source add-in пишет `Title=ZTool`, `Description=ZTool高效辅助工具` и default `0`; установленный runtime использует `SWTools` и default `1`. Это надо сверить до production merge.
 
 ## Решение
 
-PR #62 нельзя мержить как production-ready, пока S7 не даёт ненулевое заполнение таблицы на `0614-A00.SLDASM` и пока не закрыты S8/L3-L5.
+S7 закрыт на `0614-A00.SLDASM`. Перед production-ready merge остаются S8/L3-L5.
 
 Допускается мержить только после повторного живого прогона:
-- `Подключить SW` заполняет таблицу компонентами;
 - 8 режимов BOM проходят;
 - L3-L5 лицензирования проходят против боевого сервера;
 - версия UI соответствует release version.
