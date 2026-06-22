@@ -78,6 +78,12 @@ jobs:
       - name: String invariants - from-source source tree (client + add-in)
         run: python tools/check_source_string_invariants.py --root client-src --root client-src-addin
 
+      - name: IPC handshake parity self-test (EXE <-> add-in)
+        run: python tools/check_ipc_handshake_parity.py --self-test
+
+      - name: IPC handshake parity (EXE Getpkt pin == add-in expected token)
+        run: python tools/check_ipc_handshake_parity.py
+
       - name: BOM export pre-flight - root SWTools.settings
         run: python client-core/tools/check_bom_template.py SWTools.settings
 

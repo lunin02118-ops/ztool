@@ -3532,20 +3532,13 @@ public static class code
 
 	public static string Getpkt()
 	{
-		string result;
-		try
-		{
-			byte[] publicKeyToken = Assembly.GetEntryAssembly().GetName(copiedName: true).GetPublicKeyToken();
-			result = St2(GD52(BitConverter.ToString(publicKeyToken).Replace("-", ""), "天意。。。"));
-		}
-		catch (Exception ex)
-		{
-			ProjectData.SetProjectError(ex);
-			Exception ex2 = ex;
-			result = "";
-			ProjectData.ClearProjectError();
-		}
-		return result;
+		// IPC handshake token the SolidWorks add-in expects. PMPHandler.DefWndProc
+		// compares "ZToolRequest@001" + Getpkt() against its baked obf2(obf1()) value and
+		// silently drops the request on mismatch (connect then reports 0 positions). The
+		// genuine exe derived this from its strong-name public key token; the from-source
+		// build is not signed with the vendor key, so it is pinned to the value the add-in
+		// expects, exactly as the IL-reinjection build does (Localizer.PatchHandshakePkt).
+		return "9EF1CBF0BCFAD9F118EA30863B1874";
 	}
 
 	public static bool HasShell(string k)
