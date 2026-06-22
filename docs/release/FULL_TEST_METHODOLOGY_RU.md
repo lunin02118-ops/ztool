@@ -639,6 +639,41 @@ $r = New-Object WinRect+RECT
 | PROP-03 | Модель без свойства | Пустая ячейка, без ошибки/сдвига колонок |
 | PROP-04 | `Материал`/`Масса` как ссылки SW (`SW-Material@`,`SW-Mass@`) | Резолвятся в значения (resolved value) |
 
+#### PROP-NAMES-REGRESSION — список имён свойств
+
+Этот gate обязателен перед сборкой/пушем после любых правок `Frmsetpropname`,
+`Frmmain.insetpropcol`, импорта свойств, версии сборки или reinject/localizer
+пайплайна. Он ловит регрессию, когда после удаления свойств в таблице остаются
+старые `PropVal_*`/`PropResolvedVal_*`, ручные свойства не создают колонки или
+`Импорт... -> Получить из файла` перестаёт подтягивать имена из модели.
+
+Команды из корня репозитория:
+
+```powershell
+dotnet build -c Release client-core\tools\PropertyNamesRegression\PropertyNamesRegression.csproj
+client-core\tools\PropertyNamesRegression\bin\Release\net48\PropertyNamesRegression.exe client-core\out\SWTools.exe "D:\1602.00.003 Фланец.SLDPRT"
+```
+
+PASS-критерии:
+
+- `TITLE_SOURCE` остаётся `ZTool, Version=1.0.0.0, ... PublicKeyToken=f08fc7047657204e`.
+  Это совместимость с оригиналом; отображаемая версия SWTools поднимается через
+  `AssemblyFileVersion`/`AssemblyInformationalVersion`, а не через identity.
+- `CLEAR_PROP_COLUMNS=0`: после удаления всех свойств в настройке не осталось
+  property-колонок в main grid.
+- `MANUAL_PROP_COLUMNS` содержит обе ручные колонки `ManualRegression_A` и
+  `ManualRegression_B`.
+- `IMPORT_RUNSW=True`, `IMPORT_OPENDOC_OPENED=True`, `IMPORT_BACKEND_COUNT >= 40`.
+- `IMPORT_GRID_COUNT` совпадает с количеством импортированных имён, а среди них
+  есть `Разработал`, `Наименование`, `Обозначение`, `Масса`, `Проект_ФБ`,
+  `Материал_ФБ`.
+- Финальная строка `RESULT=PASS`.
+
+Автоматизация `OpenFileDialog` не засчитывается как gate: она нестабильна в
+WinForms/COM окружении. Скрипт проверяет бизнес-логику после выбора файла через
+реальный SolidWorks COM backend; живой smoke-клик `Импорт... -> Получить из
+файла` выполняется отдельно и подтверждается скрином/логом только как UI-smoke.
+
 #### PROP-RUNBOOK — свойства: read-back и запись
 
 Раздел состоит из двух разных gates. Их нельзя смешивать.

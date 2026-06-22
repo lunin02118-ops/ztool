@@ -1696,9 +1696,38 @@ internal static class Program
         return ((ushort)parts[0], (ushort)parts[1], (ushort)parts[2], (ushort)parts[3], display);
     }
 
+    // Application.ProductVersion reads managed version attributes, not the Win32
+    // VS_VERSIONINFO block shown in Explorer. Keep display metadata in sync with
+    // root VERSION, but DO NOT change AssemblyName.Version: many legacy resources,
+    // serialized WinForms objects and COM interop edges are bound to the original
+    // strong-name identity ZTool, Version=1.0.0.0.
+    private static int NormalizeManagedVersion(ModuleDefMD mod, string releaseVersion)
+    {
+        if (mod.Assembly == null) return 0;
+        int edits = 0;
+
+        var targetAttrs = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "AssemblyFileVersionAttribute",
+            "AssemblyInformationalVersionAttribute"
+        };
+        foreach (var ca in mod.Assembly.CustomAttributes)
+        {
+            var attrName = ca.AttributeType?.Name ?? "";
+            if (!targetAttrs.Contains(attrName) || ca.ConstructorArguments.Count == 0) continue;
+            var arg = ca.ConstructorArguments[0];
+            var oldValue = arg.Value?.ToString();
+            if (oldValue == releaseVersion) continue;
+            ca.ConstructorArguments[0] = new CAArgument(arg.Type, new UTF8String(releaseVersion));
+            edits++;
+        }
+
+        return edits;
+    }
+
     // In-place patch of the Win32 VS_VERSIONINFO so FileVersion/ProductVersion report
-    // the release train instead of the vendor's leftover 3.8.4.0. This does not touch
-    // the managed assembly identity/Application.ProductVersion used by licensing.
+    // the release train instead of the vendor's leftover 3.8.4.0. Managed metadata
+    // is normalized separately before mod.Write by NormalizeManagedVersion().
     private static int NormalizeWin32Version(string exePath, string releaseVersion)
     {
         var parsed = ParseFileVersion(releaseVersion);
@@ -2125,6 +2154,7 @@ internal static class Program
             int pktChanges = PatchHandshakePkt(mod);
             int nameForced = ForceAssemblyName(mod, "ZTool");
             int brandAttrChanges = SetBrandAttributes(mod);
+            int managedVerChanges = NormalizeManagedVersion(mod, releaseVersion);
             int brandStrChanges = RebrandClientStrings(mod);
             int attrChanges = LocalizeAssemblyAttributes(mod, map);
             int materialKeyChanges = RestoreMaterialPartKindKeys(mod);
@@ -2157,10 +2187,9 @@ internal static class Program
             wopts.Cor20HeaderOptions.Flags = curFlags | dnlib.DotNet.MD.ComImageFlags.StrongNameSigned;
             mod.Write(outExe, wopts);
             // dnlib preserves the vendor's Win32 VS_VERSIONINFO (FileVersion/ProductVersion = 3.8.4.0,
-            // shown by Explorer / FileVersionInfo). The activation key is derived from the *managed*
-            // Application.ProductVersion (="1.0"), not this resource, so 3.8.4 is cosmetic only.
+            // shown by Explorer / FileVersionInfo), so normalize that resource after writing.
             int win32Ver = NormalizeWin32Version(outExe, releaseVersion);
-            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, dup-popup guards={dupPopupChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped}, win32-icon={win32IconChanges}, form-icons={formIconChanges}, brand-icon={brandIconChanges} -> {outExe}");
+            Console.WriteLine($"localized: ldstr replaced={replaced}, vendor ldstr blanked={blanked}, resource strings replaced={resReplaced}, max-qr edits={maxQrChanges}, frmrg edits={frmRgChanges}, about-title edits={aboutTitleChanges}, update edits={updateChanges}, handshake-pkt edits={pktChanges}, asm-name-forced={nameForced}, brand-attrs={brandAttrChanges}, managed-ver edits={managedVerChanges}, brand-strings={brandStrChanges}, attr strings={attrChanges}, material-key edits={materialKeyChanges}, split-delete edits={splitDeleteChanges}, bom-mapping edits={bomMappingChanges}, dup-popup guards={dupPopupChanges}, ui-text edits={uiTextChanges}, dialog-layout edits={dialogLayoutChanges}, about-box edits={aboutBoxChanges}, verify edits={verifyChanges}, win32-ver edits={win32Ver}, win32-brand edits={win32Brand}, strongname-stripped={snStripped}, win32-icon={win32IconChanges}, form-icons={formIconChanges}, brand-icon={brandIconChanges} -> {outExe}");
             if (unmatched.Count > 0)
             {
                 Console.WriteLine($"WARNING: {unmatched.Count} translatable Chinese ldstr have NO RU entry (still visible!):");

@@ -267,7 +267,6 @@ internal static class Program
             foreach (var sm in st.Methods)
             {
                 if (sm.Body == null || !sm.HasBody) { skipped++; continue; }   // extern / pinvoke / abstract
-                if (simple == "MySWDM" && sm.Name == ".ctor") { skipped++; continue; } // keep Document Manager initialization from the target exe
                 if (listOnly) { Console.WriteLine($"  {st.Name}::{sm.Name}"); continue; }
                 if (methodFilter != null && !methodFilter.Contains(sm.Name.String)) continue;
                 if (methodExclude.Contains(sm.Name.String)) continue;

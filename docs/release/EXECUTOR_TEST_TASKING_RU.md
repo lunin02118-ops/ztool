@@ -31,10 +31,15 @@ python tools/check_no_cjk_filenames.py
 python client-core/tools/check_bom_template.py SWTools.settings
 python client-core/tools/check_bom_template.py client-core/dist/SWTools.settings
 python tools/bom_export_assert.py --self-test
+dotnet build -c Release client-core\tools\PropertyNamesRegression\PropertyNamesRegression.csproj
+client-core\tools\PropertyNamesRegression\bin\Release\net48\PropertyNamesRegression.exe client-core\out\SWTools.exe "D:\1602.00.003 Фланец.SLDPRT"
 python -m pytest license-server -q
 python tools/secret_scan.py
 ```
 Записать `ProductName`/`ProductVersion` собранного exe (ожидается `SWTools` / `1.0`).
+Для `PropertyNamesRegression` обязательны `CLEAR_PROP_COLUMNS=0`,
+`IMPORT_BACKEND_COUNT >= 40` и финальный `RESULT=PASS`; это проверяет очистку
+имён свойств, ручное добавление и импорт из модели.
 
 ## 3. Живой сквозной прогон — строго по runbook
 Идти по `docs/release/BOEVOY_E2E_TEST_RUNBOOK_RU.md`, **Этапы 0–10**, критерии PASS/FAIL по
