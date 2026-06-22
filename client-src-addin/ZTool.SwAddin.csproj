@@ -31,7 +31,10 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(SolidWorksDir)' != ''">$(SolidWorksDir)api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
+    <_SolidWorksDirNormalized Condition="'$(SolidWorksDir)' != ''">$([System.IO.Path]::GetFullPath('$(SolidWorksDir)'))</_SolidWorksDirNormalized>
+    <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != '' and Exists('$(_SolidWorksDirNormalized)\SolidWorksTools.dll')">$(_SolidWorksDirNormalized)\SolidWorksTools.dll</SolidWorksToolsPath>
+    <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != '' and Exists('$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll')">$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
+    <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(_SolidWorksDirNormalized)' != ''">$(_SolidWorksDirNormalized)\api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
   </PropertyGroup>
 
   <ItemGroup>
