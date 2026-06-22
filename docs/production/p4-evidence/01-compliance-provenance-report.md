@@ -21,7 +21,8 @@ Application source code не менялся.
 | `pwsh -NoProfile -File scripts/generate_sbom.ps1 -OutputDir artifacts` | PASS, generated CycloneDX + SPDX |
 | `pwsh -NoProfile -File scripts/check_license_policy.ps1` | PASS with 5 review-required P4 blockers |
 | `pwsh -NoProfile -File scripts/generate_binary_provenance.ps1 -OutputPath artifacts/binary-provenance.md -JsonOutput artifacts/binary-provenance.json` | PASS |
-| `pwsh -NoProfile -File scripts/verify_binary_provenance.ps1` | PASS with warnings for non-authoritative root binaries and missing release package |
+| `pwsh -NoProfile -File scripts/verify_binary_provenance.ps1 -ProvenancePath artifacts/binary-provenance.md` | PASS with warnings for non-authoritative root binaries and missing release package |
+| `pwsh -NoProfile -File scripts/verify_binary_provenance.ps1 -ProvenancePath docs/audit/BINARY_PROVENANCE_RU.md` | PASS with warnings for non-authoritative root binaries and missing release package |
 | `pwsh -NoProfile -File scripts/check_license_backend.ps1 -JsonOut artifacts/license-backend.json` | PASS, repo default backend `sqlite` |
 
 ## Findings closed
