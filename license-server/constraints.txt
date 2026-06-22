@@ -1,0 +1,13 @@
+# Direct dependency constraints for license-server CI/tooling.
+#
+# Update deliberately in a dedicated PR after running:
+#   python -m pip install -e ".[dev]" -c constraints.txt
+#   python -m pip_audit -r requirements.lock --strict --progress-spinner off
+pycryptodome==3.23.0
+pytest==8.3.3
+pytest-asyncio==0.24.0
+pytest-cov==7.1.0
+coverage==7.14.1
+ruff==0.15.13
+bandit==1.9.4
+pip-audit==2.10.1

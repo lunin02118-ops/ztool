@@ -20,6 +20,7 @@ from .crypto.aes_security_center import decrypt_message_body
 from .protocol.framing import FrameParser, build_frame
 from .protocol.framing import ProtocolError
 from .protocol.dispatcher import REQUEST_SENDTYPES, Sendtype, Status, Result, status_to_result
+from .rate_limit import FixedWindowRateLimiter
 from .license_blob import (
     generate_license_blob,
     gd51,
@@ -45,6 +46,12 @@ class LicenseServer:
         self._key_provider = KeyProvider.from_config(config)
         self._private_key = self._load_private_key()
         self._public_key = self._load_public_key()
+        self._rate_limiter = FixedWindowRateLimiter(
+            enabled=config.rate_limit_enabled,
+            max_requests=config.rate_limit_max_requests,
+            window_seconds=config.rate_limit_window_seconds,
+            max_keys=config.rate_limit_max_keys,
+        )
         logger.info("License server initialized (port=%d)", config.port)
 
     def _load_private_key(self) -> str:
@@ -103,6 +110,9 @@ class LicenseServer:
 
                 parser.feed(data)
                 for sendtype, body_bytes in parser.parse_all():
+                    client_ip = addr[0] if addr else ""
+                    if not self._allow_request(client_ip, sendtype):
+                        return
                     frames_seen += 1
                     if frames_seen > self.config.max_frames_per_connection:
                         logger.warning(
@@ -114,7 +124,7 @@ class LicenseServer:
                     response = await self._process_message(
                         sendtype,
                         body_bytes,
-                        client_ip=addr[0] if addr else "",
+                        client_ip=client_ip,
                     )
                     if response is not None:
                         writer.write(response)
@@ -132,6 +142,29 @@ class LicenseServer:
             writer.close()
             await writer.wait_closed()
             logger.info("Connection closed: %s", addr)
+
+    def _allow_request(self, client_ip: str, sendtype: int) -> bool:
+        decision = self._rate_limiter.check(client_ip or "-")
+        if decision.allowed:
+            if decision.remaining == 0:
+                logger.info(
+                    "rate_limit event ip=%s sendtype=%d result=allowed remaining=0 "
+                    "reset_after=%.3f",
+                    client_ip or "-",
+                    sendtype,
+                    decision.reset_after_seconds,
+                )
+            return True
+        logger.warning(
+            "rate_limit event ip=%s sendtype=%d result=limited retry_after=%.3f "
+            "window=%.3f max_requests=%d",
+            client_ip or "-",
+            sendtype,
+            decision.retry_after_seconds,
+            self.config.rate_limit_window_seconds,
+            self.config.rate_limit_max_requests,
+        )
+        return False
 
     async def _process_message(self, sendtype: int, body_bytes: bytes,
                                client_ip: str = "") -> bytes:
@@ -602,6 +635,13 @@ async def main():
     )
     parser.add_argument('--read-timeout-seconds', type=float, default=None, help='Partial-frame read timeout')
     parser.add_argument('--idle-timeout-seconds', type=float, default=None, help='Idle connection timeout')
+    parser.add_argument('--disable-rate-limit', action='store_true', help='Disable in-process rate limiter')
+    parser.add_argument('--rate-limit-max-requests', type=int, default=None,
+                        help='Maximum requests per client IP per rate-limit window')
+    parser.add_argument('--rate-limit-window-seconds', type=float, default=None,
+                        help='Rate-limit fixed window length')
+    parser.add_argument('--rate-limit-max-keys', type=int, default=None,
+                        help='Maximum tracked rate-limit client keys')
     parser.add_argument('--pending-activation-ttl-seconds', type=int, default=None,
                         help='Pending activation TTL')
     parser.add_argument('--pending-transfer-ttl-seconds', type=int, default=None,
@@ -641,6 +681,14 @@ async def main():
         config.read_timeout_seconds = args.read_timeout_seconds
     if args.idle_timeout_seconds is not None:
         config.idle_timeout_seconds = args.idle_timeout_seconds
+    if args.disable_rate_limit:
+        config.rate_limit_enabled = False
+    if args.rate_limit_max_requests is not None:
+        config.rate_limit_max_requests = args.rate_limit_max_requests
+    if args.rate_limit_window_seconds is not None:
+        config.rate_limit_window_seconds = args.rate_limit_window_seconds
+    if args.rate_limit_max_keys is not None:
+        config.rate_limit_max_keys = args.rate_limit_max_keys
     if args.pending_activation_ttl_seconds is not None:
         config.pending_activation_ttl_seconds = args.pending_activation_ttl_seconds
     if args.pending_transfer_ttl_seconds is not None:

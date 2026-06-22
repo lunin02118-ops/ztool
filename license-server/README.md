@@ -43,6 +43,10 @@ export SWTOOLS_MAX_BODY_SIZE=2097152
 export SWTOOLS_MAX_FRAMES_PER_CONNECTION=16
 export SWTOOLS_READ_TIMEOUT_SECONDS=10
 export SWTOOLS_IDLE_TIMEOUT_SECONDS=30
+export SWTOOLS_RATE_LIMIT_ENABLED=1
+export SWTOOLS_RATE_LIMIT_MAX_REQUESTS=120
+export SWTOOLS_RATE_LIMIT_WINDOW_SECONDS=60
+export SWTOOLS_RATE_LIMIT_MAX_KEYS=10000
 export SWTOOLS_PENDING_ACTIVATION_TTL_SECONDS=600
 export SWTOOLS_PENDING_TRANSFER_TTL_SECONDS=600
 python -m swtools_license_server.server
@@ -72,7 +76,10 @@ python -m swtools_license_server.cli keygen --dir /etc/swtools-license
 
 ## TCP protocol limits
 
-Сервер fail-closed обрабатывает malformed/oversized кадры:
+Сервер fail-closed обрабатывает malformed/oversized кадры и имеет
+in-process rate limiter. Firewall/fail2ban остаются обязательными для
+public internet deployment; limiter внутри процесса защищает CPU/SQLite от
+коротких bursts и ошибок perimeter-конфигурации.
 
 - `SWTOOLS_MAX_BODY_SIZE` — максимум тела запроса, по умолчанию `2097152`.
 - `SWTOOLS_MAX_FRAMES_PER_CONNECTION` — максимум кадров на одно TCP-соединение,
@@ -81,9 +88,17 @@ python -m swtools_license_server.cli keygen --dir /etc/swtools-license
   кадра, по умолчанию `10`.
 - `SWTOOLS_IDLE_TIMEOUT_SECONDS` — тайм-аут простоя соединения без данных, по
   умолчанию `30`.
+- `SWTOOLS_RATE_LIMIT_ENABLED` — включает in-process limiter, по умолчанию `1`.
+- `SWTOOLS_RATE_LIMIT_MAX_REQUESTS` — максимум распознанных request frames на
+  один client IP за окно, по умолчанию `120`.
+- `SWTOOLS_RATE_LIMIT_WINDOW_SECONDS` — fixed-window interval, по умолчанию `60`.
+- `SWTOOLS_RATE_LIMIT_MAX_KEYS` — максимум tracked client keys в памяти, по
+  умолчанию `10000`.
 
 Отрицательная длина, неизвестный `sendtype`, тело больше лимита и переполнение
 буфера закрывают соединение без stack trace для клиента.
+При превышении rate limit соединение закрывается без protocol response, а в log
+пишется safe event `rate_limit event ... result=limited` без payload/ключей.
 
 ## Database hardening
 
@@ -123,6 +138,14 @@ python -m swtools_license_server.cli --db /var/lib/swtools-license-server/licens
   backup --out /var/backups/swtools-license-server/licenses-YYYYMMDD.db
 python -m swtools_license_server.cli verify-backup \
   /var/backups/swtools-license-server/licenses-YYYYMMDD.db
+```
+
+Runtime dependency audit для production dependency lock:
+
+```bash
+python -m pip install -e ".[dev]" -c constraints.txt
+python -m pip_audit -r requirements.txt --strict --progress-spinner off
+osv-scanner scan -L requirements.txt
 ```
 
 Примеры production deployment лежат в `deploy/`:
