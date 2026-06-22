@@ -14,6 +14,8 @@ internal static class AddinBrandPatch
     private const string NewDescription = "SWTools — вспомогательные инструменты";
     private const string LegacyAttributeDescription = "ZTool高效辅助工具";
     private const string NewAttributeDescription = "SWTools SolidWorks Add-in";
+    private const string ExpectedAssemblyName = "ZTool";
+    private const string ExpectedGuid = "59959dfa-3229-4b86-852e-52abf2bdb8c0";
 
     private static ModuleDefinition Read(string path)
     {
@@ -122,6 +124,31 @@ internal static class AddinBrandPatch
             .FirstOrDefault();
     }
 
+    private static bool HasAttribute(ICustomAttributeProvider provider, string attributeFullName)
+    {
+        return provider.HasCustomAttributes &&
+            provider.CustomAttributes.Any(a => a.AttributeType.FullName == attributeFullName);
+    }
+
+    private static bool HasComVisible(ICustomAttributeProvider provider, bool expected)
+    {
+        if (!provider.HasCustomAttributes) return false;
+        return provider.CustomAttributes.Any(a =>
+            a.AttributeType.FullName == "System.Runtime.InteropServices.ComVisibleAttribute" &&
+            a.ConstructorArguments.Count == 1 &&
+            a.ConstructorArguments[0].Value is bool value &&
+            value == expected);
+    }
+
+    private static string GetGuid(TypeDefinition type)
+    {
+        return type.CustomAttributes
+            .Where(a => a.AttributeType.FullName == "System.Runtime.InteropServices.GuidAttribute")
+            .Where(a => a.ConstructorArguments.Count == 1)
+            .Select(a => (a.ConstructorArguments[0].Value as string)?.ToLowerInvariant())
+            .FirstOrDefault();
+    }
+
     private static int InspectOrVerify(ModuleDefinition mod, bool verify)
     {
         var type = FindSwAddin(mod);
@@ -138,9 +165,21 @@ internal static class AddinBrandPatch
         int addinOld = CountLdstr(addin, OldBrand);
         int addinNew = CountLdstr(addin, NewBrand);
         int openZtoolInternalLookup = CountLdstr(openZtool, OldBrand);
+        string assemblyName = mod.Assembly.Name.Name;
+        string guid = GetGuid(type);
+        bool assemblyComVisible = HasComVisible(mod.Assembly, expected: true);
+        bool typeComVisible = !HasAttribute(type, "System.Runtime.InteropServices.ComVisibleAttribute") ||
+            HasComVisible(type, expected: true);
+        bool implementsSwAddin = type.Interfaces.Any(i => i.InterfaceType.FullName == "SolidWorks.Interop.swpublished.ISwAddin");
+        bool hasComRegister = type.Methods.Any(m => HasAttribute(m, "System.Runtime.InteropServices.ComRegisterFunctionAttribute"));
+        bool hasComUnregister = type.Methods.Any(m => HasAttribute(m, "System.Runtime.InteropServices.ComUnregisterFunctionAttribute"));
 
+        Console.WriteLine($"AssemblyName={assemblyName}");
         Console.WriteLine($"SwAddinAttribute.Title={attrTitle}");
         Console.WriteLine($"SwAddinAttribute.Description={attrDescription}");
+        Console.WriteLine($"Guid={guid}");
+        Console.WriteLine($"ComVisible assembly={assemblyComVisible}, type={typeComVisible}");
+        Console.WriteLine($"ISwAddin={implementsSwAddin}, ComRegister={hasComRegister}, ComUnregister={hasComUnregister}");
         Console.WriteLine($"AddCommandMgr ldstr {OldBrand}={addCommandOld}, {NewBrand}={addCommandNew}, oldDescription={addCommandOldDescription}");
         Console.WriteLine($"Addin ldstr {OldBrand}={addinOld}, {NewBrand}={addinNew}");
         Console.WriteLine($"openZtool internal assembly lookup {OldBrand}={openZtoolInternalLookup}");
@@ -154,6 +193,13 @@ internal static class AddinBrandPatch
             if (!ok) problems++;
         }
 
+        Check(assemblyName == ExpectedAssemblyName, "internal assembly name stays ZTool");
+        Check(guid == ExpectedGuid, "ZTool.SwAddin [Guid] is stable");
+        Check(assemblyComVisible, "assembly is [ComVisible(true)]");
+        Check(typeComVisible, "ZTool.SwAddin is COM-visible");
+        Check(implementsSwAddin, "ZTool.SwAddin implements ISwAddin");
+        Check(hasComRegister, "ZTool.SwAddin has [ComRegisterFunction]");
+        Check(hasComUnregister, "ZTool.SwAddin has [ComUnregisterFunction]");
         Check(attrTitle == NewBrand, "SwAddinAttribute.Title is SWTools");
         Check(!string.IsNullOrWhiteSpace(attrDescription) && attrDescription.Contains(NewBrand) && !attrDescription.Contains(OldBrand),
             "SwAddinAttribute.Description is rebranded");
@@ -202,7 +248,7 @@ internal static class AddinBrandPatch
             Console.WriteLine("nothing changed; input may already be patched");
         }
 
-        mod.Write(args[2], new WriterParameters());
+        mod.Write(args[2], new WriterParameters { DeterministicMvid = true });
         Console.WriteLine($"WROTE {args[2]} (changed={changed})");
         return 0;
     }

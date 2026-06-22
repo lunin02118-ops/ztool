@@ -1,29 +1,7 @@
-name: client-core-windows
+name: client-core-windows-legacy-reinjection
 
 on:
-  pull_request:
-    paths:
-      - "client-core/**"
-      - "localization/**"
-      - "docs/localization/**"
-      - "build_ru_bom_template.py"
-      - "BOM表模板/**"
-      - "SWTools-base.exe"
-      - "SWTools.exe"
-      - ".github/workflows/client-core-windows.yml"
-  push:
-    branches:
-      - main
-      - "hardening/**"
-    paths:
-      - "client-core/**"
-      - "localization/**"
-      - "docs/localization/**"
-      - "build_ru_bom_template.py"
-      - "BOM表模板/**"
-      - "SWTools-base.exe"
-      - "SWTools.exe"
-      - ".github/workflows/client-core-windows.yml"
+  workflow_dispatch:
 
 jobs:
   build:

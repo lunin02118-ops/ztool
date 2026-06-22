@@ -25,10 +25,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.0.x
+            10.0.x
 
       - name: Build from-source client (Release)
-        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
+        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false -p:ContinuousIntegrationBuild=true
 
       - name: Verify produced exe
         run: |

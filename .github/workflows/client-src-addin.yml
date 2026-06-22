@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.0.x
+            10.0.x
 
       - uses: actions/setup-python@v5
         with:
@@ -40,12 +40,12 @@ jobs:
       # from-source compile gate only; the runtime artifact is built and validated
       # on a SolidWorks machine against the genuine SolidWorksTools.dll.
       - name: Build SolidWorksTools compile shim
-        run: dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release
+        run: dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release -p:ContinuousIntegrationBuild=true
 
       - name: Build from-source add-in (Release, NoPIA)
         run: |
           $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
-          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
+          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim" -p:ContinuousIntegrationBuild=true
 
       - name: Verify produced add-in
         # Windows PowerShell (desktop .NET Framework): ReflectionOnlyLoadFrom is

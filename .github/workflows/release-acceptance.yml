@@ -19,7 +19,11 @@ on:
       - "SolidWorksTemplates/**"
       - "Шаблоны спецификации/**"
       - "tools/**"
+      - "scripts/assert_from_source_hashes.ps1"
+      - "scripts/build_release_package.ps1"
+      - "scripts/expected_release_hashes.json"
       - ".github/workflows/release-acceptance.yml"
+      - "global.json"
   push:
     branches:
       - main
@@ -33,7 +37,11 @@ on:
       - "SolidWorksTemplates/**"
       - "Шаблоны спецификации/**"
       - "tools/**"
+      - "scripts/assert_from_source_hashes.ps1"
+      - "scripts/build_release_package.ps1"
+      - "scripts/expected_release_hashes.json"
       - ".github/workflows/release-acceptance.yml"
+      - "global.json"
 
 jobs:
   acceptance:
@@ -47,7 +55,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.0.x
+            10.0.x
 
       - uses: actions/setup-python@v5
         with:
@@ -58,7 +66,15 @@ jobs:
 
       # --- Artifact (from-source) ---
       - name: Build from-source client (Release)
-        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
+        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false -p:ContinuousIntegrationBuild=true
+
+      - name: Build SolidWorksTools compile shim
+        run: dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release -p:ContinuousIntegrationBuild=true
+
+      - name: Build from-source add-in (Release, NoPIA)
+        run: |
+          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
+          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim" -p:ContinuousIntegrationBuild=true
 
       - name: Assert produced artifact is branded SWTools
         run: |
@@ -67,6 +83,9 @@ jobs:
           $info = (Get-Item $exe).VersionInfo
           Write-Host ("Built {0}  ProductName='{1}'  ProductVersion='{2}'" -f $exe, $info.ProductName, $info.ProductVersion)
           if ($info.ProductName -ne "SWTools") { throw "ProductName is '$($info.ProductName)', expected 'SWTools'" }
+
+      - name: Reproducible from-source hash gate (exe + add-in == expected)
+        run: pwsh -NoProfile -File scripts/assert_from_source_hashes.ps1
 
       # --- Build-method-independent deterministic checks ---
       - name: Localization name gate (no CJK in tracked paths)

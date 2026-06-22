@@ -22,6 +22,10 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <RootNamespace />
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <Deterministic>true</Deterministic>
+    <PathMap>$(MSBuildProjectDirectory)=.</PathMap>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <!-- Decompiler-shaped source carries benign warnings; do not fail the build on them. -->
     <NoWarn>$(NoWarn);CS0108;CS0114;CS0628;CS0649;CS0067;CS0169;CS0219;CS1591;CS0612;CS0618;CS0660;CS0661;CS0465</NoWarn>
   </PropertyGroup>
