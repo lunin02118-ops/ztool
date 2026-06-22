@@ -390,6 +390,16 @@ password-protected activation проверяется отдельным ручн
 `Недопустимый регистрационный код`, а MySQL `activation_log` не содержит
 успешной попытки для этого ключа.
 
+Перед любыми действиями с ключами выполнить backend identity gate:
+
+```powershell
+pwsh -NoProfile -File scripts\check_license_backend.ps1 -RequireEnv
+```
+
+Если production environment заявляет `mysql`, а в репозитории нет MySQL
+adapter/config/tests, gate считается `FAIL / P4 BLOCKED`; нельзя вручную
+подменять это записью в локальный SQLite-файл.
+
 Для production clean-install gate использовать один и тот же test-key secret из
 `_local_artifacts\secrets\licenses\...` на весь прогон. Рекомендуемый helper:
 

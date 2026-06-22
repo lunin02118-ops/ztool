@@ -1,0 +1,117 @@
+name: compliance
+
+on:
+  pull_request:
+    paths:
+      - "docs/compliance/**"
+      - "docs/audit/BINARY_PROVENANCE_RU.md"
+      - "docs/audit/FROM_SOURCE_CLOSURE_RU.md"
+      - "docs/operations/PRODUCTION_BACKEND_RU.md"
+      - "docs/production/p4-evidence/**"
+      - "docs/release/FULL_TEST_METHODOLOGY_RU.md"
+      - "VERSION"
+      - "scripts/expected_release_hashes.json"
+      - "*.exe"
+      - "*.dll"
+      - "*.chm"
+      - "*.CHM"
+      - "*.settings"
+      - "SWTools.exe"
+      - "SWTools.dll"
+      - "SWTools-base.exe"
+      - "Ribbon.dll"
+      - "ExpandableGridView.dll"
+      - "help_ru.chm"
+      - "SWTools.settings"
+      - "releases/**"
+      - "client-src/*.dll"
+      - "client-core/ref/ZTool_rsa.dll"
+      - "client-core/ref/*.dll"
+      - "license-server/pyproject.toml"
+      - "license-server/swtools_license_server/db.py"
+      - "license-server/swtools_license_server/config.py"
+      - "scripts/generate_sbom.ps1"
+      - "scripts/check_license_policy.ps1"
+      - "scripts/generate_binary_provenance.ps1"
+      - "scripts/verify_binary_provenance.ps1"
+      - "scripts/check_license_backend.py"
+      - "scripts/check_license_backend.ps1"
+      - ".github/workflows/compliance.yml"
+  push:
+    branches:
+      - main
+      - "codex/**"
+      - "advisor/**"
+    paths:
+      - "docs/compliance/**"
+      - "docs/audit/BINARY_PROVENANCE_RU.md"
+      - "docs/audit/FROM_SOURCE_CLOSURE_RU.md"
+      - "docs/operations/PRODUCTION_BACKEND_RU.md"
+      - "docs/production/p4-evidence/**"
+      - "docs/release/FULL_TEST_METHODOLOGY_RU.md"
+      - "VERSION"
+      - "scripts/expected_release_hashes.json"
+      - "*.exe"
+      - "*.dll"
+      - "*.chm"
+      - "*.CHM"
+      - "*.settings"
+      - "SWTools.exe"
+      - "SWTools.dll"
+      - "SWTools-base.exe"
+      - "Ribbon.dll"
+      - "ExpandableGridView.dll"
+      - "help_ru.chm"
+      - "SWTools.settings"
+      - "releases/**"
+      - "client-src/*.dll"
+      - "client-core/ref/ZTool_rsa.dll"
+      - "client-core/ref/*.dll"
+      - "license-server/pyproject.toml"
+      - "license-server/swtools_license_server/db.py"
+      - "license-server/swtools_license_server/config.py"
+      - "scripts/generate_sbom.ps1"
+      - "scripts/check_license_policy.ps1"
+      - "scripts/generate_binary_provenance.ps1"
+      - "scripts/verify_binary_provenance.ps1"
+      - "scripts/check_license_backend.py"
+      - "scripts/check_license_backend.ps1"
+      - ".github/workflows/compliance.yml"
+
+jobs:
+  compliance:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate SBOM evidence
+        run: pwsh -NoProfile -File scripts/generate_sbom.ps1 -OutputDir artifacts
+
+      - name: License policy gate
+        run: pwsh -NoProfile -File scripts/check_license_policy.ps1
+
+      - name: Generate binary provenance evidence
+        run: pwsh -NoProfile -File scripts/generate_binary_provenance.ps1 -OutputPath artifacts/binary-provenance.md -JsonOutput artifacts/binary-provenance.json
+
+      - name: Generated binary provenance gate
+        run: pwsh -NoProfile -File scripts/verify_binary_provenance.ps1 -ProvenancePath artifacts/binary-provenance.md
+
+      - name: Committed binary provenance baseline gate
+        run: pwsh -NoProfile -File scripts/verify_binary_provenance.ps1 -ProvenancePath docs/audit/BINARY_PROVENANCE_RU.md
+
+      - name: License backend identity gate
+        run: pwsh -NoProfile -File scripts/check_license_backend.ps1 -JsonOut artifacts/license-backend.json
+
+      - name: Upload compliance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-evidence
+          path: artifacts/
+          if-no-files-found: error
