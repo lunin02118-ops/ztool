@@ -81,4 +81,14 @@
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Management" />
   </ItemGroup>
+  <!-- The assembly's internal name must stay "ZTool": the SolidWorks add-in
+       launcher (SwAddin.openZtool) picks the exe by internal AssemblyName.Name,
+       and the COM/registry identity depends on it. The shipped product is
+       "SWTools", so emit a byte-identical SWTools-named copy next to the build
+       output (the release/installer scripts ship this name). Renaming the file
+       does not change the assembly identity. -->
+  <Target Name="BrandReleaseArtifact" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)SWTools$(TargetExt)" SkipUnchangedFiles="true" />
+    <Copy Condition="Exists('$(TargetPath).config')" SourceFiles="$(TargetPath).config" DestinationFiles="$(TargetDir)SWTools$(TargetExt).config" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

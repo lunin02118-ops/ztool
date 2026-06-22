@@ -522,10 +522,12 @@ public class Frmmapping : Form
 						break;
 					}
 					closure_0024__ = new _Closure_0024__66(closure_0024__);
-					if (MyProject.Forms.Frmmain.DGV1.Columns[num3].Name.Contains("PropVal_"))
+					string columnName = MyProject.Forms.Frmmain.DGV1.Columns[num3].Name;
+					string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num3].HeaderText;
+					bool flag = columnName.StartsWith("Col_", StringComparison.OrdinalIgnoreCase) && !columnName.Equals("Col_Checkbox", StringComparison.OrdinalIgnoreCase) && !columnName.Equals("Col_NewFolder", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(headerText);
+					if (columnName.Contains("PropVal_") || flag)
 					{
-						string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num3].HeaderText;
-						closure_0024__._0024VB_0024Local_colname = MyProject.Forms.Frmmain.DGV1.Columns[num3].Name;
+						closure_0024__._0024VB_0024Local_colname = columnName;
 						string value = "";
 						int num6 = CConfigMng.Config.namemappinglist.FindIndex(closure_0024__._Lambda_0024__121);
 						if (num6 >= 0)

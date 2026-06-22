@@ -36,3 +36,14 @@ DPI：	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format 
 （x86）\\u001e\\u001c	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
 ）|*	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
 ；	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
+# --- Etap D: SolidWorks add-in (client-src-addin) recovered literals ---
+$图号$	format-fragment	rename template token (drawing $图$); default value of a rename field
+$属性名称$，表示写入自定义\\n%属性名称%，表示写入配置	format-fragment	REVIEW: token-usage hint text in rename dialog; planned RU translation
+$版本$	format-fragment	rename template token (revision $版$); default value of a rename field
+$零件名称$	semantic-key	REVIEW: addin-side consumer of the 零/Col_Extname key; rename jointly per roadmap 5.2
+((?<=\\\\s)[A-Za-z0-9\\\\u4e00-\\\\u9fa5]+$)|([A-Za-z0-9\\\\u4e00-\\\\u9fa5]+(?=\\\\]$|\\\\】$|\\\\)$|\\\\）$))|([\\\\u4e00-\\\\u9fa5][A-Za-z0-9\\\\u4e00-\\\\u9fa5]+$)	format-fragment	part-name parse regex (matches CJK range / fullwidth brackets)
+([A-HJ-NP-Z][0-9])(?=_|\\\\s|\\\\[|\\\\【|\\\\（|\\\\(|\\\\.+|[\\\\u4e00-\\\\u9fa5]|$)	format-fragment	part-code parse regex (matches CJK range / fullwidth brackets)
+<磁盘文件名>	format-fragment	split-config template placeholder (file/config name)
+<配置名称>	format-fragment	split-config template placeholder (file/config name)
+ZTool高效辅助工具	addin-title	REVIEW: SolidWorks Add-in Description in Add-in manager; planned rebrand, keep "ZTool"
+？	format-fragment	REVIEW: stray fullwidth question mark in RU MessageBox prompt; planned ASCII "?"

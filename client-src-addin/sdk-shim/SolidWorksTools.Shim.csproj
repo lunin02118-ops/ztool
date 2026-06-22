@@ -1,0 +1,15 @@
+<!-- Compile-time shim for the SolidWorks SDK helper assembly SolidWorksTools.dll.
+     Built only to let CI compile the recovered add-in without SolidWorks installed.
+     NOT a runtime artifact — see SolidWorksTools.Shim.cs for details. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SolidWorksTools</AssemblyName>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SolidWorksTools.Shim.cs" />
+  </ItemGroup>
+</Project>

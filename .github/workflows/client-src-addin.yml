@@ -1,0 +1,118 @@
+name: client-src-addin
+
+on:
+  pull_request:
+    paths:
+      - "client-src-addin/**"
+      - "tools/check_source_string_invariants.py"
+      - "tools/string_invariants/**"
+      - ".github/workflows/client-src-addin.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "client-src-addin/**"
+      - "tools/check_source_string_invariants.py"
+      - "tools/string_invariants/**"
+      - ".github/workflows/client-src-addin.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # SolidWorks is not installed on CI runners, so build the compile-time SDK
+      # shim (SolidWorksTools.dll) and point the add-in build at it. This is a
+      # from-source compile gate only; the runtime artifact is built and validated
+      # on a SolidWorks machine against the genuine SolidWorksTools.dll.
+      - name: Build SolidWorksTools compile shim
+        run: dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release
+
+      - name: Build from-source add-in (Release, NoPIA)
+        run: |
+          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
+          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
+
+      - name: Verify produced add-in
+        # Windows PowerShell (desktop .NET Framework): ReflectionOnlyLoadFrom is
+        # not available under pwsh (.NET) on the runner.
+        shell: powershell
+        run: |
+          $dll = "client-src-addin/bin/Release/net48/ZTool.dll"
+          if (-not (Test-Path $dll)) { throw "from-source add-in build did not produce $dll" }
+          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
+          # The add-in carries a [SwAddin(...)] attribute from SolidWorksTools, so
+          # reading its custom attributes under ReflectionOnly needs that dependency
+          # resolvable (the compile shim stands in for the genuine SDK assembly).
+          $onResolve = [System.ResolveEventHandler] {
+            param($s, $e)
+            if ($e.Name.Split(',')[0] -eq "SolidWorksTools") { return [System.Reflection.Assembly]::ReflectionOnlyLoadFrom($shim) }
+            return [System.Reflection.Assembly]::ReflectionOnlyLoad($e.Name)
+          }
+          [System.AppDomain]::CurrentDomain.add_ReflectionOnlyAssemblyResolve($onResolve)
+
+          $asm = [System.Reflection.Assembly]::ReflectionOnlyLoadFrom((Resolve-Path $dll).Path)
+          $name = $asm.GetName()
+          Write-Host ("Built {0}  Assembly='{1}'  Version='{2}'" -f $dll, $name.Name, $name.Version)
+          if ($name.Name -ne "ZTool") { throw "unexpected assembly name '$($name.Name)' (expected 'ZTool')" }
+          # NoPIA: the SolidWorks interop types must be embedded, so ZTool.dll must
+          # not carry a runtime reference to the interop assemblies.
+          $refs = $asm.GetReferencedAssemblies() | ForEach-Object { $_.Name }
+          $leaked = $refs | Where-Object { $_ -like "SolidWorks.Interop.*" }
+          if ($leaked) { throw "interop not embedded (NoPIA broken); ZTool.dll references: $($leaked -join ', ')" }
+          # The interop assemblies must not be deployed next to the add-in either.
+          $copied = Get-ChildItem "client-src-addin/bin/Release/net48" -Filter "SolidWorks.Interop.*.dll" -ErrorAction SilentlyContinue
+          if ($copied) { throw "interop assemblies were copied to output: $($copied.Name -join ', ')" }
+
+          # COM-loadability surface: this is what lets SolidWorks discover, register
+          # and load the add-in. Guard it so a refactor cannot silently drop it.
+          $asmComVisible = $false
+          foreach ($cad in $asm.GetCustomAttributesData()) {
+            if ($cad.AttributeType.FullName -eq "System.Runtime.InteropServices.ComVisibleAttribute") { $asmComVisible = [bool]$cad.ConstructorArguments[0].Value }
+          }
+          if (-not $asmComVisible) { throw "assembly is not [ComVisible(true)] - COM/SolidWorks cannot see the add-in" }
+
+          $expectedGuid = "59959dfa-3229-4b86-852e-52abf2bdb8c0"
+          $t = $asm.GetType("ZTool.SwAddin")
+          if ($null -eq $t) { throw "ZTool.SwAddin type not found in produced add-in" }
+          $guid = $null; $typeComVisible = $true
+          foreach ($cad in $t.GetCustomAttributesData()) {
+            switch ($cad.AttributeType.FullName) {
+              "System.Runtime.InteropServices.GuidAttribute"       { $guid = ([string]$cad.ConstructorArguments[0].Value).ToLower() }
+              "System.Runtime.InteropServices.ComVisibleAttribute" { $typeComVisible = [bool]$cad.ConstructorArguments[0].Value }
+            }
+          }
+          if ($guid -ne $expectedGuid) { throw "ZTool.SwAddin [Guid] is '$guid' (expected '$expectedGuid') - COM identity / SolidWorks registration would change" }
+          if (-not $typeComVisible) { throw "ZTool.SwAddin is not COM-visible" }
+
+          $ifaces = $t.GetInterfaces() | ForEach-Object { $_.FullName }
+          if ($ifaces -notcontains "SolidWorks.Interop.swpublished.ISwAddin") { throw "ZTool.SwAddin does not implement ISwAddin; SolidWorks would not load it" }
+
+          $flags = [System.Reflection.BindingFlags]"Public,NonPublic,Static,Instance"
+          $hasReg = $false; $hasUnreg = $false
+          foreach ($m in $t.GetMethods($flags)) {
+            foreach ($cad in $m.GetCustomAttributesData()) {
+              if ($cad.AttributeType.FullName -eq "System.Runtime.InteropServices.ComRegisterFunctionAttribute")   { $hasReg = $true }
+              if ($cad.AttributeType.FullName -eq "System.Runtime.InteropServices.ComUnregisterFunctionAttribute") { $hasUnreg = $true }
+            }
+          }
+          if (-not $hasReg)   { throw "no [ComRegisterFunction] in ZTool.SwAddin - RegAsm would not write the SolidWorks AddInsStartup keys" }
+          if (-not $hasUnreg) { throw "no [ComUnregisterFunction] in ZTool.SwAddin - RegAsm /unregister would not clean up" }
+          Write-Host ("COM add-in surface OK: ComVisible asm+type, Guid={0}, implements ISwAddin, Com(Un)RegisterFunction present" -f $guid)
+
+      - name: Source string invariants (client-src + client-src-addin)
+        run: python tools/check_source_string_invariants.py
