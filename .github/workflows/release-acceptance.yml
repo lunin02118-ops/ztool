@@ -73,8 +73,8 @@ jobs:
       - name: String invariants self-test (from-source gate)
         run: python tools/check_source_string_invariants.py --self-test
 
-      - name: String invariants - from-source source tree
-        run: python tools/check_source_string_invariants.py --root client-src
+      - name: String invariants - from-source source tree (client + add-in)
+        run: python tools/check_source_string_invariants.py --root client-src --root client-src-addin
 
       - name: BOM export pre-flight - root SWTools.settings
         run: python client-core/tools/check_bom_template.py SWTools.settings

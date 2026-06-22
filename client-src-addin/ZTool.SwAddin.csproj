@@ -1,0 +1,95 @@
+<!-- From-source build of the SolidWorks add-in (recovered in Этап D).
+     Produces ZTool.dll (the COM add-in, internal assembly name "ZTool"), the
+     last binary artifact of the client to be reconstructed from source.
+
+     SolidWorks dependencies:
+       * SolidWorks.Interop.* come from NuGet and are embedded (NoPIA / EmbedInteropTypes)
+         exactly as in the accepted binary, so COM interfaces resolve by GUID at runtime.
+       * SolidWorksTools.dll is the SDK helper that ships with SolidWorks; it is referenced
+         via $(SolidWorksToolsPath) (auto-derived from $(SolidWorksDir) on a SolidWorks
+         machine). When that assembly is unavailable (e.g. CI), pass the compile shim from
+         sdk-shim/ via /p:SolidWorksToolsPath=... — it is referenced with Private=false and
+         never copied next to the add-in. -->
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>ZTool</AssemblyName>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <RootNamespace />
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <!-- Decompiler-shaped source carries benign warnings; do not fail the build on them. -->
+    <NoWarn>$(NoWarn);CS0108;CS0114;CS0628;CS0649;CS0067;CS0169;CS0219;CS1591;CS0612;CS0618;CS0660;CS0661;CS0465</NoWarn>
+  </PropertyGroup>
+
+  <!-- The SDK shim is its own assembly; never compile it into the add-in. -->
+  <ItemGroup>
+    <Compile Remove="sdk-shim/**/*.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <SolidWorksToolsPath Condition="'$(SolidWorksToolsPath)' == '' and '$(SolidWorksDir)' != ''">$(SolidWorksDir)api\redist\SolidWorksTools.dll</SolidWorksToolsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="SolidWorksTools" Condition="'$(SolidWorksToolsPath)' != ''">
+      <HintPath>$(SolidWorksToolsPath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <!-- Resolve the interop packages but keep their assemblies out of compile/runtime
+         so we can re-add them below as embedded (NoPIA) references. -->
+    <PackageReference Include="SolidWorks.Interop.sldworks" Version="32.1.0" GeneratePathProperty="true" ExcludeAssets="compile;runtime" />
+    <PackageReference Include="SolidWorks.Interop.swconst" Version="32.1.0" GeneratePathProperty="true" ExcludeAssets="compile;runtime" />
+    <PackageReference Include="SolidWorks.Interop.swpublished" Version="32.1.0" GeneratePathProperty="true" ExcludeAssets="compile;runtime" />
+  </ItemGroup>
+
+  <!-- Embed the SolidWorks interop types (NoPIA), matching the accepted binary: the
+       produced ZTool.dll carries the COM facade types itself and binds to the installed
+       SolidWorks by interface GUID rather than to a specific PIA assembly version. -->
+  <ItemGroup>
+    <Reference Include="SolidWorks.Interop.sldworks">
+      <HintPath>$(PkgSolidWorks_Interop_sldworks)\lib\netstandard2.0\SolidWorks.Interop.sldworks.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="SolidWorks.Interop.swconst">
+      <HintPath>$(PkgSolidWorks_Interop_swconst)\lib\netstandard2.0\SolidWorks.Interop.swconst.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="SolidWorks.Interop.swpublished">
+      <HintPath>$(PkgSolidWorks_Interop_swpublished)\lib\netstandard2.0\SolidWorks.Interop.swpublished.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Toolbar / flyout icons: embedded with their original manifest names so the
+       add-in's BitmapHandler.CreateFileFromResourceBitmap(...) resolves them at runtime. -->
+  <ItemGroup>
+    <EmbeddedResource Include="ZTool.AddinIcon.bmp" LogicalName="ZTool.AddinIcon.bmp" />
+    <EmbeddedResource Include="ZTool.slddrw.png" LogicalName="ZTool.slddrw.png" />
+    <EmbeddedResource Include="ZTool.opened_folder_24.png" LogicalName="ZTool.opened_folder_24.png" />
+    <EmbeddedResource Include="ZTool.ToolbarSmall_16.bmp" LogicalName="ZTool.ToolbarSmall_16.bmp" />
+    <EmbeddedResource Include="ZTool.ToolbarLarge_24.bmp" LogicalName="ZTool.ToolbarLarge_24.bmp" />
+    <EmbeddedResource Include="ZTool.ToolbarLarge_32.bmp" LogicalName="ZTool.ToolbarLarge_32.bmp" />
+    <EmbeddedResource Include="ZTool.MainIconSmall_16.bmp" LogicalName="ZTool.MainIconSmall_16.bmp" />
+    <EmbeddedResource Include="ZTool.MainIconLarge_24.bmp" LogicalName="ZTool.MainIconLarge_24.bmp" />
+    <EmbeddedResource Include="ZTool.MainIconLarge_32.bmp" LogicalName="ZTool.MainIconLarge_32.bmp" />
+    <EmbeddedResource Include="ZTool.flyGroupicon_16.png" LogicalName="ZTool.flyGroupicon_16.png" />
+    <EmbeddedResource Include="ZTool.flyGroupicon_24.png" LogicalName="ZTool.flyGroupicon_24.png" />
+    <EmbeddedResource Include="ZTool.flyGroupicon_32.png" LogicalName="ZTool.flyGroupicon_32.png" />
+    <EmbeddedResource Include="ZTool.flyGroupiconlist_16.png" LogicalName="ZTool.flyGroupiconlist_16.png" />
+    <EmbeddedResource Include="ZTool.flyGroupiconlist_24.png" LogicalName="ZTool.flyGroupiconlist_24.png" />
+    <EmbeddedResource Include="ZTool.flyGroupiconlist_32.png" LogicalName="ZTool.flyGroupiconlist_32.png" />
+  </ItemGroup>
+</Project>

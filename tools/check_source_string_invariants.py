@@ -187,13 +187,22 @@ def evaluate(found, allowed, required):
     return failures, review
 
 
-def run(root):
+def run(roots):
+    if isinstance(roots, str):
+        roots = [roots]
     allowed = load_allowed(os.path.join(TSV_DIR, "source_allowed_han.tsv"))
     required = load_required(os.path.join(TSV_DIR, "source_required_keys.tsv"))
-    found = extract_cjk_literals(root)
+    # Scan every root and merge: the CJK allow-list invariant spans the whole
+    # from-source tree (EXE + addin), and the required crypto keys may live in
+    # any one of the roots, so required-keys is evaluated over the union.
+    found = {}
+    for root in roots:
+        for lit, files in extract_cjk_literals(root).items():
+            found.setdefault(lit, []).extend(files)
+    found = {k: sorted(set(v)) for k, v in found.items()}
     failures, review = evaluate(found, allowed, required)
 
-    print("from-source string invariants (root=%s)" % root)
+    print("from-source string invariants (root=%s)" % ", ".join(roots))
     print("  distinct CJK literals found : %d" % len(found))
     print("  allow-list entries          : %d" % len(allowed))
     print("  required crypto keys        : %d" % len(required))
@@ -278,12 +287,15 @@ def self_test():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="client-src")
+    ap.add_argument("--root", action="append", default=None,
+                    help="source root to scan (repeatable); "
+                         "defaults to client-src and client-src-addin")
     ap.add_argument("--self-test", action="store_true")
     args = ap.parse_args()
     if args.self_test:
         sys.exit(self_test())
-    sys.exit(run(args.root))
+    roots = args.root or ["client-src", "client-src-addin"]
+    sys.exit(run(roots))
 
 
 if __name__ == "__main__":

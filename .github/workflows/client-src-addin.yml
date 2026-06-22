@@ -1,0 +1,68 @@
+name: client-src-addin
+
+on:
+  pull_request:
+    paths:
+      - "client-src-addin/**"
+      - "tools/check_source_string_invariants.py"
+      - "tools/string_invariants/**"
+      - ".github/workflows/client-src-addin.yml"
+  push:
+    branches:
+      - main
+      - "hardening/**"
+    paths:
+      - "client-src-addin/**"
+      - "tools/check_source_string_invariants.py"
+      - "tools/string_invariants/**"
+      - ".github/workflows/client-src-addin.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # SolidWorks is not installed on CI runners, so build the compile-time SDK
+      # shim (SolidWorksTools.dll) and point the add-in build at it. This is a
+      # from-source compile gate only; the runtime artifact is built and validated
+      # on a SolidWorks machine against the genuine SolidWorksTools.dll.
+      - name: Build SolidWorksTools compile shim
+        run: dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release
+
+      - name: Build from-source add-in (Release, NoPIA)
+        run: |
+          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
+          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
+
+      - name: Verify produced add-in
+        run: |
+          $dll = "client-src-addin/bin/Release/net48/ZTool.dll"
+          if (-not (Test-Path $dll)) { throw "from-source add-in build did not produce $dll" }
+          $asm = [System.Reflection.Assembly]::ReflectionOnlyLoadFrom((Resolve-Path $dll).Path)
+          $name = $asm.GetName()
+          Write-Host ("Built {0}  Assembly='{1}'  Version='{2}'" -f $dll, $name.Name, $name.Version)
+          if ($name.Name -ne "ZTool") { throw "unexpected assembly name '$($name.Name)' (expected 'ZTool')" }
+          # NoPIA: the SolidWorks interop types must be embedded, so ZTool.dll must
+          # not carry a runtime reference to the interop assemblies.
+          $refs = $asm.GetReferencedAssemblies() | ForEach-Object { $_.Name }
+          $leaked = $refs | Where-Object { $_ -like "SolidWorks.Interop.*" }
+          if ($leaked) { throw "interop not embedded (NoPIA broken); ZTool.dll references: $($leaked -join ', ')" }
+          # The interop assemblies must not be deployed next to the add-in either.
+          $copied = Get-ChildItem "client-src-addin/bin/Release/net48" -Filter "SolidWorks.Interop.*.dll" -ErrorAction SilentlyContinue
+          if ($copied) { throw "interop assemblies were copied to output: $($copied.Name -join ', ')" }
+
+      - name: Source string invariants (client-src + client-src-addin)
+        run: python tools/check_source_string_invariants.py
