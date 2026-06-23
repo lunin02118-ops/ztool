@@ -1,5 +1,7 @@
 # Chinese strings that are protocol/crypto tokens and must not be translated.
 冰雨。。。
+笨小孩。。。
 忘情水。。。
 今天。。。
 来生缘。。。
+天意。。。

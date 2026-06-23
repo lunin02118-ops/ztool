@@ -12,6 +12,10 @@
   remaining vendor/technical string;
 - попала в `unclassified_han` и валит gate.
 
+Protocol keys проверяются только exact whitelist. Сuffix/pattern matching для
+строк вида `...。。。` запрещён: новая Han-строка должна быть явно добавлена в
+`localization/whitelist_protocol_keys.txt` с объяснением в policy/docs.
+
 ## Основной прогон
 
 ```powershell
@@ -31,7 +35,8 @@ python client-core\tools\localization_scan.py `
 
 1. если строка user-facing - добавить перевод в `translations.tsv`;
 2. если строку нельзя переводить - добавить в соответствующий whitelist и
-   объяснить причину;
+   объяснить причину в `docs/localization/WHITELIST_POLICY_RU.md` или
+   `docs/localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md`;
 3. если это новая видимая строка - приложить скрин к manual checklist.
 
 ## Генерация/обновление таблицы переводов

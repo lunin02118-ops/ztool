@@ -81,7 +81,7 @@ def load_whitelist(path: Path) -> dict[str, set[str]]:
 
 
 def classify(value: str, whitelist: dict[str, set[str]]) -> str | None:
-    if value in whitelist["protocol_key"] or value.endswith("。。。"):
+    if value in whitelist["protocol_key"]:
         return "protocol_key"
     if value in whitelist["font_name"]:
         return "font_name"

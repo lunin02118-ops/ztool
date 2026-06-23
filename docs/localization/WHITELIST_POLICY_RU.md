@@ -16,13 +16,16 @@ Whitelist разрешён только для строк, которые нел
 - Whitelist user-facing кнопок, меню, ошибок и диалогов без отдельного решения.
 - Добавлять широкие wildcard/regex. Whitelist хранит точные строки или
   минимальные точные substring для known legacy names.
+- Классифицировать protocol keys по суффиксу или похожести. Protocol whitelist
+  должен содержать точные значения.
 - Использовать whitelist, чтобы скрыть отсутствие перевода.
 
 ## Known remaining на текущем build
 
-- `零件` - internal material/color part-kind key in `Frmmain`
-  (`Col_Extname.Tag`). Перевод ломает команды цвета/материала, включая
-  `Случайный цвет`.
+- `零件` - mixed literal. It is translated globally for user-facing contexts,
+  but internal `Frmmain` material/color contexts still depend on the same source
+  literal (`Col_Extname.Tag`). Source-level cleanup requires producer/consumer
+  parity tests, including `Случайный цвет`.
 - `二维码` / `工具箱.png` - legacy resource names/vendor QR asset names.
 - `*ToolStripMenuItem` с китайским prefix - internal WinForms component names,
   не captions.
