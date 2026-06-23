@@ -1,0 +1,170 @@
+name: release-hardening
+
+on:
+  pull_request:
+    paths:
+      - "VERSION"
+      - "SWTools.exe"
+      - "SWTools.dll"
+      - "SWToolsARM.dll"
+      - "SWTools.settings"
+      - "SWTools Updater.exe"
+      - "SWTools.bmp"
+      - "help_ru.chm"
+      - "Ribbon.dll"
+      - "ExpandableGridView.dll"
+      - "ICSharpCode.SharpZipLib.dll"
+      - "itextsharp.dll"
+      - "NPOI*.dll"
+      - "client-core/ref/ZTool_rsa.dll"
+      - "client-src/**"
+      - "client-src-addin/**"
+      - "client-core/tools/AddinBrandPatch/**"
+      - "client-core/tools/set_bom_template_path.ps1"
+      - "installer/**"
+      - "scripts/build_release_package.ps1"
+      - "scripts/build_client_installer.ps1"
+      - "scripts/verify_release_package.ps1"
+      - "scripts/verify_authenticode.ps1"
+      - "scripts/check_expected_release_hashes.ps1"
+      - "scripts/expected_release_hashes.json"
+      - ".github/workflows/release-hardening.yml"
+  push:
+    branches:
+      - main
+      - "codex/**"
+      - "hardening/**"
+    paths:
+      - "VERSION"
+      - "SWTools.exe"
+      - "SWTools.dll"
+      - "SWToolsARM.dll"
+      - "SWTools.settings"
+      - "SWTools Updater.exe"
+      - "SWTools.bmp"
+      - "help_ru.chm"
+      - "Ribbon.dll"
+      - "ExpandableGridView.dll"
+      - "ICSharpCode.SharpZipLib.dll"
+      - "itextsharp.dll"
+      - "NPOI*.dll"
+      - "client-core/ref/ZTool_rsa.dll"
+      - "client-src/**"
+      - "client-src-addin/**"
+      - "client-core/tools/AddinBrandPatch/**"
+      - "client-core/tools/set_bom_template_path.ps1"
+      - "installer/**"
+      - "scripts/build_release_package.ps1"
+      - "scripts/build_client_installer.ps1"
+      - "scripts/verify_release_package.ps1"
+      - "scripts/verify_authenticode.ps1"
+      - "scripts/check_expected_release_hashes.ps1"
+      - "scripts/expected_release_hashes.json"
+      - ".github/workflows/release-hardening.yml"
+
+jobs:
+  release-hardening:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+
+      - name: Build from-source client
+        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
+
+      - name: Build from-source add-in with SDK shim
+        run: |
+          dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release
+          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
+          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
+
+      - name: Expected accepted runtime hashes
+        run: |
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "release-hardening-evidence"
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          pwsh -NoProfile -File scripts/check_expected_release_hashes.ps1 `
+            -ReportPath (Join-Path $evidenceDir "expected-release-hashes.json")
+
+      - name: Build dry-run release package
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          $outputRoot = Join-Path $env:RUNNER_TEMP "swtools-release-package"
+          $clientExe = (Resolve-Path "client-src/bin/Release/net48/ZTool.exe").Path
+          $addinDll = (Resolve-Path "client-src-addin/bin/Release/net48/ZTool.dll").Path
+          pwsh -NoProfile -File scripts/build_release_package.ps1 `
+            -Version $version `
+            -OutputRoot $outputRoot `
+            -ClientExe $clientExe `
+            -AddinDll $addinDll `
+            -AllowMissingSolidWorksTools
+          $packageRoot = Join-Path $outputRoot "SWTools-$version"
+          if (-not (Test-Path -LiteralPath $packageRoot -PathType Container)) {
+            throw "Package root was not created: $packageRoot"
+          }
+          "PACKAGE_ROOT=$packageRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Verify release package hashes and forbidden files
+        run: |
+          $clientHash = (Get-FileHash -Algorithm SHA256 -LiteralPath "$env:PACKAGE_ROOT\runtime\SWTools.exe").Hash.ToLowerInvariant()
+          $addinHash = (Get-FileHash -Algorithm SHA256 -LiteralPath "$env:PACKAGE_ROOT\runtime\SWTools.dll").Hash.ToLowerInvariant()
+          pwsh -NoProfile -File scripts/verify_release_package.ps1 `
+            -PackageRoot "$env:PACKAGE_ROOT" `
+            -ExpectedClientExeSha256 $clientHash `
+            -ExpectedAddinDllSha256 $addinHash
+
+      - name: Build client installer smoke
+        run: |
+          $installerRoot = Join-Path $env:RUNNER_TEMP "swtools-installer"
+          pwsh -NoProfile -File scripts/build_client_installer.ps1 `
+            -PackageRoot "$env:PACKAGE_ROOT" `
+            -OutputDir $installerRoot
+          $setup = Join-Path $installerRoot "SWTools-$env:PACKAGE_VERSION-Setup.exe"
+          if (-not (Test-Path -LiteralPath $setup -PathType Leaf)) {
+            throw "Setup was not created: $setup"
+          }
+          "SETUP_PATH=$setup" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Authenticode signature report
+        run: |
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "release-hardening-evidence"
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          & scripts/verify_authenticode.ps1 `
+            -Path @("$env:SETUP_PATH", "$env:PACKAGE_ROOT\runtime\SWTools.exe", "$env:PACKAGE_ROOT\runtime\SWTools.dll") `
+            -AllowUnsigned `
+            -ReportPath (Join-Path $evidenceDir "authenticode-report.json")
+
+      - name: Capture release hardening evidence
+        run: |
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "release-hardening-evidence"
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          Copy-Item -LiteralPath "$env:PACKAGE_ROOT\manifest.json" -Destination (Join-Path $evidenceDir "release-package-manifest.json") -Force
+          Copy-Item -LiteralPath "$env:PACKAGE_ROOT\SHA256SUMS.txt" -Destination (Join-Path $evidenceDir "release-package-SHA256SUMS.txt") -Force
+          $setupItem = Get-Item -LiteralPath "$env:SETUP_PATH"
+          $setupStem = [System.IO.Path]::GetFileNameWithoutExtension($setupItem.Name)
+          $installerDir = $setupItem.DirectoryName
+          $installerManifest = Join-Path $installerDir "$setupStem.manifest.json"
+          $installerLog = Join-Path $installerDir "$setupStem.build.log"
+          Copy-Item -LiteralPath $installerManifest -Destination (Join-Path $evidenceDir "installer-manifest.json") -Force
+          Copy-Item -LiteralPath $installerLog -Destination (Join-Path $evidenceDir "installer-build.log") -Force
+          Get-FileHash -Algorithm SHA256 -LiteralPath "$env:SETUP_PATH" |
+            ConvertTo-Json -Depth 4 |
+            Set-Content -LiteralPath (Join-Path $evidenceDir "setup-sha256.json") -Encoding UTF8
+
+      - name: Upload release hardening evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-hardening-evidence
+          path: ${{ runner.temp }}/release-hardening-evidence/
+          if-no-files-found: error
