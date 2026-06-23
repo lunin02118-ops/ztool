@@ -102,7 +102,7 @@ Sprint H поэтому разделяет:
 | `在solidworks中打开ToolStripMenuItem`, `在文件夹中打开ToolStripMenuItem`, `修改ToolStripMenuItem` | WinForms component names | `FrmReplacePartslist` | Internal control names; visible context menu captions require screenshot audit. |
 | `/进阶操作/BOM表模板制作和导出.htm`, `/进阶操作/缩略图显示及操作.htm`, `/基本操作/保存数据到SolidWorks.htm` | help routing paths | help buttons | Internal legacy CHM paths; `help_ru.chm` visible content requires manual check. |
 
-## Required manual evidence before merge/release
+## Required manual evidence before production GO / visual FULL PASS
 
 Manual audit must confirm:
 
