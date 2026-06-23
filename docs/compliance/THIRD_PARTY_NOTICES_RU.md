@@ -32,10 +32,10 @@ Required action before P4 GO: confirm commercial license, replace dependency, or
 
 ## ZTool/SWTools modified runtime
 
-License status: legal approval pending.
+License status: `EXTERNALLY_CONFIRMED / NON_PUBLIC_EVIDENCE`.
 Package files: `SWTools.exe`, `SWTools.dll`, `SWTools-base.exe`, `help_ru.chm`, `ZTool_rsa.dll`.
 
-Required action before P4 GO: document modification/rebrand/rekey/distribution rights.
+Required action before P4 GO: keep only redacted attestation in Git; source legal evidence remains outside Git custody.
 
 ## Unknown bundled DLLs
 
