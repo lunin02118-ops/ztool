@@ -28,7 +28,7 @@
 
 Но безусловный `P4 Production Ready` пока не доказан из-за следующих классов рисков:
 
-1. юридическая неопределённость модификации и распространения third-party ZTool/SWTools runtime;
+1. необходимость поддерживать redacted Legal/IP attestation без публикации private evidence;
 2. split между source, reinjection и runtime binaries;
 3. обязательная зависимость от живого SolidWorks acceptance на exact release package;
 4. отсутствие полного SBOM/license/SCA gate;
@@ -38,6 +38,9 @@
 8. perimeter-based rate limiting;
 9. возможный production backend drift SQLite/MySQL;
 10. недостаточно формализованный release dossier.
+11. repo hygiene: временные релизы, evidence, секреты и runtime artifacts должны оставаться вне Git;
+12. BinaryFormatter legacy surface должен быть containment-ограничен и задокументирован;
+13. localization architecture debt: whitelist должен не маскировать user-facing Han и source/runtime/help должны проверяться раздельно.
 
 ## 3. Жёсткие правила для агента
 
@@ -53,8 +56,6 @@
 - менять бинарные runtime artifacts без manifest/hash/provenance;
 - считать зелёный CI заменой SolidWorks acceptance;
 - скрывать residual risks.
-
-- коммитить юридические документы (подписанные соглашения, PDF, сканы, полные тексты) — в Git только redacted-аттестация (`docs/compliance/LEGAL_APPROVAL_STATUS_RU.md`).
 
 ### 3.2 Разрешено
 
@@ -72,7 +73,7 @@
 Проект считается доведённым до `P4`, когда выполнены все условия:
 
 ```text
-[ ] Legal approval на modified third-party ZTool/SWTools runtime зафиксирован.
+[ ] External Legal/IP approval attestation confirmed; source legal evidence remains outside Git.
 [ ] Binary provenance matrix создана для всех EXE/DLL/CHM/runtime artifacts.
 [ ] From-source path либо полностью заменяет binary/reinject path, либо split явно documented/accepted.
 [ ] SQLite/MySQL production backend drift закрыт.
@@ -81,6 +82,7 @@
 [ ] Release package verification проходит на exact package.
 [ ] Installer build проходит.
 [ ] Authenticode signatures verified для Setup.exe, SWTools.exe, SWTools.dll.
+[ ] `-AllowUnsigned` используется только как CI evidence mode; production GO требует Valid signatures или formal release exception.
 [ ] SBOM CycloneDX/SPDX generated.
 [ ] Third-party license notices generated and packaged.
 [ ] Dependency vulnerability scan проходит или имеет accepted exceptions.
@@ -92,6 +94,34 @@
 [ ] Release dossier создан и содержит hashes, logs, screenshots, environment, operator sign-off.
 [ ] Risk register обновлён: все P0/P1 либо mitigated, либо formally accepted.
 ```
+
+---
+
+## 4.1 Legal/IP external approval model
+
+Deep Audit delta: права урегулированы вне репозитория, но исходные evidence не
+должны попадать в Git. Поэтому P4 модель фиксируется как
+`confirm external approval attestation`.
+
+Repo-safe артефакты:
+
+```text
+docs/compliance/LEGAL_APPROVAL_STATUS_RU.md
+docs/compliance/LEGAL_APPROVAL_TEMPLATE_RU.md
+docs/compliance/THIRD_PARTY_INVENTORY_RU.md
+docs/compliance/LICENSE_POLICY_RU.md
+docs/compliance/THIRD_PARTY_NOTICES_RU.md
+```
+
+Запрещено коммитить:
+
+```text
+legal source documents, contracts, scans, emails, commercial terms,
+private approvals, license keys, private keys, endpoint secrets.
+```
+
+Blocker остаётся только если external approval cannot be confirmed, scope exceeded
+или repo accidentally receives non-redacted evidence.
 
 ---
 
@@ -145,19 +175,22 @@ docs/production/p4-evidence/00-baseline.md
 
 ---
 
-# Sprint B — Legal/compliance closure
+# Sprint B — Legal/IP attestation and compliance closure
 
 ## Цель
 
-Закрыть главный production blocker: право на модификацию и распространение third-party runtime и bundled dependencies.
+Закрыть repo-safe сторону Legal/IP: не публиковать private evidence, но иметь
+проверяемый redacted attestation и compliance inventory.
 
 ## Задачи
 
 ```text
-[ ] Создать legal approval template.
-[ ] Зафиксировать статус прав на ZTool/SWTools runtime.
+[ ] Создать redacted Legal/IP attestation template.
+[ ] Confirm external approval attestation for ZTool/SWTools runtime.
 [ ] Зафиксировать distribution scope: internal / pilot / commercial / public.
-[ ] Зафиксировать право на modification, rekey, license server migration, packaging.
+[ ] Зафиксировать covered scope: modification, rebrand, rekey, license server migration, packaging, distribution.
+[ ] Зафиксировать evidence custody outside Git.
+[ ] Добавить explicit prohibition на legal docs/contracts/scans/emails/commercial terms/private approvals in Git.
 [ ] Инвентаризировать third-party DLL/assets.
 [ ] Сгенерировать SBOM CycloneDX.
 [ ] Сгенерировать SBOM SPDX.
@@ -202,7 +235,8 @@ Impact: P4 blocked until run in prepared environment
 [ ] Для каждого DLL/EXE/CHM/font/icon указан origin.
 [ ] Для каждой third-party dependency указана license.
 [ ] Copyleft/notice obligations documented.
-[ ] Legal approval status не ambiguous.
+[ ] Legal/IP status = `EXTERNALLY_CONFIRMED / NON_PUBLIC_EVIDENCE`.
+[ ] Source legal evidence remains outside Git.
 [ ] Release package содержит third-party notices.
 [ ] CI падает при prohibited license.
 ```
@@ -372,6 +406,7 @@ osv-scanner .
 [ ] Добавить expected-hash verification.
 [ ] Добавить installer signature verification.
 [ ] Добавить package forbidden-files check.
+[ ] Явно задокументировать: `-AllowUnsigned` — только CI evidence mode, не production approval.
 [ ] Добавить branch protection recommendation doc.
 ```
 
@@ -412,6 +447,7 @@ Authenticode verification where signing cert available
 [ ] CI fails on prohibited license.
 [ ] CI fails on expected hash mismatch.
 [ ] CI stores reports as artifacts.
+[ ] Unsigned artifacts are accepted in CI only with `-AllowUnsigned`; production release requires signing or formal exception in Sprint N.
 ```
 
 ---
@@ -472,6 +508,10 @@ dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release -warnaserror:false
 ```text
 [ ] Запустить localization scan с fail-on-unclassified.
 [ ] Проверить whitelist policy: нет user-facing строк в whitelist.
+[ ] Разделить architecture debt: source string literals, binary/runtime scan, help CHM, installer UI, SolidWorks add-in UI.
+[ ] Убрать или formally classify remaining `REVIEW` Han entries: fonts, semantic keys, control names, help paths, image names, symbol palette, format fragments, log text.
+[ ] Для semantic-key `零` не делать half-rename: producer/consumer меняются только вместе с parity check.
+[ ] Зафиксировать, какие entries являются internal architecture debt, а какие user-facing blocker.
 [ ] Проверить help_ru.chm.
 [ ] Проверить main app UI.
 [ ] Проверить registration/license forms.
@@ -488,6 +528,7 @@ dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release -warnaserror:false
 ```text
 docs/localization/VISUAL_LOCALIZATION_REPORT_RU.md
 docs/localization/HELP_RU_ACCEPTANCE_RU.md
+docs/localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md
 manual-test-reports/localization/README.md
 ```
 
@@ -503,6 +544,7 @@ python client-core\tools\localization_scan.py --fail-on-unclassified
 [ ] unclassified_han = 0.
 [ ] Все whitelist entries имеют approved category.
 [ ] Все user-facing Han устранены.
+[ ] Architecture debt classified; no user-facing Han hidden as whitelist.
 [ ] Нет critical clipping.
 [ ] help_ru.chm открывается и проходит выборочную проверку.
 [ ] Screenshot report имеет FULL PASS.
@@ -525,6 +567,7 @@ python client-core\tools\localization_scan.py --fail-on-unclassified
 [ ] Подписать Setup.exe.
 [ ] Подписать SWTools.exe/SWTools.dll или документировать невозможность.
 [ ] Проверить Authenticode signatures.
+[ ] Подтвердить, что `-AllowUnsigned` не используется как production approval.
 [ ] Проверить SmartScreen/AV/EDR behavior в controlled environment.
 [ ] Выполнить clean install.
 [ ] Выполнить upgrade from previous build.
@@ -560,6 +603,7 @@ Get-FileHash .\releases\1.1.6\SWTools-1.1.6-Setup.exe -Algorithm SHA256
 ```text
 [ ] Setup.exe signature Valid.
 [ ] Runtime binaries signature Valid или accepted exception.
+[ ] `-AllowUnsigned` evidence report не используется для финального GO без Sprint N exception.
 [ ] Clean install PASS.
 [ ] Upgrade PASS.
 [ ] Uninstall PASS.
@@ -674,19 +718,129 @@ Final GO/NO-GO
 
 ---
 
+# Sprint L — Repo hygiene and artifact custody
+
+## Цель
+
+Доказать, что репозиторий не содержит мусор, временные релизы, приватные
+evidence, секреты или неавторитетные runtime artifacts, а локальные артефакты
+живут в предсказуемых директориях.
+
+## Задачи
+
+```text
+[ ] Проверить git status на clean state.
+[ ] Проверить tracked large/runtime artifacts и сравнить с provenance policy.
+[ ] Проверить, что releases/evidence/secrets остаются в approved paths.
+[ ] Проверить `_local_artifacts/` и локальные worktrees не попадают в Git.
+[ ] Проверить отсутствие legal/private evidence in Git.
+[ ] Проверить `.gitignore` для build outputs, dumps, screenshots, logs, DB, keys.
+[ ] Создать repo hygiene report.
+```
+
+## Файлы создать/обновить
+
+```text
+docs/production/REPO_HYGIENE_REPORT_RU.md
+docs/production/LOCAL_ARTIFACTS_POLICY_RU.md
+.gitignore
+```
+
+## Acceptance criteria
+
+```text
+[ ] No secrets/legal evidence/private approvals tracked.
+[ ] No accidental local release/evidence folders tracked.
+[ ] Authoritative release artifacts documented.
+[ ] Non-authoritative loose binaries remain documented or removed by release decision.
+```
+
+---
+
+# Sprint M — BinaryFormatter containment
+
+## Цель
+
+Сдержать legacy `BinaryFormatter` risk без поспешной смены поведения, которое
+может сломать совместимость настроек/форматов.
+
+## Задачи
+
+```text
+[ ] Инвентаризировать все `BinaryFormatter` call sites.
+[ ] Для каждого call site указать data source: trusted local config / user file / network / embedded resource.
+[ ] Запретить network/untrusted BinaryFormatter paths или добавить fail-closed guard.
+[ ] Зафиксировать binder/allowed-types policy.
+[ ] Добавить regression tests для known config blobs.
+[ ] Создать migration plan на safer serializer там, где это возможно без runtime parity break.
+```
+
+## Файлы создать/обновить
+
+```text
+docs/security/BINARYFORMATTER_CONTAINMENT_RU.md
+scripts/check_binaryformatter_surface.ps1
+```
+
+## Acceptance criteria
+
+```text
+[ ] No network-facing BinaryFormatter usage.
+[ ] Every call site has owner, data source and allowed-type policy.
+[ ] Existing configs still load.
+[ ] Migration is planned but not mixed into unrelated release changes.
+```
+
+---
+
+# Sprint N — Final signing and release dossier
+
+## Цель
+
+Закрыть финальную production цепочку доверия: подпись, immutable hashes,
+release evidence и GO/NO-GO.
+
+## Задачи
+
+```text
+[ ] Подписать Setup.exe.
+[ ] Подписать SWTools.exe/SWTools.dll или оформить formal release exception.
+[ ] Проверить Authenticode signatures без `-AllowUnsigned`.
+[ ] Сформировать final release hashes.
+[ ] Сформировать final SBOM/license notices/SCA reports.
+[ ] Приложить SolidWorks acceptance + installer smoke + localization evidence.
+[ ] Зафиксировать redacted Legal/IP attestation reference.
+[ ] Создать final release dossier.
+[ ] Принять GO/NO-GO.
+```
+
+## Файлы создать/обновить
+
+```text
+docs/release/RELEASE_DOSSIER_1.1.6_RU.md
+docs/production/P4_GO_NO_GO_RU.md
+docs/release/SIGNING_POLICY_RU.md
+```
+
+## Acceptance criteria
+
+```text
+[ ] `Get-AuthenticodeSignature` returns `Valid` for required artifacts or formal exception is documented.
+[ ] `-AllowUnsigned` is absent from production verification command.
+[ ] Dossier references exact commit/package/hash.
+[ ] All P0/P1 blockers are mitigated or formally accepted.
+```
+
+---
+
 # 5. Рекомендуемая очередность PR
 
 ```text
-PR-1: Documentation baseline and P4 plan
-PR-2: Compliance and SBOM
-PR-3: Binary provenance
-PR-4: Backend drift closure
-PR-5: License-server hardening
-PR-6: CI release hardening
-PR-7: Client source closure
-PR-8: Localization finalization
-PR-9: Installer/signing hardening
-PR-10: Final release dossier
+#71: Warning identity baseline follow-up — merged
+#72: Deep Audit delta and P4 plan correction
+#73: Sprint H localization architecture debt + visual localization report
+#74: Sprint L repo hygiene + Sprint M BinaryFormatter containment
+#75: Sprint N signing/release dossier and final GO/NO-GO
 ```
 
 ## PR report format
@@ -716,22 +870,3 @@ docs/production/p4-evidence/00-baseline.md
 ```
 
 Затем агент должен переходить к compliance/SBOM и binary provenance. Нельзя начинать application-code changes до закрытия baseline и compliance direction.
-
-
----
-
-## Deep Audit delta (2026-06-23)
-
-Этот план дополнён по итогам внешнего Deep Audit. Подробности — `docs/production/P4_AUDIT_DELTA_RU.md`.
-
-- **Legal/IP:** модель переведена с «pending approval» на **external non-public approval attestation**:
-  права урегулированы вне репо; в Git — только redacted attestation; юр-документы в Git запрещены.
-  P4 legal blocker срабатывает только если release owner не может подтвердить внешнее одобрение или release scope > approved scope.
-- **Новые delta-спринты** (ранее не выделены отдельно):
-  - **Sprint L — Repo hygiene closure** (loose-бинари → LFS/artifact; вынос `client-rekey/*.txt`).
-  - **Sprint M — BinaryFormatter containment** (фиксация allow-list биндера как явного gate).
-  - **Sprint N — Localization architecture debt** (уход от IL-патча строк к ресурсной i18n).
-  - **Sprint O — Signing final gate** (Authenticode вместо опоры только на SHA256-пины).
-- **Risk register** — обновлена классификация (см. `docs/production/RISK_REGISTER_RU.md`, раздел Deep Audit delta).
-
-> Скоуп этого PR — только документация/политики. **Application runtime/source не изменяются.**

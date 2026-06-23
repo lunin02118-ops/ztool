@@ -1,6 +1,7 @@
 # Production risk register
 
-Статус на `main` после PR #8 и PR #11. Severity:
+Статус на `main` после PR #68, #69, #70 и #71 плюс Deep Audit delta.
+Severity:
 
 - `P0` — production blocker, нельзя мержить фазу без закрытия или явного
   письменного исключения.
@@ -16,36 +17,23 @@
 | R-005 | P1 | TCP protocol не имеет полного fail-closed parser/limits/timeout hardening. | Mitigated in Phase 02: server parser limits/timeouts + client `ReadExact`; real-client activation smoke remains required before release. | Phase 02 |
 | R-006 | P1 | SQLite schema не имеет полноценной migration/transaction/state модели. | Mitigated in Phase 03: schema_version migrations, WAL/foreign_keys/busy_timeout, transaction helper, password hash migration. Pending state semantics continue in Phase 04. | Phase 03 |
 | R-007 | P1 | `device_limit` в CLI/schema должен совпадать с фактической политикой лицензий. | Mitigated in Phase 03: `device_limit` now controls distinct active machines; default remains 1. | Phase 03 |
-| R-008 | P1 | Нет CI/CD gates для server tests, client tooling, secret scan и release checks. | Partially mitigated in Phase 06: добавлены GitHub Actions для license-server, Windows client-core build и secret scan; нужен первый зелёный GitHub run после PR. | Phase 06 |
-| R-009 | P0 | Корневые `ZTool.exe`/`ZTool.dll` не совпадают с live-tested recommended artifacts. | Mitigated in Phase 10: root `ZTool.exe` replaced with live-tested `ZTool_binderfix.exe` (`0BF4CB0B...9955864B`), root `ZTool.dll` replaced with `pmpguard2` (`D0535425...0E492EB9`), and release packager now uses root runtime artifacts by default. Final SolidWorks acceptance still required on the release package. | Phase 10 |
+| R-008 | P1 | CI/CD gates для server tests, client tooling, secret scan, release checks и warning drift могут не покрывать новые входы. | Partially mitigated by #68/#69/#70/#71: добавлены hardening/release/source warning gates и exact warning identity baseline. Remaining: branch protection/final release gates must stay enforced for release PRs. | Sprint N |
+| R-009 | P1 | Accepted runtime hashes, source-build outputs и loose/root binaries могут разойтись. | Partially mitigated by binary provenance and source-build reports. Final SolidWorks acceptance and release-promotion decision still required before accepted production hashes are changed. | Sprint N |
 | R-010 | P1 | Release package не имеет manifest/SHA256SUMS и reproducibility gate. | Mitigated in Phase 06/08/10: добавлен `tools/release_manifest.py`; client-core build проверяет input hashes и пишет `ZTool.manifest.json`; release package script создаёт `manifest.json` и `SHA256SUMS.txt`. Финальный manual acceptance still required. | Phase 08, Phase 10 |
-| R-011 | P2 | Localization binary patch pipeline требует machine-readable scan/whitelist/screenshot gates. | Partially mitigated in Phase 07: добавлены JSON scan, whitelist policy, translation validator и UI screenshot checklist. Manual screenshot evidence remains required for release. | Phase 07 |
+| R-011 | P1 | Localization pipeline может скрыть user-facing Han за whitelist или смешать source/runtime/help/installer/add-in debt. | Partially mitigated by scan/whitelist gates. Remaining Sprint H: classify architecture debt, verify no user-facing Han is whitelisted, and attach visual localization evidence. | Sprint H |
 | R-012 | P2 | SolidWorks manual smoke не автоматизирован и зависит от рабочей Windows/SW машины. | Accepted, documented | Cross-phase |
 | R-013 | P1 | Cleaned production profile/package can lose the default material library and material-color behavior (`materialpath` empty, `usematerialcolor=false`, missing `SolidWorksTemplates`). | Mitigated in Phase 10 follow-up: release package copies `SolidWorksTemplates/`, normalizes `materialpath` to packaged `MyMaterials.sldmat`, restores `usematerialcolor=true`, and verifier fails if the material library gate is broken. Manual SolidWorks material/color smoke remains required. | Phase 10 |
 | R-014 | P1 | Ops CLI может игнорировать `ZTOOL_*` env и писать/читать не ту DB/keys location; abuse fail2ban может не видеть wrong-password/invalid attempts. | Mitigated in prod-readiness follow-up: CLI management commands use `ServerConfig.from_env()` with CLI flags as overrides; keygen can write explicit env key files; server emits redacted journal `security event` warnings for wrong password / invalid code / invalid machine code. | Production readiness |
 | R-015 | P1 | BOM export маппинг опирался на китайские defined names в шаблоне и `mappingname` в `SWTools.settings` (два рассинхронизированных набора), окно «Сопоставление» показывало только 2 расчётные колонки, кнопка «Импорт…» уплывала на resizable-форме, а десериализация конфигурации падала `System.Object из ZTool…`. | Mitigated in Phase 11: шаблон и settings переведены на единый русский набор anchors (китайский удалён полностью, включая legacy-токены фильтров `机加`/`外购`); `check_bom_template.py` подтверждает консистентность; Localizer расширяет «Сопоставление» на все `Col_*` и фиксирует якорь кнопки `Bottom\|Left`; VTBinder толерантно резолвит embedded assembly identity. Финальный SolidWorks-smoke на машине с SW 2025 по ТЗ остаётся обязательным. | Phase 11 |
+| R-016 | P1 | Legal/IP private evidence может случайно попасть в Git или release scope может выйти за внешнее подтверждение. | Mitigated by `EXTERNALLY_CONFIRMED / NON_PUBLIC_EVIDENCE` model and redacted attestation docs. Blocker only if external approval cannot be confirmed, scope exceeded, or non-redacted evidence lands in repo. | Sprint B / Sprint N |
+| R-017 | P1 | Repo hygiene: локальные релизы, evidence, dumps, screenshots, DB, keys или runtime artifacts могут оказаться tracked. | Open. Sprint L должен проверить tracked files, `.gitignore`, `_local_artifacts`, release/evidence/secrets paths and produce repo hygiene report. | Sprint L |
+| R-018 | P1 | Legacy `BinaryFormatter` surface может принимать не тот тип или untrusted data source. | Open. Sprint M должен инвентаризировать call sites, data sources, binder/allowed-types policy and regression tests for known config blobs. | Sprint M |
+| R-019 | P1 | Localization architecture debt может остаться в source/runtime/help/installer/add-in после визуального PASS. | Open. Sprint H должен разделить debt classes and prove no user-facing text remains unclassified. | Sprint H |
+| R-020 | P1 | Signing evidence может быть ошибочно принят как production approval через `-AllowUnsigned`. | Open. `-AllowUnsigned` is CI evidence only; Sprint N must verify final production command without it or document formal release exception. | Sprint N |
+| R-021 | P1 | Source acceptance: source-built package can differ from accepted production runtime despite green offline gates. | Open. Sprint N requires exact package hashes, SolidWorks live acceptance, installer smoke and explicit promotion decision. | Sprint N |
 
 ## Правила обновления
 
 - Каждый PR hardening-фазы должен обновлять этот register, если меняет риск.
 - Нельзя закрывать риск без ссылки на тест/отчёт/коммит.
 - Если риск переносится, нужен явный `Deferred until Phase XX` и причина.
-
-
-## Deep Audit delta (2026-06-23)
-
-Переклассификация по итогам внешнего Deep Audit (см. `docs/production/P4_AUDIT_DELTA_RU.md`).
-
-| ID | Severity | Риск | Текущий статус | Гейт |
-|----|----------|------|----------------|------|
-| R-DA-LEGAL | P0→conditional | Права на модификацию/RE/license-server/rekey third-party runtime | Покрыто **external non-public approval attestation** (`LEGAL_APPROVAL_STATUS_RU.md`); blocker только если owner не подтвердил approval или scope > approved | Sprint B |
-| R-DA-DISTR | P1 | Публичное распространение vs ограничение scope | Закрыто: репо private; scope = internal/own-use | Закрыт |
-| R-DA-ITEXT | P1 | `itextsharp.dll` (iText 5 AGPL/commercial) | **Не покрыто** внешним approval; нужен явный вердикт + SBOM/SCA gate | Sprint B |
-| R-DA-SECRETS | P1 | `client-rekey/*.txt` (key/ip/port) в Git | На будущее запрещено (§3.1) + secret-scan; файлы ещё трекаются → вынести | Sprint L |
-| R-DA-HYGIENE | P2 | loose-бинари/CAD без LFS | memory-dump убран (PR #34); loose-бинари остаются | Sprint L |
-| R-DA-BINFMT | P2 | `BinaryFormatter` (RCE-класс) | Смягчено allow-list биндером (`SafeListBinder`); зафиксировать как gate | Sprint M |
-| R-DA-LOC | P2 | Локализация как IL-патч строк (техдолг) | Запланирован уход к ресурсной i18n | Sprint N |
-| R-DA-SIGN | P1 | Нет Authenticode (strong-name снят); целостность на SHA256-пинах | Не подтверждено; финальный gate | Sprint O |
-
-> Примечание: external approval attestation покрывает **только** права на ZTool/SWTools runtime от правообладателя.
-> Сторонние библиотеки (iText, Ribbon, ExpandableGridView, NPOI и др.) **не** покрываются этим approval и оцениваются отдельно.

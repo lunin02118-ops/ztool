@@ -26,6 +26,9 @@
 | Документ | Описание | Статус |
 |----------|----------|--------|
 | [`production/PRODUCTION_HARDENING_PLAN_RU.md`](production/PRODUCTION_HARDENING_PLAN_RU.md) | Production hardening roadmap по фазам 00–10 | актуален |
+| [`production/ZTOOL_P4_PERFECTION_PLAN_RU.md`](production/ZTOOL_P4_PERFECTION_PLAN_RU.md) | P4 perfection plan с Deep Audit delta, Legal/IP attestation model и Sprint H/L/M/N | актуален |
+| [`production/P4_AUDIT_DELTA_RU.md`](production/P4_AUDIT_DELTA_RU.md) | Delta после Deep Audit и статуса #68–#71; порядок #72–#75 | актуален |
+| [`audit/DEEP_AUDIT_ADDENDUM_RU.md`](audit/DEEP_AUDIT_ADDENDUM_RU.md) | Deep Audit addendum: repo-safe Legal/IP model, delta scope and remaining risks | актуален |
 | [`production/RELEASE_BASELINE_RU.md`](production/RELEASE_BASELINE_RU.md) | Baseline текущего `main`: хеши, тесты, ограничения | актуален |
 | [`production/RISK_REGISTER_RU.md`](production/RISK_REGISTER_RU.md) | Production risk register | актуален |
 | [`production/AUDIT_GATES_RU.md`](production/AUDIT_GATES_RU.md) | Audit/merge gates для hardening PR | актуален |
@@ -88,12 +91,12 @@
 | [`../client-rekey/README.md`](../client-rekey/README.md) | Работа с лицензионными ключами |
 | [`../Шаблоны спецификации/README.md`](<../Шаблоны спецификации/README.md>) | Шаблоны спецификаций BOM |
 
+## Compliance / Legal-IP
 
-## Deep Audit / P4 delta (2026-06-23)
-
-| Документ | Описание |
-|----------|----------|
-| [`production/P4_AUDIT_DELTA_RU.md`](production/P4_AUDIT_DELTA_RU.md) | Дельта по итогам Deep Audit: поправки к P4-плану, scope-чеклист, delta-спринты |
-| [`audit/DEEP_AUDIT_ADDENDUM_RU.md`](audit/DEEP_AUDIT_ADDENDUM_RU.md) | Legal/IP модель (раздел 3.1) |
-| [`compliance/LEGAL_APPROVAL_STATUS_RU.md`](compliance/LEGAL_APPROVAL_STATUS_RU.md) | Redacted external non-public approval attestation |
-| [`compliance/LEGAL_APPROVAL_TEMPLATE_RU.md`](compliance/LEGAL_APPROVAL_TEMPLATE_RU.md) | Шаблон аттестации approval (без юр-документов) |
+| Документ | Описание | Статус |
+|----------|----------|--------|
+| [`compliance/LEGAL_APPROVAL_STATUS_RU.md`](compliance/LEGAL_APPROVAL_STATUS_RU.md) | Redacted Legal/IP status: externally confirmed, non-public evidence | актуален |
+| [`compliance/LEGAL_APPROVAL_TEMPLATE_RU.md`](compliance/LEGAL_APPROVAL_TEMPLATE_RU.md) | Redacted attestation template; запрет на публикацию source legal docs | актуален |
+| [`compliance/THIRD_PARTY_INVENTORY_RU.md`](compliance/THIRD_PARTY_INVENTORY_RU.md) | Third-party inventory для P4 compliance gate | актуален |
+| [`compliance/LICENSE_POLICY_RU.md`](compliance/LICENSE_POLICY_RU.md) | License allow/deny policy для compliance gate | актуален |
+| [`compliance/THIRD_PARTY_NOTICES_RU.md`](compliance/THIRD_PARTY_NOTICES_RU.md) | Repo-safe notice dossier для release package | актуален |

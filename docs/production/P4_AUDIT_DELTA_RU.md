@@ -1,53 +1,60 @@
-# P4 Audit Delta — поправки к P4-плану по итогам Deep Audit
+# P4 Deep Audit delta
 
-**Дата:** 2026-06-23  
-**Статус:** audit delta + P4-plan correction (только документация/политики).  
-**Связанные документы:** `docs/audit/DEEP_AUDIT_ADDENDUM_RU.md`, `docs/production/ZTOOL_P4_PERFECTION_PLAN_RU.md`, `docs/production/RISK_REGISTER_RU.md`.
+Дата: 2026-06-23
+База: `main` после merge #68, #69, #70 и #71.
 
-> **Важно:** этот документ и весь PR не меняют application runtime/source code — только план, политики и реестр рисков.
+## Цель документа
 
----
+Зафиксировать изменение P4-плана после Deep Audit и текущего состояния стека
+production-hardening. Этот документ не меняет application source/runtime behavior
+и не содержит private legal evidence.
 
-## Scope этого PR (бывш. «PR #71»)
+## Deep Audit delta
 
-PR является **audit delta + P4-plan correction PR**, а не «legal docs PR».
+| Область | До корректировки | После корректировки |
+|---|---|---|
+| Legal/IP | Блокер формулировался как необходимость получить approval внутри процесса репозитория. | Права подтверждаются вне Git; в репозитории хранится только redacted attestation. |
+| Evidence custody | Не было жёстко отделено от Git. | Legal docs, contracts, scans, emails, commercial terms, private approvals, keys и endpoint secrets запрещены к коммиту. |
+| Release signing | `-AllowUnsigned` мог выглядеть как допустимый режим проверки. | `-AllowUnsigned` явно только CI evidence mode; production GO требует Valid signatures или formal exception. |
+| Repo hygiene | Локальные релизы/evidence/secrets были отдельным operational риском. | Добавлен Sprint L: repo hygiene and artifact custody. |
+| BinaryFormatter | Legacy десериализация была скрытым техническим риском. | Добавлен Sprint M: BinaryFormatter containment. |
+| Localization | Whitelist/gate не закрывали architecture debt между source/runtime/help/installer/add-in. | Sprint H расширен до localization architecture debt. |
+| Final dossier | Release dossier был общим финальным шагом. | Добавлен Sprint N: final signing/release dossier. |
 
-- [x] Update P4 plan according to Deep Audit delta.
-- [x] Convert legal/IP from “pending approval” to “external non-public approval attestation”.
-- [x] Explicitly forbid committing legal documents.
-- [x] Add missing delta sprints: repo hygiene, BinaryFormatter containment, localization architecture debt, signing final gate.
-- [x] Update risk register classification.
-- [x] Do not change application runtime/source code.
+## Что уже закрыто #68/#69/#70/#71
 
----
+| PR | Закрытая часть P4 |
+|---|---|
+| #68 | License-server hardening layer: abuse/rate-limit, prod config, protocol hardening, journal/security events. |
+| #69 | Release-hardening layer: installer/package gates, signing evidence mode, binary provenance, forbidden files, SBOM/license evidence. |
+| #70 | Source-build governance: source warning baseline, source-native migration transparency, build evidence. |
+| #71 | Warning baseline strengthened to exact warning identities, so file/line/code drift is caught instead of only warning-count drift. |
 
-## 1. Legal/IP: изменить модель, не публиковать документы
+## Remaining sprints
 
-Deep Audit изначально ставил legal/IP как главный риск (deobfuscation, publicize, patch/reinject, rekey, rebrand, replacement license-server tooling). Корректная модель:
+| Sprint | Цель | Почему остался |
+|---|---|---|
+| H | Localization architecture debt + visual localization report. | Нужно отделить user-facing Han от internal/source/runtime/help debt и подтвердить визуально. |
+| L | Repo hygiene and artifact custody. | Нужно доказать чистоту tracked files, `_local_artifacts`, release/evidence/secrets policy и отсутствие приватных материалов. |
+| M | BinaryFormatter containment. | Нужно инвентаризировать call sites, data sources и allowed-type policy без слома совместимости. |
+| N | Final signing and release dossier. | Нужно финально подписать/зафиксировать исключения, собрать hashes/SBOM/evidence и принять GO/NO-GO. |
+
+## Updated PR order
 
 ```text
-Rights resolved externally.
-Repo contains only redacted attestation/status.
-No legal documents in Git.
-P4 blocker exists only if release owner cannot confirm external approval
-or release scope exceeds approval.
+#71: Warning identity baseline follow-up — merged
+#72: Deep Audit delta and P4 plan correction
+#73: Sprint H localization architecture debt + visual localization report
+#74: Sprint L repo hygiene + Sprint M BinaryFormatter containment
+#75: Sprint N signing/release dossier and final GO/NO-GO
 ```
 
-Реализация: `docs/compliance/LEGAL_APPROVAL_STATUS_RU.md` переведён из `BLOCKED / PENDING APPROVAL` в `EXTERNALLY APPROVED (non-public attestation)` для покрытого scope. Юр-документы в Git запрещены (P4-план §3.1).
+## Acceptance mapping
 
-## 2. Delta-спринты (ранее не выделены)
-
-| Спринт | Цель | Acceptance |
-|--------|------|------------|
-| **L — Repo hygiene closure** | loose-бинари/CAD → LFS/artifact storage; вынос `client-rekey/*.txt` из трекинга | clean clone без secrets/крупных бинарей; secret-scan PASS |
-| **M — BinaryFormatter containment** | зафиксировать allow-list биндер (`SafeListBinder`/`VTBinder`) как явный gate | `BinderInject --verify` в CI; нет регресса desearialization |
-| **N — Localization architecture debt** | уход от IL-патча строк к ресурсной/satellite i18n | локализация без ручного скриншот-гейта |
-| **O — Signing final gate** | Authenticode-подпись артефактов вместо опоры только на SHA256-пины | подпись проверяется в release-acceptance |
-
-## 3. Классификация рисков
-
-Обновлена в `docs/production/RISK_REGISTER_RU.md` (раздел «Deep Audit delta»): R-DA-LEGAL, R-DA-DISTR, R-DA-ITEXT, R-DA-SECRETS, R-DA-HYGIENE, R-DA-BINFMT, R-DA-LOC, R-DA-SIGN.
-
-## 4. Осторожно с third-party inventory
-
-`docs/compliance/third_party_inventory.json` и `scripts/check_license_policy.ps1` в этом PR **не изменяются**. При будущих правках **нельзя** делать поле `externally_approved` универсальной отмычкой для всех third-party DLL: external approval покрывает только ZTool/SWTools runtime, но не iText/Ribbon/ExpandableGridView/NPOI — их лицензии оцениваются отдельно.
+```text
+[x] План учитывает Deep Audit.
+[x] Legal/IP отражён как externally resolved, not published in Git.
+[x] No confidential legal evidence committed.
+[x] Remaining technical P4 blockers preserved.
+[x] Future work order updated: #71 -> #72 -> #73 -> #74 -> #75.
+```

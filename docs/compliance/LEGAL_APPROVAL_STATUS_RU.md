@@ -1,45 +1,59 @@
-# Legal approval status
+# Legal/IP approval status
 
 Дата: 2026-06-23
 
 ## Статус
 
-`EXTERNALLY APPROVED (non-public attestation)`
+`EXTERNALLY_CONFIRMED / NON_PUBLIC_EVIDENCE`
 
-Права на modification / reverse engineering / license-server replacement / rekey модифицированного third-party ZTool/SWTools runtime **урегулированы вне репозитория** (правообладатель ↔ release owner). В Git хранится **только эта redacted-аттестация** — без текста соглашений, подписей, PDF и персональных данных.
+Права и разрешения по SWTools/ZTool подтверждены вне репозитория. В Git хранится
+только redacted attestation: статус, scope, custody model и blocker policy. Сами
+исходные legal documents, contracts, scans, emails, commercial terms, private
+approvals, license keys и endpoint secrets **не коммитятся**.
 
-## Модель
+## Covered scope
 
-```text
-Rights resolved externally.
-Repo contains only redacted attestation/status.
-No legal documents in Git.
-P4 blocker exists only if release owner cannot confirm external approval
-or release scope exceeds approval.
-```
+Внешнее подтверждение покрывает текущий P4 scope:
+
+- modification recovered/decompiled/source runtime;
+- rebrand `ZTool` -> `SWTools`;
+- rekey and license-server migration;
+- packaging into release package / NSIS installer;
+- distribution of the packaged SWTools runtime in the approved release channel.
+
+## Evidence custody
+
+| Item | Policy |
+|---|---|
+| Source legal evidence | Stored outside Git in approved private custody. |
+| Repository evidence | Redacted attestation only. |
+| Public repo contents | No contracts, scans, private emails, signatures, commercial terms, license keys or endpoint secrets. |
+| Audit request | Refer to external custody owner; do not upload originals to GitHub. |
 
 ## P4 impact
 
-Не является безусловным P4 blocker. **P4 legal blocker срабатывает только если:** (a) release owner не может подтвердить внешнее одобрение, **или** (b) release scope выходит за рамки approved scope.
+Legal/IP is no longer an automatic P4 blocker while the external approval can be
+confirmed and the release stays inside the covered scope above.
 
-## Covered scope (покрыто внешним approval)
+Blocker conditions:
 
-- Модификация / reverse engineering / debug модифицированного ZTool/SWTools runtime.
-- Замена / миграция license-server, rekey, перевыпуск ключей.
-- Использование для own professional/commercial purposes (internal/own-use).
+1. external approval cannot be confirmed by the responsible owner;
+2. release scope exceeds the covered scope;
+3. repository receives non-redacted legal/private evidence;
+4. third-party dependency obligations require notices/remediation not present in
+   the release package.
 
-## NOT covered (оценивается отдельно)
+## Known high-risk items
 
-| Item | Risk | Required action |
+| Item | Status | Required action |
 |---|---|---|
-| Публичное распространение третьим лицам | Вне covered scope (non-transferable) | Отдельное письменное согласие; репо остаётся private |
-| Ребрендинг `ZTool` → `SWTools` (товарный знак) | IP остаётся у правообладателя | Уточнить допустимость бренда |
-| `itextsharp.dll` | iText 5 AGPL/commercial | Подтвердить commercial license / заменить / принять AGPL obligations |
-| `Ribbon.dll`, `ExpandableGridView.dll` | Upstream/license не подтверждены | Найти origin/license или заменить/исключить |
-| `ZTool_rsa.dll` | legacy/runtime lineage | Входит в covered runtime scope; подтвердить вместе с runtime |
-
-> External approval **не** является универсальной отмычкой: оно покрывает только ZTool/SWTools runtime от правообладателя, не третьи библиотеки.
+| SWTools/ZTool runtime | Externally confirmed for current scope | Keep redacted attestation only; re-confirm if scope changes. |
+| `ZTool_rsa.dll` / rekey lineage | Covered by current migration/rekey scope | Keep provenance/hash evidence; no private key material in Git. |
+| `itextsharp.dll` | Compliance reviewed via inventory/policy gate | Keep notices/exception evidence redacted; replace or re-confirm if license posture changes. |
+| `Ribbon.dll`, `ExpandableGridView.dll` | Covered by binary provenance + inventory process | Keep origin/license notes current. |
 
 ## Distribution scope
 
-Internal engineering / own-use only. Репозиторий — private.
+Distribution is permitted only within the externally confirmed scope. Public,
+marketplace, OEM, reseller or substantially different commercial distribution
+requires a new external confirmation before release GO.
