@@ -27,7 +27,10 @@ on:
       - "scripts/verify_release_package.ps1"
       - "scripts/verify_authenticode.ps1"
       - "scripts/check_expected_release_hashes.ps1"
+      - "scripts/check_client_src_warnings.ps1"
       - "scripts/expected_release_hashes.json"
+      - "docs/audit/CLIENT_SRC_WARNING_BASELINE_RU.md"
+      - "docs/audit/SOURCE_NATIVE_MIGRATION_STATUS_RU.md"
       - ".github/workflows/release-hardening.yml"
   push:
     branches:
@@ -59,7 +62,10 @@ on:
       - "scripts/verify_release_package.ps1"
       - "scripts/verify_authenticode.ps1"
       - "scripts/check_expected_release_hashes.ps1"
+      - "scripts/check_client_src_warnings.ps1"
       - "scripts/expected_release_hashes.json"
+      - "docs/audit/CLIENT_SRC_WARNING_BASELINE_RU.md"
+      - "docs/audit/SOURCE_NATIVE_MIGRATION_STATUS_RU.md"
       - ".github/workflows/release-hardening.yml"
 
 jobs:
@@ -80,14 +86,8 @@ jobs:
       - name: Install NSIS
         run: choco install nsis --no-progress -y
 
-      - name: Build from-source client
-        run: dotnet build client-src/ZTool.csproj -c Release -warnaserror:false
-
-      - name: Build from-source add-in with SDK shim
-        run: |
-          dotnet build client-src-addin/sdk-shim/SolidWorksTools.Shim.csproj -c Release
-          $shim = (Resolve-Path "client-src-addin/sdk-shim/bin/Release/net48/SolidWorksTools.dll").Path
-          dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release -warnaserror:false "-p:SolidWorksToolsPath=$shim"
+      - name: Check client source warning baseline
+        run: pwsh -NoProfile -File scripts/check_client_src_warnings.ps1
 
       - name: Expected accepted runtime hashes
         run: |
