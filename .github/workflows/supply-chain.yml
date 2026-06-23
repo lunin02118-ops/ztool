@@ -1,0 +1,50 @@
+name: supply-chain
+
+on:
+  pull_request:
+    paths:
+      - "docs/compliance/**"
+      - "scripts/generate_sbom.ps1"
+      - "scripts/check_license_policy.ps1"
+      - ".github/workflows/supply-chain.yml"
+  push:
+    branches:
+      - main
+      - "codex/**"
+      - "advisor/**"
+      - "hardening/**"
+    paths:
+      - "docs/compliance/**"
+      - "scripts/generate_sbom.ps1"
+      - "scripts/check_license_policy.ps1"
+      - ".github/workflows/supply-chain.yml"
+
+jobs:
+  supply-chain:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SBOM
+        run: pwsh -NoProfile -File scripts/generate_sbom.ps1 -OutputDir artifacts\supply-chain
+
+      - name: License policy gate
+        run: pwsh -NoProfile -File scripts/check_license_policy.ps1
+
+      - name: Assert SBOM artifacts exist
+        run: |
+          foreach ($path in @("artifacts\supply-chain\sbom.cyclonedx.json", "artifacts\supply-chain\sbom.spdx.json")) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+              throw "required SBOM artifact missing: $path"
+            }
+          }
+
+      - name: Upload supply-chain evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: supply-chain-evidence
+          path: artifacts/supply-chain/
+          if-no-files-found: error

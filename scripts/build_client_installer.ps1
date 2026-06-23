@@ -118,7 +118,11 @@ if (Test-Path -LiteralPath $setupPath) {
 
 $buildOutput = & $MakensisPath /V2 $generatedNsiPath 2>&1
 $buildExitCode = $LASTEXITCODE
-$buildOutput | Set-Content -LiteralPath $logPath -Encoding UTF8
+[System.IO.File]::WriteAllText(
+    $logPath,
+    (($buildOutput | ForEach-Object { [string]$_ }) -join [Environment]::NewLine),
+    [System.Text.UTF8Encoding]::new($false)
+)
 if ($buildExitCode -ne 0) {
     Fail "makensis failed with exit code $buildExitCode; log: $logPath"
 }
