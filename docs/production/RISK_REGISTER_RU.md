@@ -30,3 +30,22 @@
 - Каждый PR hardening-фазы должен обновлять этот register, если меняет риск.
 - Нельзя закрывать риск без ссылки на тест/отчёт/коммит.
 - Если риск переносится, нужен явный `Deferred until Phase XX` и причина.
+
+
+## Deep Audit delta (2026-06-23)
+
+Переклассификация по итогам внешнего Deep Audit (см. `docs/production/P4_AUDIT_DELTA_RU.md`).
+
+| ID | Severity | Риск | Текущий статус | Гейт |
+|----|----------|------|----------------|------|
+| R-DA-LEGAL | P0→conditional | Права на модификацию/RE/license-server/rekey third-party runtime | Покрыто **external non-public approval attestation** (`LEGAL_APPROVAL_STATUS_RU.md`); blocker только если owner не подтвердил approval или scope > approved | Sprint B |
+| R-DA-DISTR | P1 | Публичное распространение vs ограничение scope | Закрыто: репо private; scope = internal/own-use | Закрыт |
+| R-DA-ITEXT | P1 | `itextsharp.dll` (iText 5 AGPL/commercial) | **Не покрыто** внешним approval; нужен явный вердикт + SBOM/SCA gate | Sprint B |
+| R-DA-SECRETS | P1 | `client-rekey/*.txt` (key/ip/port) в Git | На будущее запрещено (§3.1) + secret-scan; файлы ещё трекаются → вынести | Sprint L |
+| R-DA-HYGIENE | P2 | loose-бинари/CAD без LFS | memory-dump убран (PR #34); loose-бинари остаются | Sprint L |
+| R-DA-BINFMT | P2 | `BinaryFormatter` (RCE-класс) | Смягчено allow-list биндером (`SafeListBinder`); зафиксировать как gate | Sprint M |
+| R-DA-LOC | P2 | Локализация как IL-патч строк (техдолг) | Запланирован уход к ресурсной i18n | Sprint N |
+| R-DA-SIGN | P1 | Нет Authenticode (strong-name снят); целостность на SHA256-пинах | Не подтверждено; финальный gate | Sprint O |
+
+> Примечание: external approval attestation покрывает **только** права на ZTool/SWTools runtime от правообладателя.
+> Сторонние библиотеки (iText, Ribbon, ExpandableGridView, NPOI и др.) **не** покрываются этим approval и оцениваются отдельно.

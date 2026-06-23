@@ -1,28 +1,26 @@
-# Шаблон legal approval для SWTools/ZTool
+# Шаблон redacted attestation для SWTools/ZTool
 
-## Объект согласования
+> Цель: зафиксировать **факт** внешнего одобрения и его scope **без хранения юр-документов в Git**.
+> НЕ вкладывать сюда: текст соглашения, PDF, сканы, подписи, персональные данные.
 
-- Продукт: SWTools/ZTool.
-- Версия релиза: `1.1.6`.
-- Артефакты: `SWTools.exe`, `SWTools.dll`, `SWTools-base.exe`, `help_ru.chm`, bundled DLL/runtime assets, installer.
+## Attestation (заполняет release owner)
 
-## Решение правообладателя/ответственного
-
-Заполнить до P4 GO:
-
-| Вопрос | Ответ |
+| Поле | Значение |
 |---|---|
-| Разрешена модификация исходного/декомпилированного runtime | TBD |
-| Разрешён rebrand `ZTool` -> `SWTools` | TBD |
-| Разрешена замена/миграция license-server и rekey | TBD |
-| Разрешена упаковка в installer | TBD |
-| Разрешено коммерческое распространение | TBD |
-| География/канал распространения | TBD |
-| Ограничения/обязательные notices | TBD |
-| Подписант | TBD |
+| External approval существует (yes/no) | TBD |
+| Approved scope: modification | TBD |
+| Approved scope: reverse engineering / debug | TBD |
+| Approved scope: license-server replacement / migration | TBD |
+| Approved scope: rekey / перевыпуск ключей | TBD |
+| Approved scope: rebrand | TBD (часто NOT covered) |
+| Approved scope: distribution третьим лицам | TBD (часто NOT covered) |
+| Release scope ⊆ approved scope (yes/no) | TBD |
+| Ссылка на внешнее хранилище документа (вне Git) | TBD |
+| Ответственный (release owner) | TBD |
 | Дата | TBD |
-| Evidence link / документ | TBD |
 
-## Минимальное требование
+## Правило P4
 
-Без явного ответа на modification, rebrand, rekey/license-server migration и distribution scope релиз не может получить статус P4 Production Ready.
+- Если «External approval существует» = no → **P4 legal blocker**.
+- Если «Release scope ⊆ approved scope» = no → **P4 legal blocker**.
+- Иначе legal-гейт считается закрытым (без хранения юр-документов в Git).

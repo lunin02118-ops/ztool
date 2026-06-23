@@ -54,6 +54,8 @@
 - считать зелёный CI заменой SolidWorks acceptance;
 - скрывать residual risks.
 
+- коммитить юридические документы (подписанные соглашения, PDF, сканы, полные тексты) — в Git только redacted-аттестация (`docs/compliance/LEGAL_APPROVAL_STATUS_RU.md`).
+
 ### 3.2 Разрешено
 
 - создавать/обновлять документацию;
@@ -714,3 +716,22 @@ docs/production/p4-evidence/00-baseline.md
 ```
 
 Затем агент должен переходить к compliance/SBOM и binary provenance. Нельзя начинать application-code changes до закрытия baseline и compliance direction.
+
+
+---
+
+## Deep Audit delta (2026-06-23)
+
+Этот план дополнён по итогам внешнего Deep Audit. Подробности — `docs/production/P4_AUDIT_DELTA_RU.md`.
+
+- **Legal/IP:** модель переведена с «pending approval» на **external non-public approval attestation**:
+  права урегулированы вне репо; в Git — только redacted attestation; юр-документы в Git запрещены.
+  P4 legal blocker срабатывает только если release owner не может подтвердить внешнее одобрение или release scope > approved scope.
+- **Новые delta-спринты** (ранее не выделены отдельно):
+  - **Sprint L — Repo hygiene closure** (loose-бинари → LFS/artifact; вынос `client-rekey/*.txt`).
+  - **Sprint M — BinaryFormatter containment** (фиксация allow-list биндера как явного gate).
+  - **Sprint N — Localization architecture debt** (уход от IL-патча строк к ресурсной i18n).
+  - **Sprint O — Signing final gate** (Authenticode вместо опоры только на SHA256-пины).
+- **Risk register** — обновлена классификация (см. `docs/production/RISK_REGISTER_RU.md`, раздел Deep Audit delta).
+
+> Скоуп этого PR — только документация/политики. **Application runtime/source не изменяются.**

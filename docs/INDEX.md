@@ -87,3 +87,13 @@
 | [`../client-core/tools/BinderInject/README.md`](../client-core/tools/BinderInject/README.md) | Патчер десериализации (`VTBinder` + `SafeListBinder`) |
 | [`../client-rekey/README.md`](../client-rekey/README.md) | Работа с лицензионными ключами |
 | [`../Шаблоны спецификации/README.md`](<../Шаблоны спецификации/README.md>) | Шаблоны спецификаций BOM |
+
+
+## Deep Audit / P4 delta (2026-06-23)
+
+| Документ | Описание |
+|----------|----------|
+| [`production/P4_AUDIT_DELTA_RU.md`](production/P4_AUDIT_DELTA_RU.md) | Дельта по итогам Deep Audit: поправки к P4-плану, scope-чеклист, delta-спринты |
+| [`audit/DEEP_AUDIT_ADDENDUM_RU.md`](audit/DEEP_AUDIT_ADDENDUM_RU.md) | Legal/IP модель (раздел 3.1) |
+| [`compliance/LEGAL_APPROVAL_STATUS_RU.md`](compliance/LEGAL_APPROVAL_STATUS_RU.md) | Redacted external non-public approval attestation |
+| [`compliance/LEGAL_APPROVAL_TEMPLATE_RU.md`](compliance/LEGAL_APPROVAL_TEMPLATE_RU.md) | Шаблон аттестации approval (без юр-документов) |
