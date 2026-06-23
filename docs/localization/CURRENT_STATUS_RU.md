@@ -13,13 +13,15 @@ production package. Совпадение корневых runtime artifacts с l
 - Сканер пишет JSON report с `summary.unclassified_han`.
 - BOM template builder использует явный source path и пишет SHA256.
 
-## Локальная проверка Phase 07
+## Локальная проверка Sprint H
 
-На локально собранном `client-core/out/ZTool.exe`:
+На текущем `SWTools.exe`:
 
-- Han entries: `74`.
+- Han entries: `78`.
 - `unclassified_han`: `0`.
 - Translation table diagnostics: `0 errors`, `0 warnings`.
+- Categories: `protocol_key=35`, `font_name=27`, `known_remaining=16`.
+- Protocol keys теперь проверяются exact whitelist, без suffix wildcard.
 
 ## Известные ограничения
 
@@ -28,3 +30,5 @@ production package. Совпадение корневых runtime artifacts с l
 - Localizer всё ещё печатает warning о 12 translatable Chinese ldstr; Phase 07
   переводит это из “ручного warning” в machine-readable whitelist gate.
 - Screenshot checklist остаётся ручным до отдельной UI automation/visual phase.
+- Sprint H visual pass остаётся `PENDING USER AUDIT` до проверки кадров из
+  `docs/localization/VISUAL_LOCALIZATION_REPORT_RU.md`.

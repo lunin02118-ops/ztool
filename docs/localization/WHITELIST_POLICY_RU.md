@@ -16,6 +16,8 @@ Whitelist разрешён только для строк, которые нел
 - Whitelist user-facing кнопок, меню, ошибок и диалогов без отдельного решения.
 - Добавлять широкие wildcard/regex. Whitelist хранит точные строки или
   минимальные точные substring для known legacy names.
+- Классифицировать protocol keys по суффиксу или похожести. Protocol whitelist
+  должен содержать точные значения.
 - Использовать whitelist, чтобы скрыть отсутствие перевода.
 
 ## Known remaining на текущем build

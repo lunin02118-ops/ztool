@@ -36,6 +36,9 @@
 | [`PLAN_BOM_MODES_RU.md`](PLAN_BOM_MODES_RU.md) | План по режимам экспорта BOM | актуален |
 | [`localization/LOCALIZATION_PROCESS_RU.md`](localization/LOCALIZATION_PROCESS_RU.md) | Проверяемый процесс локализации и JSON scan gate | актуален |
 | [`localization/WHITELIST_POLICY_RU.md`](localization/WHITELIST_POLICY_RU.md) | Правила whitelist для оставшихся Han-строк | актуален |
+| [`localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md`](localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md) | Sprint H: классификация остаточного Han и локализационного архитектурного долга | актуален |
+| [`localization/VISUAL_LOCALIZATION_REPORT_RU.md`](localization/VISUAL_LOCALIZATION_REPORT_RU.md) | Sprint H visual localization report: automated PASS, user visual audit pending | актуален |
+| [`localization/HELP_RU_ACCEPTANCE_RU.md`](localization/HELP_RU_ACCEPTANCE_RU.md) | Acceptance checklist для `help_ru.chm` и legacy help routes | актуален |
 | [`localization/UI_SCREENSHOT_CHECKLIST_RU.md`](localization/UI_SCREENSHOT_CHECKLIST_RU.md) | Ручной UI checklist для release candidate | актуален |
 | [`client-core/BINARY_BUILD_POLICY_RU.md`](client-core/BINARY_BUILD_POLICY_RU.md) | Правила fail-closed client-core build, input hashes, manifest, PublicKeyToken | актуален |
 | [`security/THREAT_MODEL_RU.md`](security/THREAT_MODEL_RU.md) | Threat model production-системы лицензирования | актуален |
