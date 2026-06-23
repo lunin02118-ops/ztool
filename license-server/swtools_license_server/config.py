@@ -59,6 +59,13 @@ class ServerConfig:
     read_timeout_seconds: float = 10.0
     idle_timeout_seconds: float = 30.0
 
+    # In-process abuse/rate limiting. Perimeter firewall/fail2ban is still
+    # required for public deployment; this protects CPU/DB inside the process.
+    rate_limit_enabled: bool = True
+    rate_limit_max_requests: int = 120
+    rate_limit_window_seconds: float = 60.0
+    rate_limit_max_keys: int = 10_000
+
     # Stateful activation/transfer
     pending_activation_ttl_seconds: int = 600
     pending_transfer_ttl_seconds: int = 600
@@ -89,6 +96,22 @@ class ServerConfig:
             idle_timeout_seconds=_env_float(
                 'SWTOOLS_IDLE_TIMEOUT_SECONDS',
                 cls.idle_timeout_seconds,
+            ),
+            rate_limit_enabled=_env_bool(
+                'SWTOOLS_RATE_LIMIT_ENABLED',
+                cls.rate_limit_enabled,
+            ),
+            rate_limit_max_requests=_env_int(
+                'SWTOOLS_RATE_LIMIT_MAX_REQUESTS',
+                cls.rate_limit_max_requests,
+            ),
+            rate_limit_window_seconds=_env_float(
+                'SWTOOLS_RATE_LIMIT_WINDOW_SECONDS',
+                cls.rate_limit_window_seconds,
+            ),
+            rate_limit_max_keys=_env_int(
+                'SWTOOLS_RATE_LIMIT_MAX_KEYS',
+                cls.rate_limit_max_keys,
             ),
             pending_activation_ttl_seconds=_env_int(
                 'SWTOOLS_PENDING_ACTIVATION_TTL_SECONDS',

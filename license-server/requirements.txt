@@ -1,0 +1,2 @@
+# Runtime dependency lock for P4 license-server SCA gates.
+pycryptodome==3.23.0
