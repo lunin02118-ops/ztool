@@ -55,6 +55,7 @@ longer accepted.
 | L-12 | Help | help buttons open `help_ru.chm` Russian content | Pending user audit |
 | L-13 | SolidWorks add-in | SWTools tab/buttons in SolidWorks 2025 | Pending user audit |
 | L-14 | Installer | install/uninstall UI | Pending user audit |
+| L-15 | Material/color | actions that depend on mixed literal `零件`, including random color/material flows | Pending user audit |
 
 ## Manual PASS criteria
 
@@ -64,6 +65,7 @@ longer accepted.
 [ ] Dialog resize behavior: usable where content is long.
 [ ] Context menus show Russian captions, not internal component names.
 [ ] Help opens Russian pages.
+[ ] Material/color commands still work with localized UI strings.
 [ ] Screenshots correspond to exact tested build/hash.
 ```
 

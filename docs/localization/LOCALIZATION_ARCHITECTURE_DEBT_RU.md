@@ -76,10 +76,13 @@ Error paths:
 
 ## P3: design decision
 
-Не переводить internal semantic keys по одному месту. Пример: `零件` используется
-как material/color part-kind key in `Frmmain`; half-rename ломает producer/consumer
-parity и уже приводил к регрессиям цвета/материала. Такой ключ можно менять
-только отдельным PR с parity test.
+Не переименовывать internal semantic keys по одному месту. Пример: `零件`
+является mixed literal: он уже глобально переводится через `translations.tsv`
+для user-facing контекстов, но отдельные runtime-контексты в `Frmmain`
+используют тот же source literal как material/color part-kind key. Source-level
+cleanup этого ключа можно делать только отдельным PR, где producer и consumer
+меняются вместе и закрываются parity test. Half-rename ломает material/color
+flows и уже приводил к регрессиям.
 
 Sprint H поэтому разделяет:
 
@@ -93,7 +96,7 @@ Sprint H поэтому разделяет:
 
 | Entry | Layer | Context | Decision |
 |---|---|---|---|
-| `零件` | runtime semantic key | `Frmmain` material/color flows | Keep until producer/consumer parity test exists. |
+| `零件` | mixed UI/runtime semantic key | `Frmmain` material/color flows plus user-facing file/type contexts | Global UI translation already exists; internal semantic contexts remain architecture debt until producer/consumer parity test exists. |
 | `工具箱.png` | resource name | `toolbox::InitializeComponent` | Internal resource asset name; not user-facing caption. |
 | `平铺ToolStripMenuItem`, `小图标ToolStripMenuItem`, `列表ToolStripMenuItem`, `列表ToolStripMenuItem1` | WinForms component names | `toolbox` | Internal control names; captions must be verified visually. |
 | `在solidworks中打开ToolStripMenuItem`, `在文件夹中打开ToolStripMenuItem`, `修改ToolStripMenuItem` | WinForms component names | `FrmReplacePartslist` | Internal control names; visible context menu captions require screenshot audit. |
@@ -111,6 +114,7 @@ Manual audit must confirm:
 [ ] `help_ru.chm` opens and shows Russian content from help buttons.
 [ ] Installer UI has no Han.
 [ ] No critical clipping/overlap on resizable dialogs.
+[ ] Material/color actions still work after localized `零件` UI strings are present.
 ```
 
 Until those screenshots are reviewed by the user, R-011 remains P1 partial.
