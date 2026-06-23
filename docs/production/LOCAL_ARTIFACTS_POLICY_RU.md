@@ -27,6 +27,9 @@
   - распакованный package input для installer.
 - `_local_artifacts\secrets\licenses\`
   - локальные копии activation keys и другие секреты. Не печатать значения в чат, отчеты или git diff.
+- `_local_artifacts\secrets\client-rekey\`
+  - локальные `orig_*.txt` / `new_*.txt` inputs для `client-rekey`. Эти файлы
+    не должны быть tracked в Git.
 - `_local_artifacts\evidence\`
   - screenshots, UI evidence, appdata snapshots, ручные test artifacts.
 - `_local_artifacts\worktrees\`
@@ -66,6 +69,7 @@ git status --short --ignored -- _local_artifacts releases
 - `releases/`
 - `.exe/.msi` installers
 - activation keys
+- `client-rekey/*.txt` rekey input material
 - server secrets
 - raw logs, screenshots, registry exports и временные diagnostics
 

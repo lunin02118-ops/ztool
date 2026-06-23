@@ -45,11 +45,13 @@
 | [`security/KEY_COMPROMISE_RUNBOOK_RU.md`](security/KEY_COMPROMISE_RUNBOOK_RU.md) | Runbook при компромиссе RSA private key | актуален |
 | [`security/ABUSE_RATE_LIMIT_POLICY_RU.md`](security/ABUSE_RATE_LIMIT_POLICY_RU.md) | Abuse/rate-limit policy и fail2ban пример | актуален |
 | [`security/DATA_RETENTION_PRIVACY_RU.md`](security/DATA_RETENTION_PRIVACY_RU.md) | Data retention, privacy и redaction policy | актуален |
+| [`security/BINARYFORMATTER_CONTAINMENT_RU.md`](security/BINARYFORMATTER_CONTAINMENT_RU.md) | Sprint M: inventory and containment gate for legacy `BinaryFormatter` surface | актуален |
 | [`release/FULL_TEST_METHODOLOGY_RU.md`](release/FULL_TEST_METHODOLOGY_RU.md) | **Единственная актуальная методика полного тестирования всего функционала с паритетом к оригиналу**; включает запуск через `.SLDASM`, registry pre-flight, объектную UI/WinForms-автоматизацию, свойства, BOM и цвета | актуален |
 | [`release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`](release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md) | Финальный план приёмочного тестирования release package | актуален |
 | [`release/PRODUCTION_READINESS_REPORT_RU.md`](release/PRODUCTION_READINESS_REPORT_RU.md) | Шаблон production readiness report | актуален |
 | [`release/RELEASE_VERSIONING_RU.md`](release/RELEASE_VERSIONING_RU.md) | Версионность релизов, `VERSION`, структура `releases/<version>` | актуален |
 | [`production/LOCAL_ARTIFACTS_POLICY_RU.md`](production/LOCAL_ARTIFACTS_POLICY_RU.md) | Правила хранения готовых релизов в `releases/` и временных artifacts/secrets/evidence в `_local_artifacts/` | актуален |
+| [`production/REPO_HYGIENE_REPORT_RU.md`](production/REPO_HYGIENE_REPORT_RU.md) | Sprint L: repo hygiene report, prohibited tracked artifacts, legacy evidence cleanup | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`archive/legacy-test-methods/README.md`](archive/legacy-test-methods/README.md) | Архив старых методик тестирования; использовать только как историческую справку | архив |
 | [`archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md`](<archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md>) | Старая общая методика проверки | архив / не запускать напрямую |
