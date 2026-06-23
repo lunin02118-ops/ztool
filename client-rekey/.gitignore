@@ -1,3 +1,4 @@
 bin/
 obj/
 *.in.exe
+*.txt

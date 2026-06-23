@@ -42,8 +42,15 @@
 | `orig_port.txt`/ `new_port.txt`  | hex порта (старый / новый) |
 
 `new_ip.txt` / `new_port.txt` — это **шифртекст** (подпись), а не приватный
-ключ: их безопасно хранить в репозитории. Регенерация (на сервере, где лежит
-приватный ключ):
+ключ. Но это operational rekey input material, поэтому P4 repo hygiene policy
+требует хранить эти файлы вне Git:
+
+```text
+_local_artifacts\secrets\client-rekey\
+```
+
+В репозитории остаются только код патчера и документация. Регенерация входных
+файлов выполняется на сервере/машине, где лежит приватный ключ:
 ```python
 from swtools_license_server.crypto.rsa_swtools import sign_string, decrypt_string
 priv = open("keys/private_key.txt").read().strip()
@@ -60,7 +67,7 @@ assert decrypt_string(port, pub) == "58000"
 
 ```bash
 dotnet build patcher.csproj -c Release -o bin
-dotnet bin/patcher.dll <вход SWTools.exe> <выход SWTools.exe> .
+dotnet bin/patcher.dll <вход SWTools.exe> <выход SWTools.exe> ..\_local_artifacts\secrets\client-rekey
 ```
 
 Патчер печатает счётчики замен и **прерывается, если что-то не найдено**
