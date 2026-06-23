@@ -22,6 +22,8 @@ production package. Совпадение корневых runtime artifacts с l
 - Translation table diagnostics: `0 errors`, `0 warnings`.
 - Categories: `protocol_key=35`, `font_name=27`, `known_remaining=16`.
 - Protocol keys теперь проверяются exact whitelist, без suffix wildcard.
+- `零件` отмечен как mixed literal: user-facing contexts переводятся, а
+  internal material/color flows остаются architecture debt до parity-теста.
 
 ## Известные ограничения
 
