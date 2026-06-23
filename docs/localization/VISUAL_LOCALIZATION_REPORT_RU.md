@@ -7,8 +7,8 @@ Scope: Sprint H / localization architecture debt.
 
 `AUTOMATED LOCALIZATION SCAN PASS / VISUAL USER AUDIT PENDING`
 
-Этот документ не заявляет `FULL PASS`. Перед merge/release нужен ручной аудит
-пользователя по кадрам ниже.
+Этот документ не заявляет `FULL PASS`. Перед production GO / утверждением
+visual FULL PASS нужен ручной аудит пользователя по кадрам ниже.
 
 ## Automated evidence
 
