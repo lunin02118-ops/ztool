@@ -85,6 +85,10 @@ function ConvertTo-CodeCountMap($Warnings) {
     return $map
 }
 
+function Get-WarningIdentity($Warning) {
+    return "$($Warning.file):$($Warning.line):$($Warning.column):$($Warning.code)"
+}
+
 function Compare-CodeCounts([string]$Project, $Expected, $ActualMap) {
     $expectedMap = [ordered]@{}
     foreach ($property in $Expected.codes.PSObject.Properties) {
@@ -98,6 +102,37 @@ function Compare-CodeCounts([string]$Project, $Expected, $ActualMap) {
         $actualCount = if ($ActualMap.Contains($code)) { $ActualMap[$code] } else { 0 }
         if ($expectedCount -ne $actualCount) {
             $errors.Add("$Project ${code}: expected $expectedCount, actual $actualCount")
+        }
+    }
+
+    return $errors
+}
+
+function Compare-WarningIdentities([string]$Project, $Expected, $ActualWarnings) {
+    $errors = New-Object System.Collections.Generic.List[string]
+    if (-not ($Expected.PSObject.Properties.Name -contains 'warnings')) {
+        $errors.Add("$Project has no exact warning identity baseline")
+        return $errors
+    }
+
+    $expectedSet = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($warning in @($Expected.warnings)) {
+        [void]$expectedSet.Add((Get-WarningIdentity $warning))
+    }
+
+    $actualSet = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($warning in @($ActualWarnings)) {
+        [void]$actualSet.Add((Get-WarningIdentity $warning))
+    }
+
+    foreach ($identity in ($expectedSet | Sort-Object)) {
+        if (-not $actualSet.Contains($identity)) {
+            $errors.Add("$Project missing expected warning: $identity")
+        }
+    }
+    foreach ($identity in ($actualSet | Sort-Object)) {
+        if (-not $expectedSet.Contains($identity)) {
+            $errors.Add("$Project unexpected warning: $identity")
         }
     }
 
@@ -169,6 +204,10 @@ foreach ($projectProperty in $baseline.projects.PSObject.Properties) {
     }
 
     foreach ($failure in (Compare-CodeCounts -Project $project -Expected $expected -ActualMap $actualMap)) {
+        $failures.Add($failure)
+    }
+
+    foreach ($failure in (Compare-WarningIdentities -Project $project -Expected $expected -ActualWarnings $warnings)) {
         $failures.Add($failure)
     }
 }
