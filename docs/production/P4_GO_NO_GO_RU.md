@@ -13,7 +13,7 @@ release is not approved yet.
 
 Blocking items:
 
-- user audit required before merging #72/#74/#75 and this Sprint N PR;
+- user audit required before merging #77/#75/#76;
 - localization visual audit is pending;
 - final release package and installer are not built from the reviewed final
   commit;

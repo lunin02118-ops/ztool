@@ -10,10 +10,10 @@
 
 | Layer | Status |
 |---|---|
-| #72 Deep Audit delta / Legal-IP model | Open, user audit required before merge. |
-| #74 Sprint H localization whitelist governance | Open, user visual audit required before merge. |
+| #72 Deep Audit delta / Legal-IP model | Merged into `main` after user approval. |
+| #77 Sprint H localization whitelist governance | Open, user visual audit required before merge. |
 | #75 Sprint L/M repo hygiene + BinaryFormatter containment | Open, user audit required before merge. |
-| Sprint N signing/release dossier | This PR, draft only. |
+| #76 Sprint N signing/release dossier | This PR, draft only. |
 
 ## Required final evidence
 
@@ -61,8 +61,7 @@ Important: the production Authenticode command above intentionally does not use
 Before merge/release:
 
 ```text
-[ ] User reviewed #72.
-[ ] User reviewed Sprint H visual localization evidence.
+[ ] User reviewed #77 Sprint H visual localization evidence.
 [ ] User reviewed Sprint L/M deletion of client-rekey tracked inputs.
 [ ] User reviewed final signing/release dossier.
 [ ] No merge without explicit user approval.
@@ -74,7 +73,7 @@ Before merge/release:
 
 Reasons:
 
-- reviewed stack is not merged;
+- reviewed technical stack (#77/#75/#76) is not merged;
 - visual localization audit is pending;
 - final signed package is not built;
 - SolidWorks/licensing live acceptance is pending;
