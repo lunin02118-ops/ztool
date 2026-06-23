@@ -388,10 +388,10 @@ True</string>
       <type>true</type>
       <RuleList>
         <string>$Тип$	|@#$%|Равно	|@#$%|</string>
-        <string>$Номер чертежа$	|@#$%|Равно	|@#$%|</string>
+        <string>$Обозначение$	|@#$%|Равно	|@#$%|</string>
         <string>$Материал$	|@#$%|Равно	|@#$%|</string>
         <string>$Масса$	|@#$%|Равно	|@#$%|</string>
-        <string>$Имя детали$	|@#$%|Равно	|@#$%|</string>
+        <string>$Наименование$	|@#$%|Равно	|@#$%|</string>
       </RuleList>
     </CustomRule>
   </FilterRulesList>
@@ -411,9 +411,9 @@ True</string>
   <regexlist />
   <regexlist_split />
   <needfillcolumns>
-    <string>Номер чертежа
+    <string>Обозначение
 0</string>
-    <string>Имя детали
+    <string>Наименование
 1</string>
     <string>Версия
 2</string>

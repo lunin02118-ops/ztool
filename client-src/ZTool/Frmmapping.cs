@@ -458,6 +458,11 @@ public class Frmmapping : Form
 
 	private void OK_Button_Click(object sender, EventArgs e)
 	{
+		List<columnnamemapping> list = new List<columnnamemapping>();
+		if (CConfigMng.Config.namemappinglist != null)
+		{
+			list.AddRange(CConfigMng.Config.namemappinglist);
+		}
 		CConfigMng.Config.namemappinglist.Clear();
 		checked
 		{
@@ -489,6 +494,13 @@ public class Frmmapping : Form
 				}
 				CConfigMng.Config.namemappinglist.Add(columnnamemapping2);
 				num2++;
+			}
+			foreach (columnnamemapping item in list)
+			{
+				if (item != null && CConfigMng.Config.namemappinglist.FindIndex((columnnamemapping s) => (!string.IsNullOrEmpty(item.name) && string.Equals(s.name ?? "", item.name, StringComparison.OrdinalIgnoreCase)) || (!string.IsNullOrEmpty(item.name2) && string.Equals(s.name2 ?? "", item.name2, StringComparison.OrdinalIgnoreCase))) < 0)
+				{
+					CConfigMng.Config.namemappinglist.Add(item);
+				}
 			}
 			CConfigMng.SaveConfig();
 			DialogResult = DialogResult.OK;

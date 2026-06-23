@@ -76,8 +76,81 @@ public class CConfigMng
 		{
 			m_Config.namemappinglist = new List<columnnamemapping>();
 		}
+		EnsureStandardPropertyMappings();
 		EnsureBomMapping("Col_Weight", "Масса ед._кг", "МассаЕдКг");
 		EnsureBomMapping("Col_bound", "Габаритные размеры", "ГабаритныеРазмеры");
+	}
+
+	private static void EnsureStandardPropertyMappings()
+	{
+		if (m_Config.propname == null)
+		{
+			return;
+		}
+		checked
+		{
+			int num = m_Config.propname.Count - 1;
+			int num2 = 0;
+			while (true)
+			{
+				int num3 = num2;
+				int num4 = num;
+				if (num3 > num4)
+				{
+					break;
+				}
+				string text = m_Config.propname[num2] ?? "";
+				string defaultPropertyAnchor = GetDefaultPropertyAnchor(text);
+				EnsurePropertyMapping(num2, text, defaultPropertyAnchor);
+				num2++;
+			}
+		}
+	}
+
+	private static string GetDefaultPropertyAnchor(string text)
+	{
+		switch (text)
+		{
+		case "Наименование":
+			return "Наименование";
+		case "Обозначение":
+			return "Обозначение";
+		case "Материал":
+			return "Материал";
+		case "Тип":
+			return "Тип";
+		case "Версия":
+			return "Версия";
+		case "Обработка поверхности":
+			return "ОбработкаПоверхности";
+		default:
+			return "";
+		}
+	}
+
+	private static void EnsurePropertyMapping(int index, string text, string mappingname)
+	{
+		string name = "PropVal_" + Conversions.ToString(index);
+		string name2 = "PropResolvedVal_" + Conversions.ToString(index);
+		columnnamemapping columnnamemapping2 = m_Config.namemappinglist.Find((columnnamemapping s) => string.Equals(s.name ?? "", name, StringComparison.OrdinalIgnoreCase) || string.Equals(s.name2 ?? "", name2, StringComparison.OrdinalIgnoreCase));
+		if (columnnamemapping2 == null)
+		{
+			m_Config.namemappinglist.Add(new columnnamemapping
+			{
+				name = name,
+				name2 = name2,
+				text = text,
+				mappingname = mappingname
+			});
+			return;
+		}
+		columnnamemapping2.name = name;
+		columnnamemapping2.name2 = name2;
+		columnnamemapping2.text = text;
+		if (!string.IsNullOrEmpty(mappingname))
+		{
+			columnnamemapping2.mappingname = mappingname;
+		}
 	}
 
 	private static void EnsureBomMapping(string name, string text, string mappingname)

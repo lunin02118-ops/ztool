@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
@@ -20,6 +21,28 @@ namespace ZTool;
 [DesignerGenerated]
 public class PMPHandler : Form
 {
+	static PMPHandler()
+	{
+		AppDomain.CurrentDomain.AssemblyResolve += ResolveAddinDependency;
+	}
+
+	private static Assembly ResolveAddinDependency(object sender, ResolveEventArgs args)
+	{
+		try
+		{
+			string name = new AssemblyName(args.Name).Name + ".dll";
+			string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty, name);
+			if (File.Exists(path))
+			{
+				return Assembly.LoadFrom(path);
+			}
+		}
+		catch
+		{
+		}
+		return null;
+	}
+
 	public enum swDocumentTypes_e
 	{
 		swDocPART = 1,
@@ -249,7 +272,8 @@ public class PMPHandler : Form
 				else if (f_ == (IntPtr)10)
 				{
 					string[] array = Strings.Split(type_2.f_67, "\r\n");
-					if (array.Length >= 9 && Operators.CompareString(array[0], "ZToolRequest@001" + Type_16.m_61(Type_26.p_49), TextCompare: false) == 0)
+					string text = "ZToolRequest@001" + Type_16.m_61(Type_26.p_49);
+					if (array.Length >= 9 && Operators.CompareString(array[0], text, TextCompare: false) == 0)
 					{
 						f_207 = (IntPtr)Conversions.ToLong(array[1]);
 						f_208 = checked((int)Math.Round(Conversion.Val(array[2])));

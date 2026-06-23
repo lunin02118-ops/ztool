@@ -232,8 +232,18 @@ foreach ($dep in $clientRuntimeDependencies) {
 $resourceRedirect = $clientConfigXml.configuration.runtime.assemblyBinding.dependentAssembly | Where-Object {
     $_.assemblyIdentity.name -eq 'System.Resources.Extensions'
 }
+$resourceAssemblyPath = Join-Path $runtimeDir 'System.Resources.Extensions.dll'
+try {
+    $resourceAssemblyName = [System.Reflection.AssemblyName]::GetAssemblyName($resourceAssemblyPath)
+}
+catch {
+    Fail "cannot read runtime/System.Resources.Extensions.dll assembly identity: $($_.Exception.Message)"
+}
+if ($resourceAssemblyName.Version.ToString() -ne '4.0.0.0') {
+    Fail "runtime/System.Resources.Extensions.dll must have assembly identity Version=4.0.0.0 for the SolidWorks-hosted add-in, got $($resourceAssemblyName.FullName)"
+}
 if (-not $resourceRedirect) {
-    Fail 'runtime/SWTools.exe.config must contain a bindingRedirect for System.Resources.Extensions'
+    Write-Host 'runtime/System.Resources.Extensions.dll identity is Version=4.0.0.0; SWTools.exe.config bindingRedirect is not required.' -ForegroundColor Green
 }
 
 [xml]$settingsXml = Get-Content -LiteralPath $settingsPath -Encoding UTF8 -Raw

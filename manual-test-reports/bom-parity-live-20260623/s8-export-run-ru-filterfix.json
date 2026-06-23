@@ -1,0 +1,122 @@
+[
+  {
+    "Mode": 1,
+    "Menu": "Экспорт сводной спецификации",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\01_summary.xlsx",
+    "Length": 14754,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2223.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:23:31.5685729+05:00",
+    "Ended": "2026-06-23T22:23:39.5451923+05:00"
+  },
+  {
+    "Mode": 2,
+    "Menu": "Экспорт иерархической спецификации",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\02_hierarchy.xlsx",
+    "Length": 15030,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2223.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:23:39.545401+05:00",
+    "Ended": "2026-06-23T22:23:46.6577524+05:00"
+  },
+  {
+    "Mode": 3,
+    "Menu": "Экспорт спецификации верхнего уровня",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\03_top_level.xlsx",
+    "Length": 12971,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2223.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:23:46.6578503+05:00",
+    "Ended": "2026-06-23T22:23:53.7668813+05:00"
+  },
+  {
+    "Mode": 4,
+    "Menu": "Экспорт сводной спецификации деталей",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\04_parts_only.xlsx",
+    "Length": 14388,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2223.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:23:53.7669629+05:00",
+    "Ended": "2026-06-23T22:24:00.901673+05:00"
+  },
+  {
+    "Mode": 5,
+    "Menu": "Экспорт сводной спецификации (с эскизами)",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\05_summary_images.xlsx",
+    "Length": 406010,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2224.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:24:00.9017606+05:00",
+    "Ended": "2026-06-23T22:24:09.1243685+05:00"
+  },
+  {
+    "Mode": 6,
+    "Menu": "Экспорт иерархической спецификации (с эскизами)",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\06_hierarchy_images.xlsx",
+    "Length": 453083,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2224.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:24:09.1244682+05:00",
+    "Ended": "2026-06-23T22:24:16.4781379+05:00"
+  },
+  {
+    "Mode": 7,
+    "Menu": "Обрабатываемые детали",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\07_processed.xlsx",
+    "Length": 12300,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2224.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:24:16.47821+05:00",
+    "Ended": "2026-06-23T22:24:23.6472711+05:00"
+  },
+  {
+    "Mode": 8,
+    "Menu": "Покупные изделия",
+    "File": "D:\\Development\\ztool\\_local_artifacts\\worktrees\\p4-next\\manual-test-reports\\bom-parity-live-20260623\\bom-exports-clean-final\\08_purchased.xlsx",
+    "Length": 12300,
+    "Source": "C:\\Users\\VladimirWorkPC\\Desktop\\0614-A00-20260623-2224.xlsxav.xlsx",
+    "FilenameSet": true,
+    "Modals": {
+      "Modal": "Вопрос",
+      "Text": "Экспорт выполнен! Открыть?",
+      "Button": "Нет"
+    },
+    "Started": "2026-06-23T22:24:23.6473246+05:00",
+    "Ended": "2026-06-23T22:24:30.8704539+05:00"
+  }
+]

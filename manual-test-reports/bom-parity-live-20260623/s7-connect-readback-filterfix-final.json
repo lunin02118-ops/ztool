@@ -1,0 +1,10 @@
+{
+  "action": "S7 evidence via UIA GridPattern readback after main Connect click",
+  "process_id": 23092,
+  "process_path": "D:\\Development\\ztool\\_local_artifacts\\releases\\1.1.6-bom-parity-filterfix-20260623-215405\\SWTools-1.1.6-bom-parity-filterfix\\runtime\\SWTools.exe",
+  "process_title": "SWTools 1.1.6(x64)",
+  "process_sha256": "9863DC5D58A46E1E3915DA2B7EC19E55C4B3AC9AC27D60516B32624027618071",
+  "rowCount": 29,
+  "columnCount": 40,
+  "generated_at": "2026-06-23T22:11:40.9913547+05:00"
+}

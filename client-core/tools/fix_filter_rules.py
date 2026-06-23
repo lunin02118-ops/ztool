@@ -11,13 +11,13 @@ Root cause of modes 7-8 "filter not applied" bug:
   produced a single token (length 1 < 3) and every rule string was skipped.
   When no rule string is evaluated, FilterByRule returns TRUE for every row
   (empty result list, `!list.Contains(false)` == true) => the full BOM is
-  exported unfiltered. The operators were also Chinese (包含/等于/不等于),
+  exported unfiltered. The operators were also non-Russian vendor literals,
   which the russified binary's switch no longer matches.
 
 This script regenerates the block byte-perfect: real TAB chars, Russian
-operators, and filter values that include the demo model's actual "Тип"
-tokens (机加 = machined, 外购 = purchased) so the filter is demonstrable on
-0614-A00 today, plus Russian placeholders the user can keep for production.
+operators, and Russian-only filter values. Demo fixtures must populate the
+Russian `Тип` property with these values; the production profile must not carry
+legacy Han aliases.
 
 Property identifier syntax (from FilterByRule):
   $Name$  -> matches the PropResolvedVal_ column whose HeaderText == Name
@@ -39,10 +39,9 @@ def rule_string(prop, operator, values=""):
     return prop + SEP + operator + SEP + values
 
 
-# Machined / purchased tokens currently stored in the demo model's "Тип"
-# property (Chinese), kept alongside Russian production placeholders.
-MACHINED = "机加;Мех.обработка;Листовая;Литьё;Сварка"
-PURCHASED = "外购;Покупное;Стандартное"
+# Russian-only values accepted by the production BOM filters.
+MACHINED = "Мех.обработка;Листовая;Литьё;Сварка"
+PURCHASED = "Покупное;Стандартное"
 
 RULES = [
     # (name, type, [ (prop, operator, values), ... ])
@@ -62,10 +61,10 @@ RULES = [
     ]),
     ("Недостающие обязательные свойства", "true", [
         ("$Тип$", "Равно", ""),
-        ("$Номер чертежа$", "Равно", ""),
+        ("$Обозначение$", "Равно", ""),
         ("$Материал$", "Равно", ""),
         ("$Масса$", "Равно", ""),
-        ("$Имя детали$", "Равно", ""),
+        ("$Наименование$", "Равно", ""),
     ]),
 ]
 
