@@ -31,6 +31,11 @@ Result after staging this PR:
 Repo hygiene PASS
 prohibited_tracked_count = 0
 legacy_tracked_evidence_count = 126
+large_or_binary_tracked_count = 101
+runtime_binary_tracked_count = 27
+help_asset_tracked_count = 10
+cad_tracked_count = 64
+large_file_tracked_count = 0
 ```
 
 ## Prohibited tracked patterns
@@ -62,6 +67,37 @@ refer to them. Removing them safely requires a separate audited cleanup:
 [ ] keep only curated report summaries in Git;
 [ ] update README/baseline docs after moving evidence.
 ```
+
+## Large/binary/CAD tracked artifacts
+
+Status: `WARNING_ONLY / ARTIFACT_POLICY_PENDING`
+
+`check_repo_hygiene.ps1` also inventories tracked binary and fixture artifacts
+without failing the gate. This is intentional: Sprint L records the risk and
+prevents new prohibited local/secret artifacts, but does not move existing
+runtime/test fixtures to LFS and does not rewrite history.
+
+Current warning-only inventory:
+
+```text
+large_or_binary_tracked_count = 101
+runtime_binary_tracked_count = 27
+help_asset_tracked_count = 10
+cad_tracked_count = 64
+large_file_tracked_count = 0
+large_file_threshold_bytes = 10485760
+```
+
+Tracked classes that still need an artifact-storage decision:
+
+- runtime binaries: `*.exe`, `*.dll`;
+- third-party/bundled binaries: `*.dll`;
+- help/assets: `*.chm`, `*.bmp`;
+- CAD/TestModel fixtures: `*.SLDASM`, `*.SLDPRT`, `*.SLDDRW`;
+- files above the large-file threshold.
+
+This PR does not decide LFS/artifact storage policy for those files. It only
+makes the inventory explicit so future cleanup can be audited separately.
 
 ## Current policy
 
