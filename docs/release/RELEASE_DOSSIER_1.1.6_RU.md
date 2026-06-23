@@ -1,6 +1,6 @@
 # Release dossier 1.1.6
 
-Дата: 2026-06-23  
+Дата: 2026-06-23
 Статус: `DRAFT / NO-GO`
 
 Этот dossier является каркасом финального P4 release evidence. Он не является

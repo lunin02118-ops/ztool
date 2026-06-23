@@ -1,7 +1,7 @@
 # P4 post-merge audit — 2026-06-23
 
-Дата: 2026-06-23  
-Scope: аудит текущего `main` после merge Sprint H/L/M/N stack.  
+Дата: 2026-06-23
+Scope: аудит текущего `main` после merge Sprint H/L/M/N stack.
 Источник проверки: GitHub connector по `lunin02118-ops/ztool`, PR metadata, workflow metadata and repository files on `main`.
 
 ## 1. Connector-confirmed state

@@ -1,6 +1,6 @@
 # P4 next executor instructions
 
-Дата: 2026-06-23  
+Дата: 2026-06-23
 Scope: действия исполнителя после merge Sprint H/L/M/N stack into `main`.
 
 ## 0. Контекст
@@ -163,12 +163,6 @@ Required evidence:
 ## 6. Build installer and verify signing
 
 Build installer:
-
-```powershell
-pwh -NoProfile -File scripts\build_client_installer.ps1
-```
-
-If the command is `pwsh` in the environment, use:
 
 ```powershell
 pwsh -NoProfile -File scripts\build_client_installer.ps1
