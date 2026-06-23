@@ -11,9 +11,16 @@
 | Layer | Status |
 |---|---|
 | #72 Deep Audit delta / Legal-IP model | Merged into `main` after user approval. |
-| #77 Sprint H localization whitelist governance | Open, user visual audit required before merge. |
+| #74 Sprint H localization whitelist governance | Closed/superseded by #77 after stacked base branch was merged. |
+| #77 Sprint H localization whitelist governance | Merged into `main`; visual audit remains a production GO / visual FULL PASS gate. |
 | #75 Sprint L/M repo hygiene + BinaryFormatter containment | Open, user audit required before merge. |
 | #76 Sprint N signing/release dossier | This PR, draft only. |
+
+Current open stack:
+
+```text
+#75 -> #76
+```
 
 ## Required final evidence
 
@@ -56,15 +63,28 @@ pwsh -NoProfile -File scripts\verify_authenticode.ps1 -Path <final artifacts>
 Important: the production Authenticode command above intentionally does not use
 `-AllowUnsigned`.
 
-## Manual audit gate
+## PR merge audit gate
 
-Before merge/release:
+Before merging the remaining PR stack:
 
 ```text
-[ ] User reviewed #77 Sprint H visual localization evidence.
-[ ] User reviewed Sprint L/M deletion of client-rekey tracked inputs.
-[ ] User reviewed final signing/release dossier.
+[x] User reviewed #77 Sprint H documentation/gate wording before merge.
+[ ] User reviewed #75 Sprint L/M repo hygiene and BinaryFormatter containment.
+[ ] User reviewed #76 final signing/release dossier.
 [ ] No merge without explicit user approval.
+```
+
+## Production GO / release sign-off gate
+
+Before production GO, release sign-off, or declaring visual FULL PASS:
+
+```text
+[ ] User reviewed localization screenshots/help/installer evidence.
+[ ] Final signed package is built from the exact merged commit.
+[ ] Final hashes/SBOM/binary provenance are generated and accepted.
+[ ] SolidWorks S7/S8 live acceptance PASS.
+[ ] Licensing L3-L5 live acceptance PASS.
+[ ] Production Authenticode verification passed without `-AllowUnsigned`, or a formal release exception is recorded.
 ```
 
 ## Current decision
@@ -73,8 +93,8 @@ Before merge/release:
 
 Reasons:
 
-- reviewed technical stack (#77/#75/#76) is not merged;
-- visual localization audit is pending;
+- reviewed technical stack (#75/#76) is not merged;
+- visual localization audit is pending before production GO / visual FULL PASS;
 - final signed package is not built;
 - SolidWorks/licensing live acceptance is pending;
 - production Authenticode verification has not passed.

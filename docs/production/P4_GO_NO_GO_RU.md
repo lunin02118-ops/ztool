@@ -13,7 +13,7 @@ release is not approved yet.
 
 Blocking items:
 
-- user audit required before merging #77/#75/#76;
+- user audit required before merging #75/#76;
 - localization visual audit is pending;
 - final release package and installer are not built from the reviewed final
   commit;
