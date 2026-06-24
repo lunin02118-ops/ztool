@@ -117,6 +117,20 @@ def main() -> int:
             return fail(f"S8 validation issues must be empty, got {issues!r}")
         if args.require_s8_strict_filters and not validation_details.get("strict_filters"):
             return fail("S8 strict filter validation was required but not recorded")
+        if args.require_s8_strict_filters:
+            modes = export_details.get("modes")
+            if not isinstance(modes, list):
+                return fail("S8 strict filter assertion requires export mode details")
+            by_mode = {mode.get("mode_id"): mode for mode in modes if isinstance(mode, dict)}
+            for mode_id in (7, 8):
+                mode = by_mode.get(mode_id)
+                if mode is None:
+                    return fail(f"S8 strict filter mode {mode_id} is missing")
+                rows = mode.get("rows")
+                if not isinstance(rows, int) or rows <= 0:
+                    return fail(f"S8 strict filter mode {mode_id} must have rows > 0, got {rows!r}")
+                if mode.get("filter_empty"):
+                    return fail(f"S8 strict filter mode {mode_id} is marked filter_empty")
 
     print(
         "E2E assertion PASS: "

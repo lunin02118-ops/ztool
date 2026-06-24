@@ -65,13 +65,39 @@ pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
   -BuildFromSource `
   -RunS7 `
   -RunS8 `
+  -PrepareStrictBomFixture `
+  -ForceStrictBomFixture `
   -RequireSolidWorks `
   -SolidWorksExe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe" `
   -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll" `
-  -TestAssembly <strict-filter-fixture.SLDASM> `
+  -TestAssembly D:\Development\ztool\TestModel\0614-A00.SLDASM `
   -ExpectedBomModeCount 8 `
   -RequireStrictBomFilters `
   -OutputDir _local_artifacts\reports\e2e\s8-bom-strict
+```
+
+`-PrepareStrictBomFixture` копирует исходный `TestModel` в
+`_local_artifacts\reports\e2e\s8-bom-strict\strict-fixture\TestModel-RU`,
+пишет русские свойства через SolidWorks COM только в копию и переключает S7/S8
+на полученный `fixture-manifest.json -> assembly_path`. Оригинальный
+`TestModel` в репозитории не изменяется.
+
+Проверка strict-result:
+
+```powershell
+python tools\e2e\assert_e2e_result.py `
+  _local_artifacts\reports\e2e\s8-bom-strict\e2e-result.json `
+  --allow-warn `
+  --require-stage-pass 05-preflight-register `
+  --require-stage-pass 06-prepare-strict-bom-fixture `
+  --require-stage-pass 07-s7-connect `
+  --require-stage-pass 08-s8-bom-export `
+  --require-stage-pass 09-excel-validation `
+  --require-s7-min-rows 29 `
+  --require-s7-min-columns 30 `
+  --require-s8-mode-count 8 `
+  --require-s8-all-pass `
+  --require-s8-strict-filters
 ```
 
 ## Evidence
@@ -130,7 +156,8 @@ python scripts\swtools_s8_bom_live.py --self-test-process-scoped-modal
 [ ] режим 5 повторяет row count режима 1;
 [ ] режим 6 повторяет row count режима 2;
 [ ] режимы 7/8 не равны полной сводной спецификации;
-[ ] при `-RequireStrictBomFilters` режимы 7/8 не пустые.
+[ ] при `-RequireStrictBomFilters` режимы 7/8 не пустые (`rows > 0`) и не
+    помечены как `filter_empty`.
 ```
 
 ## Acceptance
@@ -143,6 +170,7 @@ python scripts\swtools_s8_bom_live.py --self-test-process-scoped-modal
 [ ] semantic Excel validation PASS;
 [ ] empty filter result is recorded as `filter_empty`;
 [ ] strict filters are recorded and enforced when required;
+[ ] strict fixture manifest records copied assembly path and RU `Тип` values;
 [ ] production_go_allowed=false.
 ```
 

@@ -168,7 +168,8 @@ function Invoke-E2ECommand {
         [Parameter(Mandatory = $true)]
         [string]$FilePath,
         [string[]]$Arguments = @(),
-        [string]$LogPath = ''
+        [string]$LogPath = '',
+        [int]$TimeoutSeconds = 0
     )
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $FilePath
@@ -183,9 +184,29 @@ function Invoke-E2ECommand {
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi
     [void]$proc.Start()
-    $stdout = $proc.StandardOutput.ReadToEnd()
-    $stderr = $proc.StandardError.ReadToEnd()
-    $proc.WaitForExit()
+    $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+    $stderrTask = $proc.StandardError.ReadToEndAsync()
+    $timedOut = $false
+    if ($TimeoutSeconds -gt 0) {
+        if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
+            $timedOut = $true
+            try {
+                $proc.Kill($true)
+            }
+            catch {
+                try { $proc.Kill() } catch {}
+            }
+            $proc.WaitForExit()
+        }
+    }
+    else {
+        $proc.WaitForExit()
+    }
+    $stdout = $stdoutTask.GetAwaiter().GetResult()
+    $stderr = $stderrTask.GetAwaiter().GetResult()
+    if ($timedOut) {
+        $stderr = "$stderr`nE2E command timed out after $TimeoutSeconds seconds."
+    }
 
     if ($LogPath) {
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
@@ -197,7 +218,9 @@ function Invoke-E2ECommand {
         name = $Name
         file = $FilePath
         arguments = $Arguments
-        exit_code = $proc.ExitCode
+        exit_code = $(if ($timedOut) { -1 } else { $proc.ExitCode })
+        timed_out = $timedOut
+        timeout_seconds = $TimeoutSeconds
         stdout = $stdout
         stderr = $stderr
         log_path = $LogPath

@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,7 @@ win32con = require_module("win32con")
 win32process = require_module("win32process")
 psutil = require_module("psutil")
 Application = require_module("pywinauto.application").Application
+Desktop = require_module("pywinauto").Desktop
 
 
 def sha256(path: Path) -> str:
@@ -168,6 +170,194 @@ def visible_texts(win: Any) -> list[str]:
     return result
 
 
+def window_process_id(win: Any) -> int | None:
+    try:
+        return int(win.process_id())
+    except Exception:
+        pass
+    try:
+        return int(win.element_info.process_id)
+    except Exception:
+        return None
+
+
+def desktop_windows(backend: str, process_id: int | None = None) -> list[Any]:
+    desktop = Desktop(backend=backend)
+    if process_id is not None:
+        try:
+            return desktop.windows(process=process_id)
+        except Exception:
+            pass
+    try:
+        windows = desktop.windows()
+    except Exception:
+        return []
+    if process_id is None:
+        return windows
+    return [win for win in windows if window_process_id(win) == process_id]
+
+
+def dialog_texts(win: Any) -> list[str]:
+    texts: list[str] = []
+    try:
+        title = win.window_text().strip()
+        if title:
+            texts.append(title)
+    except Exception:
+        pass
+    try:
+        children = win.descendants()
+    except Exception:
+        children = []
+    for child in children:
+        try:
+            text = child.window_text().strip()
+        except Exception:
+            continue
+        if text:
+            texts.append(text)
+    return texts
+
+
+def normalize_button_text(text: str) -> str:
+    return text.replace("&", "").strip()
+
+
+def dialog_button_candidates(dialog: Any) -> list[Any]:
+    candidates: list[Any] = []
+    for method_name in ("children", "descendants"):
+        method = getattr(dialog, method_name, None)
+        if not method:
+            continue
+        for kwargs in ({"control_type": "Button"}, {}):
+            try:
+                candidates.extend(method(**kwargs))
+            except Exception:
+                continue
+    seen: set[Any] = set()
+    unique: list[Any] = []
+    for child in candidates:
+        handle = getattr(child, "handle", None)
+        key = handle if handle else id(child)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(child)
+    return unique
+
+
+def click_dialog_button(dialog: Any, names: list[str], timeout: float = 1.0) -> str:
+    deadline = time.time() + timeout
+    expected = {normalize_button_text(name): name for name in names}
+    while time.time() < deadline:
+        for child in dialog_button_candidates(dialog):
+            try:
+                text = normalize_button_text(child.window_text())
+                control_type = getattr(child.element_info, "control_type", "")
+                class_name = child.class_name()
+                is_button = (
+                    control_type == "Button"
+                    or control_type.endswith(".Button")
+                    or class_name == "Button"
+                    or "BUTTON" in class_name.upper()
+                )
+            except Exception:
+                continue
+            if not is_button or text not in expected:
+                continue
+            for action in ("post", "invoke", "legacy", "click_input", "send"):
+                try:
+                    if action == "send":
+                        child.send_message(0x00F5, 0, 0)  # BM_CLICK
+                    elif action == "post":
+                        child.post_message(0x00F5, 0, 0)
+                    elif action == "invoke":
+                        child.invoke()
+                    elif action == "legacy":
+                        child.iface_invoke.Invoke()
+                    else:
+                        child.click_input()
+                    return expected[text]
+                except Exception:
+                    continue
+        time.sleep(0.05)
+    raise RuntimeError(f"Cannot find dialog button from {names!r}")
+
+
+def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, Any]:
+    deadline = time.time() + timeout
+    last: dict[str, Any] = {"found": False, "dismissed": False, "text": ""}
+    while time.time() < deadline:
+        for backend in ("win32", "uia"):
+            for win in desktop_windows(backend, process_id=swtools_pid):
+                texts = dialog_texts(win)
+                joined = "\n".join(texts)
+                lowered = joined.lower()
+                if "лицензия не обнаружена" not in lowered and "license" not in lowered:
+                    continue
+                if "демо" not in lowered and "проба" not in lowered and "demo" not in lowered:
+                    continue
+                last = {
+                    "found": True,
+                    "dismissed": False,
+                    "backend": backend,
+                    "title": texts[0] if texts else "",
+                    "process_id": window_process_id(win),
+                    "text": joined[:2000],
+                }
+                button = click_dialog_button(win, ["Демо", "Проба", "Demo"], timeout=1.0)
+                close_deadline = time.time() + 3.0
+                while time.time() < close_deadline:
+                    still_open = False
+                    for check in desktop_windows(backend, process_id=swtools_pid):
+                        check_text = "\n".join(dialog_texts(check)).lower()
+                        if "лицензия не обнаружена" in check_text:
+                            still_open = True
+                            break
+                    if not still_open:
+                        last.update({"dismissed": True, "button": button})
+                        return last
+                    time.sleep(0.1)
+                last.update({"button": button})
+                return last
+        time.sleep(0.1)
+    return last
+
+
+def blocking_dialog(swtools_pid: int, solidworks_pid: int) -> dict[str, Any] | None:
+    for backend in ("win32", "uia"):
+        for pid, owner in ((solidworks_pid, "SolidWorks"), (swtools_pid, "SWTools")):
+            for win in desktop_windows(backend, process_id=pid):
+                try:
+                    title = win.window_text().strip()
+                    class_name = win.class_name()
+                except Exception:
+                    title = ""
+                    class_name = ""
+                texts = dialog_texts(win)
+                joined = "\n".join(texts)
+                lowered = joined.lower()
+                if "лицензия не обнаружена" in lowered:
+                    continue
+                is_dialog = (
+                    class_name == "#32770"
+                    or title in {"Информация", "Ошибка", "Вопрос"}
+                    or "тайм-аут соединения" in lowered
+                    or "timeout" in lowered
+                )
+                if not is_dialog:
+                    continue
+                return {
+                    "owner": owner,
+                    "backend": backend,
+                    "process_id": pid,
+                    "title": title,
+                    "class_name": class_name,
+                    "text": joined[:2000],
+                }
+    return None
+
+
 def parse_status(texts: list[str]) -> str:
     candidates = [t for t in texts if "Подключение" in t or "Получение данных" in t or "поз" in t]
     return candidates[-1] if candidates else ""
@@ -262,8 +452,25 @@ def invoke_connect(main: Any) -> None:
     raise RuntimeError("Cannot UIA-invoke top SplitButton 'Подключить SW'")
 
 
+def invoke_connect_async(main: Any) -> dict[str, Any]:
+    state: dict[str, Any] = {"done": False, "error": ""}
+
+    def worker() -> None:
+        try:
+            invoke_connect(main)
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["done"] = True
+
+    thread = threading.Thread(target=worker, name="swtools-s7-connect-invoke", daemon=True)
+    thread.start()
+    return state
+
+
 def run() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--runtime-dir", required=True)
     parser.add_argument("--model", required=True)
@@ -331,17 +538,37 @@ def run() -> int:
         result["checks"].append("launcher command line ok")
 
         app = Application(backend="uia").connect(process=proc.pid)
-        invoke_text(app, "Демо", timeout=8.0)
+        license_result = dismiss_license_dialog(proc.pid, timeout=10.0)
+        result["license_dialog"] = license_result
+        if license_result.get("found") and not license_result.get("dismissed"):
+            raise RuntimeError(f"License dialog was not dismissed: {license_result}")
+        if license_result.get("dismissed"):
+            result["checks"].append("trial dialog dismissed through object automation")
+        else:
+            invoke_text(app, "Демо", timeout=1.0)
         main = max(app.windows(), key=lambda w: w.rectangle().width() * w.rectangle().height())
-        invoke_connect(main)
-        result["checks"].append("connect invoked through UIA")
+        blocker = blocking_dialog(proc.pid, solidworks_pid)
+        if blocker:
+            result["blocking_dialog"] = blocker
+            raise RuntimeError(f"Blocking dialog before connect: {blocker}")
+        connect_state = invoke_connect_async(main)
+        result["connect_invoke"] = dict(connect_state)
+        result["checks"].append("connect invoked through UIA worker")
 
         last_status = ""
         last_count = 0
         last_texts: list[str] = []
         deadline = time.time() + 80.0
         while time.time() < deadline:
-            time.sleep(1.0)
+            time.sleep(0.5)
+            result["connect_invoke"] = dict(connect_state)
+            if connect_state.get("done") and connect_state.get("error"):
+                raise RuntimeError(f"Connect UIA invoke failed: {connect_state['error']}")
+            blocker = blocking_dialog(proc.pid, solidworks_pid)
+            if blocker:
+                result["blocking_dialog"] = blocker
+                raise RuntimeError(f"Blocking dialog during S7 connect: {blocker}")
+            dismiss_license_dialog(proc.pid, timeout=0.1)
             last_texts = visible_texts(main)
             last_status = parse_status(last_texts)
             last_count = parse_row_count(last_status, last_texts)

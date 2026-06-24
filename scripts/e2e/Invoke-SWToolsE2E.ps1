@@ -23,12 +23,15 @@ param(
     [string]$SolidWorksToolsDll = '',
     [string]$TestAssembly = '',
     [string]$OutputDir = '',
+    [string]$StrictFixtureDir = '',
 
     [int[]]$RequireBomModes = @(1, 2, 3, 4, 5, 6, 7, 8),
     [int]$ExpectedMinRows = 29,
     [int]$ExpectedMinColumns = 30,
     [int]$ExpectedBomModeCount = 8,
     [switch]$RequireStrictBomFilters,
+    [switch]$PrepareStrictBomFixture,
+    [switch]$ForceStrictBomFixture,
     [switch]$AllowDirtyManifest,
     [switch]$AllowMissingSolidWorksTools
 )
@@ -86,6 +89,8 @@ $result.parameters = [ordered]@{
     solidworks_dir = $SolidWorksDir
     solidworks_tools_dll = $SolidWorksToolsDll
     test_assembly = $TestAssembly
+    strict_fixture_dir = $StrictFixtureDir
+    prepare_strict_bom_fixture = [bool]$PrepareStrictBomFixture
     require_bom_modes = $RequireBomModes
     expected_min_rows = $ExpectedMinRows
     expected_min_columns = $ExpectedMinColumns
@@ -226,6 +231,41 @@ try {
         }
         $result.artifacts.preflight_register_json = $preflightJson
 
+        if ($PrepareStrictBomFixture) {
+            if (-not $TestAssembly -and $env:SWTOOLS_TEST_MODEL) { $TestAssembly = $env:SWTOOLS_TEST_MODEL }
+            if (-not $TestAssembly) { throw '-PrepareStrictBomFixture requires -TestAssembly or SWTOOLS_TEST_MODEL' }
+            $fixtureDir = $StrictFixtureDir
+            if (-not $fixtureDir) {
+                $fixtureDir = Join-Path $OutputDir 'strict-fixture\TestModel-RU'
+            }
+            elseif (-not [System.IO.Path]::IsPathRooted($fixtureDir)) {
+                $fixtureDir = Join-Path $repoRoot $fixtureDir
+            }
+            $fixtureManifest = Join-Path $fixtureDir 'fixture-manifest.json'
+            $fixtureArgs = @(
+                (Join-Path $repoRoot 'scripts\prepare_s8_strict_fixture.py'),
+                '--source-assembly', $TestAssembly,
+                '--fixture-dir', $fixtureDir,
+                '--manifest', $fixtureManifest
+            )
+            if ($ForceStrictBomFixture) { $fixtureArgs += '--force' }
+            $fixtureLog = Join-Path $OutputDir 'logs\06-prepare-strict-bom-fixture.log'
+            $fixture = Invoke-E2ECommand -Name 'prepare_s8_strict_fixture' -FilePath 'python' -Arguments $fixtureArgs -LogPath $fixtureLog
+            if ($fixture.exit_code -ne 0) { throw "prepare_s8_strict_fixture failed; see $fixtureLog" }
+            $fixtureResult = Read-JsonFile $fixtureManifest
+            $TestAssembly = [string]$fixtureResult.assembly_path
+            Add-E2EStage -Result $result -Name '06-prepare-strict-bom-fixture' -Status 'PASS' -Summary "strict S8 fixture prepared: $TestAssembly" -Details @{
+                log = $fixtureLog
+                fixture_dir = $fixtureDir
+                manifest = $fixtureManifest
+                assembly_path = $fixtureResult.assembly_path
+                type_counts_by_document = $fixtureResult.type_counts_by_document
+                expected_modes = $fixtureResult.expected_modes
+            }
+            $result.artifacts.strict_fixture_manifest = $fixtureManifest
+            $result.artifacts.strict_fixture_assembly = $TestAssembly
+        }
+
         $s7Dir = Join-Path $OutputDir 's7-live-smoke'
         $s7Args = @(
             (Join-Path $repoRoot 'scripts\swtools_s7_live_smoke.py'),
@@ -236,7 +276,7 @@ try {
             '--expected-min-columns', ([string]$ExpectedMinColumns)
         )
         $s7Log = Join-Path $OutputDir 'logs\07-s7-live-smoke.log'
-        $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log
+        $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log -TimeoutSeconds 180
         if ($s7.exit_code -ne 0) { throw "S7 live smoke failed; see $s7Log" }
         $s7Json = Join-Path $s7Dir 's7-live-smoke-result.json'
         $s7Result = Read-JsonFile $s7Json
@@ -274,7 +314,7 @@ try {
         )
         if ($RequireStrictBomFilters) { $s8Args += '--strict-filters' }
         $s8Log = Join-Path $OutputDir 'logs\08-s8-bom-export.log'
-        $s8 = Invoke-E2ECommand -Name 'swtools_s8_bom_live' -FilePath 'python' -Arguments $s8Args -LogPath $s8Log
+        $s8 = Invoke-E2ECommand -Name 'swtools_s8_bom_live' -FilePath 'python' -Arguments $s8Args -LogPath $s8Log -TimeoutSeconds 900
         if ($s8.exit_code -ne 0) { throw "S8 BOM export failed; see $s8Log" }
         $s8Json = Join-Path $s8Dir 's8-bom-result.json'
         $s8Result = Read-JsonFile $s8Json
