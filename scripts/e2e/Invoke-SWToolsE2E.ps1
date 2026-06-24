@@ -25,6 +25,7 @@ param(
 
     [int[]]$RequireBomModes = @(1, 2, 3, 4, 5, 6, 7, 8),
     [int]$ExpectedMinRows = 29,
+    [int]$ExpectedMinColumns = 30,
     [switch]$AllowDirtyManifest,
     [switch]$AllowMissingSolidWorksTools
 )
@@ -82,6 +83,8 @@ $result.parameters = [ordered]@{
     solidworks_tools_dll = $SolidWorksToolsDll
     test_assembly = $TestAssembly
     require_bom_modes = $RequireBomModes
+    expected_min_rows = $ExpectedMinRows
+    expected_min_columns = $ExpectedMinColumns
 }
 
 $resultPath = Join-Path $OutputDir 'e2e-result.json'
@@ -110,6 +113,8 @@ try {
     $releaseInputsPath = Join-Path $OutputDir 'release-inputs.json'
     $packageOutputRoot = if ($PackageRoot) { $PackageRoot } else { Join-Path $OutputDir 'package' }
     $version = (Get-Content -LiteralPath (Join-Path $repoRoot 'VERSION') -Encoding UTF8 -Raw).Trim()
+    $runtimeClientHash = ''
+    $runtimeAddinHash = ''
 
     if ($BuildFromSource) {
         $resolveArgs = @(
@@ -166,6 +171,8 @@ try {
     }
 
     if ($RuntimeDir) {
+        $runtimeClientHash = (Get-E2EFileSha256 -Path (Join-Path $RuntimeDir 'SWTools.exe'))
+        $runtimeAddinHash = (Get-E2EFileSha256 -Path (Join-Path $RuntimeDir 'SWTools.dll'))
         $identityPath = Join-Path $OutputDir 'runtime-identity.json'
         $identityArgs = @(
             '-NoProfile', '-File', (Join-Path $repoRoot 'scripts\check_swtools_runtime_identity.ps1'),
@@ -183,19 +190,59 @@ try {
         if (-not $RuntimeDir) { throw '-RunS7 requires -RuntimeDir or -BuildFromSource' }
         if (-not $TestAssembly -and $env:SWTOOLS_TEST_MODEL) { $TestAssembly = $env:SWTOOLS_TEST_MODEL }
         if (-not $TestAssembly) { throw '-RunS7 requires -TestAssembly or SWTOOLS_TEST_MODEL' }
+
+        $preflightDir = Join-Path $OutputDir '05-preflight-register'
+        $preflightArgs = @(
+            '-NoProfile', '-File', (Join-Path $repoRoot 'scripts\sw_test_preflight.ps1'),
+            '-RuntimeDir', $RuntimeDir,
+            '-ReportDir', $preflightDir,
+            '-Register',
+            '-ExpectedExeSha256', $runtimeClientHash,
+            '-ExpectedDllSha256', $runtimeAddinHash
+        )
+        $preflightLog = Join-Path $OutputDir 'logs\05-preflight-register.log'
+        $preflight = Invoke-E2ECommand -Name 'sw_test_preflight' -FilePath $pwsh -Arguments $preflightArgs -LogPath $preflightLog
+        if ($preflight.exit_code -ne 0) { throw "sw_test_preflight failed; see $preflightLog" }
+        $preflightJson = Join-Path $preflightDir 'preflight-report.json'
+        $preflightResult = Read-JsonFile $preflightJson
+        Add-E2EStage -Result $result -Name '05-preflight-register' -Status 'PASS' -Summary "runtime registered for live S7: $($preflightResult.status)" -Details @{
+            log = $preflightLog
+            report_dir = $preflightDir
+            result_json = $preflightJson
+            status = $preflightResult.status
+            runtime_dir = $preflightResult.runtimeDir
+            swtools_exe_sha256 = $preflightResult.swtoolsExe.sha256
+            swtools_dll_sha256 = $preflightResult.swtoolsDll.sha256
+        }
+        $result.artifacts.preflight_register_json = $preflightJson
+
         $s7Dir = Join-Path $OutputDir 's7-live-smoke'
         $s7Args = @(
             (Join-Path $repoRoot 'scripts\swtools_s7_live_smoke.py'),
             '--runtime-dir', $RuntimeDir,
             '--model', $TestAssembly,
             '--report-dir', $s7Dir,
-            '--expected-min-rows', ([string]$ExpectedMinRows)
+            '--expected-min-rows', ([string]$ExpectedMinRows),
+            '--expected-min-columns', ([string]$ExpectedMinColumns)
         )
         $s7Log = Join-Path $OutputDir 'logs\07-s7-live-smoke.log'
         $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log
         if ($s7.exit_code -ne 0) { throw "S7 live smoke failed; see $s7Log" }
-        Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'PASS' -Summary 'S7 live smoke completed' -Details @{ log = $s7Log; report_dir = $s7Dir }
+        $s7Json = Join-Path $s7Dir 's7-live-smoke-result.json'
+        $s7Result = Read-JsonFile $s7Json
+        Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'PASS' -Summary "S7 live smoke completed: rows=$($s7Result.row_count), columns=$($s7Result.column_count)" -Details @{
+            log = $s7Log
+            report_dir = $s7Dir
+            result_json = $s7Json
+            row_count = $s7Result.row_count
+            column_count = $s7Result.column_count
+            swtools_path = $s7Result.swtools_path
+            swtools_sha256 = $s7Result.exe_sha256
+            addin_sha256 = $s7Result.dll_sha256
+            status_text = $s7Result.status_text
+        }
         $result.artifacts.s7_report_dir = $s7Dir
+        $result.artifacts.s7_connect_json = $s7Json
     }
     else {
         Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'SKIP' -Summary 'live SolidWorks S7 not requested'
