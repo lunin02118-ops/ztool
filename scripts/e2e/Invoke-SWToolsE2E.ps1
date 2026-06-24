@@ -292,6 +292,7 @@ try {
             swtools_sha256 = $s7Result.exe_sha256
             addin_sha256 = $s7Result.dll_sha256
             status_text = $s7Result.status_text
+            model_ready_gate = $s7Result.model_ready_gate
         }
         $result.artifacts.s7_report_dir = $s7Dir
         $result.artifacts.s7_connect_json = $s7Json

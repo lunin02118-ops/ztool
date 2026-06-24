@@ -10,7 +10,7 @@ S7 должен доказывать полный live path:
 
 ```text
 build/package -> sw_test_preflight -Register -> SolidWorks fixture
--> ZTool.SwAddin.openZtool(0) -> current package SWTools.exe
+-> model-ready gate -> ZTool.SwAddin.openZtool(0) -> current package SWTools.exe
 -> UIA Invoke "Подключить SW" -> WinForms grid -> row/column evidence
 ```
 
@@ -40,6 +40,7 @@ python tools\e2e\assert_e2e_result.py `
   --allow-warn `
   --require-stage-pass 05-preflight-register `
   --require-stage-pass 07-s7-connect `
+  --require-s7-model-ready `
   --require-s7-min-rows 29 `
   --require-s7-min-columns 30
 ```
@@ -60,6 +61,8 @@ stages[07-s7-connect].details.swtools_path
 stages[07-s7-connect].details.swtools_sha256
 stages[07-s7-connect].details.addin_sha256
 stages[07-s7-connect].details.status_text
+stages[07-s7-connect].details.model_ready_gate.status
+stages[07-s7-connect].details.model_ready_gate.active_model
 ```
 
 `scripts\swtools_s7_live_smoke.py` также пишет подробный
@@ -68,11 +71,44 @@ stages[07-s7-connect].details.status_text
 ```text
 active_model
 solidworks_pid
+model_ready_gate
 swtools_pid
 swtools_command_line
 grid_dimensions
 visible_text_sample
 ```
+
+## Model-ready gate
+
+`ensure_model_open()` проверяет только, что нужная сборка стала `ActiveDoc`.
+Для SolidWorks этого недостаточно: во время загрузки компонентов и графики
+может быть открыто штатное transient-окно `#32770` с текстом вроде
+`Открытие компонентов`, `Обновление сборки`, `Загружается файл`.
+
+S7 automation поэтому выполняет отдельный gate перед `openZtool(0)`:
+
+```text
+[PASS] ActiveDoc == ожидаемая .SLDASM;
+[PASS] нет transient loading dialog в течение quiet_seconds;
+[FAIL] любое не-transient модальное окно SolidWorks;
+[FAIL] timeout ожидания готовности модели;
+[NEVER] координатные клики или закрытие transient loading dialog.
+```
+
+Evidence:
+
+```text
+model_ready_gate.status
+model_ready_gate.waited_seconds
+model_ready_gate.stable_for_seconds
+model_ready_gate.transient_dialog_count
+model_ready_gate.transient_dialogs[]
+model_ready_gate.blocking_dialog
+```
+
+Если `--require-s7-model-ready` передан в `assert_e2e_result.py`,
+`model_ready_gate.status` обязан быть `PASS`; наличие строк/колонок без этого
+evidence не считается корректным S7 proof.
 
 ## Acceptance
 
@@ -81,6 +117,7 @@ visible_text_sample
 [ ] preflight/register stopped stale SLDWORKS/SWTools and registered current SWTools.dll;
 [ ] registry CodeBase points to current runtime;
 [ ] SolidWorks add-in object exists;
+[ ] model_ready_gate.status=PASS before `openZtool(0)`;
 [ ] SWTools.exe launched from current runtime path;
 [ ] SWTools command line includes SolidWorks PID;
 [ ] "Подключить SW" invoked through UIA;

@@ -52,6 +52,7 @@
 | [`release/PRODUCTION_READINESS_REPORT_RU.md`](release/PRODUCTION_READINESS_REPORT_RU.md) | Шаблон production readiness report | актуален |
 | [`testing/E2E_AUTOMATION_STRATEGY_RU.md`](testing/E2E_AUTOMATION_STRATEGY_RU.md) | Стратегия E2E harness: doctor, source package, S7/S8 live gates, JSON evidence | актуален |
 | [`testing/E2E_S7_AUTOMATION_RU.md`](testing/E2E_S7_AUTOMATION_RU.md) | Методика live S7: `Подключить SW`, row/column evidence, runtime path/hash | актуален |
+| [`testing/E2E_S7_MODEL_READY_RU.md`](testing/E2E_S7_MODEL_READY_RU.md) | Model-ready gate перед `openZtool(0)`: transient loading dialog SolidWorks не закрывается, а пережидается с JSON evidence | актуален |
 | [`testing/E2E_S8_BOM_AUTOMATION_RU.md`](testing/E2E_S8_BOM_AUTOMATION_RU.md) | Методика live S8: BOM 1-8, SaveFileDialog, semantic Excel validation | актуален |
 | [`testing/E2E_BRANDING_VERSION_AUTOMATION_RU.md`](testing/E2E_BRANDING_VERSION_AUTOMATION_RU.md) | Методика live branding/version gate: runtime path, title, version metadata, live/embedded icons | актуален |
 | [`../scripts/prepare_s8_strict_fixture.py`](../scripts/prepare_s8_strict_fixture.py) | Подготовка копии RU strict fixture для S8 режимов 7/8 без изменения tracked `TestModel` | актуален |

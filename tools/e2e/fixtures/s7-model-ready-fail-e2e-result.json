@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "production_go_allowed": false,
+  "stages": [
+    {
+      "name": "07-s7-connect",
+      "status": "PASS",
+      "summary": "fixture with rows but failed model-ready gate",
+      "details": {
+        "row_count": 29,
+        "column_count": 40,
+        "status_text": "Подключение завершено, затрачено 0,3 сек, всего 29 поз.",
+        "model_ready_gate": {
+          "status": "FAIL",
+          "active_model": "D:\\Development\\ztool\\TestModel\\0614-A00.SLDASM",
+          "blocking_dialog": {
+            "owner": "SolidWorks",
+            "title": "Открытие",
+            "text": "Открытие компонентов"
+          }
+        }
+      }
+    }
+  ]
+}
