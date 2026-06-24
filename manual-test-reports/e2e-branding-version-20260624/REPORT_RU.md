@@ -5,14 +5,11 @@
 ## Контекст
 
 - Branch: `codex/e2e-branding-version-live`
-- Runtime-affecting commit tested: `474fab3a8a0f42d3868be1b3394b8d2d66f17e52`
-- Note: the follow-up commit containing this report is documentation-only. No
-  runtime, E2E script, package or installer logic changed after the accepted
-  live run.
+- Runtime-affecting commit tested: `464985c2110aff54b1a6ebac87f89cf2c864792c`
 - Git state during accepted run: `clean`
 - SolidWorks: `C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe`
 - Test assembly: `TestModel\0614-A00.SLDASM`
-- Evidence root: `_local_artifacts\reports\e2e\branding-version-live-20260624-04-clean`
+- Evidence root: `_local_artifacts\reports\e2e\branding-version-live-20260624-09-clean`
 
 ## Команда
 
@@ -27,14 +24,14 @@ pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
   -ExpectedMinRows 29 -ExpectedMinColumns 30 `
   -ExpectedBomModeCount 8 `
   -RequireStrictBomFilters `
-  -OutputDir _local_artifacts\reports\e2e\branding-version-live-20260624-04-clean
+  -OutputDir _local_artifacts\reports\e2e\branding-version-live-20260624-09-clean
 ```
 
 Assert:
 
 ```powershell
 python tools\e2e\assert_e2e_result.py `
-  _local_artifacts\reports\e2e\branding-version-live-20260624-04-clean\e2e-result.json `
+  _local_artifacts\reports\e2e\branding-version-live-20260624-09-clean\e2e-result.json `
   --allow-warn `
   --require-stage-pass 07-s7-connect `
   --require-stage-pass 08-s8-bom-export `
@@ -60,16 +57,32 @@ python tools\e2e\assert_e2e_result.py `
 
 ## Branding/version evidence
 
-- Live title: `SWTools 1.1.6+474fab3.clean(x64)     Пробный период... осталось126секунда`
-- Expected title prefix: `SWTools 1.1.6+474fab3.clean`
+- Live title: `SWTools 1.1.6+464985c.clean(x64)     Пробный период... осталось127секунда`
+- Expected title prefix: `SWTools 1.1.6+464985c.clean`
 - Runtime process path:
-  `_local_artifacts\reports\e2e\branding-version-live-20260624-04-clean\package\SWTools-1.1.6\runtime\SWTools.exe`
-- ProductVersion: `1.1.6+474fab3.clean`
-- FileVersion: `1.1.6.371`
+  `_local_artifacts\reports\e2e\branding-version-live-20260624-09-clean\package\SWTools-1.1.6\runtime\SWTools.exe`
+- ProductVersion: `1.1.6+464985c.clean`
+- FileVersion: `1.1.6.374`
 - `SWTools.exe` SHA256: recorded in `10-branding-version\branding-version-result.json`
 - `SWTools.dll` SHA256: recorded in `10-branding-version\branding-version-result.json`
 - Live window icon: `32x32`, SHA256 `FBCBEA469574936EB8B104AAC5521218DF0B49D9891A6F0BA3D0D8DD40DADF05`
 - Embedded EXE icon: `32x32`, SHA256 `FBCBEA469574936EB8B104AAC5521218DF0B49D9891A6F0BA3D0D8DD40DADF05`
+- `icon_hash_match`: `true`
+
+## Negative validator check
+
+Добавлен offline negative fixture:
+
+- `tools\e2e\fixtures\branding-icon-mismatch-e2e-result.json`
+- `tools\e2e\selftest_assert_e2e_result.py`
+
+Проверка:
+
+```powershell
+python tools\e2e\selftest_assert_e2e_result.py
+```
+
+Результат: `E2E assertion self-test PASS: branding icon mismatch is rejected`.
 
 ## Дополнительно исправлено в E2E
 
