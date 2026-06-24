@@ -9,7 +9,8 @@ Scope: автоматизация S7 `Подключить SW` поверх E2E 
 S7 должен доказывать полный live path:
 
 ```text
-SolidWorks fixture -> ZTool.SwAddin.openZtool(0) -> current package SWTools.exe
+build/package -> sw_test_preflight -Register -> SolidWorks fixture
+-> ZTool.SwAddin.openZtool(0) -> current package SWTools.exe
 -> UIA Invoke "Подключить SW" -> WinForms grid -> row/column evidence
 ```
 
@@ -47,7 +48,11 @@ python tools\e2e\assert_e2e_result.py `
 Live result должен содержать:
 
 ```text
+artifacts.preflight_register_json
 artifacts.s7_connect_json
+stages[05-preflight-register].details.runtime_dir
+stages[05-preflight-register].details.swtools_exe_sha256
+stages[05-preflight-register].details.swtools_dll_sha256
 stages[07-s7-connect].details.row_count
 stages[07-s7-connect].details.column_count
 stages[07-s7-connect].details.swtools_path
@@ -72,6 +77,8 @@ visible_text_sample
 
 ```text
 [ ] runtime hashes match expected package runtime;
+[ ] preflight/register stopped stale SLDWORKS/SWTools and registered current SWTools.dll;
+[ ] registry CodeBase points to current runtime;
 [ ] SolidWorks add-in object exists;
 [ ] SWTools.exe launched from current runtime path;
 [ ] SWTools command line includes SolidWorks PID;
