@@ -25,6 +25,7 @@ param(
 
     [int[]]$RequireBomModes = @(1, 2, 3, 4, 5, 6, 7, 8),
     [int]$ExpectedMinRows = 29,
+    [int]$ExpectedMinColumns = 30,
     [switch]$AllowDirtyManifest,
     [switch]$AllowMissingSolidWorksTools
 )
@@ -82,6 +83,8 @@ $result.parameters = [ordered]@{
     solidworks_tools_dll = $SolidWorksToolsDll
     test_assembly = $TestAssembly
     require_bom_modes = $RequireBomModes
+    expected_min_rows = $ExpectedMinRows
+    expected_min_columns = $ExpectedMinColumns
 }
 
 $resultPath = Join-Path $OutputDir 'e2e-result.json'
@@ -189,13 +192,27 @@ try {
             '--runtime-dir', $RuntimeDir,
             '--model', $TestAssembly,
             '--report-dir', $s7Dir,
-            '--expected-min-rows', ([string]$ExpectedMinRows)
+            '--expected-min-rows', ([string]$ExpectedMinRows),
+            '--expected-min-columns', ([string]$ExpectedMinColumns)
         )
         $s7Log = Join-Path $OutputDir 'logs\07-s7-live-smoke.log'
         $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log
         if ($s7.exit_code -ne 0) { throw "S7 live smoke failed; see $s7Log" }
-        Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'PASS' -Summary 'S7 live smoke completed' -Details @{ log = $s7Log; report_dir = $s7Dir }
+        $s7Json = Join-Path $s7Dir 's7-live-smoke-result.json'
+        $s7Result = Read-JsonFile $s7Json
+        Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'PASS' -Summary "S7 live smoke completed: rows=$($s7Result.row_count), columns=$($s7Result.column_count)" -Details @{
+            log = $s7Log
+            report_dir = $s7Dir
+            result_json = $s7Json
+            row_count = $s7Result.row_count
+            column_count = $s7Result.column_count
+            swtools_path = $s7Result.swtools_path
+            swtools_sha256 = $s7Result.exe_sha256
+            addin_sha256 = $s7Result.dll_sha256
+            status_text = $s7Result.status_text
+        }
         $result.artifacts.s7_report_dir = $s7Dir
+        $result.artifacts.s7_connect_json = $s7Json
     }
     else {
         Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'SKIP' -Summary 'live SolidWorks S7 not requested'

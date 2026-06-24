@@ -75,6 +75,14 @@ def get_solidworks(timeout: float) -> Any:
     raise RuntimeError(f"SolidWorks COM object not available: {last_error}")
 
 
+def get_or_start_solidworks(model_path: Path, timeout: float) -> Any:
+    try:
+        return get_solidworks(timeout=5.0)
+    except RuntimeError:
+        os.startfile(str(model_path))
+        return get_solidworks(timeout)
+
+
 def ensure_model_open(sw: Any, model_path: Path, timeout: float) -> str:
     model_norm = str(model_path.resolve()).lower()
     try:
@@ -86,7 +94,20 @@ def ensure_model_open(sw: Any, model_path: Path, timeout: float) -> str:
     except Exception:
         pass
 
-    os.startfile(str(model_path))
+    errors: list[str] = []
+    opened = False
+    for doc_type in (2, 1):  # swDocASSEMBLY, swDocPART without importing SolidWorks constants.
+        try:
+            open_errors = 0
+            open_warnings = 0
+            doc = sw.OpenDoc6(str(model_path), doc_type, 0, "", open_errors, open_warnings)
+            if doc is not None:
+                opened = True
+                break
+        except Exception as exc:
+            errors.append(str(exc))
+    if not opened:
+        os.startfile(str(model_path))
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
@@ -98,7 +119,7 @@ def ensure_model_open(sw: Any, model_path: Path, timeout: float) -> str:
         except Exception:
             pass
         time.sleep(1.0)
-    raise RuntimeError(f"Active SolidWorks document is not the target model: {model_path}")
+    raise RuntimeError(f"Active SolidWorks document is not the target model: {model_path}; open errors={errors}")
 
 
 def find_runtime_process(runtime_dir: Path, started_after: float) -> psutil.Process | None:
@@ -160,6 +181,58 @@ def parse_row_count(status: str, texts: list[str]) -> int:
     return len(part_like)
 
 
+def grid_dimensions(main: Any, fallback_rows: int) -> dict[str, Any]:
+    candidates: list[dict[str, Any]] = []
+    for child in main.descendants():
+        try:
+            control_type = child.element_info.control_type
+            class_name = child.class_name()
+            text = child.window_text()
+        except Exception:
+            continue
+        if control_type not in {"DataGrid", "Table", "List"} and "DataGrid" not in class_name:
+            continue
+        item: dict[str, Any] = {
+            "control_type": control_type,
+            "class_name": class_name,
+            "text": text,
+        }
+        try:
+            iface_grid = child.iface_grid
+            item["row_count"] = int(iface_grid.CurrentRowCount)
+            item["column_count"] = int(iface_grid.CurrentColumnCount)
+        except Exception as exc:
+            item["grid_error"] = str(exc)
+        try:
+            rect = child.rectangle()
+            item["rectangle"] = {
+                "left": rect.left,
+                "top": rect.top,
+                "right": rect.right,
+                "bottom": rect.bottom,
+            }
+        except Exception:
+            pass
+        candidates.append(item)
+
+    ranked = sorted(
+        candidates,
+        key=lambda c: (
+            int(c.get("row_count") or 0),
+            int(c.get("column_count") or 0),
+        ),
+        reverse=True,
+    )
+    best = ranked[0] if ranked else {}
+    row_count = int(best.get("row_count") or fallback_rows or 0)
+    column_count = int(best.get("column_count") or 0)
+    return {
+        "row_count": row_count,
+        "column_count": column_count,
+        "candidates": ranked[:8],
+    }
+
+
 def invoke_text(app: Any, text: str, timeout: float) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -198,6 +271,7 @@ def run() -> int:
     parser.add_argument("--expected-exe-sha256")
     parser.add_argument("--expected-dll-sha256")
     parser.add_argument("--expected-min-rows", type=int, default=29)
+    parser.add_argument("--expected-min-columns", type=int, default=30)
     parser.add_argument("--timeout", type=float, default=90.0)
     args = parser.parse_args()
 
@@ -213,6 +287,7 @@ def run() -> int:
         "runtime_dir": str(runtime_dir),
         "model": str(model),
         "expected_min_rows": args.expected_min_rows,
+        "expected_min_columns": args.expected_min_columns,
         "checks": [],
     }
 
@@ -229,7 +304,7 @@ def run() -> int:
             raise RuntimeError(f"SWTools.dll SHA mismatch: {dll_hash}")
         result["checks"].append("runtime hashes ok")
 
-        sw = get_solidworks(args.timeout)
+        sw = get_or_start_solidworks(model, args.timeout)
         active_model = ensure_model_open(sw, model, args.timeout)
         result["active_model"] = active_model
         solidworks_pid = int(call_or_value(sw, "GetProcessID"))
@@ -275,9 +350,17 @@ def run() -> int:
 
         result["status_text"] = last_status
         result["row_count"] = last_count
+        dimensions = grid_dimensions(main, last_count)
+        result["column_count"] = dimensions["column_count"]
+        result["grid_dimensions"] = dimensions
         result["visible_text_sample"] = last_texts[:250]
         if last_count < args.expected_min_rows:
             raise RuntimeError(f"S7 returned {last_count} rows; expected at least {args.expected_min_rows}; status={last_status!r}")
+        if result["column_count"] < args.expected_min_columns:
+            raise RuntimeError(
+                f"S7 grid has {result['column_count']} columns; "
+                f"expected at least {args.expected_min_columns}"
+            )
 
         result["status"] = "PASS"
         result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")

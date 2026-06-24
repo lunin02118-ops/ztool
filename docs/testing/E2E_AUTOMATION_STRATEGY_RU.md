@@ -72,7 +72,11 @@ pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
 ```
 
 S7 использует `scripts\swtools_s7_live_smoke.py`: UIA Invoke обязателен,
-координатный клик не считается acceptance.
+координатный клик не считается acceptance. Начиная со слоя S7 automation,
+live gate также требует `row_count >= 29` и `column_count >= 30`, а
+`e2e-result.json` содержит path/hash evidence для `SWTools.exe` и `SWTools.dll`.
+
+Подробно: `docs/testing/E2E_S7_AUTOMATION_RU.md`.
 
 ## Статусы
 

@@ -25,6 +25,8 @@ def main() -> int:
     parser.add_argument("--require-stage", action="append", default=[])
     parser.add_argument("--require-stage-pass", action="append", default=[])
     parser.add_argument("--require-stage-status", action="append", default=[], metavar="NAME=STATUS")
+    parser.add_argument("--require-s7-min-rows", type=int)
+    parser.add_argument("--require-s7-min-columns", type=int)
     parser.add_argument("--expect-status", choices=sorted(VALID_STATUSES))
     args = parser.parse_args()
 
@@ -70,6 +72,25 @@ def main() -> int:
         actual = stage.get("status")
         if actual != expected:
             return fail(f"stage {name} expected {expected}, got {actual!r}")
+
+    if args.require_s7_min_rows is not None or args.require_s7_min_columns is not None:
+        stage = stage_by_name.get("07-s7-connect")
+        if stage is None:
+            return fail("S7 stage missing")
+        if stage.get("status") != "PASS":
+            return fail(f"S7 stage must be PASS, got {stage.get('status')!r}")
+        details = stage.get("details") or {}
+        row_count = details.get("row_count")
+        column_count = details.get("column_count")
+        if args.require_s7_min_rows is not None:
+            if not isinstance(row_count, int) or row_count < args.require_s7_min_rows:
+                return fail(f"S7 row_count must be >= {args.require_s7_min_rows}, got {row_count!r}")
+        if args.require_s7_min_columns is not None:
+            if not isinstance(column_count, int) or column_count < args.require_s7_min_columns:
+                return fail(
+                    f"S7 column_count must be >= {args.require_s7_min_columns}, "
+                    f"got {column_count!r}"
+                )
 
     print(
         "E2E assertion PASS: "
