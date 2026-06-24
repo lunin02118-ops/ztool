@@ -35,6 +35,31 @@ python scripts\swtools_visual_localization_capture.py `
   --require-all-captured
 ```
 
+Если окна нельзя держать открытыми одновременно (обычные modal WinForms
+диалоги), кадры собираются накопительно. Сначала снимается первая открытая
+surface, затем следующий прогон мержится в предыдущий manifest:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full\L-04 `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --surface-id L-04 `
+  --expected-runtime-dir <runtime-dir>
+
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full\L-05 `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --surface-id L-05 `
+  --merge-manifest _local_artifacts\reports\localization-visual-full\L-04\visual-localization-manifest.json `
+  --expected-runtime-dir <runtime-dir>
+```
+
+`--merge-manifest` разрешён только для того же `expected-runtime-dir`. Если
+повторная попытка surface не нашла окно, но предыдущий manifest уже содержит
+`CAPTURED`, предыдущий кадр сохраняется, а попытка записывается в
+`last_attempt_status`. Это не даёт случайно потерять доказательство, но strict
+validator всё равно требует, чтобы итоговая surface была `CAPTURED`.
+
 Проверка manifest:
 
 ```powershell

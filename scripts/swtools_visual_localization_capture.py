@@ -248,6 +248,79 @@ def load_surfaces(path: Path | None) -> list[Surface]:
     return surfaces
 
 
+def missing_item(surface: Surface) -> dict[str, Any]:
+    return {
+        "id": surface.surface_id,
+        "title": surface.title,
+        "process": surface.process,
+        "process_names": sorted(surface_process_names(surface)),
+        "window_contains": surface.window_contains,
+        "text_contains": list(surface.text_contains),
+        "required": surface.required,
+        "notes": surface.notes,
+        "han_policy": surface.han_policy,
+        "status": "MISSING",
+        "error": "matching top-level window not found",
+    }
+
+
+def profile_item(surface: Surface) -> dict[str, Any]:
+    return {
+        "id": surface.surface_id,
+        "title": surface.title,
+        "process": surface.process,
+        "process_names": sorted(surface_process_names(surface)),
+        "window_contains": surface.window_contains,
+        "text_contains": list(surface.text_contains),
+        "required": surface.required,
+        "notes": surface.notes,
+        "han_policy": surface.han_policy,
+    }
+
+
+def merge_previous_items(
+    profile_surfaces: list[Surface],
+    captured_items: list[dict[str, Any]],
+    previous_manifest: Path | None,
+    expected_runtime_dir: Path | None,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    warnings: list[str] = []
+    by_id: dict[str, dict[str, Any]] = {}
+    if previous_manifest is not None:
+        previous = json.loads(previous_manifest.read_text(encoding="utf-8"))
+        previous_runtime = previous.get("expected_runtime_dir")
+        current_runtime = str(expected_runtime_dir) if expected_runtime_dir else None
+        if previous_runtime and current_runtime and previous_runtime != current_runtime:
+            raise SystemExit(
+                "Cannot merge visual localization manifests from different runtimes: "
+                f"previous={previous_runtime}; current={current_runtime}"
+            )
+        for item in previous.get("surfaces", []):
+            surface_id = str(item.get("id", ""))
+            if surface_id:
+                by_id[surface_id] = item
+    for item in captured_items:
+        surface_id = str(item.get("id", ""))
+        if not surface_id:
+            continue
+        previous_item = by_id.get(surface_id)
+        if item.get("status") == "MISSING" and previous_item and previous_item.get("status") == "CAPTURED":
+            preserved = dict(previous_item)
+            preserved["last_attempt_status"] = "MISSING"
+            preserved["last_attempt_error"] = item.get("error")
+            by_id[surface_id] = preserved
+            warnings.append(f"{surface_id}: current attempt missing; preserved previous captured evidence")
+            continue
+        by_id[surface_id] = item
+
+    merged: list[dict[str, Any]] = []
+    for surface in profile_surfaces:
+        item = dict(by_id.get(surface.surface_id, missing_item(surface)))
+        item.update({key: value for key, value in profile_item(surface).items() if key not in item})
+        merged.append(item)
+    return merged, warnings
+
+
 def write_contact_sheet(items: list[dict[str, Any]], output: Path) -> None:
     captured = [item for item in items if item.get("status") == "CAPTURED"]
     if not captured:
@@ -286,6 +359,17 @@ def run() -> int:
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--surface-file", type=Path)
     parser.add_argument(
+        "--surface-id",
+        action="append",
+        dest="surface_ids",
+        help="Capture only this surface id. Can be passed multiple times. Combine with --merge-manifest for cumulative evidence.",
+    )
+    parser.add_argument(
+        "--merge-manifest",
+        type=Path,
+        help="Merge current capture into an existing manifest from the same runtime.",
+    )
+    parser.add_argument(
         "--expected-runtime-dir",
         type=Path,
         help="If provided, captured SWTools.exe must run from this runtime directory.",
@@ -302,25 +386,22 @@ def run() -> int:
     expected_runtime_dir = args.expected_runtime_dir.resolve() if args.expected_runtime_dir else None
     output_dir.mkdir(parents=True, exist_ok=True)
     surfaces = load_surfaces(args.surface_file)
+    surface_ids = set(args.surface_ids or [])
+    if surface_ids:
+        known_ids = {surface.surface_id for surface in surfaces}
+        unknown = sorted(surface_ids - known_ids)
+        if unknown:
+            raise SystemExit(f"Unknown visual localization surface id(s): {', '.join(unknown)}")
+        capture_surfaces = [surface for surface in surfaces if surface.surface_id in surface_ids]
+    else:
+        capture_surfaces = surfaces
 
-    items: list[dict[str, Any]] = []
-    for surface in surfaces:
-        item: dict[str, Any] = {
-            "id": surface.surface_id,
-            "title": surface.title,
-            "process": surface.process,
-            "process_names": sorted(surface_process_names(surface)),
-            "window_contains": surface.window_contains,
-            "text_contains": list(surface.text_contains),
-            "required": surface.required,
-            "notes": surface.notes,
-            "han_policy": surface.han_policy,
-        }
+    captured_items: list[dict[str, Any]] = []
+    for surface in capture_surfaces:
+        item: dict[str, Any] = profile_item(surface)
         win = find_window(surface)
         if win is None:
-            item["status"] = "MISSING"
-            item["error"] = "matching top-level window not found"
-            items.append(item)
+            captured_items.append(missing_item(surface))
             continue
         pid = window_process_id(win)
         title = win.window_text().strip()
@@ -343,7 +424,18 @@ def run() -> int:
                 "visible_han_texts": han_texts,
             }
         )
-        items.append(item)
+        captured_items.append(item)
+
+    merge_warnings: list[str] = []
+    if args.merge_manifest is not None:
+        items, merge_warnings = merge_previous_items(
+            surfaces,
+            captured_items,
+            args.merge_manifest.resolve(),
+            expected_runtime_dir,
+        )
+    else:
+        items = captured_items
 
     missing_required = [item["id"] for item in items if item.get("required") and item.get("status") != "CAPTURED"]
     han_surface_ids = [item["id"] for item in items if item.get("visible_han_texts")]
@@ -375,11 +467,13 @@ def run() -> int:
         "summary": {
             "surface_count": len(items),
             "captured_count": sum(1 for item in items if item.get("status") == "CAPTURED"),
+            "attempted_surface_ids": [surface.surface_id for surface in capture_surfaces],
             "missing_required": missing_required,
             "han_surface_ids": han_surface_ids,
             "blocking_han_surface_ids": blocking_han_surface_ids,
             "recorded_han_surface_ids": recorded_han_surface_ids,
             "runtime_mismatch_ids": runtime_mismatch_ids,
+            "merge_warnings": merge_warnings,
         },
         "surfaces": items,
     }
