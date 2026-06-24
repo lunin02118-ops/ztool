@@ -362,6 +362,42 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
     return None
 
 
+def is_solidworks_connection_timeout_dialog(dialog: dict[str, Any] | None) -> bool:
+    if not dialog or dialog.get("owner") != "SolidWorks":
+        return False
+    text = str(dialog.get("text") or "").lower()
+    return "тайм-аут соединения" in text or "connection timeout" in text
+
+
+def dismiss_solidworks_connection_timeout(solidworks_pid: int) -> dict[str, Any] | None:
+    for backend in ("win32", "uia"):
+        for win in desktop_windows(backend, process_id=solidworks_pid):
+            texts = dialog_texts(win)
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "тайм-аут соединения" not in lowered and "connection timeout" not in lowered:
+                continue
+            try:
+                title = win.window_text().strip()
+                class_name = win.class_name()
+            except Exception:
+                title = ""
+                class_name = ""
+            if class_name != "#32770" and title != "Информация":
+                continue
+            button = click_dialog_button(win, ["ОК", "OK"], timeout=0.8)
+            return {
+                "owner": "SolidWorks",
+                "backend": backend,
+                "process_id": solidworks_pid,
+                "title": title,
+                "class_name": class_name,
+                "text": joined[:2000],
+                "button": button,
+            }
+    return None
+
+
 def parse_status(texts: list[str]) -> str:
     candidates = [t for t in texts if "Подключение" in t or "Получение данных" in t or "поз" in t]
     return candidates[-1] if candidates else ""
@@ -584,8 +620,16 @@ def run() -> int:
         main = max(app.windows(), key=lambda w: w.rectangle().width() * w.rectangle().height())
         blocker = blocking_dialog(proc.pid, solidworks_pid)
         if blocker:
-            result["blocking_dialog"] = blocker
-            raise RuntimeError(f"Blocking dialog before connect: {blocker}")
+            if is_solidworks_connection_timeout_dialog(blocker):
+                dismissed = dismiss_solidworks_connection_timeout(solidworks_pid)
+                if dismissed:
+                    result["dismissed_blocking_dialog"] = dismissed
+                    blocker = None
+            if blocker:
+                result["blocking_dialog"] = blocker
+                raise RuntimeError(f"Blocking dialog before connect: {blocker}")
+        if result.get("dismissed_blocking_dialog"):
+            result["checks"].append("SolidWorks connection timeout dialog dismissed after runtime launch")
         connect_state = invoke_connect_async(main)
         result["connect_invoke"] = dict(connect_state)
         result["checks"].append("connect invoked through UIA worker")
