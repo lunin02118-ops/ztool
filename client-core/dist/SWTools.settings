@@ -576,31 +576,31 @@ True</string>
       <name>PropVal_1</name>
       <name2>PropResolvedVal_1</name2>
       <text>Наименование</text>
-      <mappingname>Наименование</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_2</name>
       <name2>PropResolvedVal_2</name2>
       <text>Обозначение</text>
-      <mappingname>Обозначение</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_3</name>
       <name2>PropResolvedVal_3</name2>
       <text>Материал</text>
-      <mappingname>Материал</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_4</name>
       <name2>PropResolvedVal_4</name2>
       <text>Тип</text>
-      <mappingname>Тип</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_5</name>
       <name2>PropResolvedVal_5</name2>
       <text>Версия</text>
-      <mappingname>Версия</mappingname>
+      <mappingname />
     </columnnamemapping>
     <columnnamemapping>
       <name>PropVal_6</name>

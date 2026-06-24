@@ -72,6 +72,8 @@ public class Frmmapping : Form
 
 	private IContainer components;
 
+	private bool suppressMappingValidation;
+
 	[AccessedThroughProperty("TableLayoutPanel1")]
 	private TableLayoutPanel _TableLayoutPanel1;
 
@@ -478,10 +480,10 @@ public class Frmmapping : Form
 					break;
 				}
 				closure_0024__ = new _Closure_0024__65(closure_0024__);
-				closure_0024__._0024VB_0024Local_mappingname = Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[1, num2].Value));
 				columnnamemapping columnnamemapping2 = new columnnamemapping();
 				columnnamemapping2.name = Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1.Rows[num2].Tag));
 				columnnamemapping2.text = Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[0, num2].Value));
+				closure_0024__._0024VB_0024Local_mappingname = NormalizeMappingName(Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[1, num2].Value)), columnnamemapping2.text);
 				columnnamemapping2.mappingname = closure_0024__._0024VB_0024Local_mappingname;
 				if (columnnamemapping2.name.Contains("PropVal_"))
 				{
@@ -520,6 +522,7 @@ public class Frmmapping : Form
 		{
 			try
 			{
+				suppressMappingValidation = true;
 				DGV1.Rows.Clear();
 				int num = 0;
 				int num2 = MyProject.Forms.Frmmain.DGV1.ColumnCount - 1;
@@ -546,6 +549,7 @@ public class Frmmapping : Form
 						{
 							value = CConfigMng.Config.namemappinglist[num6].mappingname;
 						}
+						value = NormalizeMappingName(value, headerText);
 						int num7 = DGV1.RowCount - 1;
 						int num8 = 0;
 						while (true)
@@ -567,7 +571,7 @@ public class Frmmapping : Form
 						DGV1[0, num].Style.BackColor = Color.FromArgb(240, 240, 240);
 						DGV1[0, num].Value = headerText;
 						DGV1.Rows[num].Tag = closure_0024__._0024VB_0024Local_colname;
-						DGV1[1, num].Value = value;
+						SetMappingCellValue(num, value);
 						num++;
 					}
 					num3++;
@@ -580,6 +584,10 @@ public class Frmmapping : Form
 				logopathlist.WriteLog($"Тип исключения: {ex2.GetType().Name}\r\nСообщение: {ex2.Message}\r\nИнформация: {ex2.StackTrace}");
 				MessageBox.Show(ex2.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 				ProjectData.ClearProjectError();
+			}
+			finally
+			{
+				suppressMappingValidation = false;
 			}
 		}
 	}
@@ -605,7 +613,7 @@ public class Frmmapping : Form
 		{
 			try
 			{
-				if (e.RowIndex < 0 || e.ColumnIndex < 0)
+				if (suppressMappingValidation || e.RowIndex < 0 || e.ColumnIndex < 0)
 				{
 					return;
 				}
@@ -614,6 +622,14 @@ public class Frmmapping : Form
 				{
 					return;
 				}
+				string headerText2 = Conversions.ToString(dataGridView[0, e.RowIndex].Value);
+				string text2 = NormalizeMappingName(text, headerText2);
+				if (Operators.CompareString(text2, "", TextCompare: false) == 0)
+				{
+					SetMappingCellValue(e.RowIndex, "");
+					return;
+				}
+				text = text2;
 				int num = dataGridView.RowCount - 1;
 				int num2 = 0;
 				while (true)
@@ -646,7 +662,7 @@ public class Frmmapping : Form
 					if (num7 <= num4)
 					{
 						string headerText = MyProject.Forms.Frmmain.DGV1.Columns[num6].HeaderText;
-						if (text.Equals(headerText, StringComparison.OrdinalIgnoreCase))
+						if (text.Equals(headerText, StringComparison.OrdinalIgnoreCase) && !text.Equals(headerText2, StringComparison.OrdinalIgnoreCase))
 						{
 							MessageBox.Show(this, "Повторяющееся имя", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 							dataGridView[e.ColumnIndex, e.RowIndex].Value = oldval;
@@ -665,6 +681,30 @@ public class Frmmapping : Form
 				Exception ex2 = ex;
 				ProjectData.ClearProjectError();
 			}
+		}
+	}
+
+	private static string NormalizeMappingName(string mappingName, string headerText)
+	{
+		string text = mappingName ?? "";
+		if (text.Equals(headerText ?? "", StringComparison.OrdinalIgnoreCase))
+		{
+			return "";
+		}
+		return text;
+	}
+
+	private void SetMappingCellValue(int rowIndex, string value)
+	{
+		bool flag = suppressMappingValidation;
+		try
+		{
+			suppressMappingValidation = true;
+			DGV1[1, rowIndex].Value = value;
+		}
+		finally
+		{
+			suppressMappingValidation = flag;
 		}
 	}
 

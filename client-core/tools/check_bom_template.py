@@ -299,6 +299,7 @@ def main():
         print("  %-14s | %-22s | anchor=%-6s %s"
               % (mp["col"], mp["header"] or "", anc, status))
     problems += check_calculated_mappings(mappings, names, name_dests)
+    problems += check_mapping_dialog_contract(mappings)
 
     # --- 4. service columns (header-bound, NOT in namemappinglist) ---
     # ZTool's export (ExportBom_xls4/_xls2) resolves SERVICE columns (the auto
@@ -459,6 +460,33 @@ def check_calculated_mappings(mappings, names, name_dests):
                       "can overwrite computed export values." %
                       (other_col, other_anchor, cells, col, anchor))
                 problems += 1
+    return problems
+
+
+def check_mapping_dialog_contract(mappings):
+    print("\n[3c] Frmmapping dialog contract:")
+    problems = 0
+    seen = {}
+    for mp in mappings:
+        col = mp.get("col") or ""
+        header = mp.get("header") or ""
+        anchor = mp.get("anchor") or ""
+        if not anchor:
+            continue
+        key = anchor.casefold()
+        if key in seen and seen[key] != col:
+            print("  ** ERROR: duplicate non-empty mappingname %r for %s and %s" %
+                  (anchor, seen[key], col))
+            problems += 1
+        else:
+            seen[key] = col
+        if col.startswith("PropVal_") and anchor.casefold() == header.casefold():
+            print("  ** ERROR: %s mappingname equals its header %r; leave it empty "
+                  "so Frmmapping does not treat the default profile as a user duplicate" %
+                  (col, header))
+            problems += 1
+    if problems == 0:
+        print("    mapping dialog defaults OK")
     return problems
 
 
