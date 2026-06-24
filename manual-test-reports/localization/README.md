@@ -61,6 +61,11 @@ python scripts\swtools_visual_localization_capture.py `
   --require-all-captured
 ```
 
+Для модальных окон используйте накопительный режим: откройте конкретный диалог,
+снимите одну surface через `--surface-id`, затем добавляйте следующий кадр через
+`--merge-manifest`. Итоговый manifest проверяется тем же strict full-profile
+validator, поэтому частичный набор кадров не может стать FULL PASS.
+
 Then validate the manifest:
 
 ```powershell

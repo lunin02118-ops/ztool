@@ -35,6 +35,31 @@ python scripts\swtools_visual_localization_capture.py `
   --require-all-captured
 ```
 
+Если окна нельзя держать открытыми одновременно (обычные modal WinForms
+диалоги), кадры собираются накопительно. Сначала снимается первая открытая
+surface, затем следующий прогон мержится в предыдущий manifest:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full\L-04 `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --surface-id L-04 `
+  --expected-runtime-dir <runtime-dir>
+
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full\L-05 `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --surface-id L-05 `
+  --merge-manifest _local_artifacts\reports\localization-visual-full\L-04\visual-localization-manifest.json `
+  --expected-runtime-dir <runtime-dir>
+```
+
+`--merge-manifest` разрешён только для того же `expected-runtime-dir`. Если
+повторная попытка surface не нашла окно, но предыдущий manifest уже содержит
+`CAPTURED`, предыдущий кадр сохраняется, а попытка записывается в
+`last_attempt_status`. Это не даёт случайно потерять доказательство, но strict
+validator всё равно требует, чтобы итоговая surface была `CAPTURED`.
+
 Проверка manifest:
 
 ```powershell
@@ -58,7 +83,9 @@ python tools\e2e\assert_visual_localization_manifest.py `
 ```
 
 `--allow-warn` разрешает частичный evidence-пакет только если нет blocking Han и
-нет runtime mismatch. `PASS_WITH_WARN` не является production approval.
+нет runtime mismatch. Глобальный `forbidden_text` в профиле L-01..L-15 сейчас
+запрещает visible `ZTool`: старый бренд в окне, help или installer является
+machine FAIL. `PASS_WITH_WARN` не является production approval.
 
 Default surface policy:
 
@@ -86,6 +113,7 @@ curated summary/report без больших картинок и без прив
 ## Machine FAIL conditions
 
 - Любая captured surface с `han_policy=fail` содержит видимые Han-символы в UIA text.
+- Любая captured surface содержит forbidden visible text из профиля, например `ZTool`.
 - `SWTools.exe` запущен не из ожидаемого runtime dir.
 - Manifest имеет `production_go_allowed=true`.
 - Для release evidence: обязательная surface отсутствует.

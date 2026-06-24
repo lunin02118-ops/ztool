@@ -1,6 +1,7 @@
 {
   "schema": "swtools.visual-localization-surfaces.v1",
   "version": "2026-06-25",
+  "forbidden_text": ["ZTool"],
   "surfaces": [
     {
       "id": "L-01",

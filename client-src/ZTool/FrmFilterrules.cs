@@ -1223,7 +1223,7 @@ public class FrmFilterrules : Form
 
 	private void add1_Click(object sender, EventArgs e)
 	{
-		string text = Interaction.InputBox("Введите имя правила");
+		string text = Interaction.InputBox("Введите имя правила", "SWTools");
 		if (Operators.CompareString(text, "", TextCompare: false) == 0)
 		{
 			return;
@@ -1328,7 +1328,7 @@ public class FrmFilterrules : Form
 			MessageBox.Show(this, "Можно выбрать только один элемент", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
 			return;
 		}
-		string text = Interaction.InputBox("Введите имя правила", "", RuleName);
+		string text = Interaction.InputBox("Введите имя правила", "SWTools", RuleName);
 		if ((Operators.CompareString(text, "", TextCompare: false) == 0) | (Operators.CompareString(text, RuleName, TextCompare: false) == 0))
 		{
 			return;

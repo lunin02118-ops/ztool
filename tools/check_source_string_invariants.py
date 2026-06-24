@@ -28,6 +28,7 @@ Usage:
   python tools/check_source_string_invariants.py --self-test
 """
 import argparse
+import ast
 import os
 import re
 import sys
@@ -40,6 +41,7 @@ TSV_DIR = os.path.join(HERE, "string_invariants")
 
 CJK = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uff00-\uffef]")
 STRLIT = re.compile(r'"((?:\\.|[^"\\])*)"')
+INPUTBOX_TOKEN = "Interaction.InputBox"
 
 
 def esc(s):
@@ -136,6 +138,180 @@ def extract_cjk_literals(root):
     return {k: sorted(v) for k, v in found.items()}
 
 
+def parse_parenthesized(src, open_index):
+    """Return the text inside matching parentheses, or None when malformed."""
+    if open_index >= len(src) or src[open_index] != "(":
+        return None
+    depth = 1
+    out = []
+    i = open_index + 1
+    n = len(src)
+    while i < n:
+        c = src[i]
+        if c in "@$":
+            k, verbatim = i, False
+            while k < n and src[k] in "@$":
+                if src[k] == "@":
+                    verbatim = True
+                k += 1
+            if k < n and src[k] == '"':
+                out.append(src[i:k + 1])
+                i = k + 1
+                if verbatim:
+                    while i < n:
+                        if src[i] == '"' and i + 1 < n and src[i + 1] == '"':
+                            out.append('""'); i += 2; continue
+                        out.append(src[i])
+                        if src[i] == '"':
+                            i += 1; break
+                        i += 1
+                else:
+                    while i < n:
+                        if src[i] == "\\" and i + 1 < n:
+                            out.append(src[i:i + 2]); i += 2; continue
+                        out.append(src[i])
+                        if src[i] == '"':
+                            i += 1; break
+                        i += 1
+                continue
+            out.append(c); i += 1; continue
+        if c in "\"'":
+            quote = c
+            out.append(c); i += 1
+            while i < n:
+                if src[i] == "\\" and i + 1 < n:
+                    out.append(src[i:i + 2]); i += 2; continue
+                out.append(src[i])
+                if src[i] == quote:
+                    i += 1; break
+                i += 1
+            continue
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return "".join(out)
+        out.append(c)
+        i += 1
+    return None
+
+
+def split_top_level_args(arg_text):
+    args = []
+    start = 0
+    depth = 0
+    i = 0
+    n = len(arg_text)
+    while i < n:
+        c = arg_text[i]
+        if c in "@$":
+            k, verbatim = i, False
+            while k < n and arg_text[k] in "@$":
+                if arg_text[k] == "@":
+                    verbatim = True
+                k += 1
+            if k < n and arg_text[k] == '"':
+                i = k + 1
+                if verbatim:
+                    while i < n:
+                        if arg_text[i] == '"' and i + 1 < n and arg_text[i + 1] == '"':
+                            i += 2; continue
+                        if arg_text[i] == '"':
+                            i += 1; break
+                        i += 1
+                else:
+                    while i < n:
+                        if arg_text[i] == "\\" and i + 1 < n:
+                            i += 2; continue
+                        if arg_text[i] == '"':
+                            i += 1; break
+                        i += 1
+                continue
+        if c in "\"'":
+            quote = c
+            i += 1
+            while i < n:
+                if arg_text[i] == "\\" and i + 1 < n:
+                    i += 2; continue
+                if arg_text[i] == quote:
+                    i += 1; break
+                i += 1
+            continue
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == "," and depth == 0:
+            args.append(arg_text[start:i].strip())
+            start = i + 1
+        i += 1
+    tail = arg_text[start:].strip()
+    if tail:
+        args.append(tail)
+    return args
+
+
+def decode_regular_cs_string(expr):
+    expr = expr.strip()
+    if expr.startswith('@"') and expr.endswith('"'):
+        return expr[2:-1].replace('""', '"')
+    if expr.startswith('"') and expr.endswith('"'):
+        try:
+            return ast.literal_eval(expr)
+        except (SyntaxError, ValueError):
+            return None
+    return None
+
+
+def extract_inputbox_title_violations(root):
+    """Return violations for VB InputBox calls whose title can fall back to ZTool."""
+    violations = []
+    for base, _, files in os.walk(root):
+        parts = base.split(os.sep)
+        if "bin" in parts or "obj" in parts:
+            continue
+        for fn in files:
+            if not fn.endswith(".cs"):
+                continue
+            p = os.path.join(base, fn)
+            try:
+                txt = strip_comments(open(p, encoding="utf-8", errors="replace").read())
+            except OSError:
+                continue
+            rel = os.path.relpath(p, root)
+            pos = 0
+            while True:
+                idx = txt.find(INPUTBOX_TOKEN, pos)
+                if idx < 0:
+                    break
+                line = txt.count("\n", 0, idx) + 1
+                open_idx = idx + len(INPUTBOX_TOKEN)
+                while open_idx < len(txt) and txt[open_idx].isspace():
+                    open_idx += 1
+                call = parse_parenthesized(txt, open_idx)
+                if call is None:
+                    violations.append(f"{rel}:{line}: malformed {INPUTBOX_TOKEN} call")
+                    pos = idx + len(INPUTBOX_TOKEN)
+                    continue
+                args = split_top_level_args(call)
+                if len(args) < 2:
+                    violations.append(
+                        f"{rel}:{line}: {INPUTBOX_TOKEN} missing explicit title; "
+                        "VB fallback can expose legacy ZTool title"
+                    )
+                else:
+                    title = decode_regular_cs_string(args[1])
+                    if title != "SWTools":
+                        rendered = args[1] if title is None else repr(title)
+                        violations.append(
+                            f"{rel}:{line}: {INPUTBOX_TOKEN} title must be "
+                            f"'SWTools', got {rendered}"
+                        )
+                pos = open_idx + len(call) + 2
+    return violations
+
+
 def load_allowed(path):
     """Return {escaped_literal: (role, note)}."""
     allowed = {}
@@ -201,11 +377,18 @@ def run(roots):
             found.setdefault(lit, []).extend(files)
     found = {k: sorted(set(v)) for k, v in found.items()}
     failures, review = evaluate(found, allowed, required)
+    inputbox_violations = []
+    for root in roots:
+        inputbox_violations.extend(
+            f"{root}/{item}" for item in extract_inputbox_title_violations(root)
+        )
+    failures.extend(inputbox_violations)
 
     print("from-source string invariants (root=%s)" % ", ".join(roots))
     print("  distinct CJK literals found : %d" % len(found))
     print("  allow-list entries          : %d" % len(allowed))
     print("  required crypto keys        : %d" % len(required))
+    print("  InputBox title violations   : %d" % len(inputbox_violations))
     roles = {}
     for lit in found:
         if lit in allowed:
@@ -278,6 +461,25 @@ def self_test():
         f5, _ = evaluate(extract_cjk_literals(esc_dir), allowed, {})
         assert not any("unregistered" in x for x in f5), \
             "CJK in a // comment after an escaped-quote string must be ignored, got %r" % f5
+
+        # user-visible VB InputBox dialogs must never fall back to the assembly
+        # title; otherwise empty/missing title can show legacy "ZTool" at runtime.
+        ib_good = os.path.join(tmp, "ib_good")
+        os.makedirs(ib_good)
+        with open(os.path.join(ib_good, "I.cs"), "w", encoding="utf-8") as f:
+            f.write('class I { void m(){ Interaction.InputBox("Введите имя", "SWTools", "x"); } }\n')
+        assert extract_inputbox_title_violations(ib_good) == [], \
+            "explicit SWTools InputBox title should pass"
+
+        ib_bad = os.path.join(tmp, "ib_bad")
+        os.makedirs(ib_bad)
+        with open(os.path.join(ib_bad, "J.cs"), "w", encoding="utf-8") as f:
+            f.write('class J { void m(){ Interaction.InputBox("Введите имя"); '
+                    'Interaction.InputBox("Введите имя", "", "x"); '
+                    'Interaction.InputBox("Введите имя", "ZTool", "x"); } }\n')
+        ib_failures = extract_inputbox_title_violations(ib_bad)
+        assert len(ib_failures) == 3, \
+            "missing/empty/ZTool InputBox titles must be rejected, got %r" % ib_failures
 
         print("SELF-TEST PASS")
         return 0

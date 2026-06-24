@@ -108,6 +108,9 @@ def main() -> int:
         han = surface.get("visible_han_texts") or []
         if han and (args.fail_on_recorded_han or surface.get("han_policy", "fail") != "record_only"):
             return fail(f"{surface_id}: visible Han text detected: {han!r}")
+        forbidden = surface.get("forbidden_texts") or []
+        if forbidden:
+            return fail(f"{surface_id}: forbidden visible text detected: {forbidden!r}")
         error = assert_screenshot(str(surface_id), surface)
         if error:
             return fail(error)
@@ -124,6 +127,9 @@ def main() -> int:
         han = surface.get("visible_han_texts") or []
         if han and (args.fail_on_recorded_han or surface.get("han_policy", "fail") != "record_only"):
             return fail(f"required surface has visible Han text: {surface_id}: {han!r}")
+        forbidden = surface.get("forbidden_texts") or []
+        if forbidden:
+            return fail(f"required surface has forbidden visible text: {surface_id}: {forbidden!r}")
         error = assert_screenshot(surface_id, surface)
         if error:
             return fail(error)
