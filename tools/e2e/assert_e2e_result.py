@@ -27,6 +27,7 @@ def main() -> int:
     parser.add_argument("--require-stage-status", action="append", default=[], metavar="NAME=STATUS")
     parser.add_argument("--require-s7-min-rows", type=int)
     parser.add_argument("--require-s7-min-columns", type=int)
+    parser.add_argument("--require-s7-model-ready", action="store_true")
     parser.add_argument("--require-s8-mode-count", type=int)
     parser.add_argument("--require-s8-all-pass", action="store_true")
     parser.add_argument("--require-s8-strict-filters", action="store_true")
@@ -77,13 +78,25 @@ def main() -> int:
         if actual != expected:
             return fail(f"stage {name} expected {expected}, got {actual!r}")
 
-    if args.require_s7_min_rows is not None or args.require_s7_min_columns is not None:
+    if (
+        args.require_s7_min_rows is not None
+        or args.require_s7_min_columns is not None
+        or args.require_s7_model_ready
+    ):
         stage = stage_by_name.get("07-s7-connect")
         if stage is None:
             return fail("S7 stage missing")
         if stage.get("status") != "PASS":
             return fail(f"S7 stage must be PASS, got {stage.get('status')!r}")
         details = stage.get("details") or {}
+        if args.require_s7_model_ready:
+            model_ready_gate = details.get("model_ready_gate") or {}
+            if not isinstance(model_ready_gate, dict):
+                return fail("S7 model_ready_gate evidence must be an object")
+            if model_ready_gate.get("status") != "PASS":
+                return fail(f"S7 model_ready_gate must be PASS, got {model_ready_gate!r}")
+            if not model_ready_gate.get("active_model"):
+                return fail(f"S7 model_ready_gate missing active_model evidence: {model_ready_gate!r}")
         row_count = details.get("row_count")
         column_count = details.get("column_count")
         if args.require_s7_min_rows is not None:

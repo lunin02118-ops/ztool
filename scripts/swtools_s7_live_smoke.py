@@ -362,6 +362,124 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
     return None
 
 
+def summarize_dialog(dialog: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "owner": dialog.get("owner"),
+        "backend": dialog.get("backend"),
+        "process_id": dialog.get("process_id"),
+        "title": dialog.get("title"),
+        "class_name": dialog.get("class_name"),
+        "text": str(dialog.get("text") or "")[:800],
+    }
+
+
+def compact_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def is_solidworks_transient_model_loading_dialog(dialog: dict[str, Any] | None) -> bool:
+    if not dialog or dialog.get("owner") != "SolidWorks":
+        return False
+    text = compact_text(str(dialog.get("text") or ""))
+    if not text:
+        return False
+    if "тайм-аут соединения" in text or "connection timeout" in text:
+        return False
+    exact_markers = (
+        "загружается файл:",
+        "loading file:",
+        "обновление сборки",
+        "updating assembly",
+        "обновление графики",
+        "updating graphics",
+    )
+    if any(marker in text for marker in exact_markers):
+        return True
+    word_groups = (
+        ("открытие", "компонентов"),
+        ("opening", "components"),
+        ("процесс", "загруз"),
+    )
+    return any(all(word in text for word in group) for group in word_groups)
+
+
+def active_model_path(sw: Any) -> str:
+    try:
+        active = sw.ActiveDoc
+        if active is None:
+            return ""
+        return str(call_or_value(active, "GetPathName"))
+    except Exception:
+        return ""
+
+
+def wait_for_solidworks_model_ready(
+    sw: Any,
+    model_path: Path,
+    solidworks_pid: int,
+    timeout: float,
+    quiet_seconds: float = 1.5,
+) -> dict[str, Any]:
+    started = time.time()
+    deadline = started + timeout
+    model_norm = str(model_path.resolve()).lower()
+    evidence: dict[str, Any] = {
+        "status": "FAIL",
+        "model": str(model_path),
+        "timeout_seconds": timeout,
+        "quiet_seconds": quiet_seconds,
+        "transient_dialog_count": 0,
+        "transient_dialogs": [],
+        "polls": 0,
+    }
+    stable_since: float | None = None
+    last_active = ""
+
+    while time.time() < deadline:
+        evidence["polls"] += 1
+        last_active = active_model_path(sw)
+        active_matches = last_active.lower() == model_norm
+        blocker = blocking_dialog(None, solidworks_pid)
+        if blocker:
+            if is_solidworks_transient_model_loading_dialog(blocker):
+                evidence["transient_dialog_count"] += 1
+                samples = evidence["transient_dialogs"]
+                if len(samples) < 8:
+                    sample = summarize_dialog(blocker)
+                    sample["seen_at_seconds"] = round(time.time() - started, 3)
+                    samples.append(sample)
+                stable_since = None
+                time.sleep(0.25)
+                continue
+            evidence["blocking_dialog"] = summarize_dialog(blocker)
+            evidence["active_model"] = last_active
+            evidence["waited_seconds"] = round(time.time() - started, 3)
+            return evidence
+
+        if active_matches:
+            if stable_since is None:
+                stable_since = time.time()
+            stable_for = time.time() - stable_since
+            if stable_for >= quiet_seconds:
+                evidence.update(
+                    {
+                        "status": "PASS",
+                        "active_model": last_active,
+                        "stable_for_seconds": round(stable_for, 3),
+                        "waited_seconds": round(time.time() - started, 3),
+                    }
+                )
+                return evidence
+        else:
+            stable_since = None
+        time.sleep(0.25)
+
+    evidence["active_model"] = last_active
+    evidence["waited_seconds"] = round(time.time() - started, 3)
+    evidence["error"] = "Timed out waiting for SolidWorks active model without transient loading dialogs"
+    return evidence
+
+
 def is_solidworks_connection_timeout_dialog(dialog: dict[str, Any] | None) -> bool:
     if not dialog or dialog.get("owner") != "SolidWorks":
         return False
@@ -578,6 +696,11 @@ def run() -> int:
         result["active_model"] = active_model
         solidworks_pid = int(call_or_value(sw, "GetProcessID"))
         result["solidworks_pid"] = solidworks_pid
+        model_ready_gate = wait_for_solidworks_model_ready(sw, model, solidworks_pid, args.timeout)
+        result["model_ready_gate"] = model_ready_gate
+        if model_ready_gate.get("status") != "PASS":
+            raise RuntimeError(f"SolidWorks model-ready gate failed: {model_ready_gate}")
+        result["checks"].append("SolidWorks model-ready gate passed before openZtool")
         addin = call_or_value(sw, "GetAddInObject", "ZTool.SwAddin")
         if not addin:
             raise RuntimeError("SolidWorks returned no ZTool.SwAddin object")
@@ -594,6 +717,12 @@ def run() -> int:
                 raise RuntimeError(f"openZtool failed: {open_state['error']}")
             blocker = blocking_dialog(None, solidworks_pid)
             if blocker:
+                if is_solidworks_transient_model_loading_dialog(blocker):
+                    late_transients = result.setdefault("late_transient_model_loading_dialogs", [])
+                    if isinstance(late_transients, list) and len(late_transients) < 8:
+                        late_transients.append(summarize_dialog(blocker))
+                    time.sleep(0.25)
+                    continue
                 result["blocking_dialog"] = blocker
                 raise RuntimeError(f"Blocking dialog during openZtool: {blocker}")
             proc = find_runtime_process(runtime_dir, started)
