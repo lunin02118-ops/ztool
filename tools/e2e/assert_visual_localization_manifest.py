@@ -32,12 +32,32 @@ def assert_screenshot(surface_id: str, surface: dict) -> str | None:
     return None
 
 
+def load_surface_ids(path: Path) -> list[str]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    ids: list[str] = []
+    for item in data.get("surfaces", []):
+        surface_id = str(item.get("id", "")).strip()
+        if surface_id:
+            ids.append(surface_id)
+    return ids
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("manifest_json", type=Path)
     parser.add_argument("--allow-warn", action="store_true")
     parser.add_argument("--allow-production-go", action="store_true")
     parser.add_argument("--require-surface", action="append", default=[])
+    parser.add_argument(
+        "--require-surface-file",
+        type=Path,
+        help="Require every surface id from a JSON surface profile to be present in the manifest.",
+    )
+    parser.add_argument(
+        "--require-profile-surfaces-captured",
+        action="store_true",
+        help="With --require-surface-file, require every profile surface to be CAPTURED.",
+    )
     parser.add_argument(
         "--require-runtime-match",
         action="store_true",
@@ -68,6 +88,18 @@ def main() -> int:
     if not isinstance(surfaces, list):
         return fail("surfaces must be a list")
     by_id = {surface.get("id"): surface for surface in surfaces if isinstance(surface, dict)}
+    if len(by_id) != len(surfaces):
+        return fail("surface ids must be unique and every surface must have an id")
+
+    required_surface_ids = list(args.require_surface)
+    if args.require_surface_file:
+        profile_ids = load_surface_ids(args.require_surface_file)
+        if not profile_ids:
+            return fail(f"surface profile has no surface ids: {args.require_surface_file}")
+        missing_profile = sorted(set(profile_ids) - set(by_id))
+        if missing_profile:
+            return fail(f"profile surface ids missing from manifest: {missing_profile!r}")
+        required_surface_ids.extend(profile_ids if args.require_profile_surfaces_captured else [])
 
     for surface in surfaces:
         surface_id = surface.get("id")
@@ -83,7 +115,7 @@ def main() -> int:
             if surface.get("runtime_path_match") is not True:
                 return fail(f"{surface_id}: SWTools runtime path was not proven to match expected runtime")
 
-    for surface_id in args.require_surface:
+    for surface_id in required_surface_ids:
         surface = by_id.get(surface_id)
         if surface is None:
             return fail(f"required surface missing from manifest: {surface_id}")

@@ -23,6 +23,7 @@ L-11-context-menus.png
 L-12-help-ru.png
 L-13-solidworks-addin.png
 L-14-installer-ui.png
+L-15-material-color-flows.png
 ```
 
 ## Формат итогового отчёта
@@ -50,6 +51,16 @@ python scripts\swtools_visual_localization_capture.py `
   --expected-runtime-dir <runtime-dir>
 ```
 
+Для полного L-01..L-15 пакета:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --expected-runtime-dir <runtime-dir> `
+  --require-all-captured
+```
+
 Then validate the manifest:
 
 ```powershell
@@ -58,6 +69,17 @@ python tools\e2e\assert_visual_localization_manifest.py `
   --allow-warn `
   --require-surface L-01 `
   --require-surface L-13 `
+  --require-runtime-match
+```
+
+Strict full-profile validation:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --require-profile-surfaces-captured `
   --require-runtime-match
 ```
 
