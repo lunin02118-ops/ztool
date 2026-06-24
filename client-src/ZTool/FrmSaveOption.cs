@@ -1561,7 +1561,7 @@ public class FrmSaveOption : Form
 		{
 			if (File.Exists(code.helpfile))
 			{
-				Help.ShowHelp(this, code.helpfile, "/基本操作/保存数据到SolidWorks.htm");
+				Help.ShowHelp(this, code.helpfile, "/basic/save-to-sw.htm");
 			}
 			else
 			{
@@ -1584,7 +1584,7 @@ public class FrmSaveOption : Form
 		{
 			if (File.Exists(code.helpfile))
 			{
-				Help.ShowHelp(this, code.helpfile, "/基本操作/保存数据到SolidWorks.htm");
+				Help.ShowHelp(this, code.helpfile, "/basic/save-to-sw.htm");
 			}
 			else
 			{

@@ -12,6 +12,7 @@
 | `ru.json`     | их русские переводы, строго один-к-одному по индексу с `runs.json`    |
 | `build_ru.py` | сборщик: перевод HTML-тем, навигации (HHC/HHK), генерация `.hhp`       |
 | `check_chm_brand.py` | gate: проверяет собранный CHM на запрещённый legacy brand `ZTool` |
+| `check_help_entry_routes.py` | gate: проверяет, что runtime-кнопки справки H-01..H-03 открывают существующие русские CHM-топики |
 | `compare_manual_screenshots.py` | gate перед сборкой: покадровое сравнение оригинальных и RU-скриншотов |
 
 ## Как пересобрать
@@ -36,6 +37,9 @@ cp _chm_build/help_ru.chm ../../help_ru.chm
 
 # 6. проверить видимый brand в CHM
 python check_chm_brand.py ../../help_ru.chm --forbid ZTool --require SWTools
+
+# 7. проверить маршруты runtime-кнопок справки H-01..H-03
+python check_help_entry_routes.py --source-root ../.. --chm ../../help_ru.chm
 ```
 
 ## Что делает `build_ru.py`

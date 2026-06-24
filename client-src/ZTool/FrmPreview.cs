@@ -696,7 +696,7 @@ public class FrmPreview : Form
 		{
 			if (File.Exists(code.helpfile))
 			{
-				Help.ShowHelp(this, code.helpfile, "/进阶操作/缩略图显示及操作.htm");
+				Help.ShowHelp(this, code.helpfile, "/advanced/thumbnails.htm");
 			}
 			else
 			{

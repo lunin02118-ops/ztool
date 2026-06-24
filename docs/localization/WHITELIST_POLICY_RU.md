@@ -29,5 +29,6 @@ Whitelist разрешён только для строк, которые нел
 - `二维码` / `工具箱.png` - legacy resource names/vendor QR asset names.
 - `*ToolStripMenuItem` с китайским prefix - internal WinForms component names,
   не captions.
-- `/进阶操作/...htm`, `/基本操作/...htm` - legacy help paths; пользовательский
-  текст справки локализуется отдельно через `help_ru.chm`.
+- H-01..H-03 help routes больше не whitelist-долг: runtime source должен
+  ссылаться на ASCII-топики `advanced/...` / `basic/...`, существующие в
+  `help_ru.chm`; legacy Han paths считаются регрессом.

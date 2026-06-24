@@ -89,7 +89,7 @@ Sprint H поэтому разделяет:
 - user-facing strings -> translate/fix immediately;
 - protocol/crypto keys -> exact whitelist only;
 - font names -> exact whitelist only;
-- internal legacy component/resource/help-path names -> architecture debt until
+- internal legacy component/resource names -> architecture debt until
   source-level migration.
 
 ## Current known remaining Han
@@ -100,7 +100,7 @@ Sprint H поэтому разделяет:
 | `工具箱.png` | resource name | `toolbox::InitializeComponent` | Internal resource asset name; not user-facing caption. |
 | `平铺ToolStripMenuItem`, `小图标ToolStripMenuItem`, `列表ToolStripMenuItem`, `列表ToolStripMenuItem1` | WinForms component names | `toolbox` | Internal control names; captions must be verified visually. |
 | `在solidworks中打开ToolStripMenuItem`, `在文件夹中打开ToolStripMenuItem`, `修改ToolStripMenuItem` | WinForms component names | `FrmReplacePartslist` | Internal control names; visible context menu captions require screenshot audit. |
-| `/进阶操作/BOM表模板制作和导出.htm`, `/进阶操作/缩略图显示及操作.htm`, `/基本操作/保存数据到SolidWorks.htm` | help routing paths | help buttons | Internal legacy CHM paths; `help_ru.chm` visible content requires manual check. |
+| `H-01..H-03 help routes` | help routing paths | help buttons | Closed by route gate: runtime source must point to ASCII topics existing in `help_ru.chm`; legacy Han routes are now regression blockers. |
 
 ## Required manual evidence before production GO / visual FULL PASS
 

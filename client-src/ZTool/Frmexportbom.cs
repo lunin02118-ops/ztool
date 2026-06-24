@@ -2326,7 +2326,7 @@ public class Frmexportbom : Form
 		{
 			if (File.Exists(code.helpfile))
 			{
-				Help.ShowHelp(this, code.helpfile, "/进阶操作/BOM表模板制作和导出.htm");
+				Help.ShowHelp(this, code.helpfile, "/advanced/bom-template.htm");
 			}
 			else
 			{

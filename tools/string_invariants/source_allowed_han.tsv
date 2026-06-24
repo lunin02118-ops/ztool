@@ -4,9 +4,6 @@
 #       image-name | symbol-palette | format-fragment | log-text
 # note starting with REVIEW = allowed but surfaced for human confirmation /
 # planned replacement. crypto-passphrase entries are PERMANENT (see required_keys).
-/基本操作/保存数据到SolidWorks.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
-/进阶操作/BOM表模板制作和导出.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
-/进阶操作/缩略图显示及操作.htm	help-path	REVIEW: CHM help topic path; confirm it matches the shipped help file topics.
 Application UnhandledException:{ex3.Message};\\n\\r堆栈信息:{ex3.StackTrace}	log-text	REVIEW: residual Chinese fragment in an UnhandledException log line (low-visibility).
 DPI：	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
 \\\\A.*?(?=_|\\\\(|\\\\（|\\\\[|\\\\【|\\\\s|\\\\z)	format-fragment	REVIEW: fullwidth punctuation / fragment inside a format or parsing string.
