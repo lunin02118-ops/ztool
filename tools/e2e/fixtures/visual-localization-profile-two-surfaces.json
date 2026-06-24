@@ -1,0 +1,22 @@
+{
+  "schema": "swtools.visual-localization-surfaces.v1",
+  "surfaces": [
+    {
+      "id": "L-01",
+      "title": "Main window",
+      "process": "SWTools.exe",
+      "window_contains": "SWTools",
+      "required": true,
+      "han_policy": "fail"
+    },
+    {
+      "id": "L-02",
+      "title": "License dialogs",
+      "process": "SWTools.exe",
+      "window_contains": "",
+      "text_contains": ["Лицензия"],
+      "required": true,
+      "han_policy": "fail"
+    }
+  ]
+}

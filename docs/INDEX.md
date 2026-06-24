@@ -39,6 +39,7 @@
 | [`localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md`](localization/LOCALIZATION_ARCHITECTURE_DEBT_RU.md) | Sprint H: классификация остаточного Han и локализационного архитектурного долга | актуален |
 | [`localization/VISUAL_LOCALIZATION_REPORT_RU.md`](localization/VISUAL_LOCALIZATION_REPORT_RU.md) | Sprint H visual localization report: automated PASS, user visual audit pending | актуален |
 | [`localization/VISUAL_LOCALIZATION_CAPTURE_RU.md`](localization/VISUAL_LOCALIZATION_CAPTURE_RU.md) | E2E capture/manifest gate для визуальной локализации без ложного FULL PASS | актуален |
+| [`localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json`](localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json) | Machine-readable full visual localization profile L-01..L-15 | актуален |
 | [`localization/HELP_RU_ACCEPTANCE_RU.md`](localization/HELP_RU_ACCEPTANCE_RU.md) | Acceptance checklist для `help_ru.chm` и legacy help routes | актуален |
 | [`localization/UI_SCREENSHOT_CHECKLIST_RU.md`](localization/UI_SCREENSHOT_CHECKLIST_RU.md) | Ручной UI checklist для release candidate | актуален |
 | [`client-core/BINARY_BUILD_POLICY_RU.md`](client-core/BINARY_BUILD_POLICY_RU.md) | Правила fail-closed client-core build, input hashes, manifest, PublicKeyToken | актуален |

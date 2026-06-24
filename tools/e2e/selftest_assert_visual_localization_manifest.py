@@ -57,6 +57,18 @@ def main() -> int:
             ],
             ["runtime"],
         ),
+        (
+            [
+                sys.executable,
+                str(assert_script),
+                str(fixtures / "visual-localization-han-manifest.json"),
+                "--allow-warn",
+                "--require-surface-file",
+                str(fixtures / "visual-localization-profile-two-surfaces.json"),
+                "--require-profile-surfaces-captured",
+            ],
+            ["profile", "L-02"],
+        ),
     ]
 
     for command, expected_terms in checks:

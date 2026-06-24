@@ -63,6 +63,26 @@ surfaces. Host SolidWorks Han in `record_only` surfaces is preserved in manifest
 as warning evidence. This still does not claim pixel-level layout quality or
 visual FULL PASS.
 
+Full L-01..L-15 profile:
+
+```text
+docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json
+```
+
+Release/owner evidence must validate the whole profile:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --require-profile-surfaces-captured `
+  --require-runtime-match
+```
+
+If any L-01..L-15 frame is missing, the manifest can be useful diagnostic
+evidence, but it is not visual FULL PASS.
+
 ## Required screenshots for user audit
 
 | ID | Surface | Required frame | Status |

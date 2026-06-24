@@ -47,6 +47,8 @@ class Surface:
     required: bool = True
     notes: str = ""
     han_policy: str = "fail"
+    process_names: tuple[str, ...] = ()
+    text_contains: tuple[str, ...] = ()
 
 
 DEFAULT_SURFACES: list[Surface] = [
@@ -144,10 +146,27 @@ def visible_texts(win: Any, limit: int = 500) -> list[str]:
     return texts
 
 
+def surface_process_names(surface: Surface) -> set[str]:
+    names = surface.process_names or (surface.process,)
+    return {normalize_process_name(name) for name in names if str(name).strip()}
+
+
+def surface_text_matches(surface: Surface, title: str, texts: list[str]) -> bool:
+    if surface.window_contains and surface.window_contains.lower() not in title.lower():
+        return False
+    if not surface.text_contains:
+        return True
+    haystack = "\n".join([title, *texts]).lower()
+    return all(value.lower() in haystack for value in surface.text_contains)
+
+
 def find_window(surface: Surface) -> Any | None:
-    expected_process = normalize_process_name(surface.process)
+    expected_processes = surface_process_names(surface)
     candidates: list[tuple[int, Any]] = []
-    for backend in ("uia", "win32"):
+    # Prefer win32 wrappers for screenshots/text snapshots: full UIA traversal of
+    # the SolidWorks host can block on large assemblies. UIA remains a fallback
+    # for popup/menu surfaces that are not exposed well through win32.
+    for backend in ("win32", "uia"):
         try:
             windows = Desktop(backend=backend).windows()
         except Exception:
@@ -162,9 +181,10 @@ def find_window(surface: Surface) -> Any | None:
                 rect = win.rectangle()
             except Exception:
                 continue
-            if normalize_process_name(proc_name) != expected_process:
+            if normalize_process_name(proc_name) not in expected_processes:
                 continue
-            if surface.window_contains and surface.window_contains.lower() not in title.lower():
+            texts = visible_texts(win, limit=150) if surface.text_contains else []
+            if not surface_text_matches(surface, title, texts):
                 continue
             area = max(0, rect.width()) * max(0, rect.height())
             if area > 0:
@@ -221,6 +241,8 @@ def load_surfaces(path: Path | None) -> list[Surface]:
                 required=bool(item.get("required", True)),
                 notes=str(item.get("notes", "")),
                 han_policy=str(item.get("han_policy", "fail")),
+                process_names=tuple(str(value) for value in item.get("process_names", []) if str(value).strip()),
+                text_contains=tuple(str(value) for value in item.get("text_contains", []) if str(value).strip()),
             )
         )
     return surfaces
@@ -287,7 +309,9 @@ def run() -> int:
             "id": surface.surface_id,
             "title": surface.title,
             "process": surface.process,
+            "process_names": sorted(surface_process_names(surface)),
             "window_contains": surface.window_contains,
+            "text_contains": list(surface.text_contains),
             "required": surface.required,
             "notes": surface.notes,
             "han_policy": surface.han_policy,
@@ -304,7 +328,7 @@ def run() -> int:
         han_texts = sorted({text for text in texts if HAN_RE.search(text)})
         proc = process_info(pid or -1)
         runtime_path_match = None
-        if normalize_process_name(surface.process) == "swtools.exe":
+        if "swtools.exe" in surface_process_names(surface):
             runtime_path_match = is_under(proc.get("path"), expected_runtime_dir)
         screenshot = capture_window(win, screenshots_dir / f"{surface.surface_id}-{safe_file_stem(surface.title)}.png")
         item.update(

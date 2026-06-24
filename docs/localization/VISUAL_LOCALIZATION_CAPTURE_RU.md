@@ -25,6 +25,16 @@ python scripts\swtools_visual_localization_capture.py `
   --require-all-captured
 ```
 
+Для полного release evidence L-01..L-15 используется профиль из репозитория:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --expected-runtime-dir <runtime-dir> `
+  --require-all-captured
+```
+
 Проверка manifest:
 
 ```powershell
@@ -33,6 +43,17 @@ python tools\e2e\assert_visual_localization_manifest.py `
   --allow-warn `
   --require-surface L-01 `
   --require-surface L-13 `
+  --require-runtime-match
+```
+
+Строгая проверка полного профиля:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --require-profile-surfaces-captured `
   --require-runtime-match
 ```
 
@@ -55,6 +76,10 @@ screenshots\L-01-Main-window.png
 screenshots\L-13-SolidWorks-add-in.png
 ```
 
+Для полного L-01..L-15 capture manifest содержит каждый профильный кадр со
+статусом `CAPTURED` или `MISSING`. Missing required surface является release
+blocker.
+
 Raw screenshots остаются в `_local_artifacts`. В Git коммитится только
 curated summary/report без больших картинок и без приватных данных.
 
@@ -64,6 +89,7 @@ curated summary/report без больших картинок и без прив
 - `SWTools.exe` запущен не из ожидаемого runtime dir.
 - Manifest имеет `production_go_allowed=true`.
 - Для release evidence: обязательная surface отсутствует.
+- Для full L-01..L-15 evidence: профильный кадр отсутствует или не `CAPTURED`.
 
 ## What this does not prove
 

@@ -1,0 +1,149 @@
+{
+  "schema": "swtools.visual-localization-surfaces.v1",
+  "version": "2026-06-25",
+  "surfaces": [
+    {
+      "id": "L-01",
+      "title": "Main window",
+      "process": "SWTools.exe",
+      "window_contains": "SWTools",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Main SWTools ribbon and populated grid after S7."
+    },
+    {
+      "id": "L-02",
+      "title": "License dialogs",
+      "process": "SWTools.exe",
+      "window_contains": "",
+      "text_contains": ["Лицензия"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Registration, activation, missing-license or trial dialog. Open one representative license dialog before capture."
+    },
+    {
+      "id": "L-03",
+      "title": "BOM export menu",
+      "process": "SWTools.exe",
+      "window_contains": "",
+      "text_contains": ["Экспорт сводной спецификации", "Экспорт иерархической спецификации"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Expanded Export BOM menu with all 8 modes visible."
+    },
+    {
+      "id": "L-04",
+      "title": "BOM scheme dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Настроить схему спецификации",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Frmexportbom / BOM scheme settings."
+    },
+    {
+      "id": "L-05",
+      "title": "Column mapping dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Сопоставление заголовков столбцов",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Frmmapping. Duplicate-name modal must not be open."
+    },
+    {
+      "id": "L-06",
+      "title": "User rule editor",
+      "process": "SWTools.exe",
+      "window_contains": "Пользовательское правило",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "FrmFilterrules / user rule editor opened from BOM/filling rule link."
+    },
+    {
+      "id": "L-07",
+      "title": "Options dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Параметры",
+      "text_contains": ["Общие"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "FrmOptions with tabs visible."
+    },
+    {
+      "id": "L-08",
+      "title": "Save options dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Параметры сохранения",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "FrmSaveOption with long Russian labels."
+    },
+    {
+      "id": "L-09",
+      "title": "Filling dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Столбец заполнения",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "FrmFilling with tabs and long labels."
+    },
+    {
+      "id": "L-10",
+      "title": "Units dialog",
+      "process": "SWTools.exe",
+      "window_contains": "Единица",
+      "required": true,
+      "han_policy": "fail",
+      "notes": "FrmSWUnit."
+    },
+    {
+      "id": "L-11",
+      "title": "Context menus",
+      "process": "SWTools.exe",
+      "window_contains": "",
+      "text_contains": ["<Материал>"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Context menu with placeholder entries. Open the context menu before capture."
+    },
+    {
+      "id": "L-12",
+      "title": "Russian help",
+      "process": "hh.exe",
+      "window_contains": "",
+      "text_contains": ["SWTools"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "help_ru.chm opened from the tested runtime."
+    },
+    {
+      "id": "L-13",
+      "title": "SolidWorks add-in host",
+      "process": "SLDWORKS.exe",
+      "window_contains": "SOLIDWORKS",
+      "required": true,
+      "han_policy": "record_only",
+      "notes": "SWTools CommandManager tab/buttons in SolidWorks. Host-owned SolidWorks Han is recorded for manual review."
+    },
+    {
+      "id": "L-14",
+      "title": "Installer UI",
+      "process": "SWTools-Setup.exe",
+      "process_names": ["SWTools-Setup.exe", "SWTools-1.1.6-Setup.exe", "ZTool-Setup.exe", "ZTool-1.1.6-Setup.exe"],
+      "window_contains": "Установка",
+      "text_contains": ["SWTools"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Installer or uninstaller UI for the current release candidate."
+    },
+    {
+      "id": "L-15",
+      "title": "Material/color flows",
+      "process": "SWTools.exe",
+      "window_contains": "SWTools",
+      "text_contains": ["Материал"],
+      "required": true,
+      "han_policy": "fail",
+      "notes": "Material/color related UI after running material or random-color flows."
+    }
+  ]
+}
