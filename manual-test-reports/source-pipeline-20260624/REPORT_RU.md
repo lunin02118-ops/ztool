@@ -252,3 +252,84 @@ resource SHA verification и screenshot evidence после CommandManager cache
 2. RU fixture для strict BOM 7/8.
 3. Installer clean install smoke поверх нового source-of-truth package.
 4. Только после этого final release promotion.
+
+## 8. Регрессия: `Сопоставление заголовков столбцов`
+
+Симптом от пользователя:
+
+- при нажатии `Сопоставление заголовков столбцов` появлялась модалка
+  `Повторяющееся имя`;
+- форма блокировалась до ручного закрытия сообщения;
+- проблема проявлялась на живом runtime после успешного S7.
+
+Причина:
+
+- `Frmmapping_Load` программно заполнял `DGV1[1, row].Value`;
+- это вызывало `dgv1_CellValueChanged`, как будто пользователь руками ввёл
+  значение;
+- дефолтные `namemappinglist` дополнительно содержали `mappingname`, равный
+  собственному заголовку (`Наименование -> Наименование`,
+  `Обозначение -> Обозначение`, `Материал -> Материал`, `Тип -> Тип`,
+  `Версия -> Версия`);
+- подсказка самой формы говорит, что пустое имя или имя, совпадающее с
+  заголовком столбца, означает “сопоставление не применяется”, но обработчик
+  воспринимал это как дубль и показывал ошибку.
+
+Исправлено:
+
+- `client-src\ZTool\Frmmapping.cs`
+  - добавлен source-level guard `suppressMappingValidation`;
+  - загрузка грида больше не валидируется как ручной ввод;
+  - `mappingname`, совпадающий с собственным заголовком, нормализуется в пустое
+    значение;
+  - реальная ручная проверка дублей сохранена.
+- `client-src\ZTool\CConfigMng.cs`
+  - дефолтные валидные русские заголовки больше не восстанавливаются как
+    `mappingname`;
+  - сохраняются только реальные alias mappings, например
+    `Обработка поверхности -> ОбработкаПоверхности`,
+    `Масса ед._кг -> МассаЕдКг`,
+    `Габаритные размеры -> ГабаритныеРазмеры`.
+- `SWTools.settings` и `client-core\dist\SWTools.settings`
+  - очищены self-mapping значения для стандартных свойств.
+- `client-core\tools\check_bom_template.py`
+  - добавлен gate `[3c] Frmmapping dialog contract`;
+  - gate падает на duplicate non-empty `mappingname` и на
+    `PropVal_* mappingname == header`.
+- `scripts\swtools_mapping_dialog_smoke.py`
+  - новый live UIA smoke: открывает модель, запускает SWTools через add-in,
+    выполняет S7, открывает вкладку `Спецификация`, нажимает
+    `Сопоставление заголовков столбцов` и проваливает тест при модалке
+    `Повторяющееся имя`.
+
+Проверки:
+
+```powershell
+python client-core\tools\check_bom_template.py SWTools.settings
+python client-core\tools\check_bom_template.py client-core\dist\SWTools.settings
+pwsh -NoProfile -File scripts\resolve_release_inputs.ps1 -OutputPath _local_artifacts\reports\mapping-fix\release-inputs.json
+pwsh -NoProfile -File scripts\build_release_package.ps1 -OutputRoot _local_artifacts\reports\mapping-fix\package-test -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll"
+pwsh -NoProfile -File scripts\verify_release_package.ps1 -PackageRoot _local_artifacts\reports\mapping-fix\package-test\SWTools-1.1.6 -RequireSolidWorksTools -AllowDirtyManifest -ExpectedClientExeSha256 E3B2E88D24CD54AE831A5A67B85BA952D968F5B719F8C8A8D56DD827B750684C -ExpectedAddinDllSha256 8B8C938B9E17E5C6C03CDEEAAAF0E0087862E351613810B96032F4813CC06F3A
+pwsh -NoProfile -File scripts\sw_test_preflight.ps1 -RuntimeDir _local_artifacts\reports\mapping-fix\package-test\SWTools-1.1.6\runtime -ReportDir _local_artifacts\reports\mapping-fix\preflight-package-runtime -Register -ExpectedExeSha256 E3B2E88D24CD54AE831A5A67B85BA952D968F5B719F8C8A8D56DD827B750684C -ExpectedDllSha256 8B8C938B9E17E5C6C03CDEEAAAF0E0087862E351613810B96032F4813CC06F3A
+python scripts\swtools_mapping_dialog_smoke.py --runtime-dir _local_artifacts\reports\mapping-fix\package-test\SWTools-1.1.6\runtime --model D:\Development\ztool\TestModel\0614-A00.SLDASM --report-dir _local_artifacts\reports\mapping-fix\mapping-dialog-live-smoke --expected-exe-sha256 E3B2E88D24CD54AE831A5A67B85BA952D968F5B719F8C8A8D56DD827B750684C --expected-dll-sha256 8B8C938B9E17E5C6C03CDEEAAAF0E0087862E351613810B96032F4813CC06F3A --expected-min-rows 29
+```
+
+Результат:
+
+- `check_bom_template.py`: PASS / PASS, `mapping dialog defaults OK`;
+- source build: PASS (`123` known warnings / `6` known warnings, `0` errors);
+- package verify: PASS;
+- RegAsm/preflight: PASS;
+- `swtools_mapping_dialog_smoke.py`: PASS;
+- live S7 внутри smoke: `row_count=29`;
+- `status_text`: `Подключение завершено, затрачено 0,3 сек, всего 29 поз.`;
+- `Сопоставление заголовков столбцов` открылось;
+- модалка `Повторяющееся имя` не появилась.
+
+Отдельная методическая фиксация:
+
+- неправильный запуск через `Start-Process .SLDASM` из shell дал зависший
+  `splash` и не считается acceptance;
+- корректный live smoke для этого прогона открыл файл через Explorer UIA
+  `ListItem '0614-A00.SLDASM' -> Invoke`, затем управлял SWTools через UIA и
+  SolidWorks COM.

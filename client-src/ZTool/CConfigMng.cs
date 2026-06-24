@@ -112,15 +112,11 @@ public class CConfigMng
 		switch (text)
 		{
 		case "Наименование":
-			return "Наименование";
 		case "Обозначение":
-			return "Обозначение";
 		case "Материал":
-			return "Материал";
 		case "Тип":
-			return "Тип";
 		case "Версия":
-			return "Версия";
+			return "";
 		case "Обработка поверхности":
 			return "ОбработкаПоверхности";
 		default:
@@ -147,7 +143,11 @@ public class CConfigMng
 		columnnamemapping2.name = name;
 		columnnamemapping2.name2 = name2;
 		columnnamemapping2.text = text;
-		if (!string.IsNullOrEmpty(mappingname))
+		if (string.IsNullOrEmpty(mappingname) && string.Equals(columnnamemapping2.mappingname ?? "", text ?? "", StringComparison.OrdinalIgnoreCase))
+		{
+			columnnamemapping2.mappingname = "";
+		}
+		else if (!string.IsNullOrEmpty(mappingname))
 		{
 			columnnamemapping2.mappingname = mappingname;
 		}
