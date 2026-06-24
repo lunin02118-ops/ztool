@@ -1,6 +1,6 @@
 # Binary provenance matrix
 
-Generated: 2026-06-22T19:14:35Z
+Generated: 2026-06-24T21:55:47Z
 
 | Artifact | Current path | Role | Origin class | Expected SHA256 | Actual SHA256 | Status | Notes |
 |---|---|---|---|---|---|---|---|
@@ -11,7 +11,7 @@ Generated: 2026-06-22T19:14:35Z
 | Ribbon runtime | `Ribbon.dll` | runtime dependency | bundled third-party | `57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e` | `57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e` | PASS | License/origin review required. |
 | Expandable grid runtime | `ExpandableGridView.dll` | runtime dependency | bundled third-party | `89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0` | `89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0` | PASS | License/origin review required. |
 | RSA helper | `client-core/ref/ZTool_rsa.dll` | runtime dependency | bundled legacy runtime | `274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90` | `274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90` | PASS | Distribution rights tied to runtime approval. |
-| Russian help | `help_ru.chm` | user help | generated/packaged asset | `` | `9a8a7da1ea91ca6e51ae745ba5a4f7caa8314f8ecfc32e1e827aeac42a2a8646` | INFO | Need CHM source/build evidence. |
-| Runtime settings | `SWTools.settings` | config | repository asset | `` | `f969e4475f5b0a256171fbbdd6d93c2f0ca4a0771f49829efaa1b3d644a7500a` | INFO | Path-patched during package build. |
+| Russian help | `help_ru.chm` | user help | generated/packaged asset | `` | `5e59b1bcf9aeef552345e64276694494aa3a7b7419012428c619c37afcd762d6` | INFO | Brand evidence captured; final CHM source/toolchain evidence still required. |
+| Runtime settings | `SWTools.settings` | config | repository asset | `` | `28ab4c69d68ceec3ee2e1901401efa16bc4f041b4971461c4e92ddbce10dcabd` | INFO | Path-patched during package build. |
 
 Loose root binaries are non-authoritative unless their hashes match `scripts/expected_release_hashes.json`.

@@ -32,7 +32,7 @@ $items = @(
     [ordered]@{ Artifact='Ribbon runtime'; Path='Ribbon.dll'; Role='runtime dependency'; Origin='bundled third-party'; Expected=$expected.ribbon_dll_sha256; Notes='License/origin review required.' },
     [ordered]@{ Artifact='Expandable grid runtime'; Path='ExpandableGridView.dll'; Role='runtime dependency'; Origin='bundled third-party'; Expected=$expected.expandable_grid_view_sha256; Notes='License/origin review required.' },
     [ordered]@{ Artifact='RSA helper'; Path='client-core/ref/ZTool_rsa.dll'; Role='runtime dependency'; Origin='bundled legacy runtime'; Expected=$expected.ztool_rsa_dll_sha256; Notes='Distribution rights tied to runtime approval.' },
-    [ordered]@{ Artifact='Russian help'; Path='help_ru.chm'; Role='user help'; Origin='generated/packaged asset'; Expected=''; Notes='Need CHM source/build evidence.' },
+    [ordered]@{ Artifact='Russian help'; Path='help_ru.chm'; Role='user help'; Origin='generated/packaged asset'; Expected=''; Notes='Brand evidence captured; final CHM source/toolchain evidence still required.' },
     [ordered]@{ Artifact='Runtime settings'; Path='SWTools.settings'; Role='config'; Origin='repository asset'; Expected=''; Notes='Path-patched during package build.' }
 )
 

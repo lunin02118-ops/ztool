@@ -11,6 +11,7 @@
 | `runs.json`   | 256 исходных китайских текстовых сегментов (порядок «от длинного к короткому») |
 | `ru.json`     | их русские переводы, строго один-к-одному по индексу с `runs.json`    |
 | `build_ru.py` | сборщик: перевод HTML-тем, навигации (HHC/HHK), генерация `.hhp`       |
+| `check_chm_brand.py` | gate: проверяет собранный CHM на запрещённый legacy brand `ZTool` |
 | `compare_manual_screenshots.py` | gate перед сборкой: покадровое сравнение оригинальных и RU-скриншотов |
 
 ## Как пересобрать
@@ -32,6 +33,9 @@ python compare_manual_screenshots.py --original _chm_src --candidate _chm_build 
 
 # 5. забрать результат
 cp _chm_build/help_ru.chm ../../help_ru.chm
+
+# 6. проверить видимый brand в CHM
+python check_chm_brand.py ../../help_ru.chm --forbid ZTool --require SWTools
 ```
 
 ## Что делает `build_ru.py`
