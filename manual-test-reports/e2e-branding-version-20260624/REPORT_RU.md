@@ -6,6 +6,8 @@
 
 - Branch: `codex/e2e-branding-version-live`
 - Runtime-affecting commit tested: `464985c2110aff54b1a6ebac87f89cf2c864792c`
+- Commits after `464985c` in this PR are report/documentation-only; no runtime,
+  E2E script, package or installer logic changed after the accepted live run.
 - Git state during accepted run: `clean`
 - SolidWorks: `C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe`
 - Test assembly: `TestModel\0614-A00.SLDASM`
