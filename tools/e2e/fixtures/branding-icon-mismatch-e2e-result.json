@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "production_go_allowed": false,
+  "stages": [
+    {
+      "name": "10-branding-version",
+      "status": "PASS",
+      "summary": "fixture with intentionally mismatched icons",
+      "details": {
+        "window_title": "SWTools 1.1.6+fixture.clean(x64)",
+        "expected_title_prefix": "SWTools 1.1.6+fixture.clean",
+        "product_version": "1.1.6+fixture.clean",
+        "file_version": "1.1.6.999",
+        "icon_hash_match": false,
+        "live_window_icon": {
+          "path": "live-window-icon.png",
+          "width": 32,
+          "height": 32,
+          "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        },
+        "embedded_exe_icon": {
+          "path": "embedded-exe-icon.png",
+          "width": 32,
+          "height": 32,
+          "sha256": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+        }
+      }
+    }
+  ]
+}

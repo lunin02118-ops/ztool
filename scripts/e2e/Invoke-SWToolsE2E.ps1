@@ -13,6 +13,7 @@ param(
     [switch]$BuildFromSource,
     [switch]$RunS7,
     [switch]$RunS8,
+    [switch]$RunBrandingVersion,
     [switch]$RequireSolidWorks,
 
     [string]$InstallRoot = '',
@@ -81,6 +82,7 @@ $result.parameters = [ordered]@{
     build_from_source = [bool]$BuildFromSource
     run_s7 = [bool]$RunS7
     run_s8 = [bool]$RunS8
+    run_branding_version = [bool]$RunBrandingVersion
     require_solidworks = [bool]$RequireSolidWorks
     install_root = $InstallRoot
     package_root = $PackageRoot
@@ -364,7 +366,44 @@ try {
         Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'SKIP' -Summary 'live BOM export automation not requested' -Details @{ require_bom_modes = $RequireBomModes }
         Add-E2EStage -Result $result -Name '09-excel-validation' -Status 'SKIP' -Summary 'semantic Excel validation not requested'
     }
-    Add-E2EStage -Result $result -Name '10-branding-version' -Status 'SKIP' -Summary 'branding/version live evidence is planned for a later E2E layer'
+    if ($RunBrandingVersion) {
+        if (-not $RuntimeDir) { throw '-RunBrandingVersion requires -RuntimeDir or -BuildFromSource' }
+        $brandDir = Join-Path $OutputDir '10-branding-version'
+        $brandArgs = @(
+            (Join-Path $repoRoot 'scripts\swtools_branding_version_live.py'),
+            '--runtime-dir', $RuntimeDir,
+            '--report-dir', $brandDir,
+            '--repo-root', $repoRoot,
+            '--expected-version', $version,
+            '--expected-exe-sha256', $runtimeClientHash,
+            '--expected-dll-sha256', $runtimeAddinHash
+        )
+        $brandLog = Join-Path $OutputDir 'logs\10-branding-version.log'
+        $brand = Invoke-E2ECommand -Name 'swtools_branding_version_live' -FilePath 'python' -Arguments $brandArgs -LogPath $brandLog -TimeoutSeconds 120
+        if ($brand.exit_code -ne 0) { throw "branding/version live evidence failed; see $brandLog" }
+        $brandJson = Join-Path $brandDir 'branding-version-result.json'
+        $brandResult = Read-JsonFile $brandJson
+        Add-E2EStage -Result $result -Name '10-branding-version' -Status 'PASS' -Summary "branding/version live evidence completed: $($brandResult.live_process.window_title)" -Details @{
+            log = $brandLog
+            report_dir = $brandDir
+            result_json = $brandJson
+            window_title = $brandResult.live_process.window_title
+            expected_title_prefix = $brandResult.live_process.window_title_expected_prefix
+            swtools_path = $brandResult.live_process.path
+            swtools_sha256 = $brandResult.swtools_exe.sha256
+            addin_sha256 = $brandResult.swtools_dll.sha256
+            product_version = $brandResult.swtools_exe.version_info.product_version
+            file_version = $brandResult.swtools_exe.version_info.file_version
+            icon_hash_match = $brandResult.icon_hash_match
+            live_window_icon = $brandResult.live_process.window_icon
+            embedded_exe_icon = $brandResult.embedded_exe_icon
+        }
+        $result.artifacts.branding_version_report_dir = $brandDir
+        $result.artifacts.branding_version_json = $brandJson
+    }
+    else {
+        Add-E2EStage -Result $result -Name '10-branding-version' -Status 'SKIP' -Summary 'branding/version live evidence not requested'
+    }
     Add-E2EStage -Result $result -Name '12-finalize' -Status 'PASS' -Summary 'foundation orchestrator completed; production GO remains false'
     Write-E2EJson -Path $resultPath -Value $result
     Write-E2ESummary -Result $result -Path $summaryPath

@@ -36,6 +36,7 @@ win32com = require_module("win32com.client")
 win32gui = require_module("win32gui")
 win32con = require_module("win32con")
 win32process = require_module("win32process")
+pythoncom = require_module("pythoncom")
 psutil = require_module("psutil")
 Application = require_module("pywinauto.application").Application
 Desktop = require_module("pywinauto").Desktop
@@ -324,9 +325,12 @@ def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, 
     return last
 
 
-def blocking_dialog(swtools_pid: int, solidworks_pid: int) -> dict[str, Any] | None:
+def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, Any] | None:
+    owners: list[tuple[int, str]] = [(solidworks_pid, "SolidWorks")]
+    if swtools_pid is not None:
+        owners.append((swtools_pid, "SWTools"))
     for backend in ("win32", "uia"):
-        for pid, owner in ((solidworks_pid, "SolidWorks"), (swtools_pid, "SWTools")):
+        for pid, owner in owners:
             for win in desktop_windows(backend, process_id=pid):
                 try:
                     title = win.window_text().strip()
@@ -355,6 +359,42 @@ def blocking_dialog(swtools_pid: int, solidworks_pid: int) -> dict[str, Any] | N
                     "class_name": class_name,
                     "text": joined[:2000],
                 }
+    return None
+
+
+def is_solidworks_connection_timeout_dialog(dialog: dict[str, Any] | None) -> bool:
+    if not dialog or dialog.get("owner") != "SolidWorks":
+        return False
+    text = str(dialog.get("text") or "").lower()
+    return "тайм-аут соединения" in text or "connection timeout" in text
+
+
+def dismiss_solidworks_connection_timeout(solidworks_pid: int) -> dict[str, Any] | None:
+    for backend in ("win32", "uia"):
+        for win in desktop_windows(backend, process_id=solidworks_pid):
+            texts = dialog_texts(win)
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "тайм-аут соединения" not in lowered and "connection timeout" not in lowered:
+                continue
+            try:
+                title = win.window_text().strip()
+                class_name = win.class_name()
+            except Exception:
+                title = ""
+                class_name = ""
+            if class_name != "#32770" and title != "Информация":
+                continue
+            button = click_dialog_button(win, ["ОК", "OK"], timeout=0.8)
+            return {
+                "owner": "SolidWorks",
+                "backend": backend,
+                "process_id": solidworks_pid,
+                "title": title,
+                "class_name": class_name,
+                "text": joined[:2000],
+                "button": button,
+            }
     return None
 
 
@@ -468,6 +508,28 @@ def invoke_connect_async(main: Any) -> dict[str, Any]:
     return state
 
 
+def invoke_open_ztool_async() -> dict[str, Any]:
+    state: dict[str, Any] = {"done": False, "error": ""}
+
+    def worker() -> None:
+        pythoncom.CoInitialize()
+        try:
+            sw = win32com.GetActiveObject("SldWorks.Application")
+            addin = call_or_value(sw, "GetAddInObject", "ZTool.SwAddin")
+            if not addin:
+                raise RuntimeError("SolidWorks returned no ZTool.SwAddin object")
+            addin.openZtool(0)
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["done"] = True
+            pythoncom.CoUninitialize()
+
+    thread = threading.Thread(target=worker, name="swtools-s7-open-ztool", daemon=True)
+    thread.start()
+    return state
+
+
 def run() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -522,14 +584,23 @@ def run() -> int:
         result["checks"].append("addin object ok")
 
         started = time.time()
-        addin.openZtool(0)
+        open_state = invoke_open_ztool_async()
+        result["open_ztool"] = dict(open_state)
         proc = None
         deadline = time.time() + args.timeout
         while time.time() < deadline and proc is None:
+            result["open_ztool"] = dict(open_state)
+            if open_state.get("done") and open_state.get("error"):
+                raise RuntimeError(f"openZtool failed: {open_state['error']}")
+            blocker = blocking_dialog(None, solidworks_pid)
+            if blocker:
+                result["blocking_dialog"] = blocker
+                raise RuntimeError(f"Blocking dialog during openZtool: {blocker}")
             proc = find_runtime_process(runtime_dir, started)
-            time.sleep(0.5)
+            time.sleep(0.25)
         if proc is None:
             raise RuntimeError(f"SWTools.exe did not start from runtime {runtime_dir}")
+        result["open_ztool"] = dict(open_state)
         result["swtools_pid"] = proc.pid
         result["swtools_path"] = proc.exe()
         result["swtools_command_line"] = process_command_line(proc.pid)
@@ -549,8 +620,16 @@ def run() -> int:
         main = max(app.windows(), key=lambda w: w.rectangle().width() * w.rectangle().height())
         blocker = blocking_dialog(proc.pid, solidworks_pid)
         if blocker:
-            result["blocking_dialog"] = blocker
-            raise RuntimeError(f"Blocking dialog before connect: {blocker}")
+            if is_solidworks_connection_timeout_dialog(blocker):
+                dismissed = dismiss_solidworks_connection_timeout(solidworks_pid)
+                if dismissed:
+                    result["dismissed_blocking_dialog"] = dismissed
+                    blocker = None
+            if blocker:
+                result["blocking_dialog"] = blocker
+                raise RuntimeError(f"Blocking dialog before connect: {blocker}")
+        if result.get("dismissed_blocking_dialog"):
+            result["checks"].append("SolidWorks connection timeout dialog dismissed after runtime launch")
         connect_state = invoke_connect_async(main)
         result["connect_invoke"] = dict(connect_state)
         result["checks"].append("connect invoked through UIA worker")

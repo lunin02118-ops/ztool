@@ -30,6 +30,7 @@ def main() -> int:
     parser.add_argument("--require-s8-mode-count", type=int)
     parser.add_argument("--require-s8-all-pass", action="store_true")
     parser.add_argument("--require-s8-strict-filters", action="store_true")
+    parser.add_argument("--require-branding-version", action="store_true")
     parser.add_argument("--expect-status", choices=sorted(VALID_STATUSES))
     args = parser.parse_args()
 
@@ -131,6 +132,41 @@ def main() -> int:
                     return fail(f"S8 strict filter mode {mode_id} must have rows > 0, got {rows!r}")
                 if mode.get("filter_empty"):
                     return fail(f"S8 strict filter mode {mode_id} is marked filter_empty")
+
+    if args.require_branding_version:
+        stage = stage_by_name.get("10-branding-version")
+        if stage is None:
+            return fail("branding/version stage missing")
+        if stage.get("status") != "PASS":
+            return fail(f"branding/version stage must be PASS, got {stage.get('status')!r}")
+        details = stage.get("details") or {}
+        window_title = details.get("window_title") or ""
+        expected_prefix = details.get("expected_title_prefix") or ""
+        if not isinstance(window_title, str) or not window_title.startswith("SWTools "):
+            return fail(f"live window title must start with SWTools, got {window_title!r}")
+        if "ZTool" in window_title:
+            return fail(f"legacy brand leaked in live window title: {window_title!r}")
+        if expected_prefix and not window_title.startswith(expected_prefix):
+            return fail(
+                f"live window title must start with expected prefix {expected_prefix!r}, "
+                f"got {window_title!r}"
+            )
+        if not isinstance(details.get("product_version"), str) or not details["product_version"]:
+            return fail("branding/version details missing product_version")
+        live_icon = details.get("live_window_icon") or {}
+        embedded_icon = details.get("embedded_exe_icon") or {}
+        for name, icon in (("live_window_icon", live_icon), ("embedded_exe_icon", embedded_icon)):
+            if not isinstance(icon, dict):
+                return fail(f"{name} evidence must be an object")
+            if not icon.get("sha256") or not icon.get("width") or not icon.get("height"):
+                return fail(f"{name} evidence is incomplete: {icon!r}")
+        if live_icon.get("sha256") != embedded_icon.get("sha256"):
+            return fail(
+                "branding/version icon hash mismatch: "
+                f"live={live_icon.get('sha256')!r} embedded={embedded_icon.get('sha256')!r}"
+            )
+        if details.get("icon_hash_match") is not True:
+            return fail(f"branding/version icon_hash_match must be true, got {details.get('icon_hash_match')!r}")
 
     print(
         "E2E assertion PASS: "
