@@ -4,7 +4,7 @@
 видео, логи, временные HTML/JSON и большие evidence packs хранить в
 `_local_artifacts\reports\localization-sprint-h\` до финального отбора.
 
-## Перед merge Sprint H
+## Перед production GO / visual FULL PASS
 
 Пользовательский аудит обязателен. Минимальный набор кадров:
 
@@ -39,3 +39,29 @@ Decision: PASS / FAIL / PASS WITH EXCEPTIONS
 
 Не коммитить private keys, license codes, server endpoints, customer data or
 private approvals in screenshots.
+
+## Automated capture helper
+
+For live S7/S8/branding builds, collect curated screenshot evidence with:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM `
+  --expected-runtime-dir <runtime-dir>
+```
+
+Then validate the manifest:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface L-01 `
+  --require-surface L-13 `
+  --require-runtime-match
+```
+
+The helper does not replace owner visual review. It proves screenshot identity,
+runtime identity and absence of blocking Han in captured UIA text. Host
+SolidWorks Han in `record_only` surfaces remains warning evidence for manual
+review.

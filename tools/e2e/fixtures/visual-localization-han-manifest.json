@@ -1,0 +1,20 @@
+{
+  "status": "PASS_WITH_WARN",
+  "production_go_allowed": false,
+  "surfaces": [
+    {
+      "id": "L-01",
+      "status": "CAPTURED",
+      "process": "SWTools.exe",
+      "han_policy": "fail",
+      "runtime_path_match": true,
+      "visible_han_texts": ["类型"],
+      "screenshot": {
+        "path": "_local_artifacts/reports/localization/screenshot.png",
+        "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "width": 640,
+        "height": 480
+      }
+    }
+  ]
+}
