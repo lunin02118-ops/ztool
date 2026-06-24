@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -451,6 +452,22 @@ def invoke_connect(main: Any) -> None:
     raise RuntimeError("Cannot UIA-invoke top SplitButton 'Подключить SW'")
 
 
+def invoke_connect_async(main: Any) -> dict[str, Any]:
+    state: dict[str, Any] = {"done": False, "error": ""}
+
+    def worker() -> None:
+        try:
+            invoke_connect(main)
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["done"] = True
+
+    thread = threading.Thread(target=worker, name="swtools-s7-connect-invoke", daemon=True)
+    thread.start()
+    return state
+
+
 def run() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -534,15 +551,19 @@ def run() -> int:
         if blocker:
             result["blocking_dialog"] = blocker
             raise RuntimeError(f"Blocking dialog before connect: {blocker}")
-        invoke_connect(main)
-        result["checks"].append("connect invoked through UIA")
+        connect_state = invoke_connect_async(main)
+        result["connect_invoke"] = dict(connect_state)
+        result["checks"].append("connect invoked through UIA worker")
 
         last_status = ""
         last_count = 0
         last_texts: list[str] = []
         deadline = time.time() + 80.0
         while time.time() < deadline:
-            time.sleep(1.0)
+            time.sleep(0.5)
+            result["connect_invoke"] = dict(connect_state)
+            if connect_state.get("done") and connect_state.get("error"):
+                raise RuntimeError(f"Connect UIA invoke failed: {connect_state['error']}")
             blocker = blocking_dialog(proc.pid, solidworks_pid)
             if blocker:
                 result["blocking_dialog"] = blocker
