@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Russify a demo SolidWorks assembly's custom properties so the RUSSIAN ZTool
-config (ZTool.settings) can read it.
+Russify a demo SolidWorks assembly's custom properties so the RUSSIAN SWTools
+config (SWTools.settings) can read it.
 
 ZTool reads custom properties BY EXACT NAME. The demo model 0614-A00 stores its
-properties under Chinese names (设计, 零件名称, 图号, ...). This script walks every
-component of the assembly that is OPEN in SolidWorks and, for each Chinese
-property it finds, ADDS a Russian-named property with the SAME raw value
-expression - at document level and at every configuration level. After running
-with --apply, load the Russian config and export: the columns fill with data and
-the whole BOM is Russian.
+properties under legacy vendor names. This script walks every component of the
+assembly that is OPEN in SolidWorks and, for each legacy property it finds, ADDS
+a Russian-named property at document level and at every configuration level. For
+legacy type values, the script writes Russian values into `Тип`; production
+filter rules must not depend on vendor Han aliases. After running with --apply,
+load the Russian config and export: the columns fill with data and the whole BOM
+is Russian.
 
-It does NOT delete the Chinese properties; it only adds the Russian ones, so it
-is safe and reversible (re-running just overwrites the same Russian values).
+It does NOT delete the legacy properties; it only adds the Russian ones, so it is
+safe and reversible (re-running just overwrites the same Russian values).
 
 REQUIREMENTS (run ON the machine where SolidWorks + the assembly are open):
   pip install pywin32
@@ -36,18 +37,31 @@ try:
 except ImportError:
     sys.exit("pywin32 is required:  pip install pywin32")
 
-# Chinese property name in the model  ->  Russian name the config reads
+# Legacy vendor property name in the model -> Russian name the config reads.
 MAPPING = [
-    ("\u8bbe\u8ba1",                 "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0430\u043b"),                                 # 设计 -> Разработал
-    ("\u96f6\u4ef6\u540d\u79f0",     "\u0418\u043c\u044f \u0434\u0435\u0442\u0430\u043b\u0438"),                                     # 零件名称 -> Имя детали
-    ("\u56fe\u53f7",                 "\u041d\u043e\u043c\u0435\u0440 \u0447\u0435\u0440\u0442\u0435\u0436\u0430"),                     # 图号 -> Номер чертежа
-    ("\u6750\u6599",                 "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b"),                                             # 材料 -> Материал
-    ("\u7c7b\u578b",                 "\u0422\u0438\u043f"),                                                                         # 类型 -> Тип
-    ("\u7248\u672c",                 "\u0412\u0435\u0440\u0441\u0438\u044f"),                                                         # 版本 -> Версия
-    ("\u8868\u9762\u5904\u7406",     "\u041e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u043f\u043e\u0432\u0435\u0440\u0445\u043d\u043e\u0441\u0442\u0438"),  # 表面处理 -> Обработка поверхности
-    ("\u8bbe\u8ba1\u65e5\u671f",     "\u0414\u0430\u0442\u0430 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0438"),         # 设计日期 -> Дата разработки
-    ("\u91cd\u91cf",                 "\u041c\u0430\u0441\u0441\u0430"),                                                               # 重量 -> Масса
+    ("\u8bbe\u8ba1",                 "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0430\u043b"),
+    ("\u96f6\u4ef6\u540d\u79f0",     "\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435"),
+    ("\u56fe\u53f7",                 "\u041e\u0431\u043e\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435"),
+    ("\u6750\u6599",                 "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b"),
+    ("\u7c7b\u578b",                 "\u0422\u0438\u043f"),
+    ("\u7248\u672c",                 "\u0412\u0435\u0440\u0441\u0438\u044f"),
+    ("\u8868\u9762\u5904\u7406",     "\u041e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u043f\u043e\u0432\u0435\u0440\u0445\u043d\u043e\u0441\u0442\u0438"),
+    ("\u8bbe\u8ba1\u65e5\u671f",     "\u0414\u0430\u0442\u0430 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0438"),
+    ("\u91cd\u91cf",                 "\u041c\u0430\u0441\u0441\u0430"),
 ]
+
+# Legacy demo value -> Russian production value. This is intentionally a
+# fixture migration step, not a runtime alias in the shipped settings.
+VALUE_MAPPING = {
+    "\u7c7b\u578b": {
+        "\u673a\u52a0": "\u041c\u0435\u0445.\u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430",
+        "\u94a3\u91d1": "\u041b\u0438\u0441\u0442\u043e\u0432\u0430\u044f",
+        "\u94f8\u4ef6": "\u041b\u0438\u0442\u044c\u0451",
+        "\u710a\u4ef6": "\u0421\u0432\u0430\u0440\u043a\u0430",
+        "\u5916\u8d2d": "\u041f\u043e\u043a\u0443\u043f\u043d\u043e\u0435",
+        "\u5e02\u8d2d": "\u041f\u043e\u043a\u0443\u043f\u043d\u043e\u0435",
+    },
+}
 
 swDocPART = 1
 swDocASSEMBLY = 2
@@ -70,6 +84,17 @@ def get_raw_value(cpm, name):
     return raw if raw else None
 
 
+def normalize_value(source_name, raw):
+    """Translate legacy fixture values for Russian production properties."""
+    value_map = VALUE_MAPPING.get(source_name)
+    if not value_map or not raw:
+        return raw
+    result = raw
+    for old, new in value_map.items():
+        result = result.replace(old, new)
+    return result
+
+
 def russify_doc(model):
     """Add Russian properties (doc-level + each config). Returns list of changes."""
     changes = []
@@ -86,6 +111,7 @@ def russify_doc(model):
             raw = get_raw_value(cpm, zh)
             if raw is None:
                 continue
+            raw = normalize_value(zh, raw)
             cpm.Add3(ru, swCustomInfoText, raw, swCustomPropertyReplaceValue)
             changes.append((scope or "<doc>", ru, raw))
     return changes
@@ -159,7 +185,7 @@ def main():
     if not apply:
         print("DRY-RUN only - nothing was written. Re-run with --apply to save.")
     else:
-        print("Done. Now load the RUSSIAN ZTool.settings and export the BOM.")
+        print("Done. Now load the RUSSIAN SWTools.settings and export the BOM.")
 
 
 if __name__ == "__main__":

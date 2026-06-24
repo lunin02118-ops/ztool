@@ -159,8 +159,8 @@ solidworks宏文件（*.swb;*.swp）|*.swb;*.swp	Файл макроса SolidWo
 名称	Название
 名称已存在，序号：	Имя уже существует, номер: 
 否	Нет
-图号	Номер чертежа
-图号\n0	Номер чертежа\n0
+图号	Обозначение
+图号\n0	Обозначение\n0
 图片文件	Изображение
 图片文件（*.bmp;*.jpg;*.png）|*.bmp;*.jpg;*.png	Изображения (*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png
 在 	В 
@@ -358,8 +358,8 @@ solidworks宏文件（*.swb;*.swp）|*.swb;*.swp	Файл макроса SolidWo
 零件	Деталь
 零件(*.SLDPRT)|*.SLDPRT|装配体(*.SLDASM)|*.SLDASM	Деталь (*.SLDPRT)|*.SLDPRT|Сборка (*.SLDASM)|*.SLDASM
 零件(*.SLDPRT)|*.SLDPRT|装配体(*.SLDASM)|*.SLDASM|SOLIDWORKS文件(*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM	Деталь (*.SLDPRT)|*.SLDPRT|Сборка (*.SLDASM)|*.SLDASM|Файлы SOLIDWORKS (*.SLDPRT;*.SLDASM)|*.SLDPRT;*.SLDASM
-零件名称	Имя детали
-零件名称\n1	Имя детали\n1
+零件名称	Наименование
+零件名称\n1	Наименование\n1
 零件配置	Конфигурация детали
 需先打开	Сначала откройте
 马力	лошадиная сила

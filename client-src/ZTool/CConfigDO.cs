@@ -979,15 +979,15 @@ public class CConfigDO
 
 	public void InitDefaults()
 	{
-		propname = new List<string> { "Разработал", "Имя детали", "Номер чертежа", "Материал", "Тип", "Версия", "Количество", "Обработка поверхности", "Дата разработки", "Масса" };
-		proptype = new List<string> { "Текст", "Текст", "Текст", "Текст", "Текст", "Текст", "Число", "Текст", "Дата", "Текст" };
+		propname = new List<string> { "Разработал", "Наименование", "Обозначение", "Материал", "Тип", "Версия", "Обработка поверхности", "Дата разработки", "Масса" };
+		proptype = new List<string> { "Текст", "Текст", "Текст", "Текст", "Текст", "Текст", "Текст", "Дата", "Текст" };
 		Preview_Hotkey = new List<string>
 		{
 			Conversions.ToString(18),
 			Conversions.ToString(90)
 		};
-		propshow = new List<string> { "1", "1", "1", "1", "1", "1", "1", "1", "1", "1" };
-		needfillcolumns = new List<string> { "Номер чертежа\n0", "Имя детали\n1", "Версия\n2" };
+		propshow = new List<string> { "1", "1", "1", "1", "1", "1", "1", "1", "1" };
+		needfillcolumns = new List<string> { "Обозначение\n0", "Наименование\n1", "Версия\n2" };
 		bomsettings = new List<bomsetting>
 		{
 			new bomsetting

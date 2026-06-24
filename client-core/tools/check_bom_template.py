@@ -97,12 +97,14 @@ def parse_settings(path):
                                         rl.group(1), re.S)
                 filter_rules[rule_name] = bodies
 
+    propnames = tag_list(xml, "propname")
+
     material = {
         "materialpath": tag(xml, "materialpath") or "",
         "usematerialcolor": tag(xml, "usematerialcolor") or "",
     }
 
-    return presets, mappings, filter_rules, material
+    return presets, mappings, filter_rules, material, propnames
 
 
 # Field separator ZTool.exe (CustomFilter.FilterByRule) splits rule strings on.
@@ -113,6 +115,17 @@ VALID_OPERATORS = {
     "Равно", "Не равно", "Содержит", "Не содержит",
     "Начинается с", "Не начинается с", "Заканчивается на", "Не заканчивается на",
 }
+
+HAN_RE = re.compile(r"[\u3400-\u9fff]")
+
+
+def enforce_russian_profile(path):
+    """Production RU settings must not carry legacy Han aliases."""
+    return "demo-cn" not in os.path.basename(path).lower()
+
+
+def contains_han(value):
+    return bool(HAN_RE.search(value or ""))
 
 
 def template_defined_names(path):
@@ -144,13 +157,22 @@ def template_defined_names(path):
 
 def main():
     settings = sys.argv[1] if len(sys.argv) > 1 else "ZTool.settings"
-    presets, mappings, filter_rules, material = parse_settings(settings)
+    strict_ru_profile = enforce_russian_profile(settings)
+    presets, mappings, filter_rules, material, propnames = parse_settings(settings)
 
     problems = 0
     print("=" * 70)
     print("BOM export pre-flight check")
     print("settings:", os.path.abspath(settings))
     print("=" * 70)
+
+    if strict_ru_profile:
+        han_props = [p for p in propnames if contains_han(p)]
+        if han_props:
+            print("\n[0] RU profile language guard:")
+            for prop in han_props:
+                print("  ** ERROR: <propname> contains legacy Han text: %r" % prop)
+                problems += 1
 
     # --- 1. presets + absolute path ---
     print("\n[1] Presets (report types): %d mode(s)" % len(presets))
@@ -192,6 +214,8 @@ def main():
     # exports UNFILTERED. This check catches that class of bug pre-export.
     if filter_rules:
         print("\n[1c] Rule-string format (separator + operator):")
+        rule_fields = set(propnames)
+        rule_fields.update(header for _col, header, _desc in SERVICE_HEADERS)
         for name in sorted(filter_rules):
             for body in filter_rules[name]:
                 parts = body.split(RULE_SEP)
@@ -202,13 +226,39 @@ def main():
                           % (name, len(parts)))
                     problems += 1
                     continue
+                if strict_ru_profile:
+                    for field_name, field_value in [
+                        ("property token", parts[0]),
+                        ("operator", parts[1]),
+                        ("value", parts[2]),
+                    ]:
+                        if contains_han(field_value):
+                            print("  ** ERROR: rule '%s': %s contains legacy "
+                                  "Han text in production RU settings: %r"
+                                  % (name, field_name, field_value))
+                            problems += 1
                 op = parts[1]
+                body_ok = True
                 if op not in VALID_OPERATORS:
                     print("  ** ERROR: rule '%s': operator %r not recognized by "
                           "ZTool.exe (expected one of: %s)."
                           % (name, op, ", ".join(sorted(VALID_OPERATORS))))
                     problems += 1
-                else:
+                    body_ok = False
+                prop = rule_property_name(parts[0])
+                if prop and prop not in rule_fields:
+                    print("  ** ERROR: rule '%s': property %r is not present in "
+                          "<propname> and is not an allowed service column; "
+                          "the filter would test a stale/nonexistent field."
+                          % (name, prop))
+                    problems += 1
+                    body_ok = False
+                elif not prop:
+                    print("  ** ERROR: rule '%s': property token %r is not in "
+                          "$PropertyName$ form." % (name, parts[0]))
+                    problems += 1
+                    body_ok = False
+                if body_ok:
                     print("    - %s: prop=%s op=%s OK"
                           % (name, parts[0], op))
 
@@ -323,6 +373,13 @@ REQUIRED_CALCULATED_MAPPINGS = {
     "Col_Weight": ("Масса ед._кг", "МассаЕдКг"),
     "Col_bound": ("Габаритные размеры", "ГабаритныеРазмеры"),
 }
+
+
+def rule_property_name(token):
+    m = re.fullmatch(r"\$(.+)\$", (token or "").strip())
+    if not m:
+        return None
+    return m.group(1)
 
 
 def valid_excel_name(s):

@@ -12,7 +12,7 @@
     "description": "RSA helper reference"
   },
   "client-core/tools/Localizer/translations.tsv": {
-    "sha256": "02615bc2728d54906d4c51b6d7f71c4ffacd2cba153f480245b0b85792d540a8",
+    "sha256": "94f25054538d8821f9b4c2d8144c6dd76731e90dd66b87384f6e4f31eb9e06f6",
     "description": "Committed ZH->RU translation table"
   }
 }

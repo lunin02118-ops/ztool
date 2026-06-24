@@ -248,11 +248,11 @@ public class ReName : Form
 
 	internal const string f_331 = "([A-HJ-NP-Z][0-9])(?=_|\\s|\\[|\\【|\\（|\\(|\\.+|[\\u4e00-\\u9fa5]|$)";
 
-	internal const string f_332 = "$图号$";
+	internal const string f_332 = "$Обозначение$";
 
-	internal const string f_333 = "$零件名称$";
+	internal const string f_333 = "$Наименование$";
 
-	internal const string f_334 = "$版本$";
+	internal const string f_334 = "$Версия$";
 
 	private string f_335;
 
@@ -2440,11 +2440,11 @@ public class ReName : Form
 		try
 		{
 			f_335 = Type_16.m_63("ReName", "FieldName1");
-			f_335 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_335, "", TextCompare: false) != 0, f_335, "$图号$"));
+			f_335 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_335, "", TextCompare: false) != 0, f_335, "$Обозначение$"));
 			f_336 = Type_16.m_63("ReName", "FieldName2");
-			f_336 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_336, "", TextCompare: false) != 0, f_336, "$零件名称$"));
+			f_336 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_336, "", TextCompare: false) != 0, f_336, "$Наименование$"));
 			f_337 = Type_16.m_63("ReName", "FieldName3");
-			f_337 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_337, "", TextCompare: false) != 0, f_337, "$版本$"));
+			f_337 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_337, "", TextCompare: false) != 0, f_337, "$Версия$"));
 			f_338 = Type_16.m_63("ReName", "RegxPattern1");
 			f_338 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_338, "", TextCompare: false) != 0, f_338, "[\\S*]+[A-Za-z0-9]"));
 			f_339 = Type_16.m_63("ReName", "RegxPattern2");
