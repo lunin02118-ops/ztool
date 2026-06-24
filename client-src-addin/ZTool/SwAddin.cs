@@ -20,7 +20,7 @@ using SolidWorksTools.File;
 namespace ZTool;
 
 [ComVisible(true)]
-[SwAddin(Description = "ZTool高效辅助工具", Title = "ZTool", LoadAtStartup = true)]
+[SwAddin(Description = "SWTools SolidWorks Add-in", Title = "SWTools", LoadAtStartup = true)]
 [Guid("59959DFA-3229-4B86-852E-52ABF2BDB8C0")]
 public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 {
@@ -143,9 +143,10 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 			RegistryKey currentUser = Registry.CurrentUser;
 			string subkey = "SOFTWARE\\SolidWorks\\Addins\\{" + t.GUID.ToString() + "}";
 			RegistryKey registryKey = localMachine.CreateSubKey(subkey);
-			registryKey.SetValue(null, 0);
-			registryKey.SetValue("Description", val.Description);
-			registryKey.SetValue("Title", val.Title);
+			registryKey.SetValue(null, 1, RegistryValueKind.DWord);
+			registryKey.SetValue("", 1, RegistryValueKind.DWord);
+			registryKey.SetValue("Description", "SWTools SolidWorks Add-in");
+			registryKey.SetValue("Title", "SWTools");
 			subkey = "Software\\SolidWorks\\AddInsStartup\\{" + t.GUID.ToString() + "}";
 			registryKey = currentUser.CreateSubKey(subkey);
 			registryKey.SetValue(null, val.LoadAtStartup, RegistryValueKind.DWord);
@@ -1122,8 +1123,8 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 			RegistryKey localMachine = Registry.LocalMachine;
 			registryKey = localMachine.CreateSubKey("Software\\SolidWorks\\AddIns\\{" + text + "}");
 			registryKey.SetValue("", "00000001", RegistryValueKind.DWord);
-			registryKey.SetValue("Description", "ZTool — вспомогательные инструменты");
-			registryKey.SetValue("Title", "ZTool");
+			registryKey.SetValue("Description", "SWTools — вспомогательные инструменты");
+			registryKey.SetValue("Title", "SWTools");
 			RegistryKey currentUser = Registry.CurrentUser;
 			registryKey = currentUser.CreateSubKey("Software\\SolidWorks\\AddInsStartup\\{" + text + "}");
 			registryKey.SetValue("", "00000001", RegistryValueKind.DWord);

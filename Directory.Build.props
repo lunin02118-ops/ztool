@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <BaseVersion Condition="'$(BaseVersion)' == ''">$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</BaseVersion>
+    <ReleaseBuildNumber Condition="'$(ReleaseBuildNumber)' == ''">0</ReleaseBuildNumber>
+    <SourceRevisionId Condition="'$(SourceRevisionId)' == ''">local</SourceRevisionId>
+    <DirtySuffix Condition="'$(DirtySuffix)' == ''">local</DirtySuffix>
+    <SWToolsAssemblyVersion Condition="'$(SWToolsAssemblyVersion)' == ''">1.0.0.0</SWToolsAssemblyVersion>
+    <SWToolsFileVersion Condition="'$(SWToolsFileVersion)' == ''">$(BaseVersion).$(ReleaseBuildNumber)</SWToolsFileVersion>
+    <SWToolsInformationalVersion Condition="'$(SWToolsInformationalVersion)' == ''">$(BaseVersion)+$(SourceRevisionId).$(DirtySuffix)</SWToolsInformationalVersion>
+    <SWToolsProductName Condition="'$(SWToolsProductName)' == ''">SWTools</SWToolsProductName>
+    <SWToolsCompany Condition="'$(SWToolsCompany)' == ''">SWTools</SWToolsCompany>
+    <SWToolsTitle Condition="'$(SWToolsTitle)' == ''">SWTools</SWToolsTitle>
+  </PropertyGroup>
+</Project>

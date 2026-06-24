@@ -85,6 +85,20 @@ function Assert-Hash([string]$Path, [string]$Expected) {
     }
 }
 
+function Assert-ArtifactVersion([string]$Path, [string]$Kind, [string]$Version) {
+    Assert-File $Path
+    $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($Path)
+    if ($info.ProductName -ne 'SWTools') {
+        Fail "$Kind ProductName mismatch for $Path; expected SWTools, got '$($info.ProductName)'"
+    }
+    if (-not $info.ProductVersion -or -not $info.ProductVersion.StartsWith($Version, [System.StringComparison]::OrdinalIgnoreCase)) {
+        Fail "$Kind ProductVersion mismatch for $Path; expected prefix $Version, got '$($info.ProductVersion)'"
+    }
+    if (-not $info.FileVersion -or -not $info.FileVersion.StartsWith("$Version.", [System.StringComparison]::OrdinalIgnoreCase)) {
+        Fail "$Kind FileVersion mismatch for $Path; expected prefix $Version., got '$($info.FileVersion)'"
+    }
+}
+
 function Get-XmlText([xml]$Xml, [string]$ElementName) {
     $node = $Xml.SelectSingleNode("//$ElementName")
     if ($null -eq $node) { return $null }
@@ -106,10 +120,23 @@ Assert-File $sumsPath
 
 $manifest = Get-Content -LiteralPath $manifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
 if (-not $manifest.package) { Fail 'manifest.package is empty' }
+if (-not $manifest.version) { Fail 'manifest.version is empty' }
 if (-not $manifest.git.commit) { Fail 'manifest.git.commit is empty' }
 if (-not $manifest.git.branch) { Fail 'manifest.git.branch is empty' }
 if ($manifest.git.dirty -and -not $AllowDirtyManifest) {
     Fail 'manifest git.dirty=true; rebuild from a clean checkout or pass -AllowDirtyManifest for dry-run inspection'
+}
+if (-not $manifest.runtime.input_mode) {
+    Fail 'manifest.runtime.input_mode is empty; package provenance cannot distinguish source build from accepted-runtime snapshot'
+}
+if ($manifest.runtime.input_mode -notin @('source-build-output', 'accepted-runtime-snapshot')) {
+    Fail "manifest.runtime.input_mode has unsupported value '$($manifest.runtime.input_mode)'"
+}
+$releaseInputsPath = Join-Path $root 'release-inputs.json'
+Assert-File $releaseInputsPath
+$releaseInputs = Get-Content -LiteralPath $releaseInputsPath -Encoding UTF8 -Raw | ConvertFrom-Json
+if ($releaseInputs.input_mode -ne $manifest.runtime.input_mode) {
+    Fail "release-inputs input_mode mismatch: manifest=$($manifest.runtime.input_mode), release-inputs=$($releaseInputs.input_mode)"
 }
 
 $forbidden = Get-ChildItem -Recurse -Force -LiteralPath $root | Where-Object {
@@ -215,6 +242,8 @@ Get-ChildItem -LiteralPath $root -Recurse -Force | ForEach-Object {
 
 Assert-Hash $clientExe $ExpectedClientExeSha256
 Assert-Hash $addinDll $ExpectedAddinDllSha256
+Assert-ArtifactVersion $clientExe 'runtime/SWTools.exe' $manifest.version
+Assert-ArtifactVersion $addinDll 'runtime/SWTools.dll' $manifest.version
 $addinPatchProject = Join-Path $repoRoot 'client-core\tools\AddinBrandPatch\AddinBrandPatch.csproj'
 dotnet run -c Release --project $addinPatchProject -- $addinDll verify
 Invoke-Checked 'addin brand verify'

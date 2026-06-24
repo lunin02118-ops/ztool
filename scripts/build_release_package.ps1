@@ -10,10 +10,11 @@
 param(
     [string]$Version = "",
     [string]$OutputRoot = "",
-    [string]$ClientExe = (Join-Path $PSScriptRoot '..\SWTools.exe'),
-    [string]$AddinDll = (Join-Path $PSScriptRoot '..\SWTools.dll'),
+    [string]$ClientExe = "",
+    [string]$AddinDll = "",
     [string]$SolidWorksToolsDll = "",
-    [switch]$AllowMissingSolidWorksTools
+    [switch]$AllowMissingSolidWorksTools,
+    [switch]$UseAcceptedRuntimeSnapshot
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,6 +41,58 @@ $specTemplatesDirName = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBa
 
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+}
+
+function Get-FullPath([string]$Path) {
+    return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Test-IsSubPath([string]$Path, [string]$Parent) {
+    $full = Get-FullPath $Path
+    $parentFull = (Get-FullPath $Parent).TrimEnd('\') + '\'
+    return $full.StartsWith($parentFull, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Get-FileVersionInfoObject([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "required build input missing: $Path"
+    }
+    return [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Get-FullPath $Path))
+}
+
+function Assert-ArtifactVersion([string]$Path, [string]$Kind) {
+    $info = Get-FileVersionInfoObject $Path
+    if ($info.ProductName -ne 'SWTools') {
+        throw "$Kind ProductName mismatch for $Path; expected SWTools, got '$($info.ProductName)'"
+    }
+    if (-not $info.ProductVersion -or -not $info.ProductVersion.StartsWith($Version, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Kind ProductVersion mismatch for $Path; expected prefix $Version, got '$($info.ProductVersion)'"
+    }
+    if (-not $info.FileVersion -or -not $info.FileVersion.StartsWith("$Version.", [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Kind FileVersion mismatch for $Path; expected prefix $Version., got '$($info.FileVersion)'"
+    }
+}
+
+function Resolve-ReleaseInput([string]$Provided, [string]$SourceDefault, [string]$LegacyRoot, [string]$Kind, [string]$SourceParent) {
+    $path = if ($Provided) { $Provided } elseif ($UseAcceptedRuntimeSnapshot) { $LegacyRoot } else { $SourceDefault }
+    $full = Get-FullPath $path
+    if (-not (Test-Path -LiteralPath $full -PathType Leaf)) {
+        throw "$Kind input missing: $full. Build sources first or pass -UseAcceptedRuntimeSnapshot intentionally."
+    }
+
+    $isLegacyRoot = [string]::Equals($full, (Get-FullPath $LegacyRoot), [System.StringComparison]::OrdinalIgnoreCase)
+    $isSourceOutput = Test-IsSubPath $full $SourceParent
+    if ($isLegacyRoot -and -not $UseAcceptedRuntimeSnapshot) {
+        throw "$Kind points to legacy root runtime artifact: $full. Use source build output or pass -UseAcceptedRuntimeSnapshot."
+    }
+    if (-not $UseAcceptedRuntimeSnapshot -and -not $isSourceOutput) {
+        throw "$Kind must come from source build output under $SourceParent; got $full"
+    }
+    if ($UseAcceptedRuntimeSnapshot -and -not $isLegacyRoot) {
+        throw "-UseAcceptedRuntimeSnapshot was passed, but $Kind is not the root accepted artifact: $full"
+    }
+
+    return $full
 }
 
 function Invoke-Checked([string]$What) {
@@ -106,8 +159,55 @@ function Copy-TreeFiltered([string]$Source, [string]$Destination) {
     $global:LASTEXITCODE = 0
 }
 
+$ClientExe = Resolve-ReleaseInput `
+    -Provided $ClientExe `
+    -SourceDefault (Join-Path $repoRoot 'client-src\bin\Release\net48\SWTools.exe') `
+    -LegacyRoot (Join-Path $repoRoot 'SWTools.exe') `
+    -Kind 'ClientExe' `
+    -SourceParent (Join-Path $repoRoot 'client-src\bin')
+$AddinDll = Resolve-ReleaseInput `
+    -Provided $AddinDll `
+    -SourceDefault (Join-Path $repoRoot 'client-src-addin\bin\Release\net48\SWTools.dll') `
+    -LegacyRoot (Join-Path $repoRoot 'SWTools.dll') `
+    -Kind 'AddinDll' `
+    -SourceParent (Join-Path $repoRoot 'client-src-addin\bin')
+Assert-ArtifactVersion $ClientExe 'SWTools.exe'
+Assert-ArtifactVersion $AddinDll 'SWTools.dll'
+
 if (Test-Path -LiteralPath $packageRoot) { throw "package output already exists: $packageRoot" }
 New-Item -ItemType Directory -Force -Path $runtimeDir, $serverDir, $docsDir | Out-Null
+
+$clientVersionInfo = Get-FileVersionInfoObject $ClientExe
+$addinVersionInfo = Get-FileVersionInfoObject $AddinDll
+$inputMode = if ($UseAcceptedRuntimeSnapshot) { 'accepted-runtime-snapshot' } else { 'source-build-output' }
+$releaseInputs = [ordered]@{
+    input_mode = $inputMode
+    version = $Version
+    generated_at = (Get-Date).ToUniversalTime().ToString('o')
+    git = [ordered]@{
+        commit = (& git -C $repoRoot rev-parse HEAD 2>$null)
+        branch = (& git -C $repoRoot rev-parse --abbrev-ref HEAD 2>$null)
+        dirty = [bool](& git -C $repoRoot status --porcelain 2>$null)
+    }
+    client_exe = [ordered]@{
+        path = $ClientExe
+        repo_relative_path = [System.IO.Path]::GetRelativePath($repoRoot, $ClientExe).Replace('\', '/')
+        sha256 = Get-Sha256 $ClientExe
+        product_name = $clientVersionInfo.ProductName
+        product_version = $clientVersionInfo.ProductVersion
+        file_version = $clientVersionInfo.FileVersion
+    }
+    addin_dll = [ordered]@{
+        path = $AddinDll
+        repo_relative_path = [System.IO.Path]::GetRelativePath($repoRoot, $AddinDll).Replace('\', '/')
+        sha256 = Get-Sha256 $AddinDll
+        product_name = $addinVersionInfo.ProductName
+        product_version = $addinVersionInfo.ProductVersion
+        file_version = $addinVersionInfo.FileVersion
+        brand_patch_applied_after_copy = $true
+    }
+}
+Write-Utf8NoBom (Join-Path $packageRoot 'release-inputs.json') @(($releaseInputs | ConvertTo-Json -Depth 10))
 
 $copied = @()
 $copied += Copy-RequiredFile $ClientExe $runtimeDir 'SWTools.exe'
@@ -166,6 +266,8 @@ $manifest = [ordered]@{
         dirty = [bool](& git -C $repoRoot status --porcelain 2>$null)
     }
     runtime = [ordered]@{
+        input_mode = $inputMode
+        release_inputs_json = 'release-inputs.json'
         client_exe_source = $ClientExe
         addin_dll_source = $AddinDll
         addin_dll_brand_patched = $true
