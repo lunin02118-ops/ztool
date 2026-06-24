@@ -99,7 +99,7 @@ try {
     Write-E2EJson -Path $result.artifacts.doctor_json -Value $doctorResult
 
     if ($DoctorOnly) {
-        Add-E2EStage -Result $result -Name '99-finalize' -Status 'PASS' -Summary 'doctor-only run completed'
+        Add-E2EStage -Result $result -Name '12-finalize' -Status 'PASS' -Summary 'doctor-only run completed'
         Write-E2EJson -Path $resultPath -Value $result
         Write-E2ESummary -Result $result -Path $summaryPath
         Write-Host "E2E result: $resultPath"
@@ -201,6 +201,9 @@ try {
         Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'SKIP' -Summary 'live SolidWorks S7 not requested'
     }
 
+    Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'SKIP' -Summary 'BOM export automation is planned for the next E2E layer' -Details @{ require_bom_modes = $RequireBomModes }
+    Add-E2EStage -Result $result -Name '09-excel-validation' -Status 'SKIP' -Summary 'semantic Excel validation is planned for the next E2E layer'
+    Add-E2EStage -Result $result -Name '10-branding-version' -Status 'SKIP' -Summary 'branding/version live evidence is planned for a later E2E layer'
     Add-E2EStage -Result $result -Name '12-finalize' -Status 'PASS' -Summary 'foundation orchestrator completed; production GO remains false'
     Write-E2EJson -Path $resultPath -Value $result
     Write-E2ESummary -Result $result -Path $summaryPath

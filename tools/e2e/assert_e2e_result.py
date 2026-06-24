@@ -23,6 +23,8 @@ def main() -> int:
     parser.add_argument("--allow-warn", action="store_true")
     parser.add_argument("--allow-production-go", action="store_true")
     parser.add_argument("--require-stage", action="append", default=[])
+    parser.add_argument("--require-stage-pass", action="append", default=[])
+    parser.add_argument("--require-stage-status", action="append", default=[], metavar="NAME=STATUS")
     parser.add_argument("--expect-status", choices=sorted(VALID_STATUSES))
     args = parser.parse_args()
 
@@ -46,10 +48,28 @@ def main() -> int:
     stages = data.get("stages")
     if not isinstance(stages, list):
         return fail("stages must be a list")
-    stage_names = {stage.get("name") for stage in stages if isinstance(stage, dict)}
-    for required in args.require_stage:
-        if required not in stage_names:
+    stage_by_name = {stage.get("name"): stage for stage in stages if isinstance(stage, dict)}
+    for required in [*args.require_stage, *args.require_stage_pass]:
+        stage = stage_by_name.get(required)
+        if stage is None:
             return fail(f"required stage missing: {required}")
+        if stage.get("status") != "PASS":
+            return fail(
+                f"required stage must be PASS: {required} "
+                f"(actual {stage.get('status')!r})"
+            )
+    for spec in args.require_stage_status:
+        if "=" not in spec:
+            return fail(f"--require-stage-status must be NAME=STATUS, got {spec!r}")
+        name, expected = spec.split("=", 1)
+        if expected not in {"PASS", "WARN", "FAIL", "SKIP"}:
+            return fail(f"invalid expected stage status for {name}: {expected!r}")
+        stage = stage_by_name.get(name)
+        if stage is None:
+            return fail(f"required stage missing: {name}")
+        actual = stage.get("status")
+        if actual != expected:
+            return fail(f"stage {name} expected {expected}, got {actual!r}")
 
     print(
         "E2E assertion PASS: "

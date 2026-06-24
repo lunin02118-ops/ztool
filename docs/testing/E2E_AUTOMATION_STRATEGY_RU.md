@@ -33,8 +33,7 @@ pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
 python tools\e2e\assert_e2e_result.py `
   _local_artifacts\reports\e2e\doctor\e2e-result.json `
   --allow-warn `
-  --require-stage 00-doctor `
-  --require-stage 99-finalize
+  --require-stage-pass 12-finalize
 ```
 
 ## Build/package режим
@@ -85,6 +84,16 @@ FAIL           Любая обязательная проверка упала.
 
 `PASS_WITH_WARN` не может быть production approval. Для release mode будущий Sprint S8
 должен требовать BOM 1-8 PASS без WARN.
+
+`tools\e2e\assert_e2e_result.py --require-stage` и
+`--require-stage-pass` требуют, чтобы stage существовал и имел status `PASS`.
+Ожидаемый `SKIP`/`WARN` допустим только через явную форму:
+
+```powershell
+python tools\e2e\assert_e2e_result.py result.json `
+  --allow-warn `
+  --require-stage-status 07-s7-connect=SKIP
+```
 
 ## Что этот слой не закрывает
 

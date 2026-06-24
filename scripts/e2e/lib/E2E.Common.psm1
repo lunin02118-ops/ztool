@@ -98,6 +98,9 @@ function Add-E2EStage {
     if ($Status -eq 'WARN') {
         Add-E2EWarning -Result $Result -Message "${Name}: $Summary"
     }
+    elseif ($Status -eq 'SKIP') {
+        Add-E2EWarning -Result $Result -Message "${Name}: skipped - $Summary"
+    }
     elseif ($Status -eq 'FAIL') {
         Add-E2EError -Result $Result -Message "${Name}: $Summary"
     }
