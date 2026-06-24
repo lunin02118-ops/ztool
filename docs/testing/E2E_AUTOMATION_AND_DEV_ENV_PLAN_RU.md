@@ -597,7 +597,24 @@ jobs:
 
 ## 16. PR roadmap
 
-### #81 — E2E foundation
+### #81 — E2E automation plan
+
+Current PR scope:
+
+```text
+docs/testing/E2E_AUTOMATION_AND_DEV_ENV_PLAN_RU.md
+```
+
+Acceptance:
+
+```text
+[ ] plan is recorded in repo;
+[ ] no product runtime changes;
+[ ] no scripts are claimed as implemented;
+[ ] production GO is not claimed.
+```
+
+### #82 — E2E foundation
 
 Files:
 
@@ -619,7 +636,7 @@ Acceptance:
 [ ] _local_artifacts not committed.
 ```
 
-### #82 — Automated S7
+### #83 — Automated S7
 
 Build on #80 `swtools_s7_live_smoke.py`.
 
@@ -634,7 +651,7 @@ Acceptance:
 [ ] path/hash evidence captured.
 ```
 
-### #83 — Automated S8 + Excel semantic validation
+### #84 — Automated S8 + Excel semantic validation
 
 Acceptance:
 
@@ -645,7 +662,7 @@ Acceptance:
 [ ] release mode fails on 7/8 WARN.
 ```
 
-### #84 — RU fixture strict 7/8
+### #85 — RU fixture strict 7/8
 
 Acceptance:
 
@@ -657,7 +674,7 @@ Acceptance:
 [ ] no 机加/外购 in production settings.
 ```
 
-### #85 — Branding/icon pipeline
+### #86 — Branding/icon pipeline
 
 Acceptance:
 
@@ -668,7 +685,7 @@ Acceptance:
 [ ] CommandManager cache cleanup.
 ```
 
-### #86 — Self-hosted SolidWorks E2E workflow
+### #87 — Self-hosted SolidWorks E2E workflow
 
 Acceptance:
 
@@ -679,7 +696,7 @@ Acceptance:
 [ ] no raw local evidence committed.
 ```
 
-### #87 — Final release rehearsal evidence
+### #88 — Final release rehearsal evidence
 
 Acceptance:
 
