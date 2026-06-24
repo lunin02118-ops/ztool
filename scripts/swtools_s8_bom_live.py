@@ -118,6 +118,17 @@ def wrapper_process_id(root: Any) -> int | None:
         return None
 
 
+def window_process_id(win: Any) -> int | None:
+    try:
+        return int(win.process_id())
+    except Exception:
+        pass
+    try:
+        return int(win.element_info.process_id)
+    except Exception:
+        return None
+
+
 def iter_search_roots(root: Any, include_desktop: bool) -> list[Any]:
     roots = [root]
     if include_desktop:
@@ -335,42 +346,101 @@ def set_save_dialog_path(dialog: Any, target: Path) -> None:
         edit.set_edit_text(str(target))
 
 
-def click_dialog_button(dialog: Any, names: list[str], timeout: float = 10.0) -> str:
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        for name in names:
+def normalize_button_text(text: str) -> str:
+    return text.replace("&", "").strip()
+
+
+def dialog_button_candidates(dialog: Any) -> list[Any]:
+    candidates: list[Any] = []
+    for method_name in ("children", "descendants"):
+        method = getattr(dialog, method_name, None)
+        if not method:
+            continue
+        for kwargs in ({"control_type": "Button"}, {}):
             try:
-                children = dialog.descendants(control_type="Button")
+                candidates.extend(method(**kwargs))
             except Exception:
+                continue
+    seen: set[Any] = set()
+    unique: list[Any] = []
+    for child in candidates:
+        handle = getattr(child, "handle", None)
+        key = handle if handle else id(child)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(child)
+    return unique
+
+
+def click_dialog_button(dialog: Any, names: list[str], timeout: float = 10.0, prefer_post: bool = False) -> str:
+    deadline = time.time() + timeout
+    expected = {normalize_button_text(name): name for name in names}
+    while time.time() < deadline:
+        for child in dialog_button_candidates(dialog):
+            try:
+                text = normalize_button_text(child.window_text())
+                control_type = getattr(child.element_info, "control_type", "")
+                class_name = child.class_name()
+                is_button = control_type == "Button" or class_name == "Button"
+            except Exception:
+                continue
+            if not is_button or text not in expected:
+                continue
+            canonical_name = expected[text]
+            if prefer_post:
+                actions = ("bm_click", "invoke", "legacy", "click_input")
+            else:
+                actions = ("invoke", "click_input", "legacy", "bm_click")
+            if child.class_name() != "Button" and prefer_post:
+                actions = (
+                    "invoke",
+                    "legacy",
+                    "click_input",
+                    "bm_click",
+                )
+            for action in actions:
                 try:
-                    children = dialog.descendants()
-                except Exception:
-                    children = []
-            for child in children:
-                try:
-                    text = child.window_text().strip()
-                    control_type = getattr(child.element_info, "control_type", "")
-                    class_name = child.class_name()
-                    is_button = control_type == "Button" or class_name == "Button"
-                    if is_button and text == name:
+                    if action == "invoke":
                         child.invoke()
-                        return name
-                except Exception:
-                    pass
-                try:
-                    if child.window_text().strip() == name:
+                    elif action == "click_input":
+                        child.click_input()
+                    elif action == "legacy":
                         child.iface_invoke.Invoke()
-                        return name
-                except Exception:
-                    pass
-                try:
-                    if child.window_text().strip() == name:
-                        child.send_message(0x00F5, 0, 0)  # BM_CLICK
-                        return name
+                    else:
+                        child.post_message(0x00F5, 0, 0)  # BM_CLICK
+                    return canonical_name
                 except Exception:
                     continue
         time.sleep(0.2)
     raise RuntimeError(f"Cannot find dialog button from {names!r}")
+
+
+def desktop_windows(backend: str, process_id: int | None = None) -> list[Any]:
+    desktop = Desktop(backend=backend)
+    if process_id is not None:
+        try:
+            return desktop.windows(process=process_id)
+        except Exception:
+            pass
+    try:
+        windows = desktop.windows()
+    except Exception:
+        return []
+    if process_id is None:
+        return windows
+    return [win for win in windows if window_process_id(win) == process_id]
+
+
+def modal_still_present(swtools_pid: int, handle: int | None) -> bool:
+    for backend in ("win32", "uia"):
+        for win in desktop_windows(backend, process_id=swtools_pid):
+            candidate = export_modal_candidate(win, backend, swtools_pid)
+            if not candidate:
+                continue
+            if handle is None or candidate.get("handle") == handle:
+                return True
+    return False
 
 
 def handle_overwrite_confirmation(timeout: float = 5.0) -> bool:
@@ -389,55 +459,97 @@ def handle_overwrite_confirmation(timeout: float = 5.0) -> bool:
     return False
 
 
-def dismiss_export_modal(timeout: float = 45.0) -> dict[str, str]:
+def export_modal_candidate(win: Any, backend: str, expected_process_id: int) -> dict[str, Any] | None:
+    try:
+        title = win.window_text().strip()
+    except Exception:
+        title = ""
+    try:
+        class_name = win.class_name()
+    except Exception:
+        class_name = ""
+    title_lower = title.lower()
+    is_dialog_window = (
+        "вопрос" in title_lower
+        or "question" in title_lower
+        or "информация" in title_lower
+        or "information" in title_lower
+        or class_name == "#32770"
+    )
+    if not is_dialog_window:
+        return None
+    texts: list[str] = []
+    try:
+        children = win.descendants()
+    except Exception:
+        children = []
+    for child in children:
+        try:
+            text = child.window_text().strip()
+        except Exception:
+            continue
+        if text:
+            texts.append(text)
+    joined = "\n".join(texts)
+    joined_lower = joined.lower()
+    is_export_done = "экспорт выполнен" in joined_lower or "export completed" in joined_lower
+    asks_to_open = "открыть?" in joined_lower or "open?" in joined_lower
+    if not is_export_done:
+        return None
+    process_id = window_process_id(win)
+    kind = "open_question" if asks_to_open else "ok_only"
+    return {
+        "backend": backend,
+        "title": title,
+        "class_name": class_name,
+        "process_id": process_id,
+        "expected_process_id": expected_process_id,
+        "kind": kind,
+        "text": joined[:2000],
+        "handle": getattr(win, "handle", None),
+    }
+
+
+def dismiss_export_modal(swtools_pid: int, timeout: float = 45.0) -> dict[str, Any]:
     deadline = time.time() + timeout
     last_texts: list[str] = []
+    ignored_foreign: list[dict[str, Any]] = []
+    ignored_keys: set[tuple[str, int | None]] = set()
     while time.time() < deadline:
-        for backend in ("uia", "win32"):
-            try:
-                windows = Desktop(backend=backend).windows()
-            except Exception:
-                windows = []
-            for win in windows:
-                try:
-                    title = win.window_text().strip()
-                except Exception:
+        for backend in ("win32", "uia"):
+            for win in desktop_windows(backend, process_id=swtools_pid):
+                candidate = export_modal_candidate(win, backend, swtools_pid)
+                if not candidate:
                     continue
-                texts: list[str] = []
-                try:
-                    children = win.descendants()
-                except Exception:
-                    children = []
-                for child in children:
-                    try:
-                        text = child.window_text().strip()
-                    except Exception:
-                        continue
-                    if text:
-                        texts.append(text)
-                last_texts = texts
-                joined = "\n".join(texts)
-                is_export_done = (
-                    "вопрос" in title.lower()
-                    or "question" in title.lower()
-                    or "Экспорт выполнен" in joined
-                    or "Открыть?" in joined
-                    or "open?" in joined.lower()
-                )
-                if is_export_done:
-                    for button in ("Нет", "No", "OK", "ОК", "Да", "Yes"):
-                        try:
-                            click_dialog_button(win, [button], timeout=0.5)
-                            evidence_text = "\n".join(
-                                text for text in texts if text in {"Вопрос", "Да", "Нет", "Yes", "No"} or "Экспорт" in text or "Открыть" in text
-                            )
-                            if not evidence_text:
-                                evidence_text = joined[:1000]
-                            return {"title": title, "button": button, "text": evidence_text[:2000]}
-                        except Exception:
-                            continue
-        time.sleep(0.2)
-    return {"title": "", "button": "", "text": "\n".join(last_texts)}
+                last_texts = candidate["text"].splitlines()
+                buttons = ["Нет", "No"] if candidate["kind"] == "open_question" else ["OK", "ОК"]
+                button = click_dialog_button(win, buttons, timeout=1.0, prefer_post=True)
+                close_deadline = time.time() + 2.0
+                while time.time() < close_deadline and modal_still_present(swtools_pid, candidate.get("handle")):
+                    time.sleep(0.05)
+                candidate.update({"dismissed": True, "button": button})
+                return candidate
+            for win in desktop_windows(backend):
+                candidate = export_modal_candidate(win, backend, swtools_pid)
+                if not candidate:
+                    continue
+                if candidate.get("process_id") == swtools_pid:
+                    continue
+                last_texts = candidate["text"].splitlines()
+                key = (candidate.get("backend", ""), candidate.get("handle"))
+                if key not in ignored_keys:
+                    ignored_keys.add(key)
+                    ignored_foreign.append(candidate)
+        time.sleep(0.05)
+    return {
+        "dismissed": False,
+        "title": "",
+        "button": "",
+        "text": "\n".join(last_texts)[:2000],
+        "process_id": None,
+        "expected_process_id": swtools_pid,
+        "ignored_foreign_modals": ignored_foreign[:5],
+    }
 
 
 def wait_for_file(path: Path, timeout: float) -> None:
@@ -545,7 +657,15 @@ def validate_cross_mode(modes: list[dict[str, Any]], strict_filters: bool) -> li
     return issues
 
 
-def export_mode(app: Any, main: Any, mode_id: int, mode_name: str, target: Path, timeout: float) -> dict[str, Any]:
+def export_mode(
+    app: Any,
+    main: Any,
+    swtools_pid: int,
+    mode_id: int,
+    mode_name: str,
+    target: Path,
+    timeout: float,
+) -> dict[str, Any]:
     open_export_menu(main)
     invoke_by_text(main, mode_name, {"MenuItem"}, timeout=8.0)
     dialog = wait_for_save_dialog(timeout=timeout)
@@ -553,7 +673,14 @@ def export_mode(app: Any, main: Any, mode_id: int, mode_name: str, target: Path,
     click_dialog_button(dialog, ["Сохранить", "Save"], timeout=8.0)
     handle_overwrite_confirmation(timeout=2.0)
     wait_for_file(target, timeout=timeout)
-    modal = dismiss_export_modal(timeout=10.0)
+    modal = dismiss_export_modal(swtools_pid=swtools_pid, timeout=2.0)
+    if not modal.get("dismissed") and modal.get("ignored_foreign_modals"):
+        raise RuntimeError(f"Export completion modal was not dismissed for SWTools PID {swtools_pid}: {modal}")
+    try:
+        main.set_focus()
+    except Exception:
+        pass
+    time.sleep(0.2)
     return {
         "mode_id": mode_id,
         "name": mode_name,
@@ -564,9 +691,48 @@ def export_mode(app: Any, main: Any, mode_id: int, mode_name: str, target: Path,
     }
 
 
+def run_self_test_process_scoped_modal() -> int:
+    import subprocess
+
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    script = (
+        "import ctypes\n"
+        "ctypes.windll.user32.MessageBoxW(0, "
+        "'Экспорт выполнен! Открыть?', 'Вопрос', 0x00000004)\n"
+    )
+    proc = subprocess.Popen([sys.executable, "-c", script])
+    try:
+        time.sleep(0.8)
+        evidence = dismiss_export_modal(swtools_pid=os.getpid(), timeout=1.5)
+        foreign_seen = any(
+            item.get("process_id") == proc.pid for item in evidence.get("ignored_foreign_modals", [])
+        )
+        foreign_still_alive = proc.poll() is None
+        result = {
+            "status": "PASS" if (not evidence.get("dismissed") and foreign_seen and foreign_still_alive) else "FAIL",
+            "expected_process_id": os.getpid(),
+            "foreign_process_id": proc.pid,
+            "evidence": evidence,
+            "foreign_still_alive": foreign_still_alive,
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result["status"] == "PASS" else 1
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
 def run() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    if "--self-test-process-scoped-modal" in sys.argv:
+        return run_self_test_process_scoped_modal()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--runtime-dir", required=True)
     parser.add_argument("--report-dir", required=True)
@@ -623,7 +789,7 @@ def run() -> int:
             target = export_dir / f"{slug}.xlsx"
             if target.exists():
                 target.unlink()
-            exported = export_mode(app, main, mode_id, mode_name, target, timeout=args.timeout)
+            exported = export_mode(app, main, proc.pid, mode_id, mode_name, target, timeout=args.timeout)
             analysis = analyze_workbook(target, mode_id)
             exported["analysis"] = analysis
             result["modes"].append(exported)

@@ -279,6 +279,9 @@ try {
         $s8Json = Join-Path $s8Dir 's8-bom-result.json'
         $s8Result = Read-JsonFile $s8Json
         $modeSummaries = @($s8Result.modes | ForEach-Object {
+            $analysisProps = @($_.analysis.PSObject.Properties.Name)
+            $filterEmpty = $false
+            if ($analysisProps -contains 'filter_empty') { $filterEmpty = [bool]$_.analysis.filter_empty }
             [ordered]@{
                 mode_id = $_.mode_id
                 file = $_.file
@@ -290,7 +293,11 @@ try {
                 path = $_.analysis.counts.path
                 dimensions = $_.analysis.counts.dimensions
                 has_images = $_.analysis.has_images
-                filter_empty = [bool]$_.analysis.filter_empty
+                filter_empty = $filterEmpty
+                modal_button = $_.modal.button
+                modal_process_id = $_.modal.process_id
+                modal_expected_process_id = $_.modal.expected_process_id
+                modal_kind = $_.modal.kind
             }
         })
         Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'PASS' -Summary "S8 exported $(@($s8Result.modes).Count) BOM workbook(s)" -Details @{

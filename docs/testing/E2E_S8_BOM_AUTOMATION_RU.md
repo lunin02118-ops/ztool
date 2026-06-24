@@ -11,12 +11,18 @@ S8 должен доказывать полный live path:
 ```text
 S7 connected grid -> UIA Expand "Экспорт спецификации"
 -> UIA Invoke mode item 1..8 -> Windows SaveFileDialog
--> save one XLSX per mode -> dismiss export modal
+-> save one XLSX per mode -> dismiss export modal for the same SWTools PID
 -> openpyxl semantic validation
 ```
 
 Координатный клик не считается acceptance. Если меню, SaveFileDialog или modal
 нельзя пройти через UIA/Win32 object locators, тест должен падать.
+Если completion modal появился, он должен принадлежать тому же `SWTools.exe`
+PID, который подтверждён в runtime evidence. Чужая похожая модалка не
+закрывается и должна валить live test. Для вопроса `Экспорт выполнен! Открыть?`
+допустимы только `Нет` / `No`; `Да` / `Yes` не являются fallback. Если `.xlsx`
+уже стабилен, а completion modal не появился за короткое окно ожидания, тест
+продолжает следующий режим и фиксирует `modal.dismissed=false`.
 
 ## Команда
 
@@ -87,13 +93,25 @@ stages[08-s8-bom-export].details.modes[].path
 stages[08-s8-bom-export].details.modes[].dimensions
 stages[08-s8-bom-export].details.modes[].has_images
 stages[08-s8-bom-export].details.modes[].filter_empty
+stages[08-s8-bom-export].details.modes[].modal_process_id
+stages[08-s8-bom-export].details.modes[].modal_expected_process_id
+stages[08-s8-bom-export].details.modes[].modal_button
 stages[09-excel-validation].details.status
 stages[09-excel-validation].details.issues
 ```
 
 `scripts\swtools_s8_bom_live.py` также пишет подробный
-`s8-bom-result.json`, включая SHA256 каждого `.xlsx`, modal text/button и
+`s8-bom-result.json`, включая SHA256 каждого `.xlsx`, modal PID/text/button и
 семантический read-back workbook.
+
+Process-scope self-test без SolidWorks:
+
+```powershell
+python scripts\swtools_s8_bom_live.py --self-test-process-scoped-modal
+```
+
+Этот тест создаёт похожую модалку в другом процессе и проверяет, что S8 helper
+не закрывает её, а записывает как `ignored_foreign_modals`.
 
 ## Semantic checks
 
@@ -121,6 +139,7 @@ stages[09-excel-validation].details.issues
 [ ] S7 уже PASS в том же E2E run;
 [ ] runtime path/hash recorded;
 [ ] 8/8 BOM modes exported through UIA;
+[ ] if export completion modal appears, modal PID equals expected SWTools PID;
 [ ] semantic Excel validation PASS;
 [ ] empty filter result is recorded as `filter_empty`;
 [ ] strict filters are recorded and enforced when required;
