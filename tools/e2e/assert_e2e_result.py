@@ -160,6 +160,13 @@ def main() -> int:
                 return fail(f"{name} evidence must be an object")
             if not icon.get("sha256") or not icon.get("width") or not icon.get("height"):
                 return fail(f"{name} evidence is incomplete: {icon!r}")
+        if live_icon.get("sha256") != embedded_icon.get("sha256"):
+            return fail(
+                "branding/version icon hash mismatch: "
+                f"live={live_icon.get('sha256')!r} embedded={embedded_icon.get('sha256')!r}"
+            )
+        if details.get("icon_hash_match") is not True:
+            return fail(f"branding/version icon_hash_match must be true, got {details.get('icon_hash_match')!r}")
 
     print(
         "E2E assertion PASS: "

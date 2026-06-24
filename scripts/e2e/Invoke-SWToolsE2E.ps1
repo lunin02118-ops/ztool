@@ -394,6 +394,7 @@ try {
             addin_sha256 = $brandResult.swtools_dll.sha256
             product_version = $brandResult.swtools_exe.version_info.product_version
             file_version = $brandResult.swtools_exe.version_info.file_version
+            icon_hash_match = $brandResult.icon_hash_match
             live_window_icon = $brandResult.live_process.window_icon
             embedded_exe_icon = $brandResult.embedded_exe_icon
         }

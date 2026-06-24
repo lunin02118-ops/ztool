@@ -342,11 +342,18 @@ def run() -> int:
         live_icon = icon_handle_to_png(live_icon_handle, report_dir / "live-window-icon.png")
         live_icon["source"] = live_icon_source
         exe_icon = extract_exe_icon(exe, report_dir / "embedded-exe-icon.png")
+        icon_hash_match = live_icon["sha256"] == exe_icon["sha256"]
+        if not icon_hash_match:
+            raise RuntimeError(
+                "Live window icon does not match embedded SWTools.exe icon: "
+                f"live={live_icon['sha256']} embedded={exe_icon['sha256']}"
+            )
         result["checks"].append("live and embedded icons captured")
 
         result.update(
             {
                 "status": "PASS",
+                "icon_hash_match": icon_hash_match,
                 "swtools_exe": {
                     "path": str(exe),
                     "sha256": exe_sha,

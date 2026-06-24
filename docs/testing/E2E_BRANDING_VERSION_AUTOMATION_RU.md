@@ -17,6 +17,7 @@ Gate доказывает одновременно:
 - live window title не содержит `ZTool`;
 - live window icon снят из реального окна;
 - embedded EXE icon извлечён из `SWTools.exe`;
+- SHA256 live window icon совпадает с SHA256 embedded EXE icon;
 - evidence записано в JSON и PNG.
 
 ## Запуск
@@ -64,6 +65,14 @@ python tools\e2e\assert_e2e_result.py `
 - `embedded-exe-icon.png`.
 
 PNG нужны для ручной визуальной проверки, JSON является машинным gate.
+`icon_hash_match` обязан быть `true`; mismatch между live icon и embedded EXE
+icon является blocker.
+
+Offline negative check:
+
+```powershell
+python tools\e2e\selftest_assert_e2e_result.py
+```
 
 ## Не является Production GO
 
