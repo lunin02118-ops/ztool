@@ -12,6 +12,7 @@ param(
     [switch]$DoctorOnly,
     [switch]$BuildFromSource,
     [switch]$RunS7,
+    [switch]$RunS8,
     [switch]$RequireSolidWorks,
 
     [string]$InstallRoot = '',
@@ -26,6 +27,8 @@ param(
     [int[]]$RequireBomModes = @(1, 2, 3, 4, 5, 6, 7, 8),
     [int]$ExpectedMinRows = 29,
     [int]$ExpectedMinColumns = 30,
+    [int]$ExpectedBomModeCount = 8,
+    [switch]$RequireStrictBomFilters,
     [switch]$AllowDirtyManifest,
     [switch]$AllowMissingSolidWorksTools
 )
@@ -74,6 +77,7 @@ $result.parameters = [ordered]@{
     doctor_only = [bool]$DoctorOnly
     build_from_source = [bool]$BuildFromSource
     run_s7 = [bool]$RunS7
+    run_s8 = [bool]$RunS8
     require_solidworks = [bool]$RequireSolidWorks
     install_root = $InstallRoot
     package_root = $PackageRoot
@@ -85,6 +89,8 @@ $result.parameters = [ordered]@{
     require_bom_modes = $RequireBomModes
     expected_min_rows = $ExpectedMinRows
     expected_min_columns = $ExpectedMinColumns
+    expected_bom_mode_count = $ExpectedBomModeCount
+    require_strict_bom_filters = [bool]$RequireStrictBomFilters
 }
 
 $resultPath = Join-Path $OutputDir 'e2e-result.json'
@@ -186,6 +192,10 @@ try {
         $result.artifacts.runtime_identity_json = $identityPath
     }
 
+    if ($RunS8 -and -not $RunS7) {
+        throw '-RunS8 requires -RunS7 so the BOM export starts from a proven connected SolidWorks grid'
+    }
+
     if ($RunS7) {
         if (-not $RuntimeDir) { throw '-RunS7 requires -RuntimeDir or -BuildFromSource' }
         if (-not $TestAssembly -and $env:SWTOOLS_TEST_MODEL) { $TestAssembly = $env:SWTOOLS_TEST_MODEL }
@@ -248,8 +258,72 @@ try {
         Add-E2EStage -Result $result -Name '07-s7-connect' -Status 'SKIP' -Summary 'live SolidWorks S7 not requested'
     }
 
-    Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'SKIP' -Summary 'BOM export automation is planned for the next E2E layer' -Details @{ require_bom_modes = $RequireBomModes }
-    Add-E2EStage -Result $result -Name '09-excel-validation' -Status 'SKIP' -Summary 'semantic Excel validation is planned for the next E2E layer'
+    if ($RunS8) {
+        if (-not $RuntimeDir) { throw '-RunS8 requires -RuntimeDir or -BuildFromSource' }
+        $s8Dir = Join-Path $OutputDir 's8-bom-export'
+        $s8ExportDir = Join-Path $s8Dir 'exports'
+        $s8Args = @(
+            (Join-Path $repoRoot 'scripts\swtools_s8_bom_live.py'),
+            '--runtime-dir', $RuntimeDir,
+            '--report-dir', $s8Dir,
+            '--export-dir', $s8ExportDir,
+            '--expected-exe-sha256', $runtimeClientHash,
+            '--expected-dll-sha256', $runtimeAddinHash,
+            '--expected-mode-count', ([string]$ExpectedBomModeCount),
+            '--modes', ($RequireBomModes -join ',')
+        )
+        if ($RequireStrictBomFilters) { $s8Args += '--strict-filters' }
+        $s8Log = Join-Path $OutputDir 'logs\08-s8-bom-export.log'
+        $s8 = Invoke-E2ECommand -Name 'swtools_s8_bom_live' -FilePath 'python' -Arguments $s8Args -LogPath $s8Log
+        if ($s8.exit_code -ne 0) { throw "S8 BOM export failed; see $s8Log" }
+        $s8Json = Join-Path $s8Dir 's8-bom-result.json'
+        $s8Result = Read-JsonFile $s8Json
+        $modeSummaries = @($s8Result.modes | ForEach-Object {
+            $analysisProps = @($_.analysis.PSObject.Properties.Name)
+            $filterEmpty = $false
+            if ($analysisProps -contains 'filter_empty') { $filterEmpty = [bool]$_.analysis.filter_empty }
+            [ordered]@{
+                mode_id = $_.mode_id
+                file = $_.file
+                size = $_.size
+                rows = $_.analysis.data_rows
+                number = $_.analysis.counts.number
+                quantity = $_.analysis.counts.quantity
+                weight = $_.analysis.counts.weight
+                path = $_.analysis.counts.path
+                dimensions = $_.analysis.counts.dimensions
+                has_images = $_.analysis.has_images
+                filter_empty = $filterEmpty
+                modal_button = $_.modal.button
+                modal_process_id = $_.modal.process_id
+                modal_expected_process_id = $_.modal.expected_process_id
+                modal_kind = $_.modal.kind
+            }
+        })
+        Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'PASS' -Summary "S8 exported $(@($s8Result.modes).Count) BOM workbook(s)" -Details @{
+            log = $s8Log
+            report_dir = $s8Dir
+            export_dir = $s8ExportDir
+            result_json = $s8Json
+            mode_count = @($s8Result.modes).Count
+            strict_filters = [bool]$RequireStrictBomFilters
+            modes = $modeSummaries
+        }
+        Add-E2EStage -Result $result -Name '09-excel-validation' -Status 'PASS' -Summary 'semantic Excel BOM validation passed' -Details @{
+            result_json = $s8Json
+            status = $s8Result.status
+            issues = @($s8Result.issues)
+            mode_count = @($s8Result.modes).Count
+            strict_filters = [bool]$RequireStrictBomFilters
+        }
+        $result.artifacts.s8_report_dir = $s8Dir
+        $result.artifacts.s8_export_dir = $s8ExportDir
+        $result.artifacts.s8_bom_json = $s8Json
+    }
+    else {
+        Add-E2EStage -Result $result -Name '08-s8-bom-export' -Status 'SKIP' -Summary 'live BOM export automation not requested' -Details @{ require_bom_modes = $RequireBomModes }
+        Add-E2EStage -Result $result -Name '09-excel-validation' -Status 'SKIP' -Summary 'semantic Excel validation not requested'
+    }
     Add-E2EStage -Result $result -Name '10-branding-version' -Status 'SKIP' -Summary 'branding/version live evidence is planned for a later E2E layer'
     Add-E2EStage -Result $result -Name '12-finalize' -Status 'PASS' -Summary 'foundation orchestrator completed; production GO remains false'
     Write-E2EJson -Path $resultPath -Value $result

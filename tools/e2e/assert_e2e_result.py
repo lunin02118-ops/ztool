@@ -27,6 +27,9 @@ def main() -> int:
     parser.add_argument("--require-stage-status", action="append", default=[], metavar="NAME=STATUS")
     parser.add_argument("--require-s7-min-rows", type=int)
     parser.add_argument("--require-s7-min-columns", type=int)
+    parser.add_argument("--require-s8-mode-count", type=int)
+    parser.add_argument("--require-s8-all-pass", action="store_true")
+    parser.add_argument("--require-s8-strict-filters", action="store_true")
     parser.add_argument("--expect-status", choices=sorted(VALID_STATUSES))
     args = parser.parse_args()
 
@@ -91,6 +94,29 @@ def main() -> int:
                     f"S7 column_count must be >= {args.require_s7_min_columns}, "
                     f"got {column_count!r}"
                 )
+
+    if args.require_s8_mode_count is not None or args.require_s8_all_pass or args.require_s8_strict_filters:
+        export_stage = stage_by_name.get("08-s8-bom-export")
+        validation_stage = stage_by_name.get("09-excel-validation")
+        if export_stage is None:
+            return fail("S8 export stage missing")
+        if validation_stage is None:
+            return fail("S8 Excel validation stage missing")
+        if export_stage.get("status") != "PASS":
+            return fail(f"S8 export stage must be PASS, got {export_stage.get('status')!r}")
+        if validation_stage.get("status") != "PASS":
+            return fail(f"S8 validation stage must be PASS, got {validation_stage.get('status')!r}")
+        export_details = export_stage.get("details") or {}
+        validation_details = validation_stage.get("details") or {}
+        mode_count = export_details.get("mode_count")
+        if args.require_s8_mode_count is not None:
+            if not isinstance(mode_count, int) or mode_count != args.require_s8_mode_count:
+                return fail(f"S8 mode_count must be {args.require_s8_mode_count}, got {mode_count!r}")
+        issues = validation_details.get("issues") or []
+        if args.require_s8_all_pass and issues:
+            return fail(f"S8 validation issues must be empty, got {issues!r}")
+        if args.require_s8_strict_filters and not validation_details.get("strict_filters"):
+            return fail("S8 strict filter validation was required but not recorded")
 
     print(
         "E2E assertion PASS: "
