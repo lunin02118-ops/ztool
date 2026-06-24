@@ -21,7 +21,7 @@ def expect_fail(command: list[str], expected_terms: list[str]) -> str | None:
     return None
 
 
-def merge_capture_self_test(repo_root: Path, fixtures: Path) -> str | None:
+def merge_capture_self_test(repo_root: Path, fixtures: Path, assert_script: Path) -> str | None:
     capture_script = repo_root / "scripts" / "swtools_visual_localization_capture.py"
     profile = fixtures / "visual-localization-profile-two-surfaces.json"
     with tempfile.TemporaryDirectory(prefix="swtools-visual-merge-") as tmp:
@@ -96,6 +96,48 @@ def merge_capture_self_test(repo_root: Path, fixtures: Path) -> str | None:
             return "Merge capture self-test did not record missing L-02"
         if manifest.get("summary", {}).get("surface_count") != 2:
             return "Merge capture self-test did not keep full profile surface count"
+        forbidden_manifest = tmp_dir / "forbidden.json"
+        forbidden_manifest.write_text(
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "production_go_allowed": False,
+                    "surfaces": [
+                        {
+                            "id": "L-01",
+                            "status": "CAPTURED",
+                            "process": "SWTools.exe",
+                            "han_policy": "fail",
+                            "runtime_path_match": True,
+                            "visible_han_texts": [],
+                            "forbidden_texts": ["ZTool — Руководство пользователя"],
+                            "screenshot": {
+                                "path": str(screenshot),
+                                "sha256": "fixture",
+                                "width": 2,
+                                "height": 2,
+                            },
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        error = expect_fail(
+            [
+                sys.executable,
+                str(assert_script),
+                str(forbidden_manifest),
+                "--allow-warn",
+                "--require-surface",
+                "L-01",
+            ],
+            ["forbidden", "ZTool"],
+        )
+        if error:
+            return error
     return None
 
 
@@ -156,7 +198,7 @@ def main() -> int:
         if error:
             print(error, file=sys.stderr)
             return 1
-    error = merge_capture_self_test(repo_root, fixtures)
+    error = merge_capture_self_test(repo_root, fixtures, assert_script)
     if error:
         print(error, file=sys.stderr)
         return 1

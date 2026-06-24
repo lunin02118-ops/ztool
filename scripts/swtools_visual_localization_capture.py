@@ -49,6 +49,7 @@ class Surface:
     han_policy: str = "fail"
     process_names: tuple[str, ...] = ()
     text_contains: tuple[str, ...] = ()
+    forbidden_text: tuple[str, ...] = ()
 
 
 DEFAULT_SURFACES: list[Surface] = [
@@ -230,8 +231,10 @@ def load_surfaces(path: Path | None) -> list[Surface]:
     if path is None:
         return DEFAULT_SURFACES
     data = json.loads(path.read_text(encoding="utf-8"))
+    global_forbidden = tuple(str(value) for value in data.get("forbidden_text", []) if str(value).strip())
     surfaces: list[Surface] = []
     for item in data.get("surfaces", []):
+        item_forbidden = item.get("forbidden_text", global_forbidden)
         surfaces.append(
             Surface(
                 surface_id=str(item["id"]),
@@ -243,6 +246,7 @@ def load_surfaces(path: Path | None) -> list[Surface]:
                 han_policy=str(item.get("han_policy", "fail")),
                 process_names=tuple(str(value) for value in item.get("process_names", []) if str(value).strip()),
                 text_contains=tuple(str(value) for value in item.get("text_contains", []) if str(value).strip()),
+                forbidden_text=tuple(str(value) for value in item_forbidden if str(value).strip()),
             )
         )
     return surfaces
@@ -256,6 +260,7 @@ def missing_item(surface: Surface) -> dict[str, Any]:
         "process_names": sorted(surface_process_names(surface)),
         "window_contains": surface.window_contains,
         "text_contains": list(surface.text_contains),
+        "forbidden_text": list(surface.forbidden_text),
         "required": surface.required,
         "notes": surface.notes,
         "han_policy": surface.han_policy,
@@ -272,6 +277,7 @@ def profile_item(surface: Surface) -> dict[str, Any]:
         "process_names": sorted(surface_process_names(surface)),
         "window_contains": surface.window_contains,
         "text_contains": list(surface.text_contains),
+        "forbidden_text": list(surface.forbidden_text),
         "required": surface.required,
         "notes": surface.notes,
         "han_policy": surface.han_policy,
@@ -407,6 +413,14 @@ def run() -> int:
         title = win.window_text().strip()
         texts = visible_texts(win)
         han_texts = sorted({text for text in texts if HAN_RE.search(text)})
+        forbidden_texts = sorted(
+            {
+                text
+                for text in texts
+                for forbidden in surface.forbidden_text
+                if forbidden.lower() in text.lower()
+            }
+        )
         proc = process_info(pid or -1)
         runtime_path_match = None
         if "swtools.exe" in surface_process_names(surface):
@@ -422,6 +436,7 @@ def run() -> int:
                 "visible_text_count": len(texts),
                 "visible_text_sample": texts[:120],
                 "visible_han_texts": han_texts,
+                "forbidden_texts": forbidden_texts,
             }
         )
         captured_items.append(item)
@@ -452,8 +467,9 @@ def run() -> int:
     runtime_mismatch_ids = [
         item["id"] for item in items if item.get("runtime_path_match") is False
     ]
+    forbidden_text_surface_ids = [item["id"] for item in items if item.get("forbidden_texts")]
     status = "PASS"
-    if blocking_han_surface_ids or runtime_mismatch_ids:
+    if blocking_han_surface_ids or runtime_mismatch_ids or forbidden_text_surface_ids:
         status = "FAIL"
     elif missing_required or recorded_han_surface_ids:
         status = "PASS_WITH_WARN"
@@ -473,6 +489,7 @@ def run() -> int:
             "blocking_han_surface_ids": blocking_han_surface_ids,
             "recorded_han_surface_ids": recorded_han_surface_ids,
             "runtime_mismatch_ids": runtime_mismatch_ids,
+            "forbidden_text_surface_ids": forbidden_text_surface_ids,
             "merge_warnings": merge_warnings,
         },
         "surfaces": items,

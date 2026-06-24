@@ -83,7 +83,9 @@ python tools\e2e\assert_visual_localization_manifest.py `
 ```
 
 `--allow-warn` разрешает частичный evidence-пакет только если нет blocking Han и
-нет runtime mismatch. `PASS_WITH_WARN` не является production approval.
+нет runtime mismatch. Глобальный `forbidden_text` в профиле L-01..L-15 сейчас
+запрещает visible `ZTool`: старый бренд в окне, help или installer является
+machine FAIL. `PASS_WITH_WARN` не является production approval.
 
 Default surface policy:
 
@@ -111,6 +113,7 @@ curated summary/report без больших картинок и без прив
 ## Machine FAIL conditions
 
 - Любая captured surface с `han_policy=fail` содержит видимые Han-символы в UIA text.
+- Любая captured surface содержит forbidden visible text из профиля, например `ZTool`.
 - `SWTools.exe` запущен не из ожидаемого runtime dir.
 - Manifest имеет `production_go_allowed=true`.
 - Для release evidence: обязательная surface отсутствует.
