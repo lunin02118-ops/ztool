@@ -382,7 +382,12 @@ def click_dialog_button(dialog: Any, names: list[str], timeout: float = 10.0, pr
                 text = normalize_button_text(child.window_text())
                 control_type = getattr(child.element_info, "control_type", "")
                 class_name = child.class_name()
-                is_button = control_type == "Button" or class_name == "Button"
+                is_button = (
+                    control_type == "Button"
+                    or control_type.endswith(".Button")
+                    or class_name == "Button"
+                    or "BUTTON" in class_name.upper()
+                )
             except Exception:
                 continue
             if not is_button or text not in expected:
@@ -408,11 +413,14 @@ def click_dialog_button(dialog: Any, names: list[str], timeout: float = 10.0, pr
                     elif action == "legacy":
                         child.iface_invoke.Invoke()
                     else:
-                        child.post_message(0x00F5, 0, 0)  # BM_CLICK
+                        try:
+                            child.send_message(0x00F5, 0, 0)  # BM_CLICK
+                        except Exception:
+                            child.post_message(0x00F5, 0, 0)
                     return canonical_name
                 except Exception:
                     continue
-        time.sleep(0.2)
+        time.sleep(0.05)
     raise RuntimeError(f"Cannot find dialog button from {names!r}")
 
 
@@ -524,9 +532,9 @@ def dismiss_export_modal(swtools_pid: int, timeout: float = 45.0) -> dict[str, A
                 last_texts = candidate["text"].splitlines()
                 buttons = ["Нет", "No"] if candidate["kind"] == "open_question" else ["OK", "ОК"]
                 button = click_dialog_button(win, buttons, timeout=1.0, prefer_post=True)
-                close_deadline = time.time() + 2.0
+                close_deadline = time.time() + 0.8
                 while time.time() < close_deadline and modal_still_present(swtools_pid, candidate.get("handle")):
-                    time.sleep(0.05)
+                    time.sleep(0.03)
                 candidate.update({"dismissed": True, "button": button})
                 return candidate
             for win in desktop_windows(backend):
@@ -561,12 +569,12 @@ def wait_for_file(path: Path, timeout: float) -> None:
             size = path.stat().st_size
             if size > 0 and size == last_size:
                 stable_count += 1
-                if stable_count >= 2:
+                if stable_count >= 3:
                     return
             else:
                 stable_count = 0
                 last_size = size
-        time.sleep(0.5)
+        time.sleep(0.1)
     raise RuntimeError(f"Exported file did not become stable: {path}")
 
 

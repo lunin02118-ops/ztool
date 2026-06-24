@@ -276,7 +276,7 @@ try {
             '--expected-min-columns', ([string]$ExpectedMinColumns)
         )
         $s7Log = Join-Path $OutputDir 'logs\07-s7-live-smoke.log'
-        $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log
+        $s7 = Invoke-E2ECommand -Name 'swtools_s7_live_smoke' -FilePath 'python' -Arguments $s7Args -LogPath $s7Log -TimeoutSeconds 180
         if ($s7.exit_code -ne 0) { throw "S7 live smoke failed; see $s7Log" }
         $s7Json = Join-Path $s7Dir 's7-live-smoke-result.json'
         $s7Result = Read-JsonFile $s7Json
@@ -314,7 +314,7 @@ try {
         )
         if ($RequireStrictBomFilters) { $s8Args += '--strict-filters' }
         $s8Log = Join-Path $OutputDir 'logs\08-s8-bom-export.log'
-        $s8 = Invoke-E2ECommand -Name 'swtools_s8_bom_live' -FilePath 'python' -Arguments $s8Args -LogPath $s8Log
+        $s8 = Invoke-E2ECommand -Name 'swtools_s8_bom_live' -FilePath 'python' -Arguments $s8Args -LogPath $s8Log -TimeoutSeconds 900
         if ($s8.exit_code -ne 0) { throw "S8 BOM export failed; see $s8Log" }
         $s8Json = Join-Path $s8Dir 's8-bom-result.json'
         $s8Result = Read-JsonFile $s8Json

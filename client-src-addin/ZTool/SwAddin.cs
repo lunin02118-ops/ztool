@@ -260,6 +260,15 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 		return result;
 	}
 
+	private bool EnsurePMP()
+	{
+		if (Information.IsNothing(f_377) || f_377.IsDisposed)
+		{
+			AddPMP();
+		}
+		return !Information.IsNothing(f_377) && !f_377.IsDisposed;
+	}
+
 	public bool RemovePMP()
 	{
 		f_375 = null;
@@ -697,6 +706,11 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 
 	public void openZtool(int Type)
 	{
+		if (!EnsurePMP())
+		{
+			MessageBox.Show("Не удалось подготовить канал связи SWTools с SolidWorks.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			return;
+		}
 		int num = default(int);
 		switch (Type)
 		{
