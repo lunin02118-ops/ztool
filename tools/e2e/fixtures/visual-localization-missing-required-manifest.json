@@ -1,0 +1,13 @@
+{
+  "status": "PASS_WITH_WARN",
+  "production_go_allowed": false,
+  "surfaces": [
+    {
+      "id": "L-01",
+      "status": "MISSING",
+      "process": "SWTools.exe",
+      "required": true,
+      "error": "matching top-level window not found"
+    }
+  ]
+}

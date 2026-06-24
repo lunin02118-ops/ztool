@@ -37,6 +37,32 @@ Whitelist model is exact: protocol keys must be present in
 `localization/whitelist_protocol_keys.txt`; suffix-based classification is no
 longer accepted.
 
+## Automated screenshot evidence layer
+
+`scripts/swtools_visual_localization_capture.py` captures selected live windows,
+records screenshot SHA256, process path, runtime path match and visible UIA text.
+It is a guard against two recurring release mistakes:
+
+- screenshot was taken from the wrong `SWTools.exe` runtime;
+- whitelisted/internal Han text became visible in `SWTools.exe`;
+- host SolidWorks Han was recorded for manual review instead of being hidden.
+
+Validator:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface L-01 `
+  --require-surface L-13 `
+  --require-runtime-match
+```
+
+This layer can prove `CAPTURED + no blocking Han + expected runtime` for captured
+surfaces. Host SolidWorks Han in `record_only` surfaces is preserved in manifest
+as warning evidence. This still does not claim pixel-level layout quality or
+visual FULL PASS.
+
 ## Required screenshots for user audit
 
 | ID | Surface | Required frame | Status |

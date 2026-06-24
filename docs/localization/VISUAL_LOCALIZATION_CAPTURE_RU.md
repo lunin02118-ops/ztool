@@ -1,0 +1,77 @@
+# Visual localization capture gate
+
+Scope: E2E evidence layer after S7/S8/branding gates.
+
+Этот слой не заменяет ручной visual FULL PASS. Он автоматически собирает
+проверяемые кадры, process/runtime identity и UIA-текст, чтобы не принять
+грязный или снятый не с того билда скриншот.
+
+## Команда
+
+После живого E2E-прогона, когда `SWTools.exe` и SolidWorks остаются открыты:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM `
+  --expected-runtime-dir <runtime-dir>
+```
+
+Для release/owner evidence, где L-01/L-13 должны быть сняты обязательно:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM `
+  --expected-runtime-dir <runtime-dir> `
+  --require-all-captured
+```
+
+Проверка manifest:
+
+```powershell
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\localization-visual-YYYYMMDD-HHMM\visual-localization-manifest.json `
+  --allow-warn `
+  --require-surface L-01 `
+  --require-surface L-13 `
+  --require-runtime-match
+```
+
+`--allow-warn` разрешает частичный evidence-пакет только если нет blocking Han и
+нет runtime mismatch. `PASS_WITH_WARN` не является production approval.
+
+Default surface policy:
+
+| Surface | Han policy | Reason |
+|---|---|---|
+| L-01 `SWTools.exe` | `fail` | Это основной пользовательский UI SWTools; видимый Han здесь blocker. |
+| L-13 SolidWorks host | `record_only` | Whole-window capture может включать дерево модели/host UI SolidWorks, не принадлежащее SWTools. Такие Han строки записываются в manifest и проверяются вручную. |
+
+## Output
+
+```text
+visual-localization-manifest.json
+visual-localization-contact-sheet.jpg
+screenshots\L-01-Main-window.png
+screenshots\L-13-SolidWorks-add-in.png
+```
+
+Raw screenshots остаются в `_local_artifacts`. В Git коммитится только
+curated summary/report без больших картинок и без приватных данных.
+
+## Machine FAIL conditions
+
+- Любая captured surface с `han_policy=fail` содержит видимые Han-символы в UIA text.
+- `SWTools.exe` запущен не из ожидаемого runtime dir.
+- Manifest имеет `production_go_allowed=true`.
+- Для release evidence: обязательная surface отсутствует.
+
+## What this does not prove
+
+- Нет pixel-level проверки clipping/overlap.
+- Нет ручного подтверждения всех L-01..L-15 кадров.
+- Нет автоматического решения по `record_only` host Han; auditor должен
+  подтвердить, что это не SWTools UI.
+- Нет production GO.
+
+Финальный visual FULL PASS остаётся ручным owner/auditor gate по
+`docs/localization/VISUAL_LOCALIZATION_REPORT_RU.md`.
