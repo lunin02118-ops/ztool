@@ -11,8 +11,8 @@ Production GO: **NO-GO**.
 Visual FULL PASS: **NO-GO**.
 
 Цель #90 изменилась по фактическому результату проверки: полный L-01..L-15
-capture не может быть принят, потому что найден реальный visual blocker в help:
-видимый старый бренд `ZTool`.
+capture не может быть принят, потому что найдены реальные visual blockers:
+видимый старый бренд `ZTool` в help и runtime `InputBox` dialog title.
 
 ## Что изменено
 
@@ -28,14 +28,21 @@ capture не может быть принят, потому что найден 
   - cumulative merge preserves already captured evidence;
   - forbidden `ZTool` text is rejected.
 - Методика обновлена: полный visual evidence собирается последовательно, а не попыткой держать все modal dialogs открытыми одновременно.
-
-Product/runtime source не менялся.
+- После user review screenshot найден runtime blocker: `Interaction.InputBox`
+  показывал `ZTool` в заголовке при пустом/непереданном title.
+- Product/runtime source изменён точечно: только user-facing titles для
+  `Interaction.InputBox`, без переименования internal assembly/COM/file contracts.
+- Source string invariant gate расширен: `Interaction.InputBox` теперь обязан
+  иметь явный title `SWTools`; missing/empty/`ZTool` title падает в CI.
 
 ## Static checks
 
 ```powershell
 python -m py_compile scripts\swtools_visual_localization_capture.py tools\e2e\assert_visual_localization_manifest.py tools\e2e\selftest_assert_visual_localization_manifest.py
 python tools\e2e\selftest_assert_visual_localization_manifest.py
+python tools\check_source_string_invariants.py --self-test
+python tools\check_source_string_invariants.py --root client-src --root client-src-addin
+dotnet build client-src\ZTool.csproj -c Release -warnaserror:false
 python tools\secret_scan.py
 git diff --check
 ```
@@ -44,6 +51,9 @@ git diff --check
 
 - `py_compile`: PASS.
 - `selftest_assert_visual_localization_manifest.py`: PASS.
+- `check_source_string_invariants.py --self-test`: PASS.
+- `check_source_string_invariants.py --root client-src --root client-src-addin`: PASS, `InputBox title violations=0`.
+- `dotnet build client-src\ZTool.csproj -c Release`: PASS, 0 errors, 123 known warnings.
 - `secret_scan.py`: PASS.
 - `git diff --check`: PASS.
 
@@ -147,10 +157,45 @@ python tools\e2e\assert_visual_localization_manifest.py `
 
 Результат: expected FAIL (`manifest status is FAIL`).
 
+### Runtime InputBox old-brand blocker
+
+User screenshot showed `ZTool` in the title of the rule rename prompt:
+
+- parent window: `Пользовательское правило`;
+- prompt text: `Введите имя правила`;
+- bad visible title: `ZTool`.
+
+Root cause:
+
+- VB `Interaction.InputBox` uses the application/assembly title when the title
+  argument is missing or empty.
+- The from-source tree still had six calls with missing/empty title.
+
+Fixed call sites:
+
+- `client-src/ZTool/FrmFilterrules.cs`: add/edit user rule prompt.
+- `client-src/ZTool/Frmexportbom.cs`: add/edit BOM scheme/rule prompt.
+- `client-src/ZTool/FrmFilling.cs`: add/edit filling scheme/rule prompt.
+
+Regression gate:
+
+- `tools/check_source_string_invariants.py` now rejects
+  `Interaction.InputBox(...)` unless the second argument is explicit `SWTools`.
+
+Verification:
+
+- `rg 'Interaction\.InputBox\(' client-src client-src-addin client-core -g '*.cs'`
+  shows all six calls now use `"SWTools"`.
+- `python tools/check_source_string_invariants.py --root client-src --root client-src-addin`:
+  PASS, `InputBox title violations=0`.
+- `dotnet build client-src\ZTool.csproj -c Release -warnaserror:false`: PASS.
+
 ## Не засчитано
 
 - `L-03` BOM export menu не был снят в этом run: trial SWTools window успело закрыться до попытки раскрытия меню. Это не засчитывается как дефект product runtime; это ограничение live automation timing/trial state.
 - `L-02`, `L-03`, `L-04`, `L-05`, `L-06`, `L-07`, `L-08`, `L-09`, `L-10`, `L-11`, `L-14` остаются missing в итоговом visual evidence.
+- Fix runtime `InputBox` title live capture ещё не засчитан как visual FULL PASS:
+  нужен повторный object-based capture поверхности `L-06`.
 
 ## Вывод
 
@@ -160,12 +205,15 @@ python tools\e2e\assert_visual_localization_manifest.py `
 - неполный набор кадров не может стать FULL PASS;
 - old-brand `ZTool` теперь machine blocker;
 - live S7 перед capture подтвержден на реальном SolidWorks;
-- найден реальный blocker в `help.CHM`: заголовок `ZTool — Руководство пользователя`.
+- найден реальный blocker в `help.CHM`: заголовок `ZTool — Руководство пользователя`;
+- найден и исправлен runtime blocker: `Interaction.InputBox` с missing/empty title
+  показывал legacy `ZTool`.
 
 Следующая работа:
 
 1. Исправить help branding/provenance: `ZTool` -> `SWTools` в CHM title/content.
-2. Подготовить opener harness или активированное/длинное live session состояние для последовательной съёмки `L-02..L-11` и `L-14`.
-3. Дособрать cumulative manifest до 15/15.
-4. Прогнать strict full-profile validator до PASS.
-5. Перед production GO выполнить ручной visual owner/auditor review.
+2. Повторно снять `L-06` и подтвердить, что prompt title больше не содержит `ZTool`.
+3. Подготовить opener harness или активированное/длинное live session состояние для последовательной съёмки `L-02..L-11` и `L-14`.
+4. Дособрать cumulative manifest до 15/15.
+5. Прогнать strict full-profile validator до PASS.
+6. Перед production GO выполнить ручной visual owner/auditor review.

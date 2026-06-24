@@ -3476,7 +3476,7 @@ public class FrmFilling : Form
 	private void add_Click(object sender, EventArgs e)
 	{
 		_Closure_0024__80 closure_0024__ = new _Closure_0024__80();
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя схемы");
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя схемы", "SWTools");
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) == 0)
 		{
 			return;
@@ -3525,7 +3525,7 @@ public class FrmFilling : Form
 		{
 			return;
 		}
-		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя правила", "", closure_0024__._0024VB_0024Local_RuleName);
+		closure_0024__._0024VB_0024Local_str = Interaction.InputBox("Введите имя правила", "SWTools", closure_0024__._0024VB_0024Local_RuleName);
 		if (Operators.CompareString(closure_0024__._0024VB_0024Local_str.Trim(), "", TextCompare: false) != 0 && Operators.CompareString(closure_0024__._0024VB_0024Local_str, closure_0024__._0024VB_0024Local_RuleName, TextCompare: false) != 0 && 0 == 0)
 		{
 			int num2 = CConfigMng.Config.fillsettings.FindIndex(closure_0024__._Lambda_0024__139);
