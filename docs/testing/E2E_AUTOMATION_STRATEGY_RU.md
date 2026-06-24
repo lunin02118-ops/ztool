@@ -1,0 +1,98 @@
+# E2E automation strategy
+
+Дата: 2026-06-24
+
+Scope: первый исполняемый слой после плана `E2E_AUTOMATION_AND_DEV_ENV_PLAN_RU.md`.
+
+## Цель
+
+Перевести ручные проверки SWTools/SolidWorks в воспроизводимый harness, который пишет
+машинно-читаемый результат:
+
+```text
+_local_artifacts/reports/e2e/<run>/e2e-result.json
+_local_artifacts/reports/e2e/<run>/e2e-summary.md
+```
+
+`production_go_allowed` всегда остаётся `false` на этом слое. Финальный GO возможен
+только отдельным release rehearsal с подписанием, live evidence и approval владельца.
+
+## Команда foundation
+
+Doctor-only запуск:
+
+```powershell
+pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
+  -DoctorOnly `
+  -OutputDir _local_artifacts\reports\e2e\doctor
+```
+
+Проверка результата:
+
+```powershell
+python tools\e2e\assert_e2e_result.py `
+  _local_artifacts\reports\e2e\doctor\e2e-result.json `
+  --allow-warn `
+  --require-stage 00-doctor `
+  --require-stage 99-finalize
+```
+
+## Build/package режим
+
+```powershell
+pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
+  -BuildFromSource `
+  -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll" `
+  -OutputDir _local_artifacts\reports\e2e\source-package
+```
+
+Этот режим связывает уже существующие gates:
+
+```text
+scripts\resolve_release_inputs.ps1
+scripts\build_release_package.ps1
+scripts\verify_release_package.ps1
+scripts\check_swtools_runtime_identity.ps1
+```
+
+Пакет проверяется source-build hash values из текущего runtime. Accepted release hashes
+не продвигаются и не меняются.
+
+## Live S7 режим
+
+Live S7 запускается только явно:
+
+```powershell
+pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
+  -BuildFromSource `
+  -RunS7 `
+  -RequireSolidWorks `
+  -SolidWorksExe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe" `
+  -SolidWorksToolsDll "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorksTools.dll" `
+  -TestAssembly D:\Development\ztool\TestModel\0614-A00.SLDASM
+```
+
+S7 использует `scripts\swtools_s7_live_smoke.py`: UIA Invoke обязателен,
+координатный клик не считается acceptance.
+
+## Статусы
+
+```text
+PASS           Машинные проверки прошли.
+PASS_WITH_WARN Проверки прошли, но есть предупреждения среды или live-gate не запускался.
+FAIL           Любая обязательная проверка упала.
+```
+
+`PASS_WITH_WARN` не может быть production approval. Для release mode будущий Sprint S8
+должен требовать BOM 1-8 PASS без WARN.
+
+## Что этот слой не закрывает
+
+```text
+[ ] не автоматизирует BOM 1-8;
+[ ] не создаёт RU strict fixture;
+[ ] не чинит product runtime bugs;
+[ ] не утверждает screenshots/localization FULL PASS;
+[ ] не обновляет accepted release hashes;
+[ ] не заменяет ручной owner approval.
+```
