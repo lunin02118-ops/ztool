@@ -38,6 +38,7 @@ pwsh -NoProfile -File scripts\e2e\Invoke-SWToolsE2E.ps1 `
 python tools\e2e\assert_e2e_result.py `
   _local_artifacts\reports\e2e\s7-live\e2e-result.json `
   --allow-warn `
+  --require-stage-pass 05-preflight-register `
   --require-stage-pass 07-s7-connect `
   --require-s7-min-rows 29 `
   --require-s7-min-columns 30

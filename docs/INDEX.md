@@ -49,6 +49,9 @@
 | [`release/FULL_TEST_METHODOLOGY_RU.md`](release/FULL_TEST_METHODOLOGY_RU.md) | **Единственная актуальная методика полного тестирования всего функционала с паритетом к оригиналу**; включает запуск через `.SLDASM`, registry pre-flight, объектную UI/WinForms-автоматизацию, свойства, BOM и цвета | актуален |
 | [`release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md`](release/FINAL_ACCEPTANCE_TEST_PLAN_RU.md) | Финальный план приёмочного тестирования release package | актуален |
 | [`release/PRODUCTION_READINESS_REPORT_RU.md`](release/PRODUCTION_READINESS_REPORT_RU.md) | Шаблон production readiness report | актуален |
+| [`testing/E2E_AUTOMATION_STRATEGY_RU.md`](testing/E2E_AUTOMATION_STRATEGY_RU.md) | Стратегия E2E harness: doctor, source package, S7/S8 live gates, JSON evidence | актуален |
+| [`testing/E2E_S7_AUTOMATION_RU.md`](testing/E2E_S7_AUTOMATION_RU.md) | Методика live S7: `Подключить SW`, row/column evidence, runtime path/hash | актуален |
+| [`testing/E2E_S8_BOM_AUTOMATION_RU.md`](testing/E2E_S8_BOM_AUTOMATION_RU.md) | Методика live S8: BOM 1-8, SaveFileDialog, semantic Excel validation | актуален |
 | [`release/RELEASE_VERSIONING_RU.md`](release/RELEASE_VERSIONING_RU.md) | Версионность релизов, `VERSION`, структура `releases/<version>` | актуален |
 | [`release/SIGNING_POLICY_RU.md`](release/SIGNING_POLICY_RU.md) | Sprint N signing policy: `-AllowUnsigned` только CI evidence, production требует подпись или exception | актуален |
 | [`release/RELEASE_DOSSIER_1.1.6_RU.md`](release/RELEASE_DOSSIER_1.1.6_RU.md) | Draft release dossier 1.1.6; текущий статус NO-GO | актуален |
