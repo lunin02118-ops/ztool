@@ -14,6 +14,7 @@ on:
       - "client-src/**"
       - "client-src-addin/**"
       - "SWTools.settings"
+      - "help_ru.chm"
       - "client-core/dist/SWTools.settings"
       - "client-core/tools/check_bom_template.py"
       - "SolidWorksTemplates/**"
@@ -28,6 +29,7 @@ on:
       - "client-src/**"
       - "client-src-addin/**"
       - "SWTools.settings"
+      - "help_ru.chm"
       - "client-core/dist/SWTools.settings"
       - "client-core/tools/check_bom_template.py"
       - "SolidWorksTemplates/**"
@@ -71,6 +73,9 @@ jobs:
       # --- Build-method-independent deterministic checks ---
       - name: Localization name gate (no CJK in tracked paths)
         run: python tools/check_no_cjk_filenames.py
+
+      - name: Russian CHM brand gate
+        run: python tools/chm-i18n/check_chm_brand.py help_ru.chm
 
       - name: String invariants self-test (from-source gate)
         run: python tools/check_source_string_invariants.py --self-test

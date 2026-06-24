@@ -15,6 +15,9 @@ runs = json.load(open(os.path.join(HERE, 'runs.json'), encoding='utf-8'))
 ru   = json.load(open(os.path.join(HERE, 'ru.json'), encoding='utf-8'))
 assert len(runs) == len(ru), f'count mismatch {len(runs)} vs {len(ru)}'
 TR = dict(zip(runs, ru))
+BRAND_TR = {
+    'ZTool': 'SWTools',
+}
 # add HTML-entity-encoded variants (some runs contain < > & as &lt; &gt; &amp; in source)
 for k in list(TR):
     esc = k.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
@@ -68,6 +71,9 @@ def translate_textnodes(html):
             for k in KEYS:
                 if k and k in s:
                     s = s.replace(k, TR[k])
+            for k, v in BRAND_TR.items():
+                if k in s:
+                    s = s.replace(k, v)
             out.append(s)
     return ''.join(out)
 
@@ -143,7 +149,10 @@ def transform_nav(srcfile, dstfile):
     except: t = raw.decode('gbk', 'replace')
     def repl_name(m):
         val = m.group(1)
-        return m.group(0).replace('"'+val+'"', '"'+TR.get(val, val)+'"')
+        translated = TR.get(val, val)
+        for k, v in BRAND_TR.items():
+            translated = translated.replace(k, v)
+        return m.group(0).replace('"'+val+'"', '"'+translated+'"')
     t = re.sub(r'(?i)name="Name"\s+value="([^"]*)"', repl_name, t)
     def repl_local(m):
         val = m.group(1)

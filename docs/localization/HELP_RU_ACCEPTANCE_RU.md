@@ -12,6 +12,18 @@ Scope: Sprint H visual/manual gate.
 Han (`/进阶操作/...`, `/基本操作/...`) не считается автоматическим FAIL, если они
 используются только как route keys и открывают русские страницы.
 
+## Текущий machine evidence
+
+Дата: 2026-06-25
+
+| Check | Result |
+|---|---|
+| `tools/chm-i18n/check_chm_brand.py help_ru.chm` | PASS: `ZTool` not found in CHM binary/decompiled text, `SWTools` found |
+| Visual L-12 direct open | PASS: `hh.exe` window title `SWTools — Руководство пользователя`, no visible `ZTool`, no Han |
+
+Это закрывает прямой blocker `ZTool` в заголовке справки, но не заменяет полный
+ручной визуальный аудит всех help entry points H-01..H-03 и screenshots.
+
 ## Обязательная проверка
 
 | ID | Entry point | Expected |
