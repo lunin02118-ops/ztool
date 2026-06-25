@@ -3,11 +3,11 @@
 
 This is a manual-machine gate.  It proves the full path:
 
-SolidWorks model -> ZTool.SwAddin.openZtool(0) -> SWTools.exe -> UIA Invoke
-"Демо" (if shown) -> UIA Invoke "Подключить SW" -> grid rows.
+SolidWorks model -> ZTool.SwAddin.openZtool(0) -> SWTools.exe ->
+object-driven "Демо" (if shown) -> object-driven "Подключить SW" -> grid rows.
 
-No coordinate click is accepted.  If UIA Invoke is unavailable, the test fails
-instead of pretending the command was tested.
+No coordinate click is accepted.  If UIA/legacy/Win32 object invocation is
+unavailable, the test fails instead of pretending the command was tested.
 """
 
 from __future__ import annotations
@@ -48,6 +48,10 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest().upper()
+
+
+def write_checkpoint(result_path: Path, result: dict[str, Any]) -> None:
+    result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def normalize_env() -> None:
@@ -148,6 +152,37 @@ def process_command_line(pid: int) -> str:
         return ""
 
 
+def receiver_windows(solidworks_pid: int) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+
+    def enum_proc(hwnd: int, _: Any) -> bool:
+        try:
+            title = win32gui.GetWindowText(hwnd)
+            if title != "Ztool_Receiver":
+                return True
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+            if int(pid) != int(solidworks_pid):
+                return True
+            matches.append(
+                {
+                    "hwnd": int(hwnd),
+                    "process_id": int(pid),
+                    "class_name": win32gui.GetClassName(hwnd),
+                    "title": title,
+                    "is_window": bool(win32gui.IsWindow(hwnd)),
+                }
+            )
+        except Exception:
+            pass
+        return True
+
+    try:
+        win32gui.EnumWindows(enum_proc, None)
+    except Exception:
+        pass
+    return matches
+
+
 def restore_window(hwnd: int) -> None:
     if win32gui.IsIconic(hwnd):
         win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
@@ -157,6 +192,71 @@ def restore_window(hwnd: int) -> None:
         win32gui.SetForegroundWindow(hwnd)
     except Exception:
         pass
+
+
+def top_window_handles_for_pid(process_id: int, include_hidden: bool = True) -> list[int]:
+    handles: list[int] = []
+
+    def enum_proc(hwnd: int, _: Any) -> bool:
+        try:
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+            if pid == process_id and (include_hidden or win32gui.IsWindowVisible(hwnd)):
+                handles.append(hwnd)
+        except Exception:
+            pass
+        return True
+
+    win32gui.EnumWindows(enum_proc, None)
+    return handles
+
+
+def top_windows_for_pid(process_id: int) -> list[dict[str, Any]]:
+    windows: list[dict[str, Any]] = []
+    for hwnd in top_window_handles_for_pid(process_id):
+        try:
+            rect = win32gui.GetWindowRect(hwnd)
+            windows.append(
+                {
+                    "hwnd": hwnd,
+                    "visible": bool(win32gui.IsWindowVisible(hwnd)),
+                    "class_name": win32gui.GetClassName(hwnd),
+                    "title": win32gui.GetWindowText(hwnd),
+                    "rectangle": {
+                        "left": rect[0],
+                        "top": rect[1],
+                        "right": rect[2],
+                        "bottom": rect[3],
+                    },
+                }
+            )
+        except Exception:
+            continue
+    return windows
+
+
+def find_swtools_main_window(process_id: int) -> int | None:
+    candidates: list[tuple[int, int]] = []
+    fallback_candidates: list[tuple[int, int]] = []
+    for item in top_windows_for_pid(process_id):
+        title = str(item.get("title") or "")
+        class_name = str(item.get("class_name") or "")
+        rect = item.get("rectangle") or {}
+        width = int(rect.get("right", 0)) - int(rect.get("left", 0))
+        height = int(rect.get("bottom", 0)) - int(rect.get("top", 0))
+        if "WindowsForms10.Window" not in class_name:
+            continue
+        area = width * height
+        if area <= 100_000:
+            continue
+        if title.startswith("SWTools"):
+            candidates.append((area, int(item["hwnd"])))
+        elif title != "Параметры":
+            fallback_candidates.append((area, int(item["hwnd"])))
+    if not candidates:
+        candidates = fallback_candidates
+    if not candidates:
+        return None
+    return sorted(candidates, reverse=True)[0][1]
 
 
 def visible_texts(win: Any) -> list[str]:
@@ -185,10 +285,13 @@ def window_process_id(win: Any) -> int | None:
 def desktop_windows(backend: str, process_id: int | None = None) -> list[Any]:
     desktop = Desktop(backend=backend)
     if process_id is not None:
-        try:
-            return desktop.windows(process=process_id)
-        except Exception:
-            pass
+        windows: list[Any] = []
+        for hwnd in top_window_handles_for_pid(process_id):
+            try:
+                windows.append(desktop.window(handle=hwnd))
+            except Exception:
+                continue
+        return windows
     try:
         windows = desktop.windows()
     except Exception:
@@ -266,7 +369,7 @@ def click_dialog_button(dialog: Any, names: list[str], timeout: float = 1.0) -> 
                 continue
             if not is_button or text not in expected:
                 continue
-            for action in ("post", "invoke", "legacy", "click_input", "send"):
+            for action in ("post", "invoke", "legacy", "send"):
                 try:
                     if action == "send":
                         child.send_message(0x00F5, 0, 0)  # BM_CLICK
@@ -276,8 +379,6 @@ def click_dialog_button(dialog: Any, names: list[str], timeout: float = 1.0) -> 
                         child.invoke()
                     elif action == "legacy":
                         child.iface_invoke.Invoke()
-                    else:
-                        child.click_input()
                     return expected[text]
                 except Exception:
                     continue
@@ -331,6 +432,8 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
         owners.append((swtools_pid, "SWTools"))
     for backend in ("win32", "uia"):
         for pid, owner in owners:
+            if owner == "SolidWorks" and backend == "uia":
+                continue
             for win in desktop_windows(backend, process_id=pid):
                 try:
                     title = win.window_text().strip()
@@ -590,7 +693,11 @@ def grid_dimensions(main: Any, fallback_rows: int) -> dict[str, Any]:
 def invoke_text(app: Any, text: str, timeout: float) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
-        for win in app.windows():
+        try:
+            windows = app.windows()
+        except Exception:
+            windows = [app]
+        for win in windows:
             for child in win.descendants():
                 try:
                     if child.window_text().strip() != text:
@@ -603,17 +710,47 @@ def invoke_text(app: Any, text: str, timeout: float) -> bool:
     return False
 
 
-def invoke_connect(main: Any) -> None:
+def invoke_connect(main: Any) -> dict[str, Any]:
     restore_window(main.handle)
     main.set_focus()
+    attempts: list[dict[str, Any]] = []
     for child in main.descendants(control_type="SplitButton"):
         try:
-            if child.window_text().strip() == "Подключить SW" and child.legacy_properties().get("DefaultAction") == "Нажать":
-                child.invoke()
-                return
+            if child.window_text().strip() != "Подключить SW":
+                continue
+            props = child.legacy_properties()
+            if props.get("DefaultAction") != "Нажать":
+                continue
+            rect = child.rectangle()
+            base = {
+                "control_type": child.element_info.control_type,
+                "default_action": props.get("DefaultAction"),
+                "value": props.get("Value"),
+                "rectangle": {
+                    "left": rect.left,
+                    "top": rect.top,
+                    "right": rect.right,
+                    "bottom": rect.bottom,
+                },
+            }
+            for action in ("invoke", "legacy_invoke"):
+                attempt = dict(base)
+                attempt["action"] = action
+                try:
+                    if action == "invoke":
+                        child.invoke()
+                    else:
+                        child.iface_invoke.Invoke()
+                    attempt["status"] = "PASS"
+                    attempts.append(attempt)
+                    return {"status": "PASS", "attempts": attempts}
+                except Exception as exc:
+                    attempt["status"] = "FAIL"
+                    attempt["error"] = str(exc)
+                    attempts.append(attempt)
         except Exception:
             continue
-    raise RuntimeError("Cannot UIA-invoke top SplitButton 'Подключить SW'")
+    return {"status": "FAIL", "attempts": attempts, "error": "Cannot invoke top SplitButton 'Подключить SW'"}
 
 
 def invoke_connect_async(main: Any) -> dict[str, Any]:
@@ -621,7 +758,9 @@ def invoke_connect_async(main: Any) -> dict[str, Any]:
 
     def worker() -> None:
         try:
-            invoke_connect(main)
+            state["result"] = invoke_connect(main)
+            if state["result"].get("status") != "PASS":
+                raise RuntimeError(str(state["result"].get("error") or "connect invoke failed"))
         except Exception as exc:
             state["error"] = str(exc)
         finally:
@@ -711,6 +850,7 @@ def run() -> int:
         if not addin:
             raise RuntimeError("SolidWorks returned no ZTool.SwAddin object")
         result["checks"].append("addin object ok")
+        write_checkpoint(result_path, result)
 
         started = time.time()
         open_state = invoke_open_ztool_async()
@@ -742,8 +882,17 @@ def run() -> int:
         if str(solidworks_pid) not in result["swtools_command_line"]:
             raise RuntimeError("SWTools command line does not include SolidWorks PID")
         result["checks"].append("launcher command line ok")
+        result["receiver_windows_after_launch"] = receiver_windows(solidworks_pid)
+        if not result["receiver_windows_after_launch"]:
+            raise RuntimeError("SolidWorks add-in receiver window Ztool_Receiver was not found after launch")
+        result["swtools_windows_after_launch"] = top_windows_for_pid(proc.pid)
+        main_hwnd = find_swtools_main_window(proc.pid)
+        if main_hwnd is None:
+            raise RuntimeError(f"SWTools main window was not found for process {proc.pid}")
+        result["swtools_main_hwnd"] = main_hwnd
+        restore_window(main_hwnd)
+        write_checkpoint(result_path, result)
 
-        app = Application(backend="uia").connect(process=proc.pid)
         license_result = dismiss_license_dialog(proc.pid, timeout=10.0)
         result["license_dialog"] = license_result
         if license_result.get("found") and not license_result.get("dismissed"):
@@ -751,8 +900,11 @@ def run() -> int:
         if license_result.get("dismissed"):
             result["checks"].append("trial dialog dismissed through object automation")
         else:
-            invoke_text(app, "Демо", timeout=1.0)
-        main = max(app.windows(), key=lambda w: w.rectangle().width() * w.rectangle().height())
+            main_win32 = Desktop(backend="win32").window(handle=main_hwnd)
+            invoke_text(main_win32, "Демо", timeout=1.0)
+        main = Desktop(backend="uia").window(handle=main_hwnd)
+        restore_window(main_hwnd)
+        write_checkpoint(result_path, result)
         blocker = blocking_dialog(proc.pid, solidworks_pid)
         if blocker:
             if is_solidworks_connection_timeout_dialog(blocker):
@@ -768,6 +920,7 @@ def run() -> int:
         connect_state = invoke_connect_async(main)
         result["connect_invoke"] = dict(connect_state)
         result["checks"].append("connect invoked through UIA worker")
+        write_checkpoint(result_path, result)
 
         last_status = ""
         last_count = 0
@@ -788,6 +941,8 @@ def run() -> int:
                 result["blocking_dialog"] = blocker
                 raise RuntimeError(f"Blocking dialog during S7 connect: {blocker}")
             dismiss_license_dialog(proc.pid, timeout=0.1)
+            result["last_poll_at"] = round(time.time(), 3)
+            write_checkpoint(result_path, result)
             last_texts = visible_texts(main)
             last_status = parse_status(last_texts)
             last_count = parse_row_count(last_status, last_texts)
@@ -796,6 +951,8 @@ def run() -> int:
 
         result["status_text"] = last_status
         result["row_count"] = last_count
+        result["receiver_windows_after_connect"] = receiver_windows(solidworks_pid)
+        write_checkpoint(result_path, result)
         dimensions = grid_dimensions(main, last_count)
         result["column_count"] = dimensions["column_count"]
         result["grid_dimensions"] = dimensions
@@ -820,4 +977,7 @@ def run() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run())
+    exit_code = run()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)

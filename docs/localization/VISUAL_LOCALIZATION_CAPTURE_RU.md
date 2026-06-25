@@ -68,6 +68,30 @@ python scripts\swtools_visual_localization_capture.py `
 `last_attempt_status`. Это не даёт случайно потерять доказательство, но strict
 validator всё равно требует, чтобы итоговая surface была `CAPTURED`.
 
+## Object-driven opener runner
+
+Для повторяемой съёмки без координатных кликов используйте runner, который
+читает `VISUAL_LOCALIZATION_OPENERS_L01_L15.json`, выполняет только
+object-driven действия (`uia_invoke`, `ribbon_command`, `wait_window`,
+`context_menu` через фокусированный UIA-элемент и `Shift+F10`) и после каждого
+кадра запускает capture с cumulative merge:
+
+```powershell
+python scripts\swtools_visual_opener_capture.py `
+  --output-dir _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM `
+  --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --opener-file docs\localization\VISUAL_LOCALIZATION_OPENERS_L01_L15.json `
+  --expected-runtime-dir <runtime-dir> `
+  --surface-id L-04 `
+  --surface-id L-06
+```
+
+Если действие нельзя выполнить через объект UIA/COM/процесс, runner должен
+завершиться с `FAIL`; подбирать экранные координаты запрещено. Результат
+runner (`visual-opener-capture-result.json`) является technical evidence о
+способе открытия, но visual FULL PASS всё равно требует итоговый manifest,
+strict validator и ручной owner/auditor review кадров.
+
 Проверка manifest:
 
 ```powershell

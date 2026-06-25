@@ -24,6 +24,7 @@ on:
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_visual_localization_capture.py"
+      - "scripts/swtools_visual_opener_capture.py"
       - "scripts/e2e/**"
       - "docs/localization/**"
       - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
@@ -49,6 +50,7 @@ on:
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_visual_localization_capture.py"
+      - "scripts/swtools_visual_opener_capture.py"
       - "scripts/e2e/**"
       - "docs/localization/**"
       - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
@@ -130,6 +132,9 @@ jobs:
 
       - name: Visual opener profile gate
         run: python tools/e2e/check_visual_opener_profile.py docs/localization/VISUAL_LOCALIZATION_OPENERS_L01_L15.json --surface-file docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json
+
+      - name: Visual opener capture runner self-test
+        run: python scripts/swtools_visual_opener_capture.py --self-test
 
       - name: Visual localization manifest assertion self-test
         run: python tools/e2e/selftest_assert_visual_localization_manifest.py
