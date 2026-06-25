@@ -92,3 +92,23 @@ The helper does not replace owner visual review. It proves screenshot identity,
 runtime identity and absence of blocking Han in captured UIA text. Host
 SolidWorks Han in `record_only` surfaces remains warning evidence for manual
 review.
+
+## Help entry points H-01..H-03
+
+После #92 route-contract проверяется машинно, но live visual evidence по
+кнопкам справки собирается отдельно:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\help-entry-visual\H-01 `
+  --surface-file docs\localization\HELP_ENTRY_VISUAL_SURFACES_H01_H03.json `
+  --surface-id H-01
+
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\help-entry-visual\H-03\visual-localization-manifest.json `
+  --require-surface-file docs\localization\HELP_ENTRY_VISUAL_SURFACES_H01_H03.json `
+  --require-profile-surfaces-captured
+```
+
+H-01/H-02/H-03 должны быть открыты именно через Help-кнопки соответствующих
+runtime-форм. Прямое открытие `help.CHM` закрывает только H-04/L-12.

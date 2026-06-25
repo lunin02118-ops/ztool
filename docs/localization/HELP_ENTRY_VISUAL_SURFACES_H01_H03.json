@@ -1,0 +1,49 @@
+{
+  "schema": "swtools.help-entry-visual-surfaces.v1",
+  "version": "2026-06-25",
+  "forbidden_text": ["ZTool"],
+  "surfaces": [
+    {
+      "id": "H-01",
+      "title": "BOM template/export help entry",
+      "process": "hh.exe",
+      "window_contains": "SWTools",
+      "text_contains": [
+        "Создание шаблона спецификации BOM",
+        "Диспетчер имён"
+      ],
+      "required": true,
+      "han_policy": "fail",
+      "expected_route": "/advanced/bom-template.htm",
+      "notes": "Opened by the Help button in Frmexportbom."
+    },
+    {
+      "id": "H-02",
+      "title": "Thumbnail preview help entry",
+      "process": "hh.exe",
+      "window_contains": "SWTools",
+      "text_contains": [
+        "Показ эскизов",
+        "ALT+Z"
+      ],
+      "required": true,
+      "han_policy": "fail",
+      "expected_route": "/advanced/thumbnails.htm",
+      "notes": "Opened by the Help button in FrmPreview."
+    },
+    {
+      "id": "H-03",
+      "title": "Save to SolidWorks help entry",
+      "process": "hh.exe",
+      "window_contains": "SWTools",
+      "text_contains": [
+        "Сохранение данных в SolidWorks",
+        "Сохранить в SW"
+      ],
+      "required": true,
+      "han_policy": "fail",
+      "expected_route": "/basic/save-to-sw.htm",
+      "notes": "Opened by the Help button in FrmSaveOption."
+    }
+  ]
+}
