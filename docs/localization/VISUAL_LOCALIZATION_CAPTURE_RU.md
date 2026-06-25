@@ -82,6 +82,25 @@ python tools\e2e\assert_visual_localization_manifest.py `
   --require-runtime-match
 ```
 
+Для отдельных help entry points H-01..H-03 используется профиль:
+
+```powershell
+python scripts\swtools_visual_localization_capture.py `
+  --output-dir _local_artifacts\reports\help-entry-visual\H-01 `
+  --surface-file docs\localization\HELP_ENTRY_VISUAL_SURFACES_H01_H03.json `
+  --surface-id H-01
+
+python tools\e2e\assert_visual_localization_manifest.py `
+  _local_artifacts\reports\help-entry-visual\H-03\visual-localization-manifest.json `
+  --require-surface-file docs\localization\HELP_ENTRY_VISUAL_SURFACES_H01_H03.json `
+  --require-profile-surfaces-captured
+```
+
+Каждая surface должна быть получена после нажатия Help-кнопки соответствующей
+runtime-формы, а не прямым открытием `help.CHM`. Профиль требует уникальные
+русские marker-фразы страницы, поэтому случайно открытая другая тема справки не
+проходит strict validation.
+
 `--allow-warn` разрешает частичный evidence-пакет только если нет blocking Han и
 нет runtime mismatch. Глобальный `forbidden_text` в профиле L-01..L-15 сейчас
 запрещает visible `ZTool`: старый бренд в окне, help или installer является

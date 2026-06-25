@@ -20,6 +20,7 @@ on:
       - "SolidWorksTemplates/**"
       - "Шаблоны спецификации/**"
       - "tools/**"
+      - "docs/localization/*.json"
       - ".github/workflows/release-acceptance.yml"
   push:
     branches:
@@ -35,6 +36,7 @@ on:
       - "SolidWorksTemplates/**"
       - "Шаблоны спецификации/**"
       - "tools/**"
+      - "docs/localization/*.json"
       - ".github/workflows/release-acceptance.yml"
 
 jobs:
@@ -85,6 +87,13 @@ jobs:
 
       - name: String invariants - from-source source tree (client + add-in)
         run: python tools/check_source_string_invariants.py --root client-src --root client-src-addin
+
+      - name: Visual surface profile gate
+        run: |
+          python tools/e2e/check_visual_surface_profile.py --self-test
+          python tools/e2e/check_visual_surface_profile.py `
+            docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+            docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json
 
       - name: IPC handshake parity self-test (EXE <-> add-in)
         run: python tools/check_ipc_handshake_parity.py --self-test
