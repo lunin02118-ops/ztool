@@ -32,6 +32,24 @@ def assert_screenshot(surface_id: str, surface: dict) -> str | None:
     return None
 
 
+def assert_opener(surface_id: str, surface: dict) -> str | None:
+    opener = surface.get("opener")
+    if not isinstance(opener, dict):
+        return f"{surface_id}: object-driven opener evidence missing"
+    if opener.get("schema") != "swtools.visual-opener-profile.v1":
+        return f"{surface_id}: opener schema invalid: {opener.get('schema')!r}"
+    if opener.get("id") != surface_id:
+        return f"{surface_id}: opener id mismatch: {opener.get('id')!r}"
+    if opener.get("object_driven") is not True:
+        return f"{surface_id}: opener object_driven must be true"
+    if opener.get("coordinate_policy") != "forbid_screen_coordinates":
+        return f"{surface_id}: opener coordinate policy is not strict"
+    actions = opener.get("actions")
+    if not isinstance(actions, list) or not actions:
+        return f"{surface_id}: opener actions missing"
+    return None
+
+
 def load_surface_ids(path: Path) -> list[str]:
     data = json.loads(path.read_text(encoding="utf-8"))
     ids: list[str] = []
@@ -67,6 +85,11 @@ def main() -> int:
         "--fail-on-recorded-han",
         action="store_true",
         help="Also fail on record_only Han surfaces such as the host SolidWorks frame.",
+    )
+    parser.add_argument(
+        "--require-opener-evidence",
+        action="store_true",
+        help="Require every captured/required surface to include object-driven opener evidence.",
     )
     args = parser.parse_args()
 
@@ -114,6 +137,10 @@ def main() -> int:
         error = assert_screenshot(str(surface_id), surface)
         if error:
             return fail(error)
+        if args.require_opener_evidence:
+            error = assert_opener(str(surface_id), surface)
+            if error:
+                return fail(error)
         if args.require_runtime_match and surface.get("process") == "SWTools.exe":
             if surface.get("runtime_path_match") is not True:
                 return fail(f"{surface_id}: SWTools runtime path was not proven to match expected runtime")
@@ -133,6 +160,10 @@ def main() -> int:
         error = assert_screenshot(surface_id, surface)
         if error:
             return fail(error)
+        if args.require_opener_evidence:
+            error = assert_opener(surface_id, surface)
+            if error:
+                return fail(error)
 
     print(
         "Visual localization assertion PASS: "

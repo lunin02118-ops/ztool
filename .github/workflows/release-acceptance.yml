@@ -22,6 +22,9 @@ on:
       - "tools/**"
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
+      - "scripts/swtools_visual_localization_capture.py"
+      - "docs/localization/**"
+      - "manual-test-reports/visual-opener-harness-20260625/**"
       - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
   push:
@@ -40,6 +43,9 @@ on:
       - "tools/**"
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
+      - "scripts/swtools_visual_localization_capture.py"
+      - "docs/localization/**"
+      - "manual-test-reports/visual-opener-harness-20260625/**"
       - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
 
@@ -62,7 +68,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python deps
-        run: python -m pip install --quiet openpyxl
+        run: python -m pip install --quiet openpyxl pillow psutil pywinauto
 
       # --- Artifact (from-source) ---
       - name: Build from-source client (Release)
@@ -104,6 +110,21 @@ jobs:
 
       - name: Visible brand boundary gate
         run: python tools/check_visible_brand_boundary.py
+
+      - name: Visual surface profile self-test
+        run: python tools/e2e/check_visual_surface_profile.py --self-test
+
+      - name: Visual surface profile gate
+        run: python tools/e2e/check_visual_surface_profile.py docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json
+
+      - name: Visual opener profile self-test
+        run: python tools/e2e/check_visual_opener_profile.py --self-test
+
+      - name: Visual opener profile gate
+        run: python tools/e2e/check_visual_opener_profile.py docs/localization/VISUAL_LOCALIZATION_OPENERS_L01_L15.json --surface-file docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json
+
+      - name: Visual localization manifest assertion self-test
+        run: python tools/e2e/selftest_assert_visual_localization_manifest.py
 
       - name: IPC handshake parity self-test (EXE <-> add-in)
         run: python tools/check_ipc_handshake_parity.py --self-test

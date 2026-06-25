@@ -1,0 +1,326 @@
+{
+  "schema": "swtools.visual-opener-profile.v1",
+  "version": "2026-06-25",
+  "coordinate_policy": "forbid_screen_coordinates",
+  "surfaces": [
+    {
+      "id": "L-01",
+      "object_driven": true,
+      "preconditions": ["SolidWorks model is open", "S7 model-ready gate PASS"],
+      "capture_after": "SWTools main grid is populated after S7.",
+      "actions": [
+        {
+          "type": "e2e_stage",
+          "stage": "07-s7-connect",
+          "description": "Run object-based S7 connect stage and keep SWTools main window open."
+        }
+      ]
+    },
+    {
+      "id": "L-02",
+      "object_driven": true,
+      "preconditions": ["SWTools runtime is launched from expected runtime dir"],
+      "capture_after": "A license/trial/registration dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Open registration or missing-license dialog from the visible SWTools license flow.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text_any": ["Регистрация", "Лицензия", "Демо"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-03",
+      "object_driven": true,
+      "preconditions": ["S7 PASS", "Specification ribbon tab is active"],
+      "capture_after": "The BOM export drop-down menu with all export modes is expanded.",
+      "actions": [
+        {
+          "type": "ribbon_command",
+          "description": "Open Export BOM split-button/dropdown from the Specification ribbon.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Экспорт спецификации",
+            "expected_menu_text": ["Экспорт сводной спецификации", "Экспорт иерархической спецификации"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-04",
+      "object_driven": true,
+      "preconditions": ["S7 PASS", "Specification ribbon tab is active"],
+      "capture_after": "BOM scheme dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Configure BOM Scheme ribbon button.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Настроить схему спецификации"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for BOM scheme dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Настроить схему спецификации"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-05",
+      "object_driven": true,
+      "preconditions": ["S7 PASS", "Specification ribbon tab is active"],
+      "capture_after": "Column mapping dialog is open without duplicate-name modal.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Column Mapping ribbon button.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Сопоставление заголовков столбцов"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for column mapping dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Сопоставление заголовков столбцов"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-06",
+      "object_driven": true,
+      "preconditions": ["BOM scheme dialog is open"],
+      "capture_after": "User rule editor is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Create Rule link/button from BOM scheme dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Настроить схему спецификации",
+            "control_text": "Создать правило"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for user rule editor.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Пользовательское правило"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-07",
+      "object_driven": true,
+      "preconditions": ["SWTools main window is open"],
+      "capture_after": "Options dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Parameters/Options ribbon button.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Параметры"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for options dialog with General tab.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Параметры",
+            "text_contains": ["Общие"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-08",
+      "object_driven": true,
+      "preconditions": ["SWTools main window is open"],
+      "capture_after": "Save options dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke save/options flow from Save to SW command.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text_any": ["Сохранить в SW", "Параметры сохранения"]
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for save options dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Параметры сохранения"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-09",
+      "object_driven": true,
+      "preconditions": ["SWTools main window is open"],
+      "capture_after": "Filling dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Filling Column ribbon button.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Столбец заполнения"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for filling dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Столбец заполнения"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-10",
+      "object_driven": true,
+      "preconditions": ["SWTools main window is open"],
+      "capture_after": "Units dialog is open.",
+      "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Invoke Units ribbon button.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Единица"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for units dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Единица"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-11",
+      "object_driven": true,
+      "preconditions": ["SWTools main grid has at least one populated row"],
+      "capture_after": "Context menu is open on the grid/header and contains placeholder entries.",
+      "actions": [
+        {
+          "type": "context_menu",
+          "description": "Open context menu by grid/header UIA element, not by screen coordinate.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_type_any": ["DataGrid", "Table", "Header"],
+            "expected_menu_text": ["<Материал>"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-12",
+      "object_driven": true,
+      "preconditions": ["help_ru.chm exists in runtime"],
+      "capture_after": "Russian help window is open from runtime Help command.",
+      "actions": [
+        {
+          "type": "help_button",
+          "description": "Invoke Help command from SWTools UI and capture resulting help window.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Справка",
+            "expected_window_text": "SWTools"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-13",
+      "object_driven": true,
+      "preconditions": ["SolidWorks is open", "SWTools add-in is loaded"],
+      "capture_after": "SolidWorks CommandManager displays SWTools tab/buttons.",
+      "actions": [
+        {
+          "type": "solidworks_com",
+          "description": "Verify add-in object and active document through SolidWorks COM before capture.",
+          "locator": {
+            "process": "SLDWORKS.exe",
+            "addin_progid": "ZTool.SwAddin",
+            "expected_tab_text": "SWTools"
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-14",
+      "object_driven": true,
+      "preconditions": ["Installer candidate exists"],
+      "capture_after": "Installer UI is open on the first visible page.",
+      "actions": [
+        {
+          "type": "installer_launch",
+          "description": "Launch installer candidate and wait for setup window.",
+          "locator": {
+            "process_names": ["SWTools-Setup.exe", "SWTools-1.1.6-Setup.exe"],
+            "window_contains": "Установка",
+            "text_contains": ["SWTools"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "L-15",
+      "object_driven": true,
+      "preconditions": ["S7 PASS", "Main grid has material/color data"],
+      "capture_after": "Material/color UI or result surface is visible.",
+      "actions": [
+        {
+          "type": "ribbon_command",
+          "description": "Invoke material/color flow from object-located ribbon command.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text_any": ["Материал", "Случайная окраска"]
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait until material/color evidence text is visible in SWTools surface.",
+          "locator": {
+            "process": "SWTools.exe",
+            "text_contains": ["Материал"]
+          }
+        }
+      ]
+    }
+  ]
+}

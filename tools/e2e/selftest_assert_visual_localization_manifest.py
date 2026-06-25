@@ -141,6 +141,57 @@ def merge_capture_self_test(repo_root: Path, fixtures: Path, assert_script: Path
     return None
 
 
+def opener_evidence_self_test(assert_script: Path) -> str | None:
+    with tempfile.TemporaryDirectory(prefix="swtools-visual-opener-assert-") as tmp:
+        tmp_dir = Path(tmp)
+        screenshot = tmp_dir / "L-01.png"
+        try:
+            from PIL import Image
+        except Exception as exc:  # pragma: no cover - live dependency guard
+            return f"Cannot import PIL for visual opener self-test: {exc}"
+        Image.new("RGB", (2, 2), "white").save(screenshot)
+        manifest = tmp_dir / "no-opener.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "production_go_allowed": False,
+                    "surfaces": [
+                        {
+                            "id": "L-01",
+                            "status": "CAPTURED",
+                            "process": "SWTools.exe",
+                            "han_policy": "fail",
+                            "runtime_path_match": True,
+                            "visible_han_texts": [],
+                            "forbidden_texts": [],
+                            "screenshot": {
+                                "path": str(screenshot),
+                                "sha256": "fixture",
+                                "width": 2,
+                                "height": 2,
+                            },
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        return expect_fail(
+            [
+                sys.executable,
+                str(assert_script),
+                str(manifest),
+                "--require-surface",
+                "L-01",
+                "--require-opener-evidence",
+            ],
+            ["opener", "L-01"],
+        )
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     assert_script = repo_root / "tools" / "e2e" / "assert_visual_localization_manifest.py"
@@ -199,6 +250,10 @@ def main() -> int:
             print(error, file=sys.stderr)
             return 1
     error = merge_capture_self_test(repo_root, fixtures, assert_script)
+    if error:
+        print(error, file=sys.stderr)
+        return 1
+    error = opener_evidence_self_test(assert_script)
     if error:
         print(error, file=sys.stderr)
         return 1
