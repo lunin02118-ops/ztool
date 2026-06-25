@@ -24,6 +24,9 @@ namespace ZTool;
 [Guid("59959DFA-3229-4B86-852E-52ABF2BDB8C0")]
 public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 {
+	[DllImport("user32.dll")]
+	private static extern bool IsWindow(IntPtr hWnd);
+
 	private enum Type_35
 	{
 		swMenuItem = 1,
@@ -262,11 +265,16 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 
 	private bool EnsurePMP()
 	{
-		if (Information.IsNothing(f_377) || f_377.IsDisposed)
+		bool flag = Information.IsNothing(f_377) || f_377.IsDisposed || !f_377.IsHandleCreated || !IsWindow(f_377.Handle);
+		if (flag)
 		{
+			if (!Information.IsNothing(f_377) && !f_377.IsDisposed)
+			{
+				f_377.Dispose();
+			}
 			AddPMP();
 		}
-		return !Information.IsNothing(f_377) && !f_377.IsDisposed;
+		return !Information.IsNothing(f_377) && !f_377.IsDisposed && f_377.IsHandleCreated && IsWindow(f_377.Handle);
 	}
 
 	public bool RemovePMP()
@@ -794,17 +802,7 @@ public class SwAddin : SolidWorks.Interop.swpublished.SwAddin
 					using Process process = Process.Start(processStartInfo);
 					try
 					{
-						int num3 = 0;
-						while (process.MainWindowHandle == (IntPtr)0 && !process.HasExited)
-						{
-							Thread.Sleep(500);
-							num3 += 500;
-							if (num3 > 10000)
-							{
-								MessageBox.Show("Тайм-аут соединения", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-								break;
-							}
-						}
+						process?.WaitForInputIdle(3000);
 						return;
 					}
 					catch (Exception ex)
