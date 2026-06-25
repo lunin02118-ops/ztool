@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -21,6 +22,17 @@ namespace ZTool;
 [DesignerGenerated]
 public class PMPHandler : Form
 {
+	private const int WM_COPYDATA = 74;
+
+	private const int SMTO_ABORTIFHUNG = 2;
+
+	private const int PingTimeoutMs = 1000;
+
+	private const int MessageTimeoutMs = 5000;
+
+	[DllImport("user32.dll", SetLastError = true)]
+	private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int msg, IntPtr wParam, ref Type_16.Type_17 lParam, int flags, int timeout, out IntPtr result);
+
 	static PMPHandler()
 	{
 		AppDomain.CurrentDomain.AssemblyResolve += ResolveAddinDependency;
@@ -469,13 +481,26 @@ public class PMPHandler : Form
 
 	public int sendmessageC(int @int, string s)
 	{
+		if (f_207 == IntPtr.Zero || !Type_16.m_49(f_207))
+		{
+			f_207 = IntPtr.Zero;
+			return 0;
+		}
 		s = s.Trim();
 		Type_16.Type_17 type_ = default(Type_16.Type_17);
 		ref IntPtr f_ = ref type_.f_65;
 		f_ = new IntPtr(@int);
 		type_.f_66 = checked(Encoding.Unicode.GetBytes(s).Length + 1);
 		type_.f_67 = s;
-		return Type_16.m_47((int)f_207, 74, 0, ref type_);
+		int timeout = ((@int == 1000) ? PingTimeoutMs : MessageTimeoutMs);
+		IntPtr result;
+		IntPtr sendResult = SendMessageTimeout(f_207, WM_COPYDATA, IntPtr.Zero, ref type_, SMTO_ABORTIFHUNG, timeout, out result);
+		if (sendResult == IntPtr.Zero)
+		{
+			f_207 = IntPtr.Zero;
+			return 0;
+		}
+		return result.ToInt32();
 	}
 
 	public void GetDataByBom()
