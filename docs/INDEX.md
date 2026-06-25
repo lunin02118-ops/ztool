@@ -56,6 +56,7 @@
 | [`testing/E2E_S7_MODEL_READY_RU.md`](testing/E2E_S7_MODEL_READY_RU.md) | Model-ready gate перед `openZtool(0)`: transient loading dialog SolidWorks не закрывается, а пережидается с JSON evidence | актуален |
 | [`testing/E2E_S8_BOM_AUTOMATION_RU.md`](testing/E2E_S8_BOM_AUTOMATION_RU.md) | Методика live S8: BOM 1-8, SaveFileDialog, semantic Excel validation | актуален |
 | [`testing/E2E_BRANDING_VERSION_AUTOMATION_RU.md`](testing/E2E_BRANDING_VERSION_AUTOMATION_RU.md) | Методика live branding/version gate: runtime path, title, version metadata, live/embedded icons | актуален |
+| [`testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md`](testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md) | Self-hosted SolidWorks release E2E workflow: source build, S7/S8 strict, branding, visual manifest gate | актуален |
 | [`../scripts/prepare_s8_strict_fixture.py`](../scripts/prepare_s8_strict_fixture.py) | Подготовка копии RU strict fixture для S8 режимов 7/8 без изменения tracked `TestModel` | актуален |
 | [`release/RELEASE_VERSIONING_RU.md`](release/RELEASE_VERSIONING_RU.md) | Версионность релизов, `VERSION`, структура `releases/<version>` | актуален |
 | [`release/SIGNING_POLICY_RU.md`](release/SIGNING_POLICY_RU.md) | Sprint N signing policy: `-AllowUnsigned` только CI evidence, production требует подпись или exception | актуален |
