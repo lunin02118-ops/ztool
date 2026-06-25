@@ -31,9 +31,15 @@ python scripts\swtools_visual_localization_capture.py `
 python scripts\swtools_visual_localization_capture.py `
   --output-dir _local_artifacts\reports\localization-visual-full-YYYYMMDD-HHMM `
   --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --opener-file docs\localization\VISUAL_LOCALIZATION_OPENERS_L01_L15.json `
   --expected-runtime-dir <runtime-dir> `
   --require-all-captured
 ```
+
+`VISUAL_LOCALIZATION_OPENERS_L01_L15.json` фиксирует object-driven способ
+открытия каждого кадра. В нём запрещены координатные клики и любые
+screen-coordinate поля. Если поведение расходится с ожидаемым, сначала
+сверяется opener contract и фактический UI путь, а не подбираются координаты.
 
 Если окна нельзя держать открытыми одновременно (обычные modal WinForms
 диалоги), кадры собираются накопительно. Сначала снимается первая открытая
@@ -43,12 +49,14 @@ surface, затем следующий прогон мержится в пред
 python scripts\swtools_visual_localization_capture.py `
   --output-dir _local_artifacts\reports\localization-visual-full\L-04 `
   --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --opener-file docs\localization\VISUAL_LOCALIZATION_OPENERS_L01_L15.json `
   --surface-id L-04 `
   --expected-runtime-dir <runtime-dir>
 
 python scripts\swtools_visual_localization_capture.py `
   --output-dir _local_artifacts\reports\localization-visual-full\L-05 `
   --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
+  --opener-file docs\localization\VISUAL_LOCALIZATION_OPENERS_L01_L15.json `
   --surface-id L-05 `
   --merge-manifest _local_artifacts\reports\localization-visual-full\L-04\visual-localization-manifest.json `
   --expected-runtime-dir <runtime-dir>
@@ -79,7 +87,8 @@ python tools\e2e\assert_visual_localization_manifest.py `
   --allow-warn `
   --require-surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
   --require-profile-surfaces-captured `
-  --require-runtime-match
+  --require-runtime-match `
+  --require-opener-evidence
 ```
 
 Для отдельных help entry points H-01..H-03 используется профиль:
@@ -137,6 +146,7 @@ curated summary/report без больших картинок и без прив
 - Manifest имеет `production_go_allowed=true`.
 - Для release evidence: обязательная surface отсутствует.
 - Для full L-01..L-15 evidence: профильный кадр отсутствует или не `CAPTURED`.
+- Для full L-01..L-15 evidence: отсутствует object-driven opener evidence.
 
 ## What this does not prove
 

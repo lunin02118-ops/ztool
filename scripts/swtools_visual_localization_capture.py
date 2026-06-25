@@ -252,7 +252,34 @@ def load_surfaces(path: Path | None) -> list[Surface]:
     return surfaces
 
 
-def missing_item(surface: Surface) -> dict[str, Any]:
+def load_openers(path: Path | None) -> dict[str, dict[str, Any]]:
+    if path is None:
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    result: dict[str, dict[str, Any]] = {}
+    for item in data.get("surfaces", []):
+        surface_id = str(item.get("id", "")).strip()
+        if surface_id:
+            result[surface_id] = item
+    return result
+
+
+def opener_for(surface: Surface, openers: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    opener = openers.get(surface.surface_id)
+    if not opener:
+        return None
+    return {
+        "schema": "swtools.visual-opener-profile.v1",
+        "id": opener.get("id"),
+        "object_driven": opener.get("object_driven"),
+        "coordinate_policy": "forbid_screen_coordinates",
+        "capture_after": opener.get("capture_after"),
+        "preconditions": opener.get("preconditions", []),
+        "actions": opener.get("actions", []),
+    }
+
+
+def missing_item(surface: Surface, openers: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     return {
         "id": surface.surface_id,
         "title": surface.title,
@@ -266,10 +293,11 @@ def missing_item(surface: Surface) -> dict[str, Any]:
         "han_policy": surface.han_policy,
         "status": "MISSING",
         "error": "matching top-level window not found",
+        "opener": opener_for(surface, openers or {}),
     }
 
 
-def profile_item(surface: Surface) -> dict[str, Any]:
+def profile_item(surface: Surface, openers: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     return {
         "id": surface.surface_id,
         "title": surface.title,
@@ -281,6 +309,7 @@ def profile_item(surface: Surface) -> dict[str, Any]:
         "required": surface.required,
         "notes": surface.notes,
         "han_policy": surface.han_policy,
+        "opener": opener_for(surface, openers or {}),
     }
 
 
@@ -289,6 +318,7 @@ def merge_previous_items(
     captured_items: list[dict[str, Any]],
     previous_manifest: Path | None,
     expected_runtime_dir: Path | None,
+    openers: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     warnings: list[str] = []
     by_id: dict[str, dict[str, Any]] = {}
@@ -321,8 +351,8 @@ def merge_previous_items(
 
     merged: list[dict[str, Any]] = []
     for surface in profile_surfaces:
-        item = dict(by_id.get(surface.surface_id, missing_item(surface)))
-        item.update({key: value for key, value in profile_item(surface).items() if key not in item})
+        item = dict(by_id.get(surface.surface_id, missing_item(surface, openers)))
+        item.update({key: value for key, value in profile_item(surface, openers).items() if key not in item})
         merged.append(item)
     return merged, warnings
 
@@ -365,6 +395,11 @@ def run() -> int:
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--surface-file", type=Path)
     parser.add_argument(
+        "--opener-file",
+        type=Path,
+        help="Attach object-driven opener contract evidence for every captured/profile surface.",
+    )
+    parser.add_argument(
         "--surface-id",
         action="append",
         dest="surface_ids",
@@ -392,6 +427,7 @@ def run() -> int:
     expected_runtime_dir = args.expected_runtime_dir.resolve() if args.expected_runtime_dir else None
     output_dir.mkdir(parents=True, exist_ok=True)
     surfaces = load_surfaces(args.surface_file)
+    openers = load_openers(args.opener_file)
     surface_ids = set(args.surface_ids or [])
     if surface_ids:
         known_ids = {surface.surface_id for surface in surfaces}
@@ -404,10 +440,10 @@ def run() -> int:
 
     captured_items: list[dict[str, Any]] = []
     for surface in capture_surfaces:
-        item: dict[str, Any] = profile_item(surface)
+        item: dict[str, Any] = profile_item(surface, openers)
         win = find_window(surface)
         if win is None:
-            captured_items.append(missing_item(surface))
+            captured_items.append(missing_item(surface, openers))
             continue
         pid = window_process_id(win)
         title = win.window_text().strip()
@@ -448,6 +484,7 @@ def run() -> int:
             captured_items,
             args.merge_manifest.resolve(),
             expected_runtime_dir,
+            openers,
         )
     else:
         items = captured_items
