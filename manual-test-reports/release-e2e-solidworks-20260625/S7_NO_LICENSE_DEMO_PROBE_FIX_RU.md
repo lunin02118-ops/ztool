@@ -75,12 +75,41 @@ WinForms forms/dialogs), где действительно может быть l
 python -m py_compile scripts\swtools_s7_live_smoke.py
 ```
 
-Следующий clean release E2E должен запускаться уже из clean commit, потому что
-`verify_release_package.ps1` справедливо блокирует `manifest git.dirty=true`.
+После commit/amend выполнен clean release E2E:
+
+```text
+D:\SWToolsE2E\release-e2e-20260625-231119
+```
+
+Результат:
+
+- wrapper status: `PASS`;
+- `production_go_allowed=false`;
+- dirty manifest: `false`;
+- S7: `PASS`, `29` строк, `40` колонок;
+- S8: `PASS`, `8/8`;
+- strict BOM filters: `PASS`;
+- branding/version/icon: `PASS`;
+- runtime title: `SWTools 1.1.6+12e0ea2.clean(x64)`.
+
+Фактический S7 evidence:
+
+```text
+D:\SWToolsE2E\release-e2e-20260625-231119\s7-live-smoke\s7-live-smoke-result.json
+```
+
+В нём зафиксировано:
+
+- `license_dialog.found=true`;
+- `license_dialog.dismissed=true`;
+- `license_dialog.button=Демо`;
+- `connect_invoke.result.attempts[0].action=invoke`;
+- `status_text=Подключение завершено, затрачено 0,3 сек, всего 29 поз.`;
+- `row_count=29`;
+- `column_count=40`.
 
 ## Остаточный риск
 
-- Нужно повторить clean release E2E после commit.
-- Затем выполнить H-01..H-03 / L-01..L-15 visual capture из clean runtime path.
+- Нужно выполнить H-01..H-03 / L-01..L-15 visual capture из clean runtime path.
 - Production GO остаётся `NO-GO` до visual FULL PASS, signing, final dossier,
   accepted hashes и owner GO.

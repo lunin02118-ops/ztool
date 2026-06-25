@@ -9,6 +9,7 @@ or control through process/title/text metadata from the opener profile.
 from __future__ import annotations
 
 import argparse
+import ctypes
 import importlib
 import json
 import subprocess
@@ -30,6 +31,10 @@ psutil = require_module("psutil")
 pywinauto = require_module("pywinauto")
 Desktop = pywinauto.Desktop
 keyboard = require_module("pywinauto.keyboard")
+
+WM_LBUTTONDOWN = 0x0201
+WM_LBUTTONUP = 0x0202
+MK_LBUTTON = 0x0001
 
 
 def norm(text: str) -> str:
@@ -86,6 +91,35 @@ def window_handle(win: Any) -> int | None:
         return handle if handle else None
     except Exception:
         return None
+
+
+def control_handle(control: Any) -> int | None:
+    try:
+        handle = int(control.handle)
+        return handle if handle else None
+    except Exception:
+        return None
+
+
+def win32_message_click(control: Any) -> bool:
+    """Click an object-located WinForms control by HWND, not screen coords."""
+    handle = control_handle(control)
+    if handle is None:
+        return False
+    try:
+        rect = control.rectangle()
+        width = max(1, int(rect.width()))
+        height = max(1, int(rect.height()))
+    except Exception:
+        width = 8
+        height = 8
+    x = max(1, min(width - 1, width // 2))
+    y = max(1, min(height - 1, height // 2))
+    lparam = (y << 16) | (x & 0xFFFF)
+    user32 = ctypes.windll.user32
+    user32.SendMessageW(handle, WM_LBUTTONDOWN, MK_LBUTTON, lparam)
+    user32.SendMessageW(handle, WM_LBUTTONUP, 0, lparam)
+    return True
 
 
 def backend_peers(win: Any) -> list[Any]:
@@ -274,6 +308,8 @@ def invoke_control(control: Any, prefer_expand: bool = False) -> str:
             return action
         except Exception as exc:
             errors.append(f"{action}: {exc}")
+    if win32_message_click(control):
+        return "win32_message_click"
     raise RuntimeError(f"Control cannot be invoked without coordinate click: {'; '.join(errors)}")
 
 
