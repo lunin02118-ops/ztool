@@ -140,7 +140,8 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "Настроить схему спецификации",
-            "control_text": "Создать правило"
+            "control_text": "Создать правило",
+            "control_key_activate": "{ENTER}"
           }
         },
         {

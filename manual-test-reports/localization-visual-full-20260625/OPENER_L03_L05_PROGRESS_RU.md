@@ -1,4 +1,4 @@
-# Visual opener progress: L-03/L-04/L-05
+# Visual opener progress: L-03/L-04/L-05/L-06
 
 Дата: 2026-06-25
 
@@ -47,10 +47,15 @@ class: WindowsForms10.STATIC...
 type: System.Windows.Forms.LinkLabel
 ```
 
-У такого элемента нет UIA Invoke/Expand/Select и нет IAccessible default action.
-Runner теперь умеет fallback `win32_message_click`: control находится по
-process/window/text/class, после чего мышиные сообщения отправляются в его HWND,
-без экранных координат. Это всё ещё object-located действие, не screen coordinate click.
+Сверка с текущим decompiled/source flow подтвердила старую рабочую логику:
+`Frmexportbom.LinkLabel1_LinkClicked` сразу открывает `FrmFilterrules`; промежуточного
+prompt здесь быть не должно. У такого `LinkLabel` нет UIA Invoke/Expand/Select и
+нет IAccessible default action; прямой `WM_LBUTTONDOWN/UP` по HWND тоже не вызывает
+managed `LinkClicked`.
+
+Runner теперь поддерживает object-located keyboard activation: control находится по
+process/window/text/class, получает фокус, затем отправляется `{ENTER}`. Это не
+screen coordinate click и соответствует живому WinForms-поведению LinkLabel.
 
 ## Live evidence
 
@@ -102,37 +107,31 @@ D:\SWToolsE2E\visual-capture-20260625-232610-L05
 - visible Han: none;
 - runtime path match: true.
 
-## Remaining blocker
-
 ### L-06 user rule editor
 
-Attempt:
+Успешный прогон после фикса:
 
 ```text
-D:\SWToolsE2E\visual-capture-20260625-233049-L04-L06
+D:\SWToolsE2E\visual-capture-20260626-000705-L04-L06-key
 ```
 
 Результат:
 
-- L-04 captured again: `PASS`;
-- L-06: `FAIL`;
-- after clicking `Создать правило`, expected window
-  `Пользовательское правило` did not appear.
+- opener: `PASS`;
+- action: `Создать правило` activated via `keyboard:{ENTER}` after object lookup;
+- dialog: `Пользовательское правило`;
+- manifest assertion: `PASS_WITH_WARN` because only L-06 is required in this
+  partial run;
+- screenshot: `L-06-User-rule-editor.png`;
+- visible legacy brand token: none;
+- visible Han: none;
+- runtime path match: true;
+- screenshot SHA256: `09D64344363F746CD96C3FCA0391061916094430B4273037051E5B36862CF2B9`.
 
-Наблюдение:
+## Remaining blocker
 
-- WinForms exposes `Создать правило` as LinkLabel/static control;
-- object-located `win32_message_click` is now implemented, but current live flow
-  still does not reach the rule editor;
-- no coordinate click was used or counted as evidence.
-
-Следующий шаг:
-
-1. Сверить фактический old/CN рабочий flow L-06: возможно, `Создать правило`
-   сначала должен открыть prompt for rule name, then editor.
-2. Зафиксировать that two-step flow in opener profile, or add a dedicated
-   object-driven action for the intermediate prompt.
-3. Повторить L-06 capture.
+L-06 automation blocker is closed. Full visual FULL PASS is still not claimed:
+L-02 and L-07..L-15 need separate live capture/evidence and owner/auditor review.
 
 ## Проверки
 
@@ -141,6 +140,7 @@ python -m py_compile scripts\swtools_visual_opener_capture.py
 python scripts\swtools_visual_opener_capture.py --self-test
 python tools\e2e\check_visual_opener_profile.py docs\localization\VISUAL_LOCALIZATION_OPENERS_L01_L15.json --surface-file docs\localization\VISUAL_LOCALIZATION_SURFACES_L01_L15.json
 python tools\e2e\assert_visual_localization_manifest.py D:\SWToolsE2E\visual-capture-20260625-232148-L03-retry\L-03\visual-localization-manifest.json --allow-warn --require-surface L-03 --require-runtime-match --require-opener-evidence
+python tools\e2e\assert_visual_localization_manifest.py D:\SWToolsE2E\visual-capture-20260626-000705-L04-L06-key\L-06\visual-localization-manifest.json --allow-warn --require-surface L-06 --require-runtime-match --require-opener-evidence
 ```
 
 Результат: `PASS`.
@@ -151,7 +151,8 @@ python tools\e2e\assert_visual_localization_manifest.py D:\SWToolsE2E\visual-cap
 
 - S7 live release E2E снова стабильно проходит;
 - L-03/L-04/L-05 теперь открываются object-driven, без зависимости от активной вкладки;
+- L-06 теперь открывается object-driven через WinForms LinkLabel focus + Enter;
 - `Сопоставление заголовков столбцов` больше не падает на duplicate-name modal в этом сценарии.
 
-Полный visual FULL PASS ещё не заявляется: L-06 и оставшиеся поверхности L-02,
+Полный visual FULL PASS ещё не заявляется: L-02 и оставшиеся поверхности
 L-07..L-15 требуют отдельного live evidence.

@@ -101,7 +101,19 @@ def control_handle(control: Any) -> int | None:
         return None
 
 
-def win32_message_click(control: Any) -> bool:
+def control_click_point(width: int, height: int, locator: dict[str, Any] | None = None) -> tuple[int, int]:
+    locator = locator or {}
+    anchor = norm(str(locator.get("control_click_anchor", ""))).lower()
+    if anchor == "left_text":
+        margin = int(locator.get("control_click_margin", 8) or 8)
+        x = max(1, min(width - 1, margin))
+    else:
+        x = max(1, min(width - 1, width // 2))
+    y = max(1, min(height - 1, height // 2))
+    return x, y
+
+
+def win32_message_click(control: Any, locator: dict[str, Any] | None = None) -> bool:
     """Click an object-located WinForms control by HWND, not screen coords."""
     handle = control_handle(control)
     if handle is None:
@@ -113,8 +125,7 @@ def win32_message_click(control: Any) -> bool:
     except Exception:
         width = 8
         height = 8
-    x = max(1, min(width - 1, width // 2))
-    y = max(1, min(height - 1, height // 2))
+    x, y = control_click_point(width, height, locator)
     lparam = (y << 16) | (x & 0xFFFF)
     user32 = ctypes.windll.user32
     user32.SendMessageW(handle, WM_LBUTTONDOWN, MK_LBUTTON, lparam)
@@ -134,6 +145,20 @@ def backend_peers(win: Any) -> list[Any]:
             continue
         peers.append(peer)
     return peers
+
+
+def control_search_roots(win: Any, locator: dict[str, Any]) -> list[Any]:
+    handle = window_handle(win)
+    if handle is None or not locator.get("control_click_anchor"):
+        return backend_peers(win)
+    roots: list[Any] = []
+    for backend in ("win32", "uia"):
+        try:
+            roots.append(Desktop(backend=backend).window(handle=handle))
+        except Exception:
+            continue
+    roots.append(win)
+    return roots
 
 
 def visible_texts(win: Any, limit: int = 400) -> list[str]:
@@ -265,36 +290,47 @@ def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
     deadline = time.time() + timeout
     seen: list[str] = []
     while time.time() < deadline:
-        try:
-            descendants = root.descendants()
-        except Exception:
-            descendants = []
-        for child in descendants:
+        for peer in control_search_roots(root, locator):
             try:
-                text = norm(child.window_text())
+                descendants = peer.descendants()
             except Exception:
-                continue
-            if text:
-                seen.append(text)
-            if wanted_texts and text not in wanted_texts:
-                continue
-            if not wanted_texts and not control_type_matches(child, locator):
-                continue
-            if wanted_texts and not control_type_matches(child, locator):
-                continue
-            return child
+                descendants = []
+            for child in descendants:
+                try:
+                    text = norm(child.window_text())
+                except Exception:
+                    continue
+                if text:
+                    seen.append(text)
+                if wanted_texts and text not in wanted_texts:
+                    continue
+                if not wanted_texts and not control_type_matches(child, locator):
+                    continue
+                if wanted_texts and not control_type_matches(child, locator):
+                    continue
+                if locator.get("control_click_anchor") and control_handle(child) is None:
+                    continue
+                return child
         time.sleep(0.2)
     sample = ", ".join(sorted(set(seen))[:60])
     raise RuntimeError(f"Control not found for locator {locator!r}; seen: {sample}")
 
 
-def invoke_control(control: Any, prefer_expand: bool = False) -> str:
+def invoke_control(control: Any, prefer_expand: bool = False, locator: dict[str, Any] | None = None) -> str:
     actions = ("expand", "invoke", "legacy", "select") if prefer_expand else ("invoke", "expand", "legacy", "select")
     errors: list[str] = []
     try:
         control.set_focus()
     except Exception:
         pass
+    key_activate = norm(str((locator or {}).get("control_key_activate", "")))
+    if key_activate:
+        keyboard.send_keys(key_activate)
+        return f"keyboard:{key_activate}"
+    if locator and locator.get("control_click_anchor"):
+        if win32_message_click(control, locator):
+            return f"win32_message_click:{locator.get('control_click_anchor')}"
+        errors.append("win32_message_click: no HWND")
     for action in actions:
         try:
             if action == "invoke":
@@ -308,7 +344,7 @@ def invoke_control(control: Any, prefer_expand: bool = False) -> str:
             return action
         except Exception as exc:
             errors.append(f"{action}: {exc}")
-    if win32_message_click(control):
+    if win32_message_click(control, locator):
         return "win32_message_click"
     raise RuntimeError(f"Control cannot be invoked without coordinate click: {'; '.join(errors)}")
 
@@ -387,7 +423,7 @@ def execute_action(action: dict[str, Any], timeout: float, installer_path: Path 
     if action_type in {"uia_invoke", "win32_invoke", "ribbon_command", "help_button", "menu_item"}:
         win = wait_window(locator, timeout)
         control = find_control(win, locator, timeout)
-        used_action = invoke_control(control, prefer_expand=action_type == "ribbon_command")
+        used_action = invoke_control(control, prefer_expand=action_type == "ribbon_command", locator=locator)
         evidence.update(
             {
                 "status": "PASS",
@@ -468,6 +504,9 @@ def selected_openers(opener_file: Path, requested_ids: list[str] | None) -> list
 
 
 def self_test() -> int:
+    assert control_click_point(120, 20, {}) == (60, 10)
+    assert control_click_point(120, 20, {"control_click_anchor": "left_text"}) == (8, 10)
+    assert control_click_point(5, 3, {"control_click_anchor": "left_text", "control_click_margin": 20}) == (4, 1)
     action = {"type": "e2e_stage", "stage": "07-s7-connect", "description": "external stage"}
     evidence = execute_action(action, timeout=0.1)
     assert evidence["status"] == "PASS"
