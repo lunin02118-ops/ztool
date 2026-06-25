@@ -24,6 +24,7 @@ on:
       - "installer/**"
       - "scripts/build_release_package.ps1"
       - "scripts/build_client_installer.ps1"
+      - "scripts/resolve_release_inputs.ps1"
       - "scripts/verify_release_package.ps1"
       - "scripts/verify_authenticode.ps1"
       - "scripts/check_expected_release_hashes.ps1"
@@ -59,6 +60,7 @@ on:
       - "installer/**"
       - "scripts/build_release_package.ps1"
       - "scripts/build_client_installer.ps1"
+      - "scripts/resolve_release_inputs.ps1"
       - "scripts/verify_release_package.ps1"
       - "scripts/verify_authenticode.ps1"
       - "scripts/check_expected_release_hashes.ps1"
@@ -96,12 +98,32 @@ jobs:
           pwsh -NoProfile -File scripts/check_expected_release_hashes.ps1 `
             -ReportPath (Join-Path $evidenceDir "expected-release-hashes.json")
 
+      - name: Resolve source-built release inputs
+        run: |
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "release-hardening-evidence"
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          $reportPath = Join-Path $evidenceDir "release-inputs.json"
+          pwsh -NoProfile -File scripts/resolve_release_inputs.ps1 `
+            -OutputPath $reportPath
+          $inputs = Get-Content -LiteralPath $reportPath -Encoding UTF8 -Raw | ConvertFrom-Json
+          if ($inputs.input_mode -ne "source-build-output") {
+            throw "Unexpected release input mode: $($inputs.input_mode)"
+          }
+          "RELEASE_CLIENT_EXE=$($inputs.client_exe.path)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_ADDIN_DLL=$($inputs.addin_dll.path)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Build dry-run release package
         run: |
           $version = (Get-Content VERSION -Raw).Trim()
           $outputRoot = Join-Path $env:RUNNER_TEMP "swtools-release-package"
-          $clientExe = (Resolve-Path "client-src/bin/Release/net48/ZTool.exe").Path
-          $addinDll = (Resolve-Path "client-src-addin/bin/Release/net48/ZTool.dll").Path
+          $clientExe = $env:RELEASE_CLIENT_EXE
+          $addinDll = $env:RELEASE_ADDIN_DLL
+          if (-not (Test-Path -LiteralPath $clientExe -PathType Leaf)) {
+            throw "Resolved client exe missing: $clientExe"
+          }
+          if (-not (Test-Path -LiteralPath $addinDll -PathType Leaf)) {
+            throw "Resolved add-in dll missing: $addinDll"
+          }
           pwsh -NoProfile -File scripts/build_release_package.ps1 `
             -Version $version `
             -OutputRoot $outputRoot `
