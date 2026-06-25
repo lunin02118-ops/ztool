@@ -67,7 +67,7 @@ D:\SWToolsE2E\visual-capture-20260625-232148-L03-retry
 - action: `Экспорт спецификации` expanded;
 - manifest assertion: `PASS`;
 - screenshot: `L-03-BOM-export-menu.png`;
-- visible `ZTool`: none;
+- visible legacy brand token: none;
 - visible Han: none;
 - runtime path match: true.
 
@@ -82,7 +82,7 @@ D:\SWToolsE2E\visual-capture-20260625-232610-L04
 - opener: `PASS`;
 - dialog: `Настроить схему спецификации`;
 - screenshot: `L-04-BOM-scheme-dialog.png`;
-- visible `ZTool`: none;
+- visible legacy brand token: none;
 - visible Han: none;
 - runtime path match: true.
 
@@ -98,7 +98,7 @@ D:\SWToolsE2E\visual-capture-20260625-232610-L05
 - dialog: `Сопоставление заголовков столбцов`;
 - duplicate-name modal: not present;
 - screenshot: `L-05-Column-mapping-dialog.png`;
-- visible `ZTool`: none;
+- visible legacy brand token: none;
 - visible Han: none;
 - runtime path match: true.
 
