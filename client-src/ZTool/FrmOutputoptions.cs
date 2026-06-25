@@ -4039,6 +4039,170 @@ public class FrmOutputoptions : Form
 		TabControl tabControl = TabControl1;
 		Size itemSize = checked(new Size((int)Math.Round(60.0 * dpixRatio), (int)Math.Round(22.0 * dpixRatio)));
 		tabControl.ItemSize = itemSize;
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return checked((int)Math.Round((double)value * dpixRatio));
+	}
+
+	private static void AnchorStretch(Control control)
+	{
+		control.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			FormBorderStyle = FormBorderStyle.Sizable;
+			MaximizeBox = true;
+			MinimumSize = new Size(Dpi(720), Dpi(560));
+			SizeGripStyle = SizeGripStyle.Show;
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(720)), Math.Max(ClientSize.Height, Dpi(540)));
+			TabControl1.Dock = DockStyle.None;
+			TabControl1.Location = new Point(Dpi(12), Dpi(8));
+			TabControl1.Size = new Size(ClientSize.Width - Dpi(24), ClientSize.Height - Dpi(64));
+			TabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			TableLayoutPanel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			TableLayoutPanel1.Location = new Point(ClientSize.Width - TableLayoutPanel1.Width - Dpi(12), ClientSize.Height - TableLayoutPanel1.Height - Dpi(12));
+			foreach (TabPage tabPage in TabControl1.TabPages)
+			{
+				tabPage.AutoScroll = true;
+				tabPage.Padding = new Padding(Dpi(8));
+			}
+			ConfigurePathTabLayout();
+			ConfigureFormatTabLayout();
+			ConfigureOutputParametersTabLayout();
+			ConfigureOtherTabLayout();
+			ConfigureWatermarkTabLayout();
+		}
+		finally
+		{
+			ResumeLayout(performLayout: true);
+		}
+	}
+
+	private void ConfigurePathTabLayout()
+	{
+		int contentWidth = Math.Max(Dpi(640), TabPage1.ClientSize.Width - Dpi(32));
+		GroupBox1.Location = new Point(Dpi(16), Dpi(12));
+		GroupBox1.Size = new Size(contentWidth, Dpi(116));
+		AnchorStretch(GroupBox1);
+		folder.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		folder.Location = new Point(Dpi(36), Dpi(68));
+		folder.Size = new Size(GroupBox1.Width - Dpi(132), folder.Height);
+		Browse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+		Browse.Location = new Point(GroupBox1.Width - Browse.Width - Dpi(16), Dpi(66));
+		GroupBox9.Location = new Point(Dpi(16), Dpi(140));
+		GroupBox9.Size = new Size(contentWidth, Dpi(180));
+		AnchorStretch(GroupBox9);
+	}
+
+	private void ConfigureFormatTabLayout()
+	{
+		int contentWidth = Math.Max(Dpi(640), TabPage2.ClientSize.Width - Dpi(32));
+		Out2D_type.Location = new Point(Dpi(16), Dpi(12));
+		Out2D_type.Size = new Size(contentWidth, Dpi(84));
+		AnchorStretch(Out2D_type);
+		OUT_DWG.Location = new Point(Dpi(20), Dpi(28));
+		OUT_DXF.Location = new Point(Dpi(100), Dpi(28));
+		OUT_PDF.Location = new Point(Dpi(180), Dpi(28));
+		OUT_DetachedDraw.Location = new Point(Dpi(260), Dpi(28));
+		OUT_PNG.Location = new Point(Dpi(20), Dpi(58));
+		OUT_JPG.Location = new Point(Dpi(100), Dpi(58));
+		CheckBox6.Location = new Point(Dpi(180), Dpi(58));
+		Out3D_type.Location = new Point(Dpi(16), Dpi(108));
+		Out3D_type.Size = new Size(contentWidth, Dpi(148));
+		AnchorStretch(Out3D_type);
+		OUT_STEP.Location = new Point(Dpi(20), Dpi(28));
+		CheckBox5.Location = new Point(Dpi(220), Dpi(28));
+		OUT_IGS.Location = new Point(Dpi(440), Dpi(28));
+		CheckBox3.Location = new Point(Dpi(20), Dpi(58));
+		CheckBox4.Location = new Point(Dpi(220), Dpi(58));
+		CheckBox1.Location = new Point(Dpi(440), Dpi(58));
+		CheckBox2.Location = new Point(Dpi(20), Dpi(88));
+		OUT_3DPDF.Location = new Point(Dpi(220), Dpi(88));
+		OUT_JPG2.Location = new Point(Dpi(440), Dpi(88));
+		OUT_PNG2.Location = new Point(Dpi(20), Dpi(118));
+		CheckBox7.Location = new Point(Dpi(440), Dpi(118));
+		GroupBox5.Location = new Point(Dpi(16), Dpi(270));
+		GroupBox5.Size = new Size(contentWidth, Dpi(152));
+		AnchorStretch(GroupBox5);
+		exclude_IsDerived.Location = new Point(Dpi(20), Dpi(28));
+		exclude_SpeedPak.Location = new Point(Dpi(260), Dpi(28));
+		exclude_SheetMetal.Location = new Point(Dpi(20), Dpi(58));
+		exclude_AsWelded.Location = new Point(Dpi(20), Dpi(88));
+		exclude_AsMachined.Location = new Point(Dpi(260), Dpi(88));
+		exclude_unactive.Location = new Point(Dpi(20), Dpi(118));
+	}
+
+	private void ConfigureOutputParametersTabLayout()
+	{
+		int contentWidth = Math.Max(Dpi(640), TabPage3.ClientSize.Width - Dpi(32));
+		GroupBox3.Location = new Point(Dpi(16), Dpi(12));
+		GroupBox3.Size = new Size(contentWidth, Dpi(164));
+		AnchorStretch(GroupBox3);
+		CADfont.Size = new Size(GroupBox3.Width - CADfont.Left - Dpi(20), CADfont.Height);
+		CADline.Size = new Size(GroupBox3.Width - CADline.Left - Dpi(20), CADline.Height);
+		Multiplesheet_dwg.Location = new Point(Dpi(170), Multiplesheet_dwg.Top);
+		Multiplesheet_dwg.Size = new Size(GroupBox3.Width - Multiplesheet_dwg.Left - Dpi(20), Multiplesheet_dwg.Height);
+		CADfont.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		CADline.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Multiplesheet_dwg.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		ExportAllSheetsToPaperSpace.AutoSize = false;
+		ExportAllSheetsToPaperSpace.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		ExportAllSheetsToPaperSpace.Size = new Size(GroupBox3.Width - Dpi(32), Dpi(24));
+		GroupBox4.Location = new Point(Dpi(16), Dpi(188));
+		GroupBox4.Size = new Size(contentWidth, Dpi(124));
+		AnchorStretch(GroupBox4);
+		PDFline.AutoSize = false;
+		PDFline.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		PDFline.Size = new Size(GroupBox4.Width - Dpi(32), Dpi(24));
+		Multiplesheet_pdf.Location = new Point(Dpi(170), Multiplesheet_pdf.Top);
+		Multiplesheet_pdf.Size = new Size(GroupBox4.Width - Multiplesheet_pdf.Left - Dpi(20), Multiplesheet_pdf.Height);
+		Multiplesheet_pdf.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox2.Location = new Point(Dpi(16), Dpi(324));
+		GroupBox2.Size = new Size(contentWidth, Dpi(104));
+		AnchorStretch(GroupBox2);
+		ImageType.Location = new Point(Dpi(150), ImageType.Top);
+		ImageType.Size = new Size(Dpi(210), ImageType.Height);
+		Image_dpi.Location = new Point(Dpi(150), Image_dpi.Top);
+		Image_dpi.Size = new Size(Dpi(120), Image_dpi.Height);
+		RadioButton1.Location = new Point(Dpi(390), RadioButton1.Top);
+		RadioButton2.Location = new Point(Dpi(390), RadioButton2.Top);
+	}
+
+	private void ConfigureOtherTabLayout()
+	{
+		int contentWidth = Math.Max(Dpi(640), TabPage5.ClientSize.Width - Dpi(48));
+		SetScalebyfirstview.AutoSize = false;
+		SetScalebyfirstview.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		SetScalebyfirstview.Location = new Point(Dpi(20), Dpi(20));
+		SetScalebyfirstview.Size = new Size(contentWidth, Dpi(42));
+		forcurcfg.AutoSize = false;
+		forcurcfg.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		forcurcfg.Location = new Point(Dpi(20), Dpi(72));
+		forcurcfg.Size = new Size(contentWidth, Dpi(42));
+		HideSw1.AutoSize = false;
+		HideSw1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		HideSw1.Location = new Point(Dpi(20), Dpi(124));
+		HideSw1.Size = new Size(contentWidth, Dpi(24));
+		Label6.AutoSize = false;
+		Label6.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Label6.Location = new Point(Dpi(36), Dpi(156));
+		Label6.Size = new Size(contentWidth - Dpi(16), Dpi(70));
+		Label6.Text = "Прим.: не действует при обновлении/сохранении и преобразовании 3D-моделей\r\nв jpg, png, 3D PDF, igs, step и stl";
+	}
+
+	private void ConfigureWatermarkTabLayout()
+	{
+		GroupBox6.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox6.Size = new Size(Math.Max(GroupBox6.Width, TabPage4.ClientSize.Width - Dpi(32)), GroupBox6.Height);
+		GroupBox8.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox8.Size = new Size(Math.Max(GroupBox8.Width, TabPage4.ClientSize.Width - Dpi(32)), GroupBox8.Height);
 	}
 
 	private void OK_Button_Click(object sender, EventArgs e)
