@@ -77,6 +77,9 @@ jobs:
       - name: Russian CHM brand gate
         run: python tools/chm-i18n/check_chm_brand.py help_ru.chm
 
+      - name: Russian CHM help entry route gate
+        run: python tools/chm-i18n/check_help_entry_routes.py --chm help_ru.chm
+
       - name: String invariants self-test (from-source gate)
         run: python tools/check_source_string_invariants.py --self-test
 
