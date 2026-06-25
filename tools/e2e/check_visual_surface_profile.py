@@ -74,16 +74,20 @@ def validate_profile(path: Path) -> list[str]:
             errors.append(f"{prefix}: required must be boolean")
         if surface.get("han_policy") not in VALID_HAN_POLICIES:
             errors.append(f"{prefix}: han_policy must be one of {sorted(VALID_HAN_POLICIES)}")
+        if "class_name_contains" in surface and not isinstance(surface["class_name_contains"], str):
+            errors.append(f"{prefix}: class_name_contains must be a string")
         for key in ("text_contains", "process_names", "forbidden_text"):
             if key in surface and not as_string_list(surface[key]):
                 errors.append(f"{prefix}: {key} must be a list of non-empty strings")
 
         # Help-entry pages are validated by visible page-specific markers.
         if str(surface_id).startswith("H-"):
-            if surface.get("process") != "hh.exe":
-                errors.append(f"{prefix}: help entry process must be hh.exe")
+            if surface.get("process") != "SWTools.exe":
+                errors.append(f"{prefix}: help entry process must be SWTools.exe")
             if surface.get("window_contains") != "SWTools":
                 errors.append(f"{prefix}: help entry window_contains must be SWTools")
+            if surface.get("class_name_contains") != "HH Parent":
+                errors.append(f"{prefix}: help entry class_name_contains must be HH Parent")
             if surface.get("required") is not True:
                 errors.append(f"{prefix}: help entry required must be true")
             text_markers = surface.get("text_contains")
@@ -108,8 +112,9 @@ def self_test() -> int:
                 {
                     "id": "H-01",
                     "title": "BOM help",
-                    "process": "hh.exe",
+                    "process": "SWTools.exe",
                     "window_contains": "SWTools",
+                    "class_name_contains": "HH Parent",
                     "text_contains": ["Создание шаблона", "Диспетчер имён"],
                     "required": True,
                     "han_policy": "fail",
@@ -167,6 +172,14 @@ def self_test() -> int:
             "missing_ztool_forbidden": (
                 {"forbidden_text": ["Z Tool"]},
                 "must forbid visible ZTool text",
+            ),
+            "missing_class_name_contains": (
+                {"delete_surface.class_name_contains": True},
+                "class_name_contains must be HH Parent",
+            ),
+            "wrong_class_name_contains": (
+                {"surface.class_name_contains": "WindowsForms"},
+                "class_name_contains must be HH Parent",
             ),
             "required_false": (
                 {"surface.required": False},

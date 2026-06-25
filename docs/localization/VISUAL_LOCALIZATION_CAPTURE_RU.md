@@ -101,6 +101,13 @@ runtime-формы, а не прямым открытием `help.CHM`. Проф
 русские marker-фразы страницы, поэтому случайно открытая другая тема справки не
 проходит strict validation.
 
+Для H-01..H-03 профиль также требует `process=SWTools.exe` и
+`class_name_contains=HH Parent`. Это отражает реальное runtime-поведение
+HTML Help: Help-кнопки WinForms открывают страницу справки в окне класса
+`HH Parent`, которое принадлежит процессу `SWTools.exe`. Прямое ручное
+открытие CHM через оболочку может создать `hh.exe`, но такой кадр не считается
+evidence для runtime entry point.
+
 `--allow-warn` разрешает частичный evidence-пакет только если нет blocking Han и
 нет runtime mismatch. Глобальный `forbidden_text` в профиле L-01..L-15 сейчас
 запрещает visible `ZTool`: старый бренд в окне, help или installer является

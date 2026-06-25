@@ -4,15 +4,17 @@
 
 ## Статус
 
-`PROFILE READY / LIVE CAPTURE PENDING / PRODUCTION GO: NO-GO / VISUAL FULL PASS: NO-GO`
+`PROFILE CORRECTED / LIVE TRACE DONE / CLEAN FULL CAPTURE PENDING / PRODUCTION GO: NO-GO / VISUAL FULL PASS: NO-GO`
 
-Этот PR не заявляет, что H-01..H-03 уже визуально пройдены. Он добавляет
-машинно-читаемый профиль и strict validation path для live capture из runtime UI.
+Этот слой не заявляет, что H-01..H-03 уже визуально пройдены. Он добавляет
+машинно-читаемый профиль и strict validation path для live capture из runtime UI,
+а также фиксирует найденное живое поведение Help-окон.
 
 ## Что закрыто
 
 - Добавлен профиль `docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json`.
-- Каждая surface требует `hh.exe` с title/window text `SWTools`.
+- Каждая surface требует окно справки класса `HH Parent` внутри процесса
+  `SWTools.exe`, с title/window text `SWTools`.
 - Для каждой страницы задан уникальный русский marker:
   - H-01: `Создание шаблона спецификации BOM`, `Диспетчер имён`;
   - H-02: `Показ эскизов`, `ALT+Z`;
@@ -20,6 +22,48 @@
 - Глобально запрещён visible `ZTool`.
 - `han_policy=fail` для всех H-01..H-03.
 - `release-acceptance` теперь валидирует JSON-профили visual surfaces.
+
+## Live trace 2026-06-25
+
+Рабочая ветка: `codex/live-help-visual-capture`.
+
+Перед проверкой был выполнен полный живой E2E на SolidWorks 2025:
+
+```text
+S7: PASS, rows=29, columns=40
+S8 strict: PASS, modes=8/8, strict filters 7/8 PASS
+Branding/version/icon: PASS
+Runtime title: SWTools 1.1.6+2575a5a.clean(x64)
+production_go_allowed=false
+```
+
+При открытии H-01 object-based способом:
+
+```text
+Спецификация -> Настроить схему спецификации -> Справка
+```
+
+выяснено, что runtime Help-кнопка не создаёт отдельный процесс `hh.exe`.
+Реальное окно справки:
+
+```text
+process: SWTools.exe
+class: HH Parent
+title: SWTools — Руководство пользователя
+route: /advanced/bom-template.htm
+```
+
+Старый профиль `process=hh.exe` поэтому давал ложный `MISSING` для H-01.
+Профиль исправлен на `SWTools.exe` + `class_name_contains=HH Parent`, а
+`swtools_visual_localization_capture.py` теперь умеет фильтровать top-level
+windows по class name и пишет `window_class_name` в manifest.
+
+Дополнительно обнаружено: запуск visual capture из dev-пути
+`D:\Development\ztool\...` загрязняет visible text страницы справки строкой
+`mk:@MSITStore:...\ztool\...\help.CHM::/...`; это корректно ловится как
+forbidden `ZTool` по регистронезависимому правилу. Финальный H-01..H-03 capture
+должен выполняться из чистого runtime-пути без `ztool` в пути, например
+`D:\SWToolsE2E\...`.
 
 ## Локальные проверки
 
@@ -33,8 +77,9 @@ git diff --check
 YAML parse all .github/workflows/*.yml
 ```
 
-Результат: PASS. Негативный synthetic manifest без `H-02` ожидаемо отклонён
-validator-ом, то есть неполный набор help-entry кадров не может стать PASS.
+Результат: PASS после фикса профиля. Негативный synthetic manifest без `H-02`
+ожидаемо отклонён validator-ом, то есть неполный набор help-entry кадров не
+может стать PASS.
 
 ## Как собирать evidence
 
@@ -62,5 +107,7 @@ Help-кнопке должна быть видна правильная русс
 ## Остаточный риск
 
 - Live capture H-01..H-03 ещё нужно выполнить на SWTools runtime.
+- Clean live capture H-01..H-03 ещё нужно выполнить из runtime-пути без
+  `ztool` в видимом `help.CHM` URL.
 - Полный L-01..L-15 visual profile и owner/auditor visual review остаются
   обязательными перед production GO.

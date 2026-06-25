@@ -50,6 +50,7 @@ class Surface:
     process_names: tuple[str, ...] = ()
     text_contains: tuple[str, ...] = ()
     forbidden_text: tuple[str, ...] = ()
+    class_name_contains: str = ""
 
 
 DEFAULT_SURFACES: list[Surface] = [
@@ -161,6 +162,12 @@ def surface_text_matches(surface: Surface, title: str, texts: list[str]) -> bool
     return all(value.lower() in haystack for value in surface.text_contains)
 
 
+def surface_class_matches(surface: Surface, class_name: str) -> bool:
+    if not surface.class_name_contains:
+        return True
+    return surface.class_name_contains.lower() in class_name.lower()
+
+
 def find_window(surface: Surface) -> Any | None:
     expected_processes = surface_process_names(surface)
     candidates: list[tuple[int, Any]] = []
@@ -179,10 +186,13 @@ def find_window(surface: Surface) -> Any | None:
             try:
                 proc_name = psutil.Process(pid).name()
                 title = win.window_text().strip()
+                class_name = win.class_name()
                 rect = win.rectangle()
             except Exception:
                 continue
             if normalize_process_name(proc_name) not in expected_processes:
+                continue
+            if not surface_class_matches(surface, class_name):
                 continue
             texts = visible_texts(win, limit=150) if surface.text_contains else []
             if not surface_text_matches(surface, title, texts):
@@ -247,6 +257,7 @@ def load_surfaces(path: Path | None) -> list[Surface]:
                 process_names=tuple(str(value) for value in item.get("process_names", []) if str(value).strip()),
                 text_contains=tuple(str(value) for value in item.get("text_contains", []) if str(value).strip()),
                 forbidden_text=tuple(str(value) for value in item_forbidden if str(value).strip()),
+                class_name_contains=str(item.get("class_name_contains", "")),
             )
         )
     return surfaces
@@ -259,6 +270,7 @@ def missing_item(surface: Surface) -> dict[str, Any]:
         "process": surface.process,
         "process_names": sorted(surface_process_names(surface)),
         "window_contains": surface.window_contains,
+        "class_name_contains": surface.class_name_contains,
         "text_contains": list(surface.text_contains),
         "forbidden_text": list(surface.forbidden_text),
         "required": surface.required,
@@ -276,6 +288,7 @@ def profile_item(surface: Surface) -> dict[str, Any]:
         "process": surface.process,
         "process_names": sorted(surface_process_names(surface)),
         "window_contains": surface.window_contains,
+        "class_name_contains": surface.class_name_contains,
         "text_contains": list(surface.text_contains),
         "forbidden_text": list(surface.forbidden_text),
         "required": surface.required,
@@ -411,6 +424,7 @@ def run() -> int:
             continue
         pid = window_process_id(win)
         title = win.window_text().strip()
+        class_name = win.class_name()
         texts = visible_texts(win)
         han_texts = sorted({text for text in texts if HAN_RE.search(text)})
         forbidden_texts = sorted(
@@ -430,6 +444,7 @@ def run() -> int:
             {
                 "status": "CAPTURED",
                 "window_title": title,
+                "window_class_name": class_name,
                 "process_info": proc,
                 "runtime_path_match": runtime_path_match,
                 "screenshot": screenshot,
