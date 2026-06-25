@@ -21,6 +21,8 @@ on:
       - "Шаблоны спецификации/**"
       - "tools/**"
       - "docs/localization/*.json"
+      - "tools/brand_boundary/**"
+      - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
   push:
     branches:
@@ -37,6 +39,8 @@ on:
       - "Шаблоны спецификации/**"
       - "tools/**"
       - "docs/localization/*.json"
+      - "tools/brand_boundary/**"
+      - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
 
 jobs:
@@ -94,6 +98,12 @@ jobs:
           python tools/e2e/check_visual_surface_profile.py `
             docs/localization/VISUAL_LOCALIZATION_SURFACES_L01_L15.json `
             docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json
+
+      - name: Visible brand boundary self-test
+        run: python tools/check_visible_brand_boundary.py --self-test
+
+      - name: Visible brand boundary gate
+        run: python tools/check_visible_brand_boundary.py
 
       - name: IPC handshake parity self-test (EXE <-> add-in)
         run: python tools/check_ipc_handshake_parity.py --self-test
