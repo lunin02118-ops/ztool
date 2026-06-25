@@ -20,7 +20,7 @@ Scope: Sprint H visual/manual gate.
 |---|---|
 | `tools/chm-i18n/check_chm_brand.py help_ru.chm` | PASS: `ZTool` not found in CHM binary/decompiled text, `SWTools` found |
 | `tools/chm-i18n/check_help_entry_routes.py --chm help_ru.chm` | PASS: H-01..H-03 source routes point to existing `advanced/...` / `basic/...` CHM topics |
-| `docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json` | Profile ready: H-01..H-03 require captured `hh.exe` pages with page-specific Russian text markers |
+| `docs/localization/HELP_ENTRY_VISUAL_SURFACES_H01_H03.json` | Profile ready: H-01..H-03 require captured `HH Parent` help windows hosted by `SWTools.exe` with page-specific Russian text markers |
 | Visual L-12 direct open | PASS: `hh.exe` window title `SWTools — Руководство пользователя`, no visible `ZTool`, no Han |
 
 Это закрывает прямой blocker `ZTool` в заголовке справки, но не заменяет полный
@@ -38,7 +38,10 @@ Scope: Sprint H visual/manual gate.
 ## Автоматизированный visual profile для H-01..H-03
 
 После открытия соответствующей формы и нажатия её кнопки справки снимайте
-текущую страницу `hh.exe` отдельным surface:
+текущую страницу справки отдельным surface. Живой trace показал, что Help из
+runtime-кнопок открывается как окно класса `HH Parent` внутри процесса
+`SWTools.exe`, а не как отдельный `hh.exe`; профиль закрепляет это как
+регрессионный контракт.
 
 ```powershell
 python scripts\swtools_visual_localization_capture.py `

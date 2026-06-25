@@ -6,8 +6,9 @@
     {
       "id": "H-01",
       "title": "BOM template/export help entry",
-      "process": "hh.exe",
+      "process": "SWTools.exe",
       "window_contains": "SWTools",
+      "class_name_contains": "HH Parent",
       "text_contains": [
         "Создание шаблона спецификации BOM",
         "Диспетчер имён"
@@ -20,8 +21,9 @@
     {
       "id": "H-02",
       "title": "Thumbnail preview help entry",
-      "process": "hh.exe",
+      "process": "SWTools.exe",
       "window_contains": "SWTools",
+      "class_name_contains": "HH Parent",
       "text_contains": [
         "Показ эскизов",
         "ALT+Z"
@@ -34,8 +36,9 @@
     {
       "id": "H-03",
       "title": "Save to SolidWorks help entry",
-      "process": "hh.exe",
+      "process": "SWTools.exe",
       "window_contains": "SWTools",
+      "class_name_contains": "HH Parent",
       "text_contains": [
         "Сохранение данных в SolidWorks",
         "Сохранить в SW"
