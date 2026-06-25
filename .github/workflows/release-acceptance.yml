@@ -23,10 +23,13 @@ on:
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
       - "scripts/swtools_visual_localization_capture.py"
+      - "scripts/e2e/**"
       - "docs/localization/**"
+      - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
       - "manual-test-reports/visual-opener-harness-20260625/**"
       - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
+      - ".github/workflows/release-e2e-solidworks.yml"
   push:
     branches:
       - main
@@ -44,10 +47,13 @@ on:
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
       - "scripts/swtools_visual_localization_capture.py"
+      - "scripts/e2e/**"
       - "docs/localization/**"
+      - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
       - "manual-test-reports/visual-opener-harness-20260625/**"
       - "docs/architecture/BRAND_BOUNDARY_RU.md"
       - ".github/workflows/release-acceptance.yml"
+      - ".github/workflows/release-e2e-solidworks.yml"
 
 jobs:
   acceptance:
@@ -125,6 +131,16 @@ jobs:
 
       - name: Visual localization manifest assertion self-test
         run: python tools/e2e/selftest_assert_visual_localization_manifest.py
+
+      - name: Release E2E workflow self-test
+        run: python tools/e2e/check_release_e2e_workflow.py --self-test
+
+      - name: Release E2E workflow gate
+        run: python tools/e2e/check_release_e2e_workflow.py .github/workflows/release-e2e-solidworks.yml
+
+      - name: Release E2E wrapper parser gate
+        run: |
+          [scriptblock]::Create((Get-Content -LiteralPath scripts/e2e/Invoke-SWToolsReleaseE2E.ps1 -Encoding UTF8 -Raw)) | Out-Null
 
       - name: IPC handshake parity self-test (EXE <-> add-in)
         run: python tools/check_ipc_handshake_parity.py --self-test

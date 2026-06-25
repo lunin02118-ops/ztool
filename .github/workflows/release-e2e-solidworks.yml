@@ -1,0 +1,131 @@
+name: release-e2e-solidworks
+
+on:
+  workflow_dispatch:
+    inputs:
+      solidworks_exe:
+        description: "Path to SLDWORKS.exe. Defaults to SOLIDWORKS_EXE on the runner."
+        required: false
+        type: string
+      solidworks_dir:
+        description: "SolidWorks install dir. Defaults to SOLIDWORKS_DIR on the runner."
+        required: false
+        type: string
+      solidworks_tools_dll:
+        description: "Path to SolidWorksTools.dll. Defaults to SOLIDWORKS_TOOLS_DLL on the runner."
+        required: false
+        type: string
+      test_assembly:
+        description: "Path to the test .SLDASM. Defaults to SWTOOLS_TEST_MODEL on the runner."
+        required: false
+        type: string
+      visual_manifest_path:
+        description: "Cumulative L-01..L-15 visual-localization manifest path."
+        required: false
+        type: string
+      output_dir:
+        description: "Optional evidence output directory on the self-hosted runner."
+        required: false
+        type: string
+      require_visual_full_profile:
+        description: "Fail unless the provided visual manifest passes the strict L-01..L-15 gate."
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  release-e2e-solidworks:
+    name: self-hosted SolidWorks release E2E
+    runs-on: [self-hosted, windows, solidworks, swtools-release]
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: python -m pip install --quiet openpyxl pillow psutil pywinauto
+
+      - name: Resolve runner inputs
+        run: |
+          $outputDir = "${{ inputs.output_dir }}"
+          if (-not $outputDir) {
+            $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
+            $outputDir = Join-Path $env:RUNNER_TEMP "swtools-release-e2e-$stamp"
+          }
+          New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+
+          $solidWorksExe = "${{ inputs.solidworks_exe }}"
+          if (-not $solidWorksExe) { $solidWorksExe = $env:SOLIDWORKS_EXE }
+          $solidWorksDir = "${{ inputs.solidworks_dir }}"
+          if (-not $solidWorksDir) { $solidWorksDir = $env:SOLIDWORKS_DIR }
+          $solidWorksToolsDll = "${{ inputs.solidworks_tools_dll }}"
+          if (-not $solidWorksToolsDll) { $solidWorksToolsDll = $env:SOLIDWORKS_TOOLS_DLL }
+          $testAssembly = "${{ inputs.test_assembly }}"
+          if (-not $testAssembly) { $testAssembly = $env:SWTOOLS_TEST_MODEL }
+          $visualManifest = "${{ inputs.visual_manifest_path }}"
+
+          "SWTOOLS_E2E_OUTPUT_DIR=$outputDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SWTOOLS_E2E_SOLIDWORKS_EXE=$solidWorksExe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SWTOOLS_E2E_SOLIDWORKS_DIR=$solidWorksDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SWTOOLS_E2E_SOLIDWORKS_TOOLS_DLL=$solidWorksToolsDll" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SWTOOLS_E2E_TEST_ASSEMBLY=$testAssembly" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SWTOOLS_E2E_VISUAL_MANIFEST=$visualManifest" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Run release E2E
+        run: |
+          $args = @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass',
+            '-File', 'scripts/e2e/Invoke-SWToolsReleaseE2E.ps1',
+            '-SolidWorksExe', "$env:SWTOOLS_E2E_SOLIDWORKS_EXE",
+            '-SolidWorksDir', "$env:SWTOOLS_E2E_SOLIDWORKS_DIR",
+            '-SolidWorksToolsDll', "$env:SWTOOLS_E2E_SOLIDWORKS_TOOLS_DLL",
+            '-TestAssembly', "$env:SWTOOLS_E2E_TEST_ASSEMBLY",
+            '-VisualManifest', "$env:SWTOOLS_E2E_VISUAL_MANIFEST",
+            '-OutputDir', "$env:SWTOOLS_E2E_OUTPUT_DIR",
+            '-ExpectedMinRows', '29',
+            '-ExpectedMinColumns', '30',
+            '-ExpectedBomModeCount', '8'
+          )
+          if ([System.Convert]::ToBoolean("${{ inputs.require_visual_full_profile }}")) {
+            $args += '-RequireVisualFullProfile'
+          }
+          & pwsh @args
+
+      - name: Assert wrapper result remains non-production
+        if: always()
+        run: |
+          $resultPath = Join-Path "$env:SWTOOLS_E2E_OUTPUT_DIR" "release-e2e-solidworks-result.json"
+          if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+            throw "Missing release E2E wrapper result: $resultPath"
+          }
+          $result = Get-Content -LiteralPath $resultPath -Encoding UTF8 -Raw | ConvertFrom-Json
+          if ($result.status -ne "PASS") {
+            throw "Release E2E status is $($result.status)"
+          }
+          if ($result.production_go_allowed) {
+            throw "Release E2E workflow must not set production_go_allowed=true"
+          }
+
+      - name: Upload release E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-e2e-solidworks-evidence
+          path: ${{ env.SWTOOLS_E2E_OUTPUT_DIR }}/
+          if-no-files-found: error
