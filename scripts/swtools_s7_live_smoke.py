@@ -516,6 +516,12 @@ def dismiss_solidworks_connection_timeout(solidworks_pid: int) -> dict[str, Any]
     return None
 
 
+def record_dismissed_connection_timeout(result: dict[str, Any], dialog: dict[str, Any]) -> None:
+    dismissed = result.setdefault("dismissed_connection_timeout_dialogs", [])
+    if isinstance(dismissed, list):
+        dismissed.append(dialog)
+
+
 def parse_status(texts: list[str]) -> str:
     candidates = [t for t in texts if "Подключение" in t or "Получение данных" in t or "поз" in t]
     return candidates[-1] if candidates else ""
@@ -774,6 +780,11 @@ def run() -> int:
                 raise RuntimeError(f"Connect UIA invoke failed: {connect_state['error']}")
             blocker = blocking_dialog(proc.pid, solidworks_pid)
             if blocker:
+                if is_solidworks_connection_timeout_dialog(blocker):
+                    dismissed = dismiss_solidworks_connection_timeout(solidworks_pid)
+                    if dismissed:
+                        record_dismissed_connection_timeout(result, dismissed)
+                        continue
                 result["blocking_dialog"] = blocker
                 raise RuntimeError(f"Blocking dialog during S7 connect: {blocker}")
             dismiss_license_dialog(proc.pid, timeout=0.1)
