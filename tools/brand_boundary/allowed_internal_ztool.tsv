@@ -495,6 +495,7 @@ manual-test-reports/help-entry-routes-20260625/REPORT_RU.md	content	4	b101abd068
 manual-test-reports/help-entry-visual-20260625/REPORT_RU.md	content	1	15c9013b4ae71d1373619165fd88ca041c3492731e7f4160f8a60280fccd2691	historical audit or test evidence; not production-facing release UI
 manual-test-reports/localization-visual-capture-20260625/REPORT_RU.md	content	19	54ca23b5591af6791f97f5419f2d586e7606f7b302e26cf72ba599a9632c9c09	historical audit or test evidence; not production-facing release UI
 manual-test-reports/source-pipeline-20260624/REPORT_RU.md	content	10	bcd2777caa2a03830e12e2d3afa17bfec003b1b444bd22310aa860c32236b0c7	historical audit or test evidence; not production-facing release UI
+manual-test-reports/visual-opener-runner-20260625/REPORT_RU.md	content	1	05ccde770b6d23dd4d2cf85c3110b9a398e69c08efee2166bcecabac394905f8	historical audit or test evidence; not production-facing release UI
 scripts/build_client_installer.ps1	content	2	92421135781b4ddd74b04c2e255ebcafe0c24b8e14ccac2866ee5403b0222d81	automation/test code references legacy compatibility name
 scripts/build_release_package.ps1	content	2	0c8773ff297731693c5d2097b6c9c10c5ad8a600e9ea0047087a55848c20ef6e	automation/test code references legacy compatibility name
 scripts/check_binaryformatter_surface.ps1	content	6	ba09a5c4893bab319d94bdfab7a217f994cbc5e7385cf5f2a9f0b86f6a1c2a04	automation/test code references legacy compatibility name
@@ -507,7 +508,7 @@ scripts/resolve_release_inputs.ps1	content	2	7f2606bce5925adb542ef12bfd676672dcb
 scripts/sw_test_preflight.ps1	content	3	f9d1a63b63084b80d28adafa2048afab3e15861bfd552dab0d955a13928817b4	automation/test code references legacy compatibility name
 scripts/swtools_branding_version_live.py	content	1	39df56904a53c8d4f903bb7db3e95cad9cc39257ae9ce364a07999b58e67e7ba	automation/test code references legacy compatibility name
 scripts/swtools_mapping_dialog_smoke.py	content	2	54b435c11d114aab68489c9078f22cd3add28dc6884b6311dd12a3113d76b9fc	automation/test code references legacy compatibility name
-scripts/swtools_s7_live_smoke.py	content	5	05bf7338a94f0bbb3330968473ecf32487f9280e8a778a4a51d845f1cbf843a5	automation/test code references legacy compatibility name
+scripts/swtools_s7_live_smoke.py	content	5	011ea1f6a8e4bc2b1cc7ed087a51bd96c4862ab863c0353f1b0a64cafcb23247	automation/test code references legacy compatibility name
 scripts/verify_release_package.ps1	content	5	2bbfd3ac2c48a37772b3f1d0d5df1e99aea8c6367195cd71f00db6266da9247b	automation/test code references legacy compatibility name
 tools/bom_export_assert.py	content	1	0d361b94c57e5cc0c75b7a7171e46918c672115cd8211afcae14ea3671a8c3b7	automation/test code references legacy compatibility name
 tools/check_ipc_handshake_parity.py	content	8	91b6e4311ccf6df234437d21fc69056795613af63a48e3502441202cefe44af3	automation/test code references legacy compatibility name
