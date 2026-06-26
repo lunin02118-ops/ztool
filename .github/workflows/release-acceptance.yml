@@ -126,6 +126,12 @@ jobs:
       - name: Grid paste dirty-state gate
         run: python tools/e2e/check_grid_paste_dirty_state.py
 
+      - name: Batch conversion configuration mapping self-test
+        run: python tools/e2e/check_batch_convert_configuration_mapping.py --self-test
+
+      - name: Batch conversion configuration mapping gate
+        run: python tools/e2e/check_batch_convert_configuration_mapping.py
+
       - name: Visual surface profile gate
         run: |
           python tools/e2e/check_visual_surface_profile.py --self-test

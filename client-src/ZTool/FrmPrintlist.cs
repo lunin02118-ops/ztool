@@ -1857,6 +1857,28 @@ public class FrmPrintlist : Form
 		addfiles.ShowDropDown();
 	}
 
+	private static string NormalizeConfigurationNames(string configurations)
+	{
+		if (string.IsNullOrWhiteSpace(configurations))
+		{
+			return "";
+		}
+		return string.Join("|\n", Strings.Split(configurations, "|\n").Select((string item) => item.Trim()).Where((string item) => item.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase));
+	}
+
+	private static string MergeConfigurationNames(string existingConfigurations, string incomingConfiguration)
+	{
+		if (string.IsNullOrWhiteSpace(incomingConfiguration))
+		{
+			return NormalizeConfigurationNames(existingConfigurations);
+		}
+		if (string.IsNullOrWhiteSpace(existingConfigurations))
+		{
+			return NormalizeConfigurationNames(incomingConfiguration);
+		}
+		return NormalizeConfigurationNames(existingConfigurations + "|\n" + incomingConfiguration);
+	}
+
 	public void loadview(List<string> f)
 	{
 		List<string> list = new List<string>();
@@ -1899,14 +1921,12 @@ public class FrmPrintlist : Form
 				{
 					if (num8 >= 0)
 					{
-						list2[num8] = Conversions.ToString(Interaction.IIf(Operators.CompareString(list2[num8], "", TextCompare: false) == 0, "", list2[num8] + "|\n" + closure_0024__._0024VB_0024Local_str[1]));
-						HashSet<string> values = new HashSet<string>(Strings.Split(list2[num8], "|\n").ToList());
-						list2[num8] = string.Join("|\n", values);
+						list2[num8] = MergeConfigurationNames(list2[num8], closure_0024__._0024VB_0024Local_str[1]);
 					}
 					else
 					{
 						list.Add(closure_0024__._0024VB_0024Local_str[0]);
-						list2.Add(closure_0024__._0024VB_0024Local_str[1]);
+						list2.Add(NormalizeConfigurationNames(closure_0024__._0024VB_0024Local_str[1]));
 						list3.Add("");
 					}
 				}
@@ -1914,7 +1934,7 @@ public class FrmPrintlist : Form
 				{
 					if (num8 >= 0)
 					{
-						list2[num8] = "";
+						list2[num8] = NormalizeConfigurationNames(list2[num8]);
 					}
 					else
 					{
