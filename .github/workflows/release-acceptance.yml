@@ -114,6 +114,12 @@ jobs:
       - name: Document-kind filter mapping gate
         run: python tools/e2e/check_document_kind_filter_mapping.py
 
+      - name: File-name rule dialog layout self-test
+        run: python tools/e2e/check_frmrename_layout.py --self-test
+
+      - name: File-name rule dialog layout gate
+        run: python tools/e2e/check_frmrename_layout.py
+
       - name: Visual surface profile gate
         run: |
           python tools/e2e/check_visual_surface_profile.py --self-test

@@ -921,7 +921,7 @@ public class FrmRename : Form
 		this.Label3.Text = "Результат:";
 		this.Label5.AutoSize = true;
 		this.Label5.BackColor = System.Drawing.SystemColors.Control;
-		this.Label5.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Label5.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
 		this.Label5.ForeColor = System.Drawing.Color.DarkOrange;
 		System.Windows.Forms.Label label7 = this.Label5;
 		location = new System.Drawing.Point(19, 128);
@@ -1046,7 +1046,7 @@ public class FrmRename : Form
 		this.ByRuler.Text = "По правилу";
 		this.ByRuler.UseVisualStyleBackColor = true;
 		this.Label8.AutoSize = true;
-		this.Label8.Font = new System.Drawing.Font("宋体", 9f, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, 134);
+		this.Label8.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, 0);
 		this.Label8.ForeColor = System.Drawing.Color.Blue;
 		System.Windows.Forms.Label label17 = this.Label8;
 		location = new System.Drawing.Point(120, 8);
@@ -1162,7 +1162,7 @@ public class FrmRename : Form
 		size = new System.Drawing.Size(88, 27);
 		button2.Size = size;
 		this.Button1.TabIndex = 27;
-		this.Button1.Text = "Вставить ссылку....";
+		this.Button1.Text = "Вставить ссылку...";
 		this.Button1.UseVisualStyleBackColor = true;
 		this.ByCheck.AutoSize = true;
 		System.Windows.Forms.CheckBox byCheck = this.ByCheck;
@@ -1195,12 +1195,12 @@ public class FrmRename : Form
 		this.Controls.Add(this.Label6);
 		this.Controls.Add(this.Label1);
 		this.Controls.Add(this.TableLayoutPanel2);
-		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+		this.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
 		this.KeyPreview = true;
 		margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.Margin = margin;
-		this.MaximizeBox = false;
+		this.MaximizeBox = true;
 		this.MinimizeBox = false;
 		this.Name = "FrmRename";
 		this.ShowInTaskbar = false;
@@ -1239,6 +1239,129 @@ public class FrmRename : Form
 			dpixRatio = graphics.DpiX / 96f;
 		}
 		TextBox1.Height = checked((int)Math.Round(66.0 * dpixRatio));
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return checked((int)Math.Round((double)value * dpixRatio));
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			FormBorderStyle = FormBorderStyle.Sizable;
+			MaximizeBox = true;
+			MinimumSize = new Size(Dpi(720), Dpi(520));
+			SizeGripStyle = SizeGripStyle.Show;
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(720)), Math.Max(ClientSize.Height, Dpi(500)));
+
+			Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 0);
+			Label5.Font = Font;
+			Label8.Font = new Font(Font, FontStyle.Underline);
+			Label5.AutoSize = false;
+			Label5.ForeColor = Color.DarkOrange;
+			Label8.AutoSize = false;
+			Label8.AutoEllipsis = true;
+			Label8.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			Label4.AutoSize = false;
+			Label4.AutoEllipsis = true;
+			Label4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			Label7.AutoSize = false;
+			Label7.AutoEllipsis = true;
+			Label7.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			Label9.AutoSize = false;
+			Label9.AutoEllipsis = true;
+			Label9.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			Label5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+			int margin = Dpi(16);
+			int gap = Dpi(14);
+			int bottomBand = Dpi(58);
+			int rightWidth = Dpi(320);
+			int contentTop = Dpi(112);
+			int contentBottom = ClientSize.Height - bottomBand - Dpi(8);
+			int leftWidth = Math.Max(Dpi(360), ClientSize.Width - margin * 2 - gap - rightWidth);
+			int contentHeight = Math.Max(Dpi(250), contentBottom - contentTop);
+			int rightX = margin + leftWidth + gap;
+
+			Label1.Location = new Point(margin, Dpi(12));
+			Label1.AutoSize = true;
+			Label8.Location = new Point(Label1.Right + Dpi(8), Dpi(12));
+			Label8.Size = new Size(leftWidth - Label8.Left + margin, Dpi(22));
+			TextBox1.Location = new Point(margin, Dpi(38));
+			TextBox1.Size = new Size(leftWidth, Dpi(76));
+			TextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+			Label6.Location = new Point(rightX, Dpi(12));
+			NumericUpDown1.Location = new Point(rightX, Dpi(38));
+			NumericUpDown1.Size = new Size(Dpi(86), NumericUpDown1.Height);
+			Button1.Location = new Point(rightX, Dpi(72));
+			Button1.Size = new Size(Dpi(148), Dpi(30));
+			Button1.AutoSize = false;
+			Label6.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			NumericUpDown1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			Button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+			GroupBox1.Location = new Point(margin, contentTop);
+			GroupBox1.Size = new Size(leftWidth, contentHeight);
+			GroupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			TextBox2.Location = new Point(Dpi(20), Dpi(48));
+			TextBox2.Size = new Size(GroupBox1.ClientSize.Width - Dpi(40), Dpi(24));
+			TextBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			Label3.Location = new Point(Dpi(20), Dpi(84));
+			Label4.Location = new Point(Dpi(96), Dpi(84));
+			Label4.Size = new Size(GroupBox1.ClientSize.Width - Dpi(116), Dpi(22));
+			Label9.Location = new Point(Dpi(96), Dpi(106));
+			Label9.Size = Label4.Size;
+			Label7.Location = new Point(Dpi(96), Dpi(128));
+			Label7.Size = Label4.Size;
+			Label5.Location = new Point(Dpi(20), Dpi(162));
+			Label5.Size = new Size(GroupBox1.ClientSize.Width - Dpi(40), GroupBox1.ClientSize.Height - Dpi(176));
+
+			GroupBox2.Location = new Point(rightX, contentTop);
+			GroupBox2.Size = new Size(rightWidth, contentHeight);
+			GroupBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+			TableLayoutPanel1.Height = Dpi(70);
+			TableLayoutPanel1.ColumnStyles.Clear();
+			TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+			TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+			RuleNameList.ItemHeight = Dpi(19);
+			Excludebyruler.Text = "Исключить";
+			UnExcludebyruler.Text = "Включить";
+
+			ByRuler.Location = new Point(margin, ClientSize.Height - Dpi(42));
+			ByFilter.Location = new Point(ByRuler.Right + Dpi(18), ByRuler.Top);
+			ByCheck.Location = new Point(ByFilter.Right + Dpi(18), ByRuler.Top);
+			ByRuler.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+			ByFilter.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+			ByCheck.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+			Reset_Button.AutoSize = false;
+			Undo_Button.AutoSize = false;
+			OK_Button.AutoSize = false;
+			Reset_Button.Size = new Size(Dpi(150), Dpi(32));
+			Undo_Button.Size = new Size(Dpi(104), Dpi(32));
+			OK_Button.Size = new Size(Dpi(104), Dpi(32));
+			Reset_Button.Dock = DockStyle.Fill;
+			Undo_Button.Dock = DockStyle.Fill;
+			OK_Button.Dock = DockStyle.Fill;
+			TableLayoutPanel2.AutoSize = false;
+			TableLayoutPanel2.ColumnStyles.Clear();
+			TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(156)));
+			TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(108)));
+			TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(108)));
+			TableLayoutPanel2.Size = new Size(Dpi(378), Dpi(40));
+			TableLayoutPanel2.Location = new Point(ClientSize.Width - TableLayoutPanel2.Width - margin, ClientSize.Height - Dpi(48));
+			TableLayoutPanel2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		}
+		finally
+		{
+			ResumeLayout(false);
+			PerformLayout();
+		}
 	}
 
 	private void Reset_Button_Click(object sender, EventArgs e)
