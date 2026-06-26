@@ -61,7 +61,7 @@ windows по class name и пишет `window_class_name` в manifest.
 Дополнительно обнаружено: запуск visual capture из dev-пути
 `D:\Development\ztool\...` загрязняет visible text страницы справки строкой
 `mk:@MSITStore:...\ztool\...\help.CHM::/...`; это корректно ловится как
-forbidden `ZTool` по регистронезависимому правилу. Финальный H-01..H-03 capture
+forbidden legacy brand token по регистронезависимому правилу. Финальный H-01..H-03 capture
 должен выполняться из чистого runtime-пути без `ztool` в пути, например
 `D:\SWToolsE2E\...`.
 

@@ -40,6 +40,15 @@
       "capture_after": "The BOM export drop-down menu with all export modes is expanded.",
       "actions": [
         {
+          "type": "uia_invoke",
+          "description": "Activate Specification ribbon tab before opening BOM export menu.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Спецификация"
+          }
+        },
+        {
           "type": "ribbon_command",
           "description": "Open Export BOM split-button/dropdown from the Specification ribbon.",
           "locator": {
@@ -57,6 +66,15 @@
       "preconditions": ["S7 PASS", "Specification ribbon tab is active"],
       "capture_after": "BOM scheme dialog is open.",
       "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Activate Specification ribbon tab before opening BOM scheme dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Спецификация"
+          }
+        },
         {
           "type": "uia_invoke",
           "description": "Invoke Configure BOM Scheme ribbon button.",
@@ -82,6 +100,15 @@
       "preconditions": ["S7 PASS", "Specification ribbon tab is active"],
       "capture_after": "Column mapping dialog is open without duplicate-name modal.",
       "actions": [
+        {
+          "type": "uia_invoke",
+          "description": "Activate Specification ribbon tab before opening column mapping dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "SWTools",
+            "control_text": "Спецификация"
+          }
+        },
         {
           "type": "uia_invoke",
           "description": "Invoke Column Mapping ribbon button.",
@@ -113,7 +140,8 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "Настроить схему спецификации",
-            "control_text": "Создать правило"
+            "control_text": "Создать правило",
+            "control_key_activate": "{ENTER}"
           }
         },
         {

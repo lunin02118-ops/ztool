@@ -323,6 +323,40 @@ def dialog_texts(win: Any) -> list[str]:
     return texts
 
 
+def window_area(win: Any) -> int:
+    try:
+        rect = win.rectangle()
+        return max(0, int(rect.width())) * max(0, int(rect.height()))
+    except Exception:
+        return 0
+
+
+def should_scan_for_license_dialog(win: Any) -> bool:
+    try:
+        title = win.window_text().strip()
+    except Exception:
+        title = ""
+    try:
+        class_name = win.class_name()
+    except Exception:
+        class_name = ""
+    if class_name in {"tooltips_class32", "GDI+ Hook Window Class", "IME"}:
+        return False
+    if class_name.startswith(".NET-BroadcastEventWindow"):
+        return False
+    area = window_area(win)
+    # The main SWTools form can expose a very large WinForms descendants tree and
+    # occasionally blocks automation traversal. License/trial prompts are small
+    # top-level forms/dialogs, so never scan the main window here.
+    if title.startswith("SWTools") and area > 250_000:
+        return False
+    if class_name == "#32770":
+        return True
+    if "WindowsForms10.Window" in class_name and area <= 250_000:
+        return True
+    return False
+
+
 def normalize_button_text(text: str) -> str:
     return text.replace("&", "").strip()
 
@@ -392,6 +426,8 @@ def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, 
     while time.time() < deadline:
         for backend in ("win32", "uia"):
             for win in desktop_windows(backend, process_id=swtools_pid):
+                if not should_scan_for_license_dialog(win):
+                    continue
                 texts = dialog_texts(win)
                 joined = "\n".join(texts)
                 lowered = joined.lower()
@@ -412,6 +448,8 @@ def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, 
                 while time.time() < close_deadline:
                     still_open = False
                     for check in desktop_windows(backend, process_id=swtools_pid):
+                        if not should_scan_for_license_dialog(check):
+                            continue
                         check_text = "\n".join(dialog_texts(check)).lower()
                         if "лицензия не обнаружена" in check_text:
                             still_open = True
@@ -900,8 +938,7 @@ def run() -> int:
         if license_result.get("dismissed"):
             result["checks"].append("trial dialog dismissed through object automation")
         else:
-            main_win32 = Desktop(backend="win32").window(handle=main_hwnd)
-            invoke_text(main_win32, "Демо", timeout=1.0)
+            result["checks"].append("license/trial dialog not shown; skipping demo button probe")
         main = Desktop(backend="uia").window(handle=main_hwnd)
         restore_window(main_hwnd)
         write_checkpoint(result_path, result)
