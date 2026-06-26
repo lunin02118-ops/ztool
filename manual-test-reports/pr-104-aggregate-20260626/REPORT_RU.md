@@ -39,15 +39,15 @@ Visual FULL PASS: **NO-GO**.
   - Handles the embedded `Лицензия не обнаружена` panel in the main SWTools WinForms window with process-scoped UIA.
   - Keeps the legacy Win32 modal handler as fallback for real `#32770` dialogs.
   - Speeds up blocking-dialog detection by prefiltering real modal windows before reading text.
-  - Adds heartbeat checkpoint fields while waiting for `openZtool`, so hangs are diagnosable.
+  - Adds heartbeat checkpoint fields while waiting for the internal launcher handoff, so hangs are diagnosable.
   - Keeps `Подключить SW` object-driven; no hard-coded screen coordinates are accepted as release evidence.
 
-- `client-src/ZTool/M_FindWindow.cs`
+- Client window-discovery source
   - Searches top-level windows in the SolidWorks process before the old desktop child-window traversal.
   - Uses a 260-character title buffer instead of 50.
-  - Root cause: live evidence showed `Ztool_Receiver` is a top-level hidden window in `SLDWORKS.exe`, so the old child-only search could miss it.
+  - Root cause: live evidence showed the hidden receiver window is top-level in `SLDWORKS.exe`, so the old child-only search could miss it.
 
-- `client-src/ZTool/code.cs`
+- Client launcher/receiver source
   - Preserves a valid command-line `Receiver_hWnd` if the fallback window lookup returns zero.
   - Root cause: a valid receiver handle could be overwritten by zero, producing false `Надстройка не запущена!` / S7 empty-grid failures.
   - Also contains the earlier grid paste dirty-state fix:
@@ -122,7 +122,7 @@ git diff --check
 pwsh -NoProfile -File scripts\check_client_src_warnings.ps1
 python tools\check_source_string_invariants.py --root client-src --root client-src-addin
 python tools\check_visible_brand_boundary.py
-dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release -p:SolidWorksDir="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS"
+dotnet build client-src-addin\<add-in project>.csproj -c Release -p:SolidWorksDir="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS"
 ```
 
 Result:

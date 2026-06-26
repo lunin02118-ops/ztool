@@ -23,7 +23,7 @@
 - `pwsh -NoProfile -File scripts\check_client_src_warnings.ps1`
 - `python tools\check_source_string_invariants.py --root client-src --root client-src-addin`
 - `python tools\check_visible_brand_boundary.py`
-- `dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release -p:SolidWorksDir="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS"`
+- `dotnet build client-src-addin\<add-in project>.csproj -c Release -p:SolidWorksDir="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS"`
 
 Warning baseline: PASS, counts unchanged (`client-src=123`, `client-src-addin=6`).
 
@@ -52,7 +52,7 @@ Runtime hashes:
 - `SWTools.dll`: `da36685aa69c3a115b8c4151848d1592d8151810ed37ca513b3f9da285e2c5ef`
 - `Ribbon.dll`: `57e026815738a47e988048b95b354ab107cd80e559d0775d0897d68950e24e8e`
 - `ExpandableGridView.dll`: `89ec31d68a132c02f725903d52d5c5c7c422a2aa997a8a8444685a4374cefcc0`
-- `ZTool_rsa.dll`: `274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90`
+- RSA helper DLL: `274a33f35b98437d57f7eadce21cfe855d5285e9012c1c33733a3ab1f0ec2a90`
 
 Installer build: PASS.
 
