@@ -414,13 +414,13 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/FrmOutputoptions.cs",
-          "line": 4282,
+          "line": 4446,
           "column": 8,
           "code": "CS1717"
         },
         {
           "file": "client-src/ZTool/FrmOutputoptions.cs",
-          "line": 6300,
+          "line": 6464,
           "column": 4,
           "code": "CS0162"
         },
