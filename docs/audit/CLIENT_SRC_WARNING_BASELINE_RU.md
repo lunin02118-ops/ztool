@@ -180,13 +180,13 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/frm_copyswfile.cs",
-          "line": 1057,
+          "line": 1127,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/frm_copyswfile.cs",
-          "line": 1630,
+          "line": 1700,
           "column": 4,
           "code": "CS0162"
         },

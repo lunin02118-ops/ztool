@@ -138,6 +138,12 @@ jobs:
       - name: Add-in rename dialog layout gate
         run: python tools/e2e/check_addin_rename_layout.py
 
+      - name: Backup-copy dialog layout self-test
+        run: python tools/e2e/check_frmcopyswfile_layout.py --self-test
+
+      - name: Backup-copy dialog layout gate
+        run: python tools/e2e/check_frmcopyswfile_layout.py
+
       - name: Grid paste dirty-state self-test
         run: python tools/e2e/check_grid_paste_dirty_state.py --self-test
 
