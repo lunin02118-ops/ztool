@@ -2145,7 +2145,7 @@ public class FrmReplacePartslist : Form
 		this.TextBox1.TabIndex = 3;
 		this.SplitContainer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.SplitContainer1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.SplitContainer1.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
 		System.Windows.Forms.SplitContainer splitContainer = this.SplitContainer1;
 		location = new System.Drawing.Point(0, 40);
 		splitContainer.Location = location;
@@ -2316,6 +2316,125 @@ public class FrmReplacePartslist : Form
 				ProjectData.ClearProjectError();
 			}
 		}
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return checked((int)Math.Round((double)value * dpixRatio));
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
+		MaximumSize = Size.Empty;
+		MinimumSize = new Size(Dpi(1320), Dpi(640));
+		SizeGripStyle = SizeGripStyle.Show;
+		Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 0);
+		SplitContainer1.Font = Font;
+		ToolStrip1.Font = Font;
+		StatusStrip1.Font = Font;
+		SplitContainer1.Dock = DockStyle.Fill;
+		SplitContainer1.Panel1MinSize = Dpi(380);
+		SplitContainer1.Panel2MinSize = Dpi(900);
+		ListView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		ListView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+		GroupBox4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox6.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		Replacereference_folderpath.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Replacereference_SpecificFolder.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+		Button2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+		clearsel.AutoSize = false;
+		clearall.AutoSize = false;
+		clearsel.MinimumSize = new Size(Dpi(110), Dpi(27));
+		clearall.MinimumSize = new Size(Dpi(84), Dpi(27));
+		if (Size.Width < MinimumSize.Width || Size.Height < MinimumSize.Height)
+		{
+			Size = new Size(Math.Max(Size.Width, MinimumSize.Width), Math.Max(Size.Height, MinimumSize.Height));
+		}
+		SplitContainer1.Panel1.Resize += FrmReplacePartslist_ResponsiveResize;
+		SplitContainer1.Panel2.Resize += FrmReplacePartslist_ResponsiveResize;
+		base.Resize += FrmReplacePartslist_ResponsiveResize;
+		ApplyResponsiveLayout();
+	}
+
+	private void FrmReplacePartslist_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (SplitContainer1 == null || SplitContainer1.Panel1 == null || SplitContainer1.Panel2 == null)
+		{
+			return;
+		}
+		try
+		{
+			SplitContainer1.SuspendLayout();
+			SplitContainer1.Panel1.SuspendLayout();
+			SplitContainer1.Panel2.SuspendLayout();
+			ApplyFileListPanelLayout();
+			ApplyReplacementPanelLayout();
+		}
+		finally
+		{
+			SplitContainer1.Panel2.ResumeLayout(performLayout: true);
+			SplitContainer1.Panel1.ResumeLayout(performLayout: true);
+			SplitContainer1.ResumeLayout(performLayout: true);
+		}
+	}
+
+	private void ApplyFileListPanelLayout()
+	{
+		int panelWidth = Math.Max(SplitContainer1.Panel1.ClientSize.Width, Dpi(360));
+		int panelHeight = Math.Max(SplitContainer1.Panel1.ClientSize.Height, Dpi(440));
+		int margin = Dpi(10);
+		int gridTop = Dpi(30);
+		int groupTop = panelHeight - Dpi(84);
+		int actionTop = groupTop - Dpi(36);
+		int gridBottom = actionTop - Dpi(8);
+		ListView2.Location = new Point(Dpi(3), gridTop);
+		ListView2.Size = new Size(Math.Max(Dpi(260), panelWidth - Dpi(6)), Math.Max(Dpi(180), gridBottom - gridTop));
+		clearsel.Location = new Point(margin, actionTop);
+		clearsel.Size = new Size(Dpi(112), Dpi(27));
+		clearall.Location = new Point(clearsel.Right + Dpi(8), actionTop);
+		clearall.Size = new Size(Dpi(86), Dpi(27));
+		GroupBox3.Location = new Point(margin, groupTop);
+		GroupBox3.Size = new Size(Dpi(170), Dpi(74));
+		GroupBox4.Location = new Point(GroupBox3.Right + Dpi(10), groupTop);
+		GroupBox4.Size = new Size(Math.Max(Dpi(190), panelWidth - GroupBox4.Left - margin), Dpi(74));
+	}
+
+	private void ApplyReplacementPanelLayout()
+	{
+		int panelWidth = Math.Max(SplitContainer1.Panel2.ClientSize.Width, Dpi(860));
+		int panelHeight = Math.Max(SplitContainer1.Panel2.ClientSize.Height, Dpi(440));
+		int margin = Dpi(10);
+		int gridTop = Dpi(30);
+		int groupTop = panelHeight - Dpi(114);
+		int gridBottom = groupTop - Dpi(8);
+		ListView1.Location = new Point(Dpi(3), gridTop);
+		ListView1.Size = new Size(Math.Max(Dpi(760), panelWidth - Dpi(6)), Math.Max(Dpi(180), gridBottom - gridTop));
+		int availableWidth = panelWidth - margin * 3;
+		int leftWidth = Math.Max(Dpi(430), availableWidth / 2);
+		int rightWidth = Math.Max(Dpi(450), availableWidth - leftWidth);
+		GroupBox5.Location = new Point(margin, groupTop);
+		GroupBox5.Size = new Size(leftWidth, Dpi(94));
+		GroupBox6.Location = new Point(GroupBox5.Right + margin, groupTop);
+		GroupBox6.Size = new Size(rightWidth, Dpi(94));
+		Button1.Size = new Size(Dpi(33), Dpi(27));
+		Button1.Location = new Point(GroupBox5.ClientSize.Width - Button1.Width - Dpi(10), Dpi(58));
+		Replacereference_folderpath.Location = new Point(Dpi(10), Dpi(60));
+		Replacereference_folderpath.Size = new Size(Math.Max(Dpi(280), Button1.Left - Dpi(20)), Dpi(23));
+		Button2.Size = new Size(Dpi(33), Dpi(27));
+		Button2.Location = new Point(GroupBox6.ClientSize.Width - Button2.Width - Dpi(10), Dpi(71));
+		Replacereference_SpecificFolder.Location = new Point(Dpi(21), Dpi(73));
+		Replacereference_SpecificFolder.Size = new Size(Math.Max(Dpi(300), Button2.Left - Dpi(31)), Dpi(23));
 	}
 
 	private void FrmReplacePartslist_FormClosed(object sender, FormClosedEventArgs e)
