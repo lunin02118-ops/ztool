@@ -10739,6 +10739,16 @@ public class Frmmain : Form
 		}
 	}
 
+	private string DisplayDocumentKindForFilter(string value)
+	{
+		return string.Equals(value, "零件", StringComparison.OrdinalIgnoreCase) ? "Деталь" : value;
+	}
+
+	private string FilterDocumentKindFromDisplay(string value)
+	{
+		return string.Equals(value, "Деталь", StringComparison.OrdinalIgnoreCase) ? "零件" : value;
+	}
+
 	private void Filter_list_ItemClicked1(object sender, ToolStripItemClickedEventArgs e)
 	{
 		string text = DGV1.Columns[SelectedCol].HeaderText;
@@ -10838,9 +10848,10 @@ public class Frmmain : Form
 						int num4 = num8;
 						if (num10 <= num4)
 						{
-							if (Clb.GetItemCheckState(num9) == CheckState.Checked && !FilterCollist[columnindex].Contains(Clb.Items[num9].ToString()))
+							string item = (columnindex == Col_Extname.Index) ? FilterDocumentKindFromDisplay(Clb.Items[num9].ToString()) : Clb.Items[num9].ToString();
+							if (Clb.GetItemCheckState(num9) == CheckState.Checked && !FilterCollist[columnindex].Contains(item))
 							{
-								FilterCollist[columnindex].Add(Clb.Items[num9].ToString());
+								FilterCollist[columnindex].Add(item);
 							}
 							num9++;
 							continue;
@@ -10921,7 +10932,8 @@ public class Frmmain : Form
 							{
 								break;
 							}
-							if (Clb.GetItemCheckState(num21) != CheckState.Checked && string.Equals(Clb.Items[num21].ToString(), text, StringComparison.CurrentCultureIgnoreCase))
+							string item = (columnindex == Col_Extname.Index) ? FilterDocumentKindFromDisplay(Clb.Items[num21].ToString()) : Clb.Items[num21].ToString();
+							if (Clb.GetItemCheckState(num21) != CheckState.Checked && string.Equals(item, text, StringComparison.CurrentCultureIgnoreCase))
 							{
 								flag2 = true;
 								break;
@@ -11276,6 +11288,10 @@ public class Frmmain : Form
 						if (Strings.Len(text) == 0)
 						{
 							text = "";
+						}
+						if (SelectedCol == Col_Extname.Index)
+						{
+							text = DisplayDocumentKindForFilter(text);
 						}
 						Clb.AddItem(text, StringComparison.CurrentCultureIgnoreCase);
 					}

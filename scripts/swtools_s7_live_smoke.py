@@ -331,6 +331,81 @@ def window_area(win: Any) -> int:
         return 0
 
 
+def hwnd_area(hwnd: int) -> int:
+    try:
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+        return max(0, int(right - left)) * max(0, int(bottom - top))
+    except Exception:
+        return 0
+
+
+def should_scan_for_license_hwnd(hwnd: int) -> bool:
+    try:
+        title = win32gui.GetWindowText(hwnd).strip()
+        class_name = win32gui.GetClassName(hwnd)
+    except Exception:
+        return False
+    if class_name in {"tooltips_class32", "GDI+ Hook Window Class", "IME", "ComboLBox", "MSCTFIME UI"}:
+        return False
+    if class_name.startswith(".NET-BroadcastEventWindow"):
+        return False
+    area = hwnd_area(hwnd)
+    if title.startswith("SWTools") and area > 250_000:
+        return False
+    if class_name == "#32770":
+        return True
+    if "WindowsForms10.Window" in class_name and area <= 250_000:
+        return True
+    return False
+
+
+def win32_child_texts(hwnd: int) -> list[dict[str, Any]]:
+    texts: list[dict[str, Any]] = []
+
+    def enum_child(child_hwnd: int, _: Any) -> bool:
+        try:
+            text = win32gui.GetWindowText(child_hwnd).strip()
+            class_name = win32gui.GetClassName(child_hwnd)
+            if text:
+                texts.append({"hwnd": int(child_hwnd), "class_name": class_name, "text": text})
+        except Exception:
+            pass
+        return True
+
+    try:
+        win32gui.EnumChildWindows(hwnd, enum_child, None)
+    except Exception:
+        pass
+    return texts
+
+
+def win32_dialog_texts(hwnd: int) -> list[str]:
+    texts: list[str] = []
+    try:
+        title = win32gui.GetWindowText(hwnd).strip()
+        if title:
+            texts.append(title)
+    except Exception:
+        pass
+    texts.extend(item["text"] for item in win32_child_texts(hwnd))
+    return texts
+
+
+def click_win32_dialog_button(hwnd: int, names: list[str]) -> str:
+    expected = {normalize_button_text(name): name for name in names}
+    for item in win32_child_texts(hwnd):
+        text = normalize_button_text(str(item.get("text") or ""))
+        class_name = str(item.get("class_name") or "")
+        if text not in expected:
+            continue
+        if class_name != "Button" and "BUTTON" not in class_name.upper():
+            continue
+        button_hwnd = int(item["hwnd"])
+        win32gui.PostMessage(button_hwnd, 0x00F5, 0, 0)  # BM_CLICK
+        return expected[text]
+    raise RuntimeError(f"Cannot find dialog button from {names!r}")
+
+
 def should_scan_for_license_dialog(win: Any) -> bool:
     try:
         title = win.window_text().strip()
@@ -359,6 +434,14 @@ def should_scan_for_license_dialog(win: Any) -> bool:
 
 def normalize_button_text(text: str) -> str:
     return text.replace("&", "").strip()
+
+
+def compact_control_text(text: str) -> str:
+    return "".join(ch for ch in text if ch.isprintable()).replace("（", "(").replace("）", ")").strip()
+
+
+def is_swtools_window_title(text: str) -> bool:
+    return compact_control_text(text).replace(" ", "").lower().startswith("swtools")
 
 
 def dialog_button_candidates(dialog: Any) -> list[Any]:
@@ -420,48 +503,138 @@ def click_dialog_button(dialog: Any, names: list[str], timeout: float = 1.0) -> 
     raise RuntimeError(f"Cannot find dialog button from {names!r}")
 
 
-def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, Any]:
+def dismiss_license_dialog_win32(swtools_pid: int, timeout: float = 8.0) -> dict[str, Any]:
     deadline = time.time() + timeout
     last: dict[str, Any] = {"found": False, "dismissed": False, "text": ""}
     while time.time() < deadline:
-        for backend in ("win32", "uia"):
-            for win in desktop_windows(backend, process_id=swtools_pid):
-                if not should_scan_for_license_dialog(win):
-                    continue
-                texts = dialog_texts(win)
-                joined = "\n".join(texts)
-                lowered = joined.lower()
-                if "лицензия не обнаружена" not in lowered and "license" not in lowered:
-                    continue
-                if "демо" not in lowered and "проба" not in lowered and "demo" not in lowered:
-                    continue
-                last = {
-                    "found": True,
-                    "dismissed": False,
-                    "backend": backend,
-                    "title": texts[0] if texts else "",
-                    "process_id": window_process_id(win),
-                    "text": joined[:2000],
-                }
-                button = click_dialog_button(win, ["Демо", "Проба", "Demo"], timeout=1.0)
-                close_deadline = time.time() + 3.0
-                while time.time() < close_deadline:
-                    still_open = False
-                    for check in desktop_windows(backend, process_id=swtools_pid):
-                        if not should_scan_for_license_dialog(check):
-                            continue
-                        check_text = "\n".join(dialog_texts(check)).lower()
-                        if "лицензия не обнаружена" in check_text:
-                            still_open = True
-                            break
-                    if not still_open:
-                        last.update({"dismissed": True, "button": button})
-                        return last
-                    time.sleep(0.1)
-                last.update({"button": button})
-                return last
-        time.sleep(0.1)
+        for hwnd in top_window_handles_for_pid(swtools_pid):
+            if not should_scan_for_license_hwnd(hwnd):
+                continue
+            texts = win32_dialog_texts(hwnd)
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "лицензия не обнаружена" not in lowered and "license" not in lowered:
+                continue
+            if "демо" not in lowered and "проба" not in lowered and "demo" not in lowered:
+                continue
+            try:
+                title = win32gui.GetWindowText(hwnd).strip()
+                class_name = win32gui.GetClassName(hwnd)
+            except Exception:
+                title = ""
+                class_name = ""
+            last = {
+                "found": True,
+                "dismissed": False,
+                "backend": "win32-fast",
+                "hwnd": int(hwnd),
+                "title": title,
+                "class_name": class_name,
+                "process_id": swtools_pid,
+                "text": joined[:2000],
+            }
+            button = click_win32_dialog_button(hwnd, ["Демо", "Проба", "Demo"])
+            close_deadline = time.time() + 3.0
+            while time.time() < close_deadline:
+                still_open = False
+                for check_hwnd in top_window_handles_for_pid(swtools_pid):
+                    if not should_scan_for_license_hwnd(check_hwnd):
+                        continue
+                    check_text = "\n".join(win32_dialog_texts(check_hwnd)).lower()
+                    if "лицензия не обнаружена" in check_text:
+                        still_open = True
+                        break
+                if not still_open:
+                    last.update({"dismissed": True, "button": button})
+                    return last
+                time.sleep(0.05)
+            last.update({"button": button})
+            return last
+        time.sleep(0.05)
     return last
+
+
+def dismiss_embedded_license_dialog_uia(swtools_pid: int, timeout: float = 5.0) -> dict[str, Any]:
+    """Handle the newer license panel embedded in the main SWTools form.
+
+    It is not a modal #32770 dialog, so the Win32 dialog-only scanner may never
+    find a small top-level window. Keep the probe process-scoped and invoke the
+    visible WinForms button by UIA, not by coordinates.
+    """
+    deadline = time.time() + timeout
+    last: dict[str, Any] = {"found": False, "dismissed": False, "backend": "uia-embedded", "text": ""}
+    expected_buttons = {"демо": "Демо", "проба": "Проба", "demo": "Demo"}
+    while time.time() < deadline:
+        for hwnd in top_window_handles_for_pid(swtools_pid):
+            try:
+                title = win32gui.GetWindowText(hwnd)
+                class_name = win32gui.GetClassName(hwnd)
+            except Exception:
+                continue
+            if "WindowsForms10.Window" not in class_name or not is_swtools_window_title(title):
+                continue
+            try:
+                win = Desktop(backend="uia").window(handle=hwnd)
+                texts = visible_texts(win)
+            except Exception as exc:
+                last = {
+                    "found": False,
+                    "dismissed": False,
+                    "backend": "uia-embedded",
+                    "hwnd": int(hwnd),
+                    "title": compact_control_text(title),
+                    "class_name": class_name,
+                    "error": str(exc),
+                }
+                continue
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "лицензия не обнаружена" not in lowered and "license" not in lowered:
+                continue
+            last = {
+                "found": True,
+                "dismissed": False,
+                "backend": "uia-embedded",
+                "hwnd": int(hwnd),
+                "title": compact_control_text(title),
+                "class_name": class_name,
+                "process_id": swtools_pid,
+                "text": joined[:2000],
+            }
+            try:
+                buttons = list(win.descendants(control_type="Button"))
+            except Exception:
+                buttons = []
+            for button in buttons:
+                try:
+                    button_text = normalize_button_text(button.window_text()).lower()
+                except Exception:
+                    continue
+                if button_text not in expected_buttons:
+                    continue
+                for action in ("invoke", "legacy"):
+                    try:
+                        if action == "invoke":
+                            button.invoke()
+                        else:
+                            button.iface_invoke.Invoke()
+                        last.update({"dismissed": True, "button": expected_buttons[button_text], "action": action})
+                        return last
+                    except Exception as exc:
+                        last["last_error"] = str(exc)
+                        continue
+        time.sleep(0.05)
+    return last
+
+
+def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, Any]:
+    embedded = dismiss_embedded_license_dialog_uia(swtools_pid, timeout=min(timeout, 5.0))
+    if embedded.get("dismissed"):
+        return embedded
+    win32_result = dismiss_license_dialog_win32(swtools_pid, timeout=max(0.2, timeout - 5.0))
+    if win32_result.get("dismissed") or win32_result.get("found"):
+        return win32_result
+    return embedded if embedded.get("found") else win32_result
 
 
 def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, Any] | None:
@@ -479,7 +652,16 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
                 except Exception:
                     title = ""
                     class_name = ""
-                texts = dialog_texts(win)
+                pre_is_dialog = class_name == "#32770" or title in {"Информация", "Ошибка", "Вопрос"}
+                if not pre_is_dialog:
+                    continue
+                if backend == "win32":
+                    try:
+                        texts = win32_dialog_texts(int(win.handle))
+                    except Exception:
+                        texts = [title] if title else []
+                else:
+                    texts = dialog_texts(win)
                 joined = "\n".join(texts)
                 lowered = joined.lower()
                 if "лицензия не обнаружена" in lowered:
@@ -893,10 +1075,14 @@ def run() -> int:
         started = time.time()
         open_state = invoke_open_ztool_async()
         result["open_ztool"] = dict(open_state)
+        result["open_ztool_wait_started_at"] = round(started, 3)
+        write_checkpoint(result_path, result)
         proc = None
         deadline = time.time() + args.timeout
         while time.time() < deadline and proc is None:
             result["open_ztool"] = dict(open_state)
+            result["open_ztool_wait_elapsed"] = round(time.time() - started, 3)
+            write_checkpoint(result_path, result)
             if open_state.get("done") and open_state.get("error"):
                 raise RuntimeError(f"openZtool failed: {open_state['error']}")
             blocker = blocking_dialog(None, solidworks_pid)

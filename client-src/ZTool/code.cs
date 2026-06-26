@@ -624,7 +624,11 @@ public static class code
 					if (lpdwProcessId != CurSWID)
 					{
 						M_FindWindow m_FindWindow = new M_FindWindow();
-						Receiver_hWnd = m_FindWindow.FindChildHwnd(CurSWID, Receiver_Title);
+						IntPtr intPtr = m_FindWindow.FindChildHwnd(CurSWID, Receiver_Title);
+						if (intPtr != IntPtr.Zero)
+						{
+							Receiver_hWnd = intPtr;
+						}
 					}
 					SWhwnd = (int)Process.GetProcessById(CurSWID).MainWindowHandle;
 					if (HideWindow)
@@ -2962,12 +2966,8 @@ public static class code
 				}
 				text = text.Replace("\r\n", "\n");
 				text = text.Replace("\r", "\n");
-				text.TrimEnd('\n');
+				text = text.TrimEnd('\n');
 				string[] array = text.Split('\n');
-				if (array.Length <= 1)
-				{
-					return 0;
-				}
 				if (Operators.CompareString(array[array.Length - 1], "", TextCompare: false) == 0)
 				{
 					array = (string[])Utils.CopyArray(array, new string[array.Length - 2 + 1]);
@@ -2975,56 +2975,58 @@ public static class code
 				int columnIndex = dataGridViewCell.ColumnIndex;
 				int rowIndex = dataGridViewCell.RowIndex;
 				int num = 0;
-				int num2 = array.Length - 1;
-				int num3 = 0;
+				int num2 = 0;
+				int num3 = array.Length - 1;
+				int num4 = 0;
 				while (true)
 				{
-					int num4 = num3;
-					int num5 = num2;
-					if (num4 > num5)
+					int num5 = num4;
+					int num6 = num3;
+					if (num5 > num6)
 					{
 						break;
 					}
-					string[] array2 = array[num3].Split('\t');
-					int num6 = rowIndex + num3 + num;
-					if (num6 > DGV.Rows.Count - 1)
+					string[] array2 = array[num4].Split('\t');
+					int num7 = rowIndex + num4 + num;
+					if (num7 > DGV.Rows.Count - 1)
 					{
 						break;
 					}
-					if (DGV[columnIndex, num6].Visible)
+					if (DGV[columnIndex, num7].Visible)
 					{
-						if ((columnIndex != MyProject.Forms.Frmmain.Col_FileName.Index || MyProject.Forms.Frmmain.isrepeat(array2[0], num6) < 0) && 0 == 0)
+						if ((columnIndex != MyProject.Forms.Frmmain.Col_FileName.Index || MyProject.Forms.Frmmain.isrepeat(array2[0], num7) < 0) && 0 == 0)
 						{
-							DGV[columnIndex, num6].Value = array2[0];
+							num2 += SetPastedCellValue(DGV, columnIndex, num7, array2[0]);
 						}
 					}
 					else
 					{
-						while (num6 < DGV.Rows.Count - 1)
+						while (num7 < DGV.Rows.Count - 1)
 						{
-							num6++;
+							num7++;
 							num++;
-							if (DGV[columnIndex, num6].Visible)
+							if (DGV[columnIndex, num7].Visible)
 							{
-								if ((columnIndex != MyProject.Forms.Frmmain.Col_FileName.Index || MyProject.Forms.Frmmain.isrepeat(array2[0], num6) < 0) && 0 == 0)
+								if ((columnIndex != MyProject.Forms.Frmmain.Col_FileName.Index || MyProject.Forms.Frmmain.isrepeat(array2[0], num7) < 0) && 0 == 0)
 								{
-									DGV[columnIndex, num6].Value = array2[0];
+									num2 += SetPastedCellValue(DGV, columnIndex, num7, array2[0]);
 								}
 								break;
 							}
 						}
 					}
-					num3++;
+					num4++;
 				}
 				if (DGV[columnIndex, rowIndex].Visible)
 				{
 					DGV.CurrentCell = DGV[columnIndex, rowIndex];
 				}
+				DGV.RefreshEdit();
 				if (DGV.CurrentCell.ColumnIndex == 0)
 				{
-					return 0;
+					return num2;
 				}
-				return 0;
+				return num2;
 			}
 			catch (Exception ex)
 			{
@@ -3040,6 +3042,43 @@ public static class code
 			}
 			return 0;
 		}
+	}
+
+	private static int SetPastedCellValue(DataGridView DGV, int columnIndex, int rowIndex, string rawValue)
+	{
+		string text = NormalizeClipboardCellText(rawValue);
+		DataGridViewCell dataGridViewCell = DGV[columnIndex, rowIndex];
+		if (Operators.CompareString(Convert.ToString(RuntimeHelpers.GetObjectValue(dataGridViewCell.Value)), text, TextCompare: false) == 0)
+		{
+			return 0;
+		}
+		dataGridViewCell.Value = text;
+		MarkPastedCellAsModified(DGV, columnIndex, rowIndex);
+		return 1;
+	}
+
+	private static string NormalizeClipboardCellText(string value)
+	{
+		if (value == null)
+		{
+			return "";
+		}
+		return value.Replace('\u00a0', ' ').Replace("\ufeff", "").Replace("\u200b", "").Replace("\u200c", "").Replace("\u200d", "").Normalize(NormalizationForm.FormKC);
+	}
+
+	private static void MarkPastedCellAsModified(DataGridView DGV, int columnIndex, int rowIndex)
+	{
+		DGV[columnIndex, rowIndex].Style.ForeColor = Color.DarkOrange;
+		if (ShouldPasteMarkRowChanged(columnIndex))
+		{
+			DGV.Rows[rowIndex].Tag = "true";
+		}
+	}
+
+	private static bool ShouldPasteMarkRowChanged(int columnIndex)
+	{
+		Frmmain frmmain = MyProject.Forms.Frmmain;
+		return columnIndex != frmmain.Col_Checkbox.Index && columnIndex != frmmain.Col_Cfg.Index && columnIndex != frmmain.Col_Preview.Index && columnIndex != frmmain.Col_Path.Index && columnIndex != frmmain.Col_Drw.Index;
 	}
 
 	public static string St2(string str)

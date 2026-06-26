@@ -678,7 +678,7 @@ public class frm_copyswfile : Form
 		cancel_Button2.Size = size;
 		this.Cancel_Button.TabIndex = 1;
 		this.Cancel_Button.Text = "Отмена";
-		this.c_Browse.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c_Browse.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		System.Windows.Forms.Button button = this.c_Browse;
 		location = new System.Drawing.Point(360, 39);
 		button.Location = location;
@@ -754,7 +754,7 @@ public class frm_copyswfile : Form
 		textBox6.Size = size;
 		this.c_othername.TabIndex = 10;
 		this.c_othername.Text = ".pdf;.dwg;.dxf";
-		this.c_addprefix.AutoSize = true;
+		this.c_addprefix.AutoSize = false;
 		System.Windows.Forms.CheckBox checkBox8 = this.c_addprefix;
 		location = new System.Drawing.Point(16, 76);
 		checkBox8.Location = location;
@@ -776,7 +776,7 @@ public class frm_copyswfile : Form
 		size = new System.Drawing.Size(100, 23);
 		textBox9.Size = size;
 		this.c_prefix.TabIndex = 12;
-		this.c_addsuffix.AutoSize = true;
+		this.c_addsuffix.AutoSize = false;
 		System.Windows.Forms.CheckBox checkBox10 = this.c_addsuffix;
 		location = new System.Drawing.Point(200, 76);
 		checkBox10.Location = location;
@@ -883,16 +883,17 @@ public class frm_copyswfile : Form
 		this.AutoScaleDimensions = sizeF;
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 		this.CancelButton = this.Cancel_Button;
-		size = new System.Drawing.Size(394, 271);
+		size = new System.Drawing.Size(760, 420);
 		this.ClientSize = size;
 		this.Controls.Add(this.error_box);
 		this.Controls.Add(this.Panel1);
 		this.Controls.Add(this.StatusStrip1);
-		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-		this.MaximizeBox = false;
+		this.MaximizeBox = true;
 		this.MinimizeBox = false;
-		size = new System.Drawing.Size(410, 310);
+		this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
+		size = new System.Drawing.Size(760, 430);
 		this.MinimumSize = size;
 		this.Name = "frm_copyswfile";
 		this.ShowInTaskbar = false;
@@ -917,7 +918,7 @@ public class frm_copyswfile : Form
 		filelist = new List<swfile>();
 		dpixRatio = 1.0;
 		ref Size reference = ref mediumsize;
-		reference = new Size(410, 620);
+		reference = new Size(760, 620);
 		InitializeComponent();
 		using (Graphics graphics = Graphics.FromHwnd(Handle))
 		{
@@ -925,10 +926,79 @@ public class frm_copyswfile : Form
 		}
 		checked
 		{
-			MinimumSize = (Size = new Size((int)Math.Round(410.0 * dpixRatio), (int)Math.Round(310.0 * dpixRatio)));
+			MinimumSize = (Size = new Size(Dpi(760), Dpi(430)));
 			ref Size reference2 = ref mediumsize;
-			reference2 = new Size((int)Math.Round(410.0 * dpixRatio), (int)Math.Round(620.0 * dpixRatio));
+			reference2 = new Size(Dpi(760), Dpi(620));
 		}
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return (int)Math.Round((double)value * dpixRatio);
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+		FormBorderStyle = FormBorderStyle.SizableToolWindow;
+		MaximizeBox = true;
+		MinimumSize = new Size(Dpi(760), Dpi(430));
+		mediumsize = new Size(Dpi(760), Dpi(620));
+		SizeGripStyle = SizeGripStyle.Show;
+		base.Resize += frm_copyswfile_ResponsiveResize;
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void frm_copyswfile_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (Panel1 == null)
+		{
+			return;
+		}
+		int num = Dpi(16);
+		int num2 = Math.Max(Dpi(300), ClientSize.Width - num * 2);
+		int num3 = Dpi(28);
+		Panel1.Height = Dpi(292);
+		c_usefolder.SetBounds(num, Dpi(16), Dpi(260), Dpi(24));
+		c_folder.SetBounds(num, Dpi(42), Math.Max(Dpi(360), ClientSize.Width - Dpi(64)), Dpi(25));
+		c_Browse.SetBounds(c_folder.Right + Dpi(4), Dpi(41), Dpi(32), Dpi(27));
+		c_addprefix.AutoSize = false;
+		c_addprefix.SetBounds(num, Dpi(78), Dpi(150), Dpi(24));
+		c_prefix.SetBounds(Dpi(170), Dpi(77), Dpi(165), Dpi(25));
+		c_addsuffix.AutoSize = false;
+		c_addsuffix.SetBounds(Dpi(352), Dpi(78), Dpi(150), Dpi(24));
+		c_suffix.SetBounds(Dpi(508), Dpi(77), Math.Max(Dpi(170), ClientSize.Width - Dpi(524)), Dpi(25));
+		c_Include3d.AutoSize = false;
+		c_Include3d.SetBounds(num, Dpi(114), Dpi(210), Dpi(24));
+		c_Includedrw.AutoSize = false;
+		c_Includedrw.SetBounds(Dpi(242), Dpi(114), Dpi(190), Dpi(24));
+		c_Includevirtual.AutoSize = false;
+		c_Includevirtual.SetBounds(num, Dpi(140), num2, Dpi(24));
+		c_Includeother.AutoSize = false;
+		c_Includeother.SetBounds(num, Dpi(166), num2, Dpi(24));
+		c_othername.SetBounds(num, Dpi(192), Math.Min(Dpi(430), num2), Dpi(25));
+		c_overwrite.AutoSize = false;
+		c_overwrite.SetBounds(num, Dpi(226), Dpi(360), Dpi(24));
+		TableLayoutPanel1.AutoSize = false;
+		TableLayoutPanel1.SetBounds(ClientSize.Width - Dpi(174), Dpi(246), Dpi(156), Dpi(36));
+		OK_Button.Size = new Size(Dpi(72), num3);
+		Cancel_Button.Size = new Size(Dpi(78), num3);
+		error_box.SetBounds(0, Panel1.Bottom, ClientSize.Width, Math.Max(Dpi(80), ClientSize.Height - Panel1.Bottom));
 	}
 
 	private void OK_Button_Click(object sender, EventArgs e)

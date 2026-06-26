@@ -90,61 +90,61 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 835,
+          "line": 839,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1039,
+          "line": 1043,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1326,
+          "line": 1330,
           "column": 7,
           "code": "CS0162"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1342,
+          "line": 1346,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1343,
+          "line": 1347,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1344,
+          "line": 1348,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1535,
+          "line": 1539,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1536,
+          "line": 1540,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 1537,
+          "line": 1541,
           "column": 13,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/code.cs",
-          "line": 3774,
+          "line": 3813,
           "column": 7,
           "code": "CS0162"
         },
@@ -180,13 +180,13 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/frm_copyswfile.cs",
-          "line": 1057,
+          "line": 1127,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/frm_copyswfile.cs",
-          "line": 1630,
+          "line": 1700,
           "column": 4,
           "code": "CS0162"
         },
@@ -372,19 +372,19 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 10779,
+          "line": 10789,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 11923,
+          "line": 11939,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 12543,
+          "line": 12559,
           "column": 5,
           "code": "CS0162"
         },

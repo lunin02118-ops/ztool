@@ -108,6 +108,54 @@ jobs:
       - name: String invariants - from-source source tree (client + add-in)
         run: python tools/check_source_string_invariants.py --root client-src --root client-src-addin
 
+      - name: Document-kind filter mapping self-test
+        run: python tools/e2e/check_document_kind_filter_mapping.py --self-test
+
+      - name: Document-kind filter mapping gate
+        run: python tools/e2e/check_document_kind_filter_mapping.py
+
+      - name: File-name rule dialog layout self-test
+        run: python tools/e2e/check_frmrename_layout.py --self-test
+
+      - name: File-name rule dialog layout gate
+        run: python tools/e2e/check_frmrename_layout.py
+
+      - name: Save-to-new-folder dialog layout self-test
+        run: python tools/e2e/check_frmsetnewfolder_layout.py --self-test
+
+      - name: Save-to-new-folder dialog layout gate
+        run: python tools/e2e/check_frmsetnewfolder_layout.py
+
+      - name: Replace-links dialog layout self-test
+        run: python tools/e2e/check_frmreplacepartslist_layout.py --self-test
+
+      - name: Replace-links dialog layout gate
+        run: python tools/e2e/check_frmreplacepartslist_layout.py
+
+      - name: Add-in rename dialog layout self-test
+        run: python tools/e2e/check_addin_rename_layout.py --self-test
+
+      - name: Add-in rename dialog layout gate
+        run: python tools/e2e/check_addin_rename_layout.py
+
+      - name: Backup-copy dialog layout self-test
+        run: python tools/e2e/check_frmcopyswfile_layout.py --self-test
+
+      - name: Backup-copy dialog layout gate
+        run: python tools/e2e/check_frmcopyswfile_layout.py
+
+      - name: Grid paste dirty-state self-test
+        run: python tools/e2e/check_grid_paste_dirty_state.py --self-test
+
+      - name: Grid paste dirty-state gate
+        run: python tools/e2e/check_grid_paste_dirty_state.py
+
+      - name: Batch conversion configuration mapping self-test
+        run: python tools/e2e/check_batch_convert_configuration_mapping.py --self-test
+
+      - name: Batch conversion configuration mapping gate
+        run: python tools/e2e/check_batch_convert_configuration_mapping.py
+
       - name: Visual surface profile gate
         run: |
           python tools/e2e/check_visual_surface_profile.py --self-test
