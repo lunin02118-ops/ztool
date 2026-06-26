@@ -37,39 +37,39 @@ Visual FULL PASS: **NO-GO**.
   - Keeps S7 connect object-driven; `Подключить SW` stays UIA/invoke path.
   - Adds faster license dialog close evidence without screen-coordinate dependency.
 
-- `client-src/ZTool/Frmmain.cs`
+- `client-src/<client>/Frmmain.cs`
   - Localizes visible document-kind filter values for the grid filter surface.
   - Maps legacy/internal Han token `零件` to visible Russian `Деталь` and back when applying the filter.
 
-- `client-src/ZTool/code.cs`
+- `client-src/<client>/code.cs`
   - Fixes clipboard paste path for grid edits:
     - single-cell clipboard text is no longer rejected;
     - trailing row separator is trimmed by assignment;
     - pasted text is normalized before assignment;
     - changed pasted rows are marked with `Rows[row].Tag = "true"` so `SaveToSW` can persist them.
 
-- `client-src/ZTool/FrmOutputlist.cs`
-- `client-src/ZTool/FrmPrintlist.cs`
+- `client-src/<client>/FrmOutputlist.cs`
+- `client-src/<client>/FrmPrintlist.cs`
   - Preserves and merges `Конфигурация детали` values when batch conversion/printing lists receive duplicate file rows.
   - Configured duplicates no longer collapse to blank configuration.
   - Plain duplicates no longer clear a known configuration.
 
 ### UI layout fixes
 
-- `client-src/ZTool/FrmRename.cs`
+- `client-src/<client>/FrmRename.cs`
   - Makes the file-name rule dialog sizable/DPI-aware and prevents Russian labels/fields from clipping.
 
-- `client-src/ZTool/FrmSetNewFolder.cs`
+- `client-src/<client>/FrmSetNewFolder.cs`
   - Fixes `Сохранить в новую папку` layout: source/new path fields, browse button and action buttons remain readable with a minimum window size.
 
-- `client-src/ZTool/FrmReplacePartslist.cs`
+- `client-src/<client>/FrmReplacePartslist.cs`
   - Fixes `Заменить ссылочные файлы` layout: minimum width, split panels, bottom groups and path fields remain visible/readable.
 
-- `client-src/ZTool/frm_copyswfile.cs`
+- `client-src/<client>/frm_copyswfile.cs`
   - Fixes `Копировать резервную копию` layout: `Добавить префикс`, `Добавить суффикс`, path field, extra-extension field and OK/Cancel controls no longer overlap.
   - Replaces legacy CJK UI font with `Segoe UI`.
 
-- `client-src-addin/ZTool/ReName.cs`
+- `client-src-addin/<addin>/ReName.cs`
   - Fixes add-in save/rename dialog layout.
   - Replaces visible legacy Han field names in saved-rule UI via compatibility mapping to Russian names.
   - Replaces Chinese tooltips with Russian guidance.
@@ -109,8 +109,8 @@ Visual FULL PASS: **NO-GO**.
 The following checks were run locally during the PR #104 stack:
 
 ```powershell
-dotnet build client-src\ZTool.csproj -c Release -warnaserror:false --no-incremental -v:minimal
-dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release -warnaserror:false --no-incremental
+dotnet build client-src\<client>.csproj -c Release -warnaserror:false --no-incremental -v:minimal
+dotnet build client-src-addin\<addin>.SwAddin.csproj -c Release -warnaserror:false --no-incremental
 pwsh -NoProfile -File scripts\check_client_src_warnings.ps1
 python tools\check_source_string_invariants.py --root client-src --root client-src-addin
 python tools\check_visible_brand_boundary.py
@@ -180,4 +180,3 @@ This does **not** claim full visual localization acceptance.
 - Signing/final release dossier.
 - Accepted hash decision.
 - Owner Production GO.
-
