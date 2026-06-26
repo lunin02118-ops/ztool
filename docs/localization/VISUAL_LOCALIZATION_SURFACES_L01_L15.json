@@ -129,7 +129,7 @@
       "id": "L-14",
       "title": "Installer UI",
       "process": "SWTools-Setup.exe",
-      "process_names": ["SWTools-Setup.exe", "SWTools-1.1.6-Setup.exe", "ZTool-Setup.exe", "ZTool-1.1.6-Setup.exe"],
+      "process_names": ["SWTools-Setup.exe", "SWTools-1.1.8-Setup.exe", "SWTools-1.1.6-Setup.exe", "ZTool-Setup.exe", "ZTool-1.1.6-Setup.exe"],
       "window_contains": "Установка",
       "text_contains": ["SWTools"],
       "required": true,

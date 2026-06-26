@@ -322,7 +322,7 @@
           "type": "installer_launch",
           "description": "Launch installer candidate and wait for setup window.",
           "locator": {
-            "process_names": ["SWTools-Setup.exe", "SWTools-1.1.6-Setup.exe"],
+            "process_names": ["SWTools-Setup.exe", "SWTools-1.1.8-Setup.exe", "SWTools-1.1.6-Setup.exe"],
             "window_contains": "Установка",
             "text_contains": ["SWTools"]
           }
