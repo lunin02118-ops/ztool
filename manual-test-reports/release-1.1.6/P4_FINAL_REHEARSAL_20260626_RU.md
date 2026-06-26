@@ -88,12 +88,29 @@ Clean source-build live E2E на `c3cdf7b`:
 - Branding/version/icon: PASS.
 - `production_go_allowed=false`.
 
-Final package `60deb99` live evidence:
+Final package live evidence:
 
 - S7 на финальном runtime: PASS, `29` строк, `40` колонок.
 - Package/runtime identity: PASS.
 - Non-strict S8 на обычном TestModel экспортировал `8/8`, но strict filters ожидаемо FAIL для mode 7/8 на неподготовленной модели (`0` строк).
-- Попытка strict fixture на финальном runtime подготовила fixture и прошла S7, но S8 automation не завершил проход из-за нестабильного UI/ribbon state после trial countdown. Это остается **release blocker**, пока не будет получен чистый финальный package-run evidence с `S7 PASS + S8 strict 8/8 PASS + branding PASS`.
+- Чистый финальный package-run в production-like пути без repo-name leakage:
+  `D:\SWToolsE2E\production-blockers-20260626-final-e2e-with-model`.
+- S7: PASS, `29` строк, `40` колонок.
+- S8 strict: PASS, `8/8` workbook exports.
+- Strict filters: PASS (`mode 7 = 18`, `mode 8 = 6`).
+- Branding/version/icon: PASS (`SWTools 1.1.6+0faabee.clean(x64)`, icon hash match).
+- `production_go_allowed=false`.
+- Wrapper-level `release-e2e-solidworks-result.json` остался `FAIL`, потому что
+  release wrapper не принимал doctor WARN о уже запущенном SolidWorks. Stage-level
+  evidence в `e2e-result.json` проверен отдельно:
+  `assert_e2e_result.py --allow-warn --require-stage-pass 07-s7-connect --require-stage-pass 08-s8-bom-export --require-stage-pass 09-excel-validation --require-stage-pass 10-branding-version --require-s8-strict-filters` → PASS.
+
+Ранее наблюдавшаяся нестабильность повторного S7 запуска сведена к stale
+`SWTools.exe` из того же тестового runtime. Harness обновлен: перед внутренним
+launcher handoff он закрывает только процессы `SWTools.exe`, чей executable лежит внутри
+проверяемого `runtime_dir`; чужие установки не трогает. Direct S7 regression:
+`D:\SWToolsE2E\production-blockers-20260626-s7-direct-after-stale-fix`,
+S7 PASS `29/40`.
 
 ## Visual localization L-01..L-15
 
@@ -107,13 +124,19 @@ Visual FULL PASS: **NO-GO / BLOCKER**.
 Подтверждено:
 
 - strict validator блокирует неполный manifest;
-- L-01 capture на финальном runtime выполняется;
-- сохраненный historical evidence содержит прогресс по L-03..L-06.
+- live visual capture на production-like runtime без repo-name leakage:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L01-L03-L06-prodpath`;
+- L-01, L-03, L-04, L-05, L-06: PASS, runtime path match, forbidden visible text empty, Han empty;
+- L-07: PASS после уточнения opener profile (`object focus + Enter`, окно развернуто перед поиском ribbon control):
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L07-prodpath-r5`;
+- L-04 больше не падает на ложном forbidden text из-за пути репозитория: визуальная проверка выполнялась из `D:\SWToolsE2E\...`.
 
 Не закрыто:
 
 - нет cumulative manifest `15/15` со strict PASS;
 - L-02 license dialog opener не нашел object-доступную registration/license/demo surface в текущем main window;
+- L-08 opener пока выбирает не тот save/options route и требует отдельной сверки с `FrmSaveOption`;
+- L-09..L-15 требуют отдельного добора/пересъёмки после стабилизации opener routing;
 - owner/auditor visual review не выполнен.
 
 ## Accepted hashes
@@ -131,11 +154,10 @@ Owner/auditor GO: **PENDING**.
 нужны:
 
 1. Подписанные production artifacts.
-2. Чистый финальный package-run `S7/S8 strict/branding` PASS.
-3. Full visual localization manifest L-01..L-15 strict PASS.
-4. Owner/auditor visual review.
-5. Accepted hash promotion decision.
-6. Явный owner Production GO.
+2. Full visual localization manifest L-01..L-15 strict PASS.
+3. Owner/auditor visual review.
+4. Accepted hash promotion decision.
+5. Явный owner Production GO.
 
 ## Вывод
 
@@ -146,6 +168,4 @@ layout fixes и release evidence, но production release на текущем с
 - unsigned Authenticode artifacts;
 - нет полного visual L-01..L-15 strict PASS;
 - нет owner/auditor review;
-- нет accepted hash decision;
-- финальный package-run strict S8/branding нужно повторить в чистой лицензированной
-  сессии без trial countdown interference.
+- нет accepted hash decision.

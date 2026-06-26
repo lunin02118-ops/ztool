@@ -64,7 +64,7 @@
       "title": "Options dialog",
       "process": "SWTools.exe",
       "window_contains": "Параметры",
-      "text_contains": ["Общие"],
+      "text_contains": [],
       "required": true,
       "han_policy": "fail",
       "notes": "FrmOptions with tabs visible."

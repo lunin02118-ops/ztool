@@ -145,6 +145,45 @@ def find_runtime_process(runtime_dir: Path, started_after: float) -> psutil.Proc
     return candidates[0] if candidates else None
 
 
+def close_stale_runtime_processes(runtime_dir: Path) -> list[dict[str, Any]]:
+    runtime = str(runtime_dir.resolve()).lower()
+    closed: list[dict[str, Any]] = []
+    targets: list[psutil.Process] = []
+    for proc in psutil.process_iter(["pid", "name", "exe", "create_time"]):
+        try:
+            if (proc.info.get("name") or "").lower() != "swtools.exe":
+                continue
+            exe = (proc.info.get("exe") or "").lower()
+            if exe.startswith(runtime):
+                targets.append(proc)
+                closed.append(
+                    {
+                        "pid": int(proc.info.get("pid") or proc.pid),
+                        "exe": proc.info.get("exe") or "",
+                        "create_time": proc.info.get("create_time"),
+                        "action": "terminate",
+                    }
+                )
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    for proc in targets:
+        try:
+            proc.terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    gone, alive = psutil.wait_procs(targets, timeout=3.0)
+    for proc in alive:
+        try:
+            proc.kill()
+            for item in closed:
+                if item["pid"] == proc.pid:
+                    item["action"] = "kill"
+                    break
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return closed
+
+
 def process_command_line(pid: int) -> str:
     try:
         return " ".join(psutil.Process(pid).cmdline())
@@ -1070,6 +1109,10 @@ def run() -> int:
         if not addin:
             raise RuntimeError("SolidWorks returned no ZTool.SwAddin object")
         result["checks"].append("addin object ok")
+        stale_processes = close_stale_runtime_processes(runtime_dir)
+        result["closed_stale_swtools_processes"] = stale_processes
+        if stale_processes:
+            result["checks"].append("stale runtime SWTools process closed before openZtool")
         write_checkpoint(result_path, result)
 
         started = time.time()

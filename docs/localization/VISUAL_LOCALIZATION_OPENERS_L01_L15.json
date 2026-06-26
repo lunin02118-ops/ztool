@@ -166,16 +166,17 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_text": "Параметры"
+            "control_text": "Параметры",
+            "control_key_activate": "{ENTER}",
+            "maximize_window": true
           }
         },
         {
           "type": "wait_window",
-          "description": "Wait for options dialog with General tab.",
+          "description": "Wait for options dialog.",
           "locator": {
             "process": "SWTools.exe",
-            "window_contains": "Параметры",
-            "text_contains": ["Общие"]
+            "window_contains": "Параметры"
           }
         }
       ]

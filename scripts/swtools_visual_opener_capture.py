@@ -287,6 +287,8 @@ def control_type_matches(child: Any, locator: dict[str, Any]) -> bool:
 
 def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
     wanted_texts = control_text_candidates(locator)
+    occurrence = int(locator.get("control_occurrence", 1) or 1)
+    matched = 0
     deadline = time.time() + timeout
     seen: list[str] = []
     while time.time() < deadline:
@@ -310,7 +312,9 @@ def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
                     continue
                 if locator.get("control_click_anchor") and control_handle(child) is None:
                     continue
-                return child
+                matched += 1
+                if matched >= occurrence:
+                    return child
         time.sleep(0.2)
     sample = ", ".join(sorted(set(seen))[:60])
     raise RuntimeError(f"Control not found for locator {locator!r}; seen: {sample}")
@@ -422,6 +426,14 @@ def execute_action(action: dict[str, Any], timeout: float, installer_path: Path 
         return evidence
     if action_type in {"uia_invoke", "win32_invoke", "ribbon_command", "help_button", "menu_item"}:
         win = wait_window(locator, timeout)
+        maximized = False
+        if locator.get("maximize_window"):
+            try:
+                win.maximize()
+                maximized = True
+                time.sleep(0.4)
+            except Exception:
+                maximized = False
         control = find_control(win, locator, timeout)
         used_action = invoke_control(control, prefer_expand=action_type == "ribbon_command", locator=locator)
         evidence.update(
@@ -431,6 +443,7 @@ def execute_action(action: dict[str, Any], timeout: float, installer_path: Path 
                 "process_info": process_info(window_process_id(win) or -1),
                 "invoke_action": used_action,
                 "control_text": norm(control.window_text()),
+                "maximized": maximized,
             }
         )
         wait_expected_menu(locator, min(timeout, 5.0))
