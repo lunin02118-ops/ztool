@@ -132,6 +132,12 @@ jobs:
       - name: Replace-links dialog layout gate
         run: python tools/e2e/check_frmreplacepartslist_layout.py
 
+      - name: Add-in rename dialog layout self-test
+        run: python tools/e2e/check_addin_rename_layout.py --self-test
+
+      - name: Add-in rename dialog layout gate
+        run: python tools/e2e/check_addin_rename_layout.py
+
       - name: Grid paste dirty-state self-test
         run: python tools/e2e/check_grid_paste_dirty_state.py --self-test
 

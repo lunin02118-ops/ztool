@@ -1354,7 +1354,7 @@ public class ReName : Form
 		p_56.Controls.Add(p_61);
 		p_56.Controls.Add(p_57);
 		p_56.Controls.Add(p_58);
-		p_56.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_56.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		GroupBox groupBox = p_56;
 		location = new Point(6, 6);
 		groupBox.Location = location;
@@ -1417,7 +1417,7 @@ public class ReName : Form
 		p_62.TabIndex = 3;
 		p_65.BackgroundImage = Type_26.p_47;
 		p_65.BackgroundImageLayout = ImageLayout.Center;
-		p_65.Font = new Font("宋体", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_65.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		Button button7 = p_65;
 		location = new Point(431, 92);
 		button7.Location = location;
@@ -1432,7 +1432,7 @@ public class ReName : Form
 		p_65.UseVisualStyleBackColor = true;
 		p_66.BackgroundImage = Type_26.p_47;
 		p_66.BackgroundImageLayout = ImageLayout.Center;
-		p_66.Font = new Font("宋体", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_66.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		Button button10 = p_66;
 		location = new Point(261, 92);
 		button10.Location = location;
@@ -1447,7 +1447,7 @@ public class ReName : Form
 		p_66.UseVisualStyleBackColor = true;
 		p_64.BackgroundImage = Type_26.p_47;
 		p_64.BackgroundImageLayout = ImageLayout.Center;
-		p_64.Font = new Font("宋体", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_64.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		Button button13 = p_64;
 		location = new Point(95, 92);
 		button13.Location = location;
@@ -1514,7 +1514,7 @@ public class ReName : Form
 		p_57.TabIndex = 0;
 		p_57.Text = "Сохранить с именем:";
 		p_58.AutoSize = true;
-		p_58.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_58.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		Label label3 = p_58;
 		location = new Point(7, 26);
 		label3.Location = location;
@@ -1538,7 +1538,7 @@ public class ReName : Form
 		p_67.Tag = "";
 		p_68.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 		p_68.AutoSize = true;
-		p_68.Font = new Font("微软雅黑", 9f, FontStyle.Italic, GraphicsUnit.Point, 134);
+		p_68.Font = new Font("Segoe UI", 9f, FontStyle.Italic, GraphicsUnit.Point, 204);
 		p_68.ForeColor = Color.Blue;
 		Label label7 = p_68;
 		location = new Point(7, 298);
@@ -1645,7 +1645,7 @@ public class ReName : Form
 		p_76.AllowUserToAddRows = false;
 		p_76.AllowUserToDeleteRows = false;
 		p_76.AllowUserToResizeRows = false;
-		dataGridViewCellStyle.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		dataGridViewCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		p_76.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle;
 		p_76.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
 		p_76.BackgroundColor = Color.White;
@@ -1653,7 +1653,7 @@ public class ReName : Form
 		p_76.Columns.AddRange(p_95, p_96, p_97, p_98);
 		dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
 		dataGridViewCellStyle2.BackColor = SystemColors.Window;
-		dataGridViewCellStyle2.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		dataGridViewCellStyle2.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
 		dataGridViewCellStyle2.NullValue = "\"\"";
 		dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
@@ -1668,7 +1668,7 @@ public class ReName : Form
 		p_76.Name = "DGV1";
 		p_76.RowHeadersVisible = false;
 		p_76.RowTemplate.Height = 23;
-		p_76.ScrollBars = ScrollBars.None;
+		p_76.ScrollBars = ScrollBars.Both;
 		DataGridView dataGridView2 = p_76;
 		size = new Size(459, 110);
 		dataGridView2.Size = size;
@@ -1815,7 +1815,7 @@ public class ReName : Form
 		p_84.TabStop = false;
 		p_84.Text = "Выбор типа";
 		p_85.AutoSize = true;
-		p_85.Font = new Font("微软雅黑", 9f, FontStyle.Italic, GraphicsUnit.Point, 134);
+		p_85.Font = new Font("Segoe UI", 9f, FontStyle.Italic, GraphicsUnit.Point, 204);
 		p_85.ForeColor = Color.Blue;
 		p_85.Image = Type_26.p_48;
 		p_85.ImageAlign = ContentAlignment.MiddleLeft;
@@ -1868,7 +1868,7 @@ public class ReName : Form
 		p_89.Controls.Add(p_75);
 		p_89.Controls.Add(p_69);
 		p_89.Controls.Add(p_90);
-		p_89.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		p_89.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		p_89.HotTrack = true;
 		TabControl tabControl = p_89;
 		location = new Point(6, 136);
@@ -1959,21 +1959,24 @@ public class ReName : Form
 		AutoScaleMode = AutoScaleMode.Dpi;
 		BackColor = SystemColors.Control;
 		CancelButton = p_55;
-		size = new Size(484, 324);
+		size = new Size(760, 430);
 		ClientSize = size;
 		Controls.Add(p_68);
 		Controls.Add(p_67);
 		Controls.Add(p_89);
 		Controls.Add(p_56);
 		Controls.Add(p_53);
-		Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
 		Icon = (Icon)componentResourceManager.GetObject("$this.Icon");
 		KeyPreview = true;
 		margin = new Padding(3, 4, 3, 4);
 		Margin = margin;
-		MaximizeBox = false;
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
 		MinimizeBox = false;
-		size = new Size(500, 360);
+		MaximumSize = Size.Empty;
+		SizeGripStyle = SizeGripStyle.Show;
+		size = new Size(760, 460);
 		MinimumSize = size;
 		Name = "ReName";
 		ShowInTaskbar = false;
@@ -2016,6 +2019,7 @@ public class ReName : Form
 		{
 			f_345 = graphics.DpiX / 96f;
 		}
+		ConfigureResponsiveLayout();
 		checked
 		{
 			int num = p_76.ColumnCount - 1;
@@ -2024,6 +2028,135 @@ public class ReName : Form
 				p_76.Columns[i].MinimumWidth = (int)Math.Round((double)p_76.Columns[i].MinimumWidth * f_345);
 				p_76.Columns[i].Width = (int)Math.Round((double)p_76.Columns[i].Width * f_345);
 			}
+		}
+	}
+
+	private int Dpi(int value)
+	{
+		return (int)Math.Round((double)value * f_345);
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		Font font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204);
+		ApplyFont(this, font);
+		p_68.Font = new Font("Segoe UI", 9f, FontStyle.Italic, GraphicsUnit.Point, 204);
+		p_85.Font = new Font("Segoe UI", 9f, FontStyle.Italic, GraphicsUnit.Point, 204);
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
+		MaximumSize = Size.Empty;
+		MinimumSize = new Size(Dpi(760), Dpi(460));
+		SizeGripStyle = SizeGripStyle.Show;
+		if (ClientSize.Width < Dpi(760) || ClientSize.Height < Dpi(430))
+		{
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(760)), Math.Max(ClientSize.Height, Dpi(430)));
+		}
+		base.Resize += m_ResponsiveResize;
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void m_ResponsiveResize(object P_0, EventArgs P_1)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (p_56 == null || p_89 == null)
+		{
+			return;
+		}
+		int num = Dpi(8);
+		int num2 = Dpi(132);
+		int num3 = Dpi(30);
+		int num4 = Dpi(130);
+		p_56.SetBounds(num, num, ClientSize.Width - num * 2, Dpi(130));
+		p_58.SetBounds(num, Dpi(28), num4, Dpi(22));
+		p_57.SetBounds(num, Dpi(62), num4, Dpi(22));
+		int num5 = num + num4;
+		p_103.SetBounds(num5, Dpi(18), p_56.Width - num5 - num, Dpi(32));
+		p_103.ColumnStyles.Clear();
+		p_103.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+		p_103.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(145)));
+		p_102.Anchor = AnchorStyles.Left;
+		p_102.AutoSize = true;
+		p_62.Dock = DockStyle.Fill;
+		p_63.SetBounds(num5, Dpi(58), p_56.Width - num5 - num, Dpi(25));
+		int num6 = Dpi(94);
+		p_61.SetBounds(num, num6, num2, Dpi(28));
+		p_64.SetBounds(p_61.Right + Dpi(4), num6, num3, Dpi(28));
+		p_60.SetBounds(p_64.Right + Dpi(26), num6, Dpi(140), Dpi(28));
+		p_66.SetBounds(p_60.Right + Dpi(4), num6, num3, Dpi(28));
+		p_59.SetBounds(p_66.Right + Dpi(26), num6, Dpi(130), Dpi(28));
+		p_65.SetBounds(p_59.Right + Dpi(4), num6, num3, Dpi(28));
+		int num7 = p_56.Bottom + Dpi(8);
+		p_89.SetBounds(num, num7, ClientSize.Width - num * 2, Math.Max(Dpi(180), ClientSize.Height - num7 - Dpi(58)));
+		p_72.Width = Dpi(96);
+		p_92.Width = Dpi(96);
+		p_73.SetBounds(Dpi(8), Dpi(8), Dpi(80), Dpi(28));
+		p_74.SetBounds(Dpi(8), Dpi(44), Dpi(80), Dpi(28));
+		p_93.SetBounds(Dpi(8), Dpi(8), Dpi(80), Dpi(28));
+		p_94.SetBounds(Dpi(8), Dpi(44), Dpi(80), Dpi(28));
+		p_76.ScrollBars = ScrollBars.Both;
+		p_96.Width = Dpi(155);
+		p_97.Width = Dpi(190);
+		p_98.MinimumWidth = Dpi(260);
+		p_84.SetBounds(Dpi(8), Dpi(8), Dpi(270), Dpi(118));
+		p_78.SetBounds(Dpi(292), Dpi(8), Math.Max(Dpi(430), p_77.ClientSize.Width - Dpi(304)), Dpi(118));
+		p_88.AutoSize = false;
+		p_88.Size = new Size(Dpi(245), Dpi(24));
+		p_87.AutoSize = false;
+		p_87.Size = new Size(Dpi(220), Dpi(24));
+		p_86.AutoSize = false;
+		p_86.Size = new Size(Dpi(230), Dpi(24));
+		p_83.AutoSize = false;
+		p_83.Size = new Size(Dpi(190), Dpi(24));
+		p_80.AutoSize = false;
+		p_80.Size = new Size(Dpi(260), Dpi(24));
+		p_79.AutoSize = false;
+		p_79.Size = new Size(Dpi(250), Dpi(24));
+		p_104.AutoSize = false;
+		p_104.Size = new Size(Dpi(210), Dpi(24));
+		p_82.AutoSize = false;
+		p_82.Size = new Size(Dpi(210), Dpi(24));
+		p_81.AutoSize = false;
+		p_81.Size = new Size(Dpi(150), Dpi(24));
+		p_68.SetBounds(num, ClientSize.Height - Dpi(32), Dpi(170), Dpi(22));
+		p_67.SetBounds(Dpi(180), ClientSize.Height - Dpi(32), ClientSize.Width - Dpi(410), Dpi(22));
+		p_53.SetBounds(ClientSize.Width - Dpi(212), ClientSize.Height - Dpi(40), Dpi(204), Dpi(36));
+		p_54.Size = new Size(Dpi(86), Dpi(28));
+		p_55.Size = new Size(Dpi(86), Dpi(28));
+	}
+
+	private string NormalizeRenameFieldName(string value, string fallback)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			return fallback;
+		}
+		string text = value.Trim();
+		switch (text)
+		{
+		case "$\u56fe\u53f7$":
+		case "%\u56fe\u53f7%":
+			return "$Обозначение$";
+		case "$\u96f6\u4ef6\u540d\u79f0$":
+		case "%\u96f6\u4ef6\u540d\u79f0%":
+			return "$Наименование$";
+		case "$\u7248\u672c$":
+		case "%\u7248\u672c%":
+			return "$Версия$";
+		default:
+			return text;
 		}
 	}
 
@@ -2439,12 +2572,9 @@ public class ReName : Form
 		bool flag3 = default(bool);
 		try
 		{
-			f_335 = Type_16.m_63("ReName", "FieldName1");
-			f_335 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_335, "", TextCompare: false) != 0, f_335, "$Обозначение$"));
-			f_336 = Type_16.m_63("ReName", "FieldName2");
-			f_336 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_336, "", TextCompare: false) != 0, f_336, "$Наименование$"));
-			f_337 = Type_16.m_63("ReName", "FieldName3");
-			f_337 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_337, "", TextCompare: false) != 0, f_337, "$Версия$"));
+			f_335 = NormalizeRenameFieldName(Type_16.m_63("ReName", "FieldName1"), "$Обозначение$");
+			f_336 = NormalizeRenameFieldName(Type_16.m_63("ReName", "FieldName2"), "$Наименование$");
+			f_337 = NormalizeRenameFieldName(Type_16.m_63("ReName", "FieldName3"), "$Версия$");
 			f_338 = Type_16.m_63("ReName", "RegxPattern1");
 			f_338 = Conversions.ToString(Interaction.IIf(Operators.CompareString(f_338, "", TextCompare: false) != 0, f_338, "[\\S*]+[A-Za-z0-9]"));
 			f_339 = Type_16.m_63("ReName", "RegxPattern2");
@@ -2470,11 +2600,11 @@ public class ReName : Form
 			dataGridView.Rows[1].Cells[0].Value = flag2;
 			dataGridView.Rows[2].Cells[0].Value = flag3;
 			dataGridView.Rows[0].Cells[1].Value = f_335;
-			dataGridView.Rows[0].Cells[1].ToolTipText = "$属性名称$，表示写入自定义\n%属性名称%，表示写入配置";
+			dataGridView.Rows[0].Cells[1].ToolTipText = "$ИмяСвойства$ — свойство файла\n%ИмяСвойства% — свойство конфигурации";
 			dataGridView.Rows[1].Cells[1].Value = f_336;
-			dataGridView.Rows[1].Cells[1].ToolTipText = "$属性名称$，表示写入自定义\n%属性名称%，表示写入配置";
+			dataGridView.Rows[1].Cells[1].ToolTipText = "$ИмяСвойства$ — свойство файла\n%ИмяСвойства% — свойство конфигурации";
 			dataGridView.Rows[2].Cells[1].Value = f_337;
-			dataGridView.Rows[2].Cells[1].ToolTipText = "$属性名称$，表示写入自定义\n%属性名称%，表示写入配置";
+			dataGridView.Rows[2].Cells[1].ToolTipText = "$ИмяСвойства$ — свойство файла\n%ИмяСвойства% — свойство конфигурации";
 			dataGridView.Rows[0].Cells[3].Value = f_338;
 			dataGridView.Rows[1].Cells[3].Value = f_339;
 			dataGridView.Rows[2].Cells[3].Value = f_340;
@@ -2634,7 +2764,7 @@ public class ReName : Form
 				}
 			}
 			P_1.DrawBackground();
-			P_1.Graphics.DrawString(text, new Font("微软雅黑", 9f, comboBox.Font.Style), brush, P_1.Bounds.X, P_1.Bounds.Y);
+			P_1.Graphics.DrawString(text, new Font("Segoe UI", 9f, comboBox.Font.Style), brush, P_1.Bounds.X, P_1.Bounds.Y);
 			P_1.DrawFocusRectangle();
 		}
 		catch (Exception ex)
