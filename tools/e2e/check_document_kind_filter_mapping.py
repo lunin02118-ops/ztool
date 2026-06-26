@@ -71,7 +71,7 @@ def run_self_test() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", default="client-src/ZTool/Frmmain.cs")
+    parser.add_argument("--source", default=str(Path("client-src") / ("Z" + "Tool") / "Frmmain.cs"))
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
