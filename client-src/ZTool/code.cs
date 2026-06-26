@@ -624,7 +624,11 @@ public static class code
 					if (lpdwProcessId != CurSWID)
 					{
 						M_FindWindow m_FindWindow = new M_FindWindow();
-						Receiver_hWnd = m_FindWindow.FindChildHwnd(CurSWID, Receiver_Title);
+						IntPtr intPtr = m_FindWindow.FindChildHwnd(CurSWID, Receiver_Title);
+						if (intPtr != IntPtr.Zero)
+						{
+							Receiver_hWnd = intPtr;
+						}
 					}
 					SWhwnd = (int)Process.GetProcessById(CurSWID).MainWindowHandle;
 					if (HideWindow)

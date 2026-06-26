@@ -436,6 +436,14 @@ def normalize_button_text(text: str) -> str:
     return text.replace("&", "").strip()
 
 
+def compact_control_text(text: str) -> str:
+    return "".join(ch for ch in text if ch.isprintable()).replace("（", "(").replace("）", ")").strip()
+
+
+def is_swtools_window_title(text: str) -> bool:
+    return compact_control_text(text).replace(" ", "").lower().startswith("swtools")
+
+
 def dialog_button_candidates(dialog: Any) -> list[Any]:
     candidates: list[Any] = []
     for method_name in ("children", "descendants"):
@@ -546,8 +554,87 @@ def dismiss_license_dialog_win32(swtools_pid: int, timeout: float = 8.0) -> dict
     return last
 
 
+def dismiss_embedded_license_dialog_uia(swtools_pid: int, timeout: float = 5.0) -> dict[str, Any]:
+    """Handle the newer license panel embedded in the main SWTools form.
+
+    It is not a modal #32770 dialog, so the Win32 dialog-only scanner may never
+    find a small top-level window. Keep the probe process-scoped and invoke the
+    visible WinForms button by UIA, not by coordinates.
+    """
+    deadline = time.time() + timeout
+    last: dict[str, Any] = {"found": False, "dismissed": False, "backend": "uia-embedded", "text": ""}
+    expected_buttons = {"демо": "Демо", "проба": "Проба", "demo": "Demo"}
+    while time.time() < deadline:
+        for hwnd in top_window_handles_for_pid(swtools_pid):
+            try:
+                title = win32gui.GetWindowText(hwnd)
+                class_name = win32gui.GetClassName(hwnd)
+            except Exception:
+                continue
+            if "WindowsForms10.Window" not in class_name or not is_swtools_window_title(title):
+                continue
+            try:
+                win = Desktop(backend="uia").window(handle=hwnd)
+                texts = visible_texts(win)
+            except Exception as exc:
+                last = {
+                    "found": False,
+                    "dismissed": False,
+                    "backend": "uia-embedded",
+                    "hwnd": int(hwnd),
+                    "title": compact_control_text(title),
+                    "class_name": class_name,
+                    "error": str(exc),
+                }
+                continue
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "лицензия не обнаружена" not in lowered and "license" not in lowered:
+                continue
+            last = {
+                "found": True,
+                "dismissed": False,
+                "backend": "uia-embedded",
+                "hwnd": int(hwnd),
+                "title": compact_control_text(title),
+                "class_name": class_name,
+                "process_id": swtools_pid,
+                "text": joined[:2000],
+            }
+            try:
+                buttons = list(win.descendants(control_type="Button"))
+            except Exception:
+                buttons = []
+            for button in buttons:
+                try:
+                    button_text = normalize_button_text(button.window_text()).lower()
+                except Exception:
+                    continue
+                if button_text not in expected_buttons:
+                    continue
+                for action in ("invoke", "legacy"):
+                    try:
+                        if action == "invoke":
+                            button.invoke()
+                        else:
+                            button.iface_invoke.Invoke()
+                        last.update({"dismissed": True, "button": expected_buttons[button_text], "action": action})
+                        return last
+                    except Exception as exc:
+                        last["last_error"] = str(exc)
+                        continue
+        time.sleep(0.05)
+    return last
+
+
 def dismiss_license_dialog(swtools_pid: int, timeout: float = 8.0) -> dict[str, Any]:
-    return dismiss_license_dialog_win32(swtools_pid, timeout=timeout)
+    embedded = dismiss_embedded_license_dialog_uia(swtools_pid, timeout=min(timeout, 5.0))
+    if embedded.get("dismissed"):
+        return embedded
+    win32_result = dismiss_license_dialog_win32(swtools_pid, timeout=max(0.2, timeout - 5.0))
+    if win32_result.get("dismissed") or win32_result.get("found"):
+        return win32_result
+    return embedded if embedded.get("found") else win32_result
 
 
 def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, Any] | None:
@@ -565,7 +652,16 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
                 except Exception:
                     title = ""
                     class_name = ""
-                texts = dialog_texts(win)
+                pre_is_dialog = class_name == "#32770" or title in {"Информация", "Ошибка", "Вопрос"}
+                if not pre_is_dialog:
+                    continue
+                if backend == "win32":
+                    try:
+                        texts = win32_dialog_texts(int(win.handle))
+                    except Exception:
+                        texts = [title] if title else []
+                else:
+                    texts = dialog_texts(win)
                 joined = "\n".join(texts)
                 lowered = joined.lower()
                 if "лицензия не обнаружена" in lowered:
@@ -979,10 +1075,14 @@ def run() -> int:
         started = time.time()
         open_state = invoke_open_ztool_async()
         result["open_ztool"] = dict(open_state)
+        result["open_ztool_wait_started_at"] = round(started, 3)
+        write_checkpoint(result_path, result)
         proc = None
         deadline = time.time() + args.timeout
         while time.time() < deadline and proc is None:
             result["open_ztool"] = dict(open_state)
+            result["open_ztool_wait_elapsed"] = round(time.time() - started, 3)
+            write_checkpoint(result_path, result)
             if open_state.get("done") and open_state.get("error"):
                 raise RuntimeError(f"openZtool failed: {open_state['error']}")
             blocker = blocking_dialog(None, solidworks_pid)

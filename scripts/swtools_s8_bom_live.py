@@ -6,7 +6,7 @@ S7 has populated the grid, drives the "Экспорт спецификации" 
 UI Automation, saves one workbook per BOM mode, and validates the resulting
 Excel files semantically.
 
-No coordinate click is accepted as evidence.
+No hard-coded coordinate click is accepted as evidence.
 """
 
 from __future__ import annotations
@@ -210,8 +210,41 @@ def invoke_by_text(root: Any, text: str, control_types: set[str] | None = None, 
 
 
 def ensure_spec_tab(main: Any) -> None:
-    invoke_by_text(main, "Спецификация", {"TabItem"}, timeout=5.0)
+    found, _ = find_control_by_text(main, "Экспорт спецификации", {"SplitButton"})
+    if found is not None:
+        return
+
+    tab, _ = find_control_by_text(main, "Спецификация", {"TabItem"})
+    if tab is None:
+        invoke_by_text(main, "Спецификация", {"TabItem"}, timeout=5.0)
+    else:
+        actions: list[tuple[str, Any]] = [
+            ("invoke", lambda: tab.invoke()),
+            ("select", lambda: tab.select()),
+            ("space", lambda: (tab.set_focus(), tab.type_keys("{SPACE}"))),
+            ("enter", lambda: (tab.set_focus(), tab.type_keys("{ENTER}"))),
+            # Windows Ribbon UIA sometimes rejects SelectionItem.Select() for an
+            # already initialized tab. Object-level click_input is used only as a
+            # last resort against the discovered TabItem, never against a fixed
+            # screen coordinate.
+            ("object_click", lambda: tab.click_input()),
+        ]
+        last_error = ""
+        for _, action in actions:
+            try:
+                action()
+            except Exception as exc:
+                last_error = str(exc)
+            time.sleep(0.3)
+            found, _ = find_control_by_text(main, "Экспорт спецификации", {"SplitButton"})
+            if found is not None:
+                return
+        raise RuntimeError(f"Cannot activate ribbon tab 'Спецификация': {last_error}")
+
     time.sleep(0.3)
+    found, _ = find_control_by_text(main, "Экспорт спецификации", {"SplitButton"})
+    if found is None:
+        raise RuntimeError("Ribbon tab 'Спецификация' is active check failed: missing 'Экспорт спецификации'")
 
 
 def open_export_menu(main: Any) -> None:

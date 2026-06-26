@@ -24,6 +24,9 @@ public class M_FindWindow
 	[DllImport("user32.dll")]
 	private static extern bool EnumChildWindows(int hWndParent, EnumChild lpEnumFunc, int lParam);
 
+	[DllImport("user32.dll")]
+	private static extern bool EnumWindows(EnumChild lpEnumFunc, int lParam);
+
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern int GetClassName(int hwnd, StringBuilder lpClassName, int nMaxCount);
 
@@ -38,13 +41,18 @@ public class M_FindWindow
 		c_hwnd = (IntPtr)0;
 		C_title = title;
 		EnumChild lpEnumFunc = EnumChildProc;
+		EnumWindows(lpEnumFunc, ProcessId);
+		if (c_hwnd != IntPtr.Zero)
+		{
+			return c_hwnd;
+		}
 		EnumChildWindows(GetDesktopWindow(), lpEnumFunc, ProcessId);
 		return c_hwnd;
 	}
 
 	public bool EnumChildProc(int hwnd, int lParam)
 	{
-		StringBuilder stringBuilder = new StringBuilder(50);
+		StringBuilder stringBuilder = new StringBuilder(260);
 		GetWindowText(hwnd, stringBuilder, stringBuilder.Capacity);
 		if (string.Equals(stringBuilder.ToString(), C_title, StringComparison.Ordinal))
 		{
