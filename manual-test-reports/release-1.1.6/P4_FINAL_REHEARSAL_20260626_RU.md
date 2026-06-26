@@ -129,14 +129,35 @@ Visual FULL PASS: **NO-GO / BLOCKER**.
 - L-01, L-03, L-04, L-05, L-06: PASS, runtime path match, forbidden visible text empty, Han empty;
 - L-07: PASS после уточнения opener profile (`object focus + Enter`, окно развернуто перед поиском ribbon control):
   `D:\SWToolsE2E\production-blockers-20260626-visual-L07-prodpath-r5`;
+- L-08: PASS после уточнения opener profile: верхний `SplitButton` `Сохранить в SW`,
+  UIA `InvokePattern`, `control_occurrence=1`; окно `Параметры сохранения`, Han empty,
+  forbidden visible text empty:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L08-prodpath-final`;
+- L-09: PASS, окно `Столбец заполнения`, Han empty, forbidden visible text empty:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L09-prodpath-final`;
+- L-10: PASS, окно `Единица`, Han empty, forbidden visible text empty:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L10-prodpath-final`;
+- L-12: PASS, `help.CHM` открыт из проверяемого runtime, title
+  `SWTools — Руководство пользователя`, Han empty, forbidden visible text empty:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L12-prodpath-final`;
+- L-13: PASS, SolidWorks host, add-in доступен через COM, вкладка `SWTools` видима,
+  forbidden visible text empty:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L13-prodpath-final`;
+- L-14: PASS, первый экран installer UI `Установка SWTools`, Han empty,
+  forbidden visible text empty; установщик был закрыт без установки:
+  `D:\SWToolsE2E\production-blockers-20260626-visual-L14-prodpath-final`;
 - L-04 больше не падает на ложном forbidden text из-за пути репозитория: визуальная проверка выполнялась из `D:\SWToolsE2E\...`.
 
 Не закрыто:
 
 - нет cumulative manifest `15/15` со strict PASS;
-- L-02 license dialog opener не нашел object-доступную registration/license/demo surface в текущем main window;
-- L-08 opener пока выбирает не тот save/options route и требует отдельной сверки с `FrmSaveOption`;
-- L-09..L-15 требуют отдельного добора/пересъёмки после стабилизации opener routing;
+- L-02 license dialog требует отдельного clean/no-license state или activation flow; standalone запуск текущего runtime
+  открыл main window без отдельной license surface, поэтому я не менял license-state ради скриншота;
+- L-11 context menu opener пока не открывает ожидаемое меню `<Материал>` через `Shift+F10`; нужен отдельный
+  object-driven `DataGridView` context-menu route или ручная проверка;
+- L-15 material/color opener был ужесточен, чтобы не засчитывать ложный PASS по grid header `Материал`.
+  Текущая автоматическая проверка должна искать ribbon/button `Случайная окраска`; полный material/color
+  visual PASS остается ручной/следующей автоматизацией;
 - owner/auditor visual review не выполнен.
 
 ## Accepted hashes

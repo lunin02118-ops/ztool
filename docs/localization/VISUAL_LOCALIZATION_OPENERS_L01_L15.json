@@ -193,7 +193,10 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_text_any": ["Сохранить в SW", "Параметры сохранения"]
+            "control_text": "Сохранить в SW",
+            "control_type_any": ["SplitButton"],
+            "control_occurrence": 1,
+            "maximize_window": true
           }
         },
         {
@@ -338,7 +341,9 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_text_any": ["Материал", "Случайная окраска"]
+            "control_text": "Случайная окраска",
+            "control_type_any": ["Button"],
+            "maximize_window": true
           }
         },
         {
