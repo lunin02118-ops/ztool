@@ -372,19 +372,19 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 10779,
+          "line": 10789,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 11923,
+          "line": 11939,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/Frmmain.cs",
-          "line": 12543,
+          "line": 12559,
           "column": 5,
           "code": "CS0162"
         },

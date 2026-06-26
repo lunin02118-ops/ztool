@@ -108,6 +108,12 @@ jobs:
       - name: String invariants - from-source source tree (client + add-in)
         run: python tools/check_source_string_invariants.py --root client-src --root client-src-addin
 
+      - name: Document-kind filter mapping self-test
+        run: python tools/e2e/check_document_kind_filter_mapping.py --self-test
+
+      - name: Document-kind filter mapping gate
+        run: python tools/e2e/check_document_kind_filter_mapping.py
+
       - name: Visual surface profile gate
         run: |
           python tools/e2e/check_visual_surface_profile.py --self-test
