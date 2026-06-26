@@ -398,7 +398,7 @@ public class FrmSetNewFolder : Form
 		size = new System.Drawing.Size(341, 23);
 		textBox3.Size = size;
 		this.TextBox1.TabIndex = 4;
-		this.Label3.AutoSize = true;
+		this.Label3.AutoSize = false;
 		System.Windows.Forms.Label label = this.Label3;
 		location = new System.Drawing.Point(17, 53);
 		label.Location = location;
@@ -408,7 +408,7 @@ public class FrmSetNewFolder : Form
 		label2.Size = size;
 		this.Label3.TabIndex = 6;
 		this.Label3.Text = "Имя новой папки:";
-		this.Label2.AutoSize = true;
+		this.Label2.AutoSize = false;
 		System.Windows.Forms.Label label3 = this.Label2;
 		location = new System.Drawing.Point(17, 15);
 		label3.Location = location;
@@ -505,14 +505,13 @@ public class FrmSetNewFolder : Form
 		this.Controls.Add(this.Label2);
 		this.Controls.Add(this.TableLayoutPanel2);
 		this.Controls.Add(this.TableLayoutPanel1);
-		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
 		margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.Margin = margin;
-		this.MaximizeBox = false;
-		size = new System.Drawing.Size(1500, 166);
-		this.MaximumSize = size;
+		this.MaximizeBox = true;
+		this.MaximumSize = System.Drawing.Size.Empty;
 		this.MinimizeBox = false;
-		size = new System.Drawing.Size(491, 166);
+		size = new System.Drawing.Size(660, 190);
 		this.MinimumSize = size;
 		this.Name = "FrmSetNewFolder";
 		this.ShowIcon = false;
@@ -540,6 +539,89 @@ public class FrmSetNewFolder : Form
 		}
 		Size minimumSize = checked(new Size((int)Math.Round(491.0 * dpixRatio), (int)Math.Round(166.0 * dpixRatio)));
 		MinimumSize = minimumSize;
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return checked((int)Math.Round((double)value * dpixRatio));
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			FormBorderStyle = FormBorderStyle.Sizable;
+			MaximizeBox = true;
+			MaximumSize = Size.Empty;
+			MinimumSize = new Size(Dpi(660), Dpi(190));
+			SizeGripStyle = SizeGripStyle.Show;
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(640)), Math.Max(ClientSize.Height, Dpi(160)));
+			Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 0);
+
+			int margin = Dpi(16);
+			int labelWidth = Dpi(150);
+			int inputLeft = margin + labelWidth + Dpi(10);
+			int browseWidth = Dpi(34);
+			int inputHeight = Dpi(24);
+			int rowGap = Dpi(14);
+			int firstRowTop = Dpi(18);
+			int secondRowTop = firstRowTop + inputHeight + rowGap;
+
+			Label2.AutoSize = false;
+			Label2.Location = new Point(margin, firstRowTop + Dpi(3));
+			Label2.Size = new Size(labelWidth, inputHeight);
+			Label2.TextAlign = ContentAlignment.MiddleLeft;
+			Label2.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+			TextBox1.Location = new Point(inputLeft, firstRowTop);
+			TextBox1.Size = new Size(ClientSize.Width - inputLeft - margin, inputHeight);
+			TextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+			Label3.AutoSize = false;
+			Label3.Location = new Point(margin, secondRowTop + Dpi(3));
+			Label3.Size = new Size(labelWidth, inputHeight);
+			Label3.TextAlign = ContentAlignment.MiddleLeft;
+			Label3.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+			Button1.AutoSize = false;
+			Button1.Size = new Size(browseWidth, inputHeight + Dpi(2));
+			Button1.Location = new Point(ClientSize.Width - margin - browseWidth, secondRowTop - Dpi(1));
+			Button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+			TextBox2.Location = new Point(inputLeft, secondRowTop);
+			TextBox2.Size = new Size(Button1.Left - inputLeft - Dpi(8), inputHeight);
+			TextBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+			Button3.AutoSize = false;
+			Button2.AutoSize = false;
+			Button3.Dock = DockStyle.Fill;
+			Button2.Dock = DockStyle.Fill;
+			TableLayoutPanel2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+			TableLayoutPanel2.AutoSize = false;
+			TableLayoutPanel2.ColumnStyles.Clear();
+			TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(180)));
+			TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(150)));
+			TableLayoutPanel2.Location = new Point(margin, ClientSize.Height - Dpi(44));
+			TableLayoutPanel2.Size = new Size(Dpi(338), Dpi(32));
+
+			OK_Button.AutoSize = false;
+			Cancel_Button.AutoSize = false;
+			OK_Button.Dock = DockStyle.Fill;
+			Cancel_Button.Dock = DockStyle.Fill;
+			TableLayoutPanel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			TableLayoutPanel1.AutoSize = false;
+			TableLayoutPanel1.ColumnStyles.Clear();
+			TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(92)));
+			TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(108)));
+			TableLayoutPanel1.Location = new Point(ClientSize.Width - margin - Dpi(208), ClientSize.Height - Dpi(44));
+			TableLayoutPanel1.Size = new Size(Dpi(208), Dpi(32));
+		}
+		finally
+		{
+			ResumeLayout(performLayout: true);
+		}
 	}
 
 	private void OK_Button_Click(object sender, EventArgs e)
