@@ -10741,12 +10741,14 @@ public class Frmmain : Form
 
 	private string DisplayDocumentKindForFilter(string value)
 	{
-		return string.Equals(value, "零件", StringComparison.OrdinalIgnoreCase) ? "Деталь" : value;
+		string text = (value ?? string.Empty).Trim();
+		return string.Equals(text, "零件", StringComparison.OrdinalIgnoreCase) ? "Деталь" : text;
 	}
 
 	private string FilterDocumentKindFromDisplay(string value)
 	{
-		return string.Equals(value, "Деталь", StringComparison.OrdinalIgnoreCase) ? "零件" : value;
+		string text = (value ?? string.Empty).Trim();
+		return string.Equals(text, "Деталь", StringComparison.OrdinalIgnoreCase) ? "零件" : text;
 	}
 
 	private void Filter_list_ItemClicked1(object sender, ToolStripItemClickedEventArgs e)

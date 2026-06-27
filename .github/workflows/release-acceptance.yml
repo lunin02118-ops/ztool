@@ -150,6 +150,12 @@ jobs:
       - name: Options dialog layout gate
         run: python tools/e2e/check_frmoptions_layout.py
 
+      - name: Save-options dialog layout self-test
+        run: python tools/e2e/check_frmsaveoption_layout.py --self-test
+
+      - name: Save-options dialog layout gate
+        run: python tools/e2e/check_frmsaveoption_layout.py
+
       - name: BOM scheme dialog layout self-test
         run: python tools/e2e/check_frmexportbom_layout.py --self-test
 

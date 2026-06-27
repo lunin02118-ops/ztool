@@ -10,12 +10,14 @@ from pathlib import Path
 GOOD_FIXTURE = r'''
 private string DisplayDocumentKindForFilter(string value)
 {
-    return string.Equals(value, "零件", StringComparison.OrdinalIgnoreCase) ? "Деталь" : value;
+    string text = (value ?? string.Empty).Trim();
+    return string.Equals(text, "零件", StringComparison.OrdinalIgnoreCase) ? "Деталь" : text;
 }
 
 private string FilterDocumentKindFromDisplay(string value)
 {
-    return string.Equals(value, "Деталь", StringComparison.OrdinalIgnoreCase) ? "零件" : value;
+    string text = (value ?? string.Empty).Trim();
+    return string.Equals(text, "Деталь", StringComparison.OrdinalIgnoreCase) ? "零件" : text;
 }
 
 string item = (columnindex == Col_Extname.Index) ? FilterDocumentKindFromDisplay(Clb.Items[num9].ToString()) : Clb.Items[num9].ToString();
@@ -46,12 +48,16 @@ def analyze(source: str) -> list[str]:
     issues: list[str] = []
     if "DisplayDocumentKindForFilter" not in source:
         issues.append("missing DisplayDocumentKindForFilter")
+    if "string text = (value ?? string.Empty).Trim();" not in source:
+        issues.append("document-kind mapping must trim values before display/raw comparison")
     if 'string.Equals(value, "零件"' not in source or '"Деталь"' not in source:
-        issues.append("missing raw-to-display mapping: 零件 -> Деталь")
+        if 'string.Equals(text, "零件"' not in source or '"Деталь"' not in source:
+            issues.append("missing raw-to-display mapping: 零件 -> Деталь")
     if "FilterDocumentKindFromDisplay" not in source:
         issues.append("missing FilterDocumentKindFromDisplay")
     if 'string.Equals(value, "Деталь"' not in source or '"零件"' not in source:
-        issues.append("missing display-to-raw mapping: Деталь -> 零件")
+        if 'string.Equals(text, "Деталь"' not in source or '"零件"' not in source:
+            issues.append("missing display-to-raw mapping: Деталь -> 零件")
     if "text = DisplayDocumentKindForFilter(text);" not in source:
         issues.append("filter checklist values are not display-mapped before Clb.AddItem")
     if source.count("FilterDocumentKindFromDisplay(Clb.Items[") < 2:

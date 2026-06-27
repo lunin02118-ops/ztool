@@ -727,6 +727,155 @@ public class FrmSaveOption : Form
 		base.HelpButtonClicked += FrmSaveOption_HelpButtonClicked;
 		__ENCAddToList(this);
 		InitializeComponent();
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		using Graphics graphics = CreateGraphics();
+		double val = Math.Max(1.0, graphics.DpiX / 96.0);
+		return (int)Math.Round((double)value * val);
+	}
+
+	private void SetBoundsDpi(Control control, int x, int y, int width, int height)
+	{
+		control.SetBounds(Dpi(x), Dpi(y), Dpi(width), Dpi(height));
+	}
+
+	private static void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private static void FitButton(Button button)
+	{
+		button.AutoSize = false;
+		button.Dock = DockStyle.Fill;
+		button.TextAlign = ContentAlignment.MiddleCenter;
+		button.UseCompatibleTextRendering = false;
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+		FormBorderStyle = FormBorderStyle.Sizable;
+		HelpButton = false;
+		MaximizeBox = true;
+		MinimizeBox = true;
+		MinimumSize = new Size(Dpi(900), Dpi(520));
+		if (ClientSize.Width < Dpi(860) || ClientSize.Height < Dpi(470))
+		{
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(860)), Math.Max(ClientSize.Height, Dpi(470)));
+		}
+		SizeGripStyle = SizeGripStyle.Show;
+		CheckBox1.AutoSize = false;
+		CheckBox2.AutoSize = false;
+		CheckBox3.AutoSize = false;
+		CheckBox4.AutoSize = false;
+		CheckBox6.AutoSize = false;
+		CheckBox7.AutoSize = false;
+		CheckBox8.AutoSize = false;
+		CheckBox9.AutoSize = false;
+		CheckBox10.AutoSize = false;
+		Label2.AutoSize = false;
+		Label3.AutoSize = false;
+		LinkLabel1.AutoSize = false;
+		LinkLabel2.AutoSize = false;
+		TableLayoutPanel1.AutoSize = false;
+		TableLayoutPanel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		TableLayoutPanel1.ColumnStyles.Clear();
+		TableLayoutPanel1.ColumnCount = 4;
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(104)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(210)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(145)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(230)));
+		TableLayoutPanel1.RowStyles.Clear();
+		TableLayoutPanel1.RowCount = 1;
+		TableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+		FitButton(Cancel_Button);
+		FitButton(Save_Failed);
+		FitButton(Save_All);
+		FitButton(Save_Changed);
+		Button2.AutoSize = false;
+		Button2.TextAlign = ContentAlignment.MiddleCenter;
+		Resize += delegate
+		{
+			ApplyResponsiveLayout();
+		};
+		Shown += delegate
+		{
+			ApplyResponsiveLayout();
+		};
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			int num = Dpi(12);
+			int num2 = Dpi(48);
+			int num3 = Math.Max(Dpi(420), ClientSize.Width - Dpi(24));
+			int num4 = Math.Max(Dpi(430), ClientSize.Height - num2 - Dpi(24));
+			int num5 = Math.Min(Dpi(390), Math.Max(Dpi(350), (num3 - Dpi(16)) / 2));
+			int num6 = num + num5 + Dpi(16);
+			int num7 = Math.Max(Dpi(460), num3 - num5 - Dpi(16));
+			GroupBox1.SetBounds(num, num, num5, num4);
+			GroupBox2.SetBounds(num6, num, num7, Dpi(180));
+			GroupBox3.SetBounds(num6, Dpi(204), num7, Math.Max(Dpi(140), num4 - Dpi(192)));
+			Button2.SetBounds(num, ClientSize.Height - Dpi(42), Dpi(94), Dpi(32));
+			TableLayoutPanel1.SetBounds(ClientSize.Width - Dpi(702), ClientSize.Height - Dpi(42), Dpi(690), Dpi(34));
+			LayoutSavePropertiesGroup();
+			LayoutRenameGroup();
+			LayoutReferencesGroup();
+		}
+		finally
+		{
+			ResumeLayout();
+		}
+	}
+
+	private void LayoutSavePropertiesGroup()
+	{
+		int num = Math.Max(Dpi(220), GroupBox1.ClientSize.Width - Dpi(28));
+		SetBoundsDpi(Label1, 14, 22, 170, 22);
+		ComboBox1.SetBounds(Dpi(14), Dpi(43), num, Dpi(27));
+		CheckBox9.SetBounds(Dpi(14), Dpi(75), num, Dpi(24));
+		ComboBox3.SetBounds(Dpi(14), Dpi(101), num, Dpi(27));
+		ComboBox4.SetBounds(Dpi(14), Dpi(101), num, Dpi(27));
+		CheckBox1.SetBounds(Dpi(14), Dpi(134), num, Dpi(26));
+		ComboBox2.SetBounds(Dpi(14), Dpi(162), num, Dpi(27));
+		CheckBox2.SetBounds(Dpi(14), Dpi(196), num, Dpi(24));
+		CheckBox3.SetBounds(Dpi(14), Dpi(222), Dpi(145), Dpi(24));
+		LinkLabel2.SetBounds(Dpi(164), Dpi(222), Math.Max(Dpi(170), GroupBox1.ClientSize.Width - Dpi(178)), Dpi(24));
+		CheckBox10.SetBounds(Dpi(14), Dpi(250), num, Dpi(24));
+	}
+
+	private void LayoutRenameGroup()
+	{
+		int num = Math.Max(Dpi(320), GroupBox2.ClientSize.Width - Dpi(22));
+		CheckBox4.SetBounds(Dpi(12), Dpi(24), num, Dpi(24));
+		CheckBox7.SetBounds(Dpi(12), Dpi(50), num, Dpi(24));
+		Label2.SetBounds(Dpi(12), Dpi(78), num, Dpi(24));
+		SetBoundsDpi(RadioButton1, 12, 104, 105, 24);
+		SetBoundsDpi(RadioButton2, 130, 104, 180, 24);
+		SetBoundsDpi(RadioButton3, 12, 132, 24, 24);
+		LinkLabel1.SetBounds(Dpi(38), Dpi(132), Math.Max(Dpi(260), GroupBox2.ClientSize.Width - Dpi(52)), Dpi(24));
+	}
+
+	private void LayoutReferencesGroup()
+	{
+		int num = Math.Max(Dpi(320), GroupBox3.ClientSize.Width - Dpi(22));
+		SetBoundsDpi(CheckBox6, 12, 24, 170, 24);
+		SetBoundsDpi(CheckBox8, 210, 24, 190, 24);
+		Label3.SetBounds(Dpi(12), Dpi(58), num, Dpi(24));
+		TextBox1.SetBounds(Dpi(12), Dpi(84), Math.Max(Dpi(280), GroupBox3.ClientSize.Width - Dpi(56)), Dpi(27));
+		Button1.SetBounds(GroupBox3.ClientSize.Width - Dpi(38), Dpi(82), Dpi(28), Dpi(28));
 	}
 
 	[DebuggerNonUserCode]
@@ -851,7 +1000,7 @@ public class FrmSaveOption : Form
 		this.TableLayoutPanel1.TabStop = true;
 		this.Cancel_Button.Anchor = System.Windows.Forms.AnchorStyles.None;
 		this.Cancel_Button.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-		this.Cancel_Button.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Cancel_Button.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		System.Windows.Forms.Button cancel_Button = this.Cancel_Button;
 		location = new System.Drawing.Point(8, 2);
 		cancel_Button.Location = location;
@@ -865,7 +1014,7 @@ public class FrmSaveOption : Form
 		this.Cancel_Button.TabIndex = 1;
 		this.Cancel_Button.Text = "Отмена";
 		this.Save_Changed.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.Save_Changed.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Save_Changed.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.Save_Changed.ForeColor = System.Drawing.Color.DarkOrange;
 		this.Save_Changed.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		System.Windows.Forms.Button save_Changed = this.Save_Changed;
@@ -876,12 +1025,12 @@ public class FrmSaveOption : Form
 		save_Changed2.Margin = margin;
 		this.Save_Changed.Name = "Save_Changed";
 		System.Windows.Forms.Button save_Changed3 = this.Save_Changed;
-		size = new System.Drawing.Size(100, 26);
+		size = new System.Drawing.Size(210, 26);
 		save_Changed3.Size = size;
 		this.Save_Changed.TabIndex = 0;
 		this.Save_Changed.Text = "Сохранять только изменённые";
 		this.Save_All.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.Save_All.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Save_All.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.Save_All.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		System.Windows.Forms.Button save_All = this.Save_All;
 		location = new System.Drawing.Point(209, 2);
@@ -891,12 +1040,12 @@ public class FrmSaveOption : Form
 		save_All2.Margin = margin;
 		this.Save_All.Name = "Save_All";
 		System.Windows.Forms.Button save_All3 = this.Save_All;
-		size = new System.Drawing.Size(100, 26);
+		size = new System.Drawing.Size(145, 26);
 		save_All3.Size = size;
 		this.Save_All.TabIndex = 1;
 		this.Save_All.Text = "Сохранить всё";
 		this.Save_Failed.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.Save_Failed.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Save_Failed.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.Save_Failed.ForeColor = System.Drawing.Color.Red;
 		this.Save_Failed.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		System.Windows.Forms.Button save_Failed = this.Save_Failed;
@@ -907,12 +1056,12 @@ public class FrmSaveOption : Form
 		save_Failed2.Margin = margin;
 		this.Save_Failed.Name = "Save_Failed";
 		System.Windows.Forms.Button save_Failed3 = this.Save_Failed;
-		size = new System.Drawing.Size(100, 26);
+		size = new System.Drawing.Size(210, 26);
 		save_Failed3.Size = size;
 		this.Save_Failed.TabIndex = 1;
 		this.Save_Failed.Text = "Сохранять только несохранённые";
 		this.Button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-		this.Button2.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Button2.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.Button2.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		System.Windows.Forms.Button button = this.Button2;
 		location = new System.Drawing.Point(8, 300);
@@ -955,7 +1104,7 @@ public class FrmSaveOption : Form
 		this.GroupBox1.Text = "Настройка сохранения свойств";
 		this.ComboBox4.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.ComboBox4.Enabled = false;
-		this.ComboBox4.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ComboBox4.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.ComboBox4.FormattingEnabled = true;
 		this.ComboBox4.ItemHeight = 17;
 		this.ComboBox4.Items.AddRange(new object[1] { "Другое расположение" });
@@ -1055,7 +1204,7 @@ public class FrmSaveOption : Form
 		this.ComboBox2.TabIndex = 5;
 		this.ComboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 		this.ComboBox3.Enabled = false;
-		this.ComboBox3.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ComboBox3.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.ComboBox3.FormattingEnabled = true;
 		this.ComboBox3.ItemHeight = 17;
 		this.ComboBox3.Items.AddRange(new object[2] { "Другое расположение", "Пользовательское" });
@@ -1071,7 +1220,7 @@ public class FrmSaveOption : Form
 		comboBox9.Size = size;
 		this.ComboBox3.TabIndex = 3;
 		this.ComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-		this.ComboBox1.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ComboBox1.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		this.ComboBox1.FormattingEnabled = true;
 		this.ComboBox1.ItemHeight = 17;
 		this.ComboBox1.Items.AddRange(new object[4] { "Исходное расположение (новое свойство в «Настраиваемые»)", "Исходное расположение (новое свойство в «Конфигурация»)", "Пользовательское", "Текущая конфигурация" });
@@ -1269,7 +1418,7 @@ public class FrmSaveOption : Form
 		this.GroupBox3.TabIndex = 3;
 		this.GroupBox3.TabStop = false;
 		this.GroupBox3.Text = "Обновлять прочие ссылки";
-		this.Button1.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Button1.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
 		System.Windows.Forms.Button button4 = this.Button1;
 		location = new System.Drawing.Point(281, 77);
 		button4.Location = location;
@@ -1313,7 +1462,7 @@ public class FrmSaveOption : Form
 		this.AutoScaleDimensions = sizeF;
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 		this.CancelButton = this.Cancel_Button;
-		size = new System.Drawing.Size(575, 333);
+		size = new System.Drawing.Size(860, 470);
 		this.ClientSize = size;
 		this.Controls.Add(this.GroupBox3);
 		this.Controls.Add(this.Button2);
@@ -1321,13 +1470,13 @@ public class FrmSaveOption : Form
 		this.Controls.Add(this.GroupBox1);
 		this.Controls.Add(this.TableLayoutPanel1);
 		this.Cursor = System.Windows.Forms.Cursors.Default;
-		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-		this.HelpButton = true;
+		this.Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
+		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+		this.HelpButton = false;
 		margin = new System.Windows.Forms.Padding(2);
 		this.Margin = margin;
-		this.MaximizeBox = false;
-		this.MinimizeBox = false;
+		this.MaximizeBox = true;
+		this.MinimizeBox = true;
 		this.Name = "FrmSaveOption";
 		this.ShowInTaskbar = false;
 		this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
