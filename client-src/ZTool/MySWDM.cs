@@ -297,21 +297,25 @@ public class MySWDM
 					continue;
 				}
 				object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
-				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+				if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
 				{
-					continue;
-				}
-				foreach (object item in (IEnumerable)objectValue)
-				{
-					object objectValue2 = RuntimeHelpers.GetObjectValue(item);
-					closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
-					if (!list.Exists(closure_0024__._Lambda_0024__150))
+					foreach (object item in (IEnumerable)objectValue)
 					{
-						list.Add(closure_0024__._0024VB_0024Local_pname);
+						object objectValue2 = RuntimeHelpers.GetObjectValue(item);
+						closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
+						if (!list.Exists(closure_0024__._Lambda_0024__150))
+						{
+							list.Add(closure_0024__._0024VB_0024Local_pname);
+						}
 					}
 				}
 				SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
 				object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
+				{
+					swDMDocument.CloseDoc();
+					continue;
+				}
 				foreach (object item2 in (IEnumerable)objectValue3)
 				{
 					object objectValue4 = RuntimeHelpers.GetObjectValue(item2);
@@ -442,8 +446,11 @@ public class MySWDM
 								list.Add(closure_0024__._0024VB_0024Local_pname);
 							}
 						}
-						SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
-						object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+					}
+					SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
+					object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+					if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
+					{
 						foreach (object item2 in (IEnumerable)objectValue3)
 						{
 							object objectValue4 = RuntimeHelpers.GetObjectValue(item2);
@@ -467,8 +474,8 @@ public class MySWDM
 								}
 							}
 						}
-						swDMDocument.CloseDoc();
 					}
+					swDMDocument.CloseDoc();
 				}
 			}
 			catch (Exception ex)

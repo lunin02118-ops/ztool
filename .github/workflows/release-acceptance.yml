@@ -114,6 +114,12 @@ jobs:
       - name: Document-kind filter mapping gate
         run: python tools/e2e/check_document_kind_filter_mapping.py
 
+      - name: Property import contract self-test
+        run: python tools/e2e/check_property_import_contract.py --self-test
+
+      - name: Property import contract gate
+        run: python tools/e2e/check_property_import_contract.py
+
       - name: File-name rule dialog layout self-test
         run: python tools/e2e/check_frmrename_layout.py --self-test
 
