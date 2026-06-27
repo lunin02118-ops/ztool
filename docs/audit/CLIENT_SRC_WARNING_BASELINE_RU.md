@@ -402,7 +402,7 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/FrmOptions.cs",
-          "line": 229,
+          "line": 247,
           "column": 17,
           "code": "CS0169"
         },

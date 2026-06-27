@@ -47,6 +47,24 @@ public class FrmOptions : Form
 
 	private static List<WeakReference> __ENCList = new List<WeakReference>();
 
+	private sealed class ColorListItem
+	{
+		internal readonly string Name;
+
+		private readonly string _displayName;
+
+		internal ColorListItem(string name)
+		{
+			Name = name;
+			_displayName = TranslateColorName(name);
+		}
+
+		public override string ToString()
+		{
+			return _displayName;
+		}
+	}
+
 	private IContainer components;
 
 	[AccessedThroughProperty("TableLayoutPanel1")]
@@ -1297,6 +1315,7 @@ public class FrmOptions : Form
 		ExcludePropList = new List<string>();
 		Dropdownlist = new List<string>();
 		InitializeComponent();
+		ConfigureResponsiveLayout();
 	}
 
 	[DebuggerNonUserCode]
@@ -1352,6 +1371,174 @@ public class FrmOptions : Form
 		{
 			base.Dispose(disposing);
 		}
+	}
+
+	private int Dpi(int value)
+	{
+		double num = dpixRatio;
+		if (num <= 0.0)
+		{
+			using (Graphics graphics = CreateGraphics())
+			{
+				num = graphics.DpiX / 96f;
+			}
+			dpixRatio = num;
+		}
+		return checked((int)Math.Round((double)value * num));
+	}
+
+	private void SetBoundsDpi(Control control, int x, int y, int width, int height)
+	{
+		if (control != null)
+		{
+			control.SetBounds(Dpi(x), Dpi(y), Math.Max(Dpi(1), Dpi(width)), Math.Max(Dpi(1), Dpi(height)));
+		}
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		SuspendLayout();
+		ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
+		MinimizeBox = true;
+		MinimumSize = new Size(Dpi(760), Dpi(540));
+		SizeGripStyle = SizeGripStyle.Show;
+		if (ClientSize.Width < Dpi(740) || ClientSize.Height < Dpi(500))
+		{
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(740)), Math.Max(ClientSize.Height, Dpi(500)));
+		}
+		foreach (TabPage tabPage in TabControl1.TabPages)
+		{
+			tabPage.AutoScroll = true;
+			tabPage.Padding = new Padding(Dpi(12));
+		}
+		TabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		TableLayoutPanel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		TableLayoutPanel1.ColumnStyles.Clear();
+		TableLayoutPanel1.RowStyles.Clear();
+		TableLayoutPanel1.ColumnCount = 2;
+		TableLayoutPanel1.RowCount = 1;
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(100)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(100)));
+		TableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, Dpi(34)));
+		OK_Button.Dock = DockStyle.Fill;
+		Cancel_Button.Dock = DockStyle.Fill;
+		Panel1.BorderStyle = BorderStyle.FixedSingle;
+		Panel2.BorderStyle = BorderStyle.FixedSingle;
+		ListBox1.Dock = DockStyle.Fill;
+		ListBox1.HorizontalScrollbar = true;
+		TextBox1.Dock = DockStyle.Fill;
+		TextBox1.Multiline = true;
+		TextBox1.ScrollBars = ScrollBars.Vertical;
+		macrolist.HorizontalScrollbar = true;
+		base.Resize += FrmOptions_ResponsiveResize;
+		ApplyResponsiveLayout();
+		ResumeLayout(performLayout: true);
+	}
+
+	private void FrmOptions_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (TabControl1 == null || TableLayoutPanel1 == null)
+		{
+			return;
+		}
+		SuspendLayout();
+		SetBoundsDpi(TabControl1, 12, 12, Math.Max(520, (int)Math.Round((double)ClientSize.Width / Math.Max(1.0, dpixRatio)) - 24), Math.Max(360, (int)Math.Round((double)ClientSize.Height / Math.Max(1.0, dpixRatio)) - 76));
+		SetBoundsDpi(TableLayoutPanel1, Math.Max(12, (int)Math.Round((double)ClientSize.Width / Math.Max(1.0, dpixRatio)) - 222), Math.Max(12, (int)Math.Round((double)ClientSize.Height / Math.Max(1.0, dpixRatio)) - 48), 210, 34);
+		LayoutGeneralTab();
+		LayoutSketchTab();
+		LayoutMaterialTab();
+		LayoutUserListTab();
+		LayoutMacroTab();
+		ResumeLayout(performLayout: true);
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void LayoutGeneralTab()
+	{
+		int num = Math.Max(620, (int)Math.Round((double)TabPage1.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		SetBoundsDpi(Label3, 20, 24, 130, 24);
+		SetBoundsDpi(rowcolor, 160, 22, 280, 26);
+		SetBoundsDpi(Label1, 20, 64, 140, 24);
+		SetBoundsDpi(SwVer, 160, 62, 280, 26);
+		CheckBox[] array = new CheckBox[7] { GetAllconfigsbool, DClick_OpenInSw, ReConnectClearFilter, HideSw1, Previewfortool, RealTimeFilter, checkupdata };
+		int num2 = 104;
+		foreach (CheckBox checkBox in array)
+		{
+			checkBox.AutoSize = false;
+			checkBox.TextAlign = ContentAlignment.MiddleLeft;
+			SetBoundsDpi(checkBox, 20, num2, num - 50, 24);
+			num2 += 30;
+		}
+		SetBoundsDpi(othermenu, 20, num2 + 4, 150, 30);
+	}
+
+	private void LayoutSketchTab()
+	{
+		int num = Math.Max(620, (int)Math.Round((double)TabPage2.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		Label5.AutoSize = false;
+		Label4.AutoSize = false;
+		SetBoundsDpi(Label5, 20, 24, 150, 24);
+		SetBoundsDpi(Preview_Hotkey, 180, 22, 300, 26);
+		SetBoundsDpi(Label4, 20, 66, 190, 24);
+		SetBoundsDpi(PreviewMode, 220, 64, Math.Min(360, num - 250), 26);
+		Thumbnail_Savetolocal.AutoSize = false;
+		SetBoundsDpi(Thumbnail_Savetolocal, 20, 108, 260, 24);
+		SetBoundsDpi(Thumbnail_position, 290, 106, 220, 26);
+		SetBoundsDpi(Button3, 20, 160, 240, 32);
+		SetBoundsDpi(Button7, 280, 160, 260, 32);
+	}
+
+	private void LayoutMaterialTab()
+	{
+		int num = Math.Max(620, (int)Math.Round((double)TabPage3.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		Label2.AutoSize = false;
+		SetBoundsDpi(Label2, 20, 26, 140, 24);
+		SetBoundsDpi(materialpath, 160, 24, Math.Max(260, num - 330), 26);
+		SetBoundsDpi(Button1, Math.Max(470, num - 150), 23, 42, 28);
+		ExpandMaterialList.AutoSize = false;
+		usematerialcolor.AutoSize = false;
+		SetBoundsDpi(ExpandMaterialList, 20, 70, num - 50, 24);
+		SetBoundsDpi(usematerialcolor, 20, 102, num - 50, 24);
+		SetBoundsDpi(addtosw, 20, 142, 190, 32);
+	}
+
+	private void LayoutUserListTab()
+	{
+		int num = Math.Max(620, (int)Math.Round((double)TabPage4.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		int num2 = Math.Max(340, (int)Math.Round((double)TabPage4.ClientSize.Height / Math.Max(1.0, dpixRatio)));
+		Label13.AutoSize = false;
+		Label15.AutoSize = false;
+		Label14.AutoSize = false;
+		SetBoundsDpi(Label13, 20, 20, num - 40, 42);
+		int num3 = Math.Max(250, (num - 60) / 2);
+		int num4 = Math.Max(210, num - 40 - num3 - 20);
+		SetBoundsDpi(Label15, 20, 74, num3, 24);
+		SetBoundsDpi(Label14, 40 + num3, 74, num4, 24);
+		SetBoundsDpi(Panel1, 20, 102, num3, Math.Max(190, num2 - 134));
+		SetBoundsDpi(Panel2, 40 + num3, 102, num4, Math.Max(190, num2 - 134));
+	}
+
+	private void LayoutMacroTab()
+	{
+		int num = Math.Max(620, (int)Math.Round((double)TabPage5.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		int num2 = Math.Max(340, (int)Math.Round((double)TabPage5.ClientSize.Height / Math.Max(1.0, dpixRatio)));
+		SetBoundsDpi(macrolist, 20, 20, Math.Max(360, num - 170), Math.Max(260, num2 - 50));
+		SetBoundsDpi(Panel3, Math.Max(400, num - 130), 20, 110, 180);
 	}
 
 	[System.Diagnostics.DebuggerStepThrough]
@@ -1675,9 +1862,9 @@ public class FrmOptions : Form
 		this.CancelButton = this.Cancel_Button;
 		this.Controls.Add(this.TabControl1);
 		this.Controls.Add(this.TableLayoutPanel1);
-		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-		this.MaximizeBox = false;
-		this.MinimizeBox = false;
+		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+		this.MaximizeBox = true;
+		this.MinimizeBox = true;
 		this.Name = "FrmOptions";
 		this.ShowInTaskbar = false;
 		this.TableLayoutPanel1.ResumeLayout(false);
@@ -2240,21 +2427,20 @@ public class FrmOptions : Form
 	{
 		if (e.Index >= 0)
 		{
-			Rectangle rect = checked(new Rectangle(e.Bounds.Left, (int)Math.Round((double)e.Bounds.Top + 1.0 * dpixRatio), e.Bounds.Height, (int)Math.Round((double)e.Bounds.Height - 2.0 * dpixRatio)));
-			if ((e.State & DrawItemState.Selected) != DrawItemState.None)
+			e.DrawBackground();
+			object item = rowcolor.Items[e.Index];
+			string text = GetColorDisplayName(item);
+			string colorName = GetColorName(item);
+			Rectangle rect = checked(new Rectangle(e.Bounds.Left + Dpi(3), e.Bounds.Top + Dpi(3), Math.Max(Dpi(16), e.Bounds.Height - Dpi(6)), Math.Max(Dpi(16), e.Bounds.Height - Dpi(6))));
+			using (SolidBrush brush = new SolidBrush(Color.FromName(colorName)))
 			{
-				e.Graphics.FillRectangle(SystemBrushes.Highlight, rect);
+				e.Graphics.FillRectangle(brush, rect);
 			}
-			else
-			{
-				e.Graphics.FillRectangle(SystemBrushes.Window, rect);
-			}
-			string text = Conversions.ToString(rowcolor.Items[e.Index]);
-			SolidBrush brush = new SolidBrush(Color.FromName(text));
-			e.Graphics.FillRectangle(brush, rect);
 			e.Graphics.DrawRectangle(Pens.Black, rect);
-			Brush black = Brushes.Black;
-			e.Graphics.DrawString(text, rowcolor.Font, black, (float)((double)rect.X + 25.0 * dpixRatio), rect.Y);
+			Rectangle bounds = new Rectangle(rect.Right + Dpi(8), e.Bounds.Top, Math.Max(Dpi(60), e.Bounds.Right - rect.Right - Dpi(10)), e.Bounds.Height);
+			Color foreColor = (((e.State & DrawItemState.Selected) != DrawItemState.None) ? SystemColors.HighlightText : rowcolor.ForeColor);
+			TextRenderer.DrawText(e.Graphics, text, rowcolor.Font, bounds, foreColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+			e.DrawFocusRectangle();
 		}
 	}
 
@@ -2268,9 +2454,320 @@ public class FrmOptions : Form
 		PropertyInfo[] properties = typeof(Color).GetProperties(BindingFlags.Static | BindingFlags.Public);
 		foreach (PropertyInfo propertyInfo in properties)
 		{
-			combox.Items.Add(propertyInfo.Name);
+			combox.Items.Add(new ColorListItem(propertyInfo.Name));
 		}
 		combox.EndUpdate();
+	}
+
+	internal string GetSelectedRowColorName()
+	{
+		return GetColorName(rowcolor.SelectedItem);
+	}
+
+	private static string GetColorName(object item)
+	{
+		if (item is ColorListItem colorListItem)
+		{
+			return colorListItem.Name;
+		}
+		return Conversions.ToString(item);
+	}
+
+	private static string GetColorDisplayName(object item)
+	{
+		if (item is ColorListItem colorListItem)
+		{
+			return colorListItem.ToString();
+		}
+		return TranslateColorName(Conversions.ToString(item));
+	}
+
+	private static string TranslateColorName(string name)
+	{
+		switch (name)
+		{
+		case "Transparent":
+			return "Прозрачный";
+		case "Black":
+			return "Черный";
+		case "DimGray":
+			return "Темно-серый";
+		case "Gray":
+			return "Серый";
+		case "DarkGray":
+			return "Темно-серый";
+		case "Silver":
+			return "Серебристый";
+		case "LightGray":
+			return "Светло-серый";
+		case "Gainsboro":
+			return "Светло-серый";
+		case "WhiteSmoke":
+			return "Дымчато-белый";
+		case "White":
+			return "Белый";
+		case "RosyBrown":
+			return "Розово-коричневый";
+		case "IndianRed":
+			return "Индийский красный";
+		case "Brown":
+			return "Коричневый";
+		case "Firebrick":
+			return "Кирпичный";
+		case "LightCoral":
+			return "Светло-коралловый";
+		case "Maroon":
+			return "Бордовый";
+		case "DarkRed":
+			return "Темно-красный";
+		case "Red":
+			return "Красный";
+		case "MistyRose":
+			return "Бледно-розовый";
+		case "Salmon":
+			return "Лососевый";
+		case "Tomato":
+			return "Томатный";
+		case "DarkSalmon":
+			return "Темно-лососевый";
+		case "Coral":
+			return "Коралловый";
+		case "OrangeRed":
+			return "Оранжево-красный";
+		case "LightSalmon":
+			return "Светло-лососевый";
+		case "Sienna":
+			return "Сиена";
+		case "SeaShell":
+			return "Морская ракушка";
+		case "Chocolate":
+			return "Шоколадный";
+		case "SaddleBrown":
+			return "Темно-коричневый";
+		case "SandyBrown":
+			return "Песочно-коричневый";
+		case "PeachPuff":
+			return "Персиковый";
+		case "Peru":
+			return "Перу";
+		case "Linen":
+			return "Льняной";
+		case "Bisque":
+			return "Бисквитный";
+		case "DarkOrange":
+			return "Темно-оранжевый";
+		case "BurlyWood":
+			return "Светло-коричневый";
+		case "Tan":
+			return "Желто-коричневый";
+		case "AntiqueWhite":
+			return "Античный белый";
+		case "NavajoWhite":
+			return "Навахо";
+		case "BlanchedAlmond":
+			return "Бланшированный миндаль";
+		case "PapayaWhip":
+			return "Папайя";
+		case "Moccasin":
+			return "Мокасин";
+		case "Orange":
+			return "Оранжевый";
+		case "Wheat":
+			return "Пшеничный";
+		case "OldLace":
+			return "Старое кружево";
+		case "FloralWhite":
+			return "Цветочно-белый";
+		case "DarkGoldenrod":
+			return "Темно-золотистый";
+		case "Goldenrod":
+			return "Золотистый";
+		case "Cornsilk":
+			return "Кукурузный шелк";
+		case "Gold":
+			return "Золотой";
+		case "LemonChiffon":
+			return "Лимонный";
+		case "Khaki":
+			return "Хаки";
+		case "PaleGoldenrod":
+			return "Бледно-золотистый";
+		case "DarkKhaki":
+			return "Темный хаки";
+		case "Ivory":
+			return "Слоновая кость";
+		case "Beige":
+			return "Бежевый";
+		case "LightYellow":
+			return "Светло-желтый";
+		case "LightGoldenrodYellow":
+			return "Светло-золотистый";
+		case "Olive":
+			return "Оливковый";
+		case "Yellow":
+			return "Желтый";
+		case "OliveDrab":
+			return "Оливково-серый";
+		case "YellowGreen":
+			return "Желто-зеленый";
+		case "DarkOliveGreen":
+			return "Темно-оливковый";
+		case "GreenYellow":
+			return "Зелено-желтый";
+		case "Chartreuse":
+			return "Шартрез";
+		case "LawnGreen":
+			return "Газонный";
+		case "DarkSeaGreen":
+			return "Темный морской зеленый";
+		case "ForestGreen":
+			return "Лесной зеленый";
+		case "LimeGreen":
+			return "Лаймово-зеленый";
+		case "LightGreen":
+			return "Светло-зеленый";
+		case "PaleGreen":
+			return "Бледно-зеленый";
+		case "DarkGreen":
+			return "Темно-зеленый";
+		case "Green":
+			return "Зеленый";
+		case "Lime":
+			return "Лайм";
+		case "Honeydew":
+			return "Медовая роса";
+		case "SeaGreen":
+			return "Морской зеленый";
+		case "MediumSeaGreen":
+			return "Средний морской зеленый";
+		case "SpringGreen":
+			return "Весенний зеленый";
+		case "MintCream":
+			return "Мятно-кремовый";
+		case "MediumSpringGreen":
+			return "Средний весенний зеленый";
+		case "MediumAquamarine":
+			return "Средний аквамарин";
+		case "Aquamarine":
+			return "Аквамарин";
+		case "Turquoise":
+			return "Бирюзовый";
+		case "LightSeaGreen":
+			return "Светлый морской зеленый";
+		case "MediumTurquoise":
+			return "Средний бирюзовый";
+		case "Azure":
+			return "Лазурный";
+		case "LightCyan":
+			return "Светло-голубой";
+		case "PaleTurquoise":
+			return "Бледно-бирюзовый";
+		case "DarkSlateGray":
+			return "Темный серо-синий";
+		case "Teal":
+			return "Сине-зеленый";
+		case "DarkCyan":
+			return "Темно-голубой";
+		case "Aqua":
+			return "Аква";
+		case "Cyan":
+			return "Голубой";
+		case "DarkTurquoise":
+			return "Темно-бирюзовый";
+		case "CadetBlue":
+			return "Серо-синий";
+		case "PowderBlue":
+			return "Пудрово-голубой";
+		case "LightBlue":
+			return "Светло-синий";
+		case "DeepSkyBlue":
+			return "Глубокий небесный";
+		case "SkyBlue":
+			return "Небесно-голубой";
+		case "LightSkyBlue":
+			return "Светлый небесный";
+		case "SteelBlue":
+			return "Стальной синий";
+		case "AliceBlue":
+			return "Алиса";
+		case "DodgerBlue":
+			return "Ярко-синий";
+		case "SlateGray":
+			return "Сланцево-серый";
+		case "LightSlateGray":
+			return "Светлый сланцево-серый";
+		case "LightSteelBlue":
+			return "Светлый стальной";
+		case "CornflowerBlue":
+			return "Васильковый";
+		case "RoyalBlue":
+			return "Королевский синий";
+		case "GhostWhite":
+			return "Призрачно-белый";
+		case "Lavender":
+			return "Лавандовый";
+		case "MidnightBlue":
+			return "Полуночный синий";
+		case "Navy":
+			return "Темно-синий";
+		case "DarkBlue":
+			return "Темно-синий";
+		case "MediumBlue":
+			return "Средний синий";
+		case "Blue":
+			return "Синий";
+		case "SlateBlue":
+			return "Сланцево-синий";
+		case "DarkSlateBlue":
+			return "Темный сланцево-синий";
+		case "MediumSlateBlue":
+			return "Средний сланцево-синий";
+		case "MediumPurple":
+			return "Средний пурпурный";
+		case "BlueViolet":
+			return "Сине-фиолетовый";
+		case "Indigo":
+			return "Индиго";
+		case "DarkOrchid":
+			return "Темная орхидея";
+		case "DarkViolet":
+			return "Темно-фиолетовый";
+		case "MediumOrchid":
+			return "Средняя орхидея";
+		case "Thistle":
+			return "Чертополох";
+		case "Plum":
+			return "Сливовый";
+		case "Violet":
+			return "Фиолетовый";
+		case "Purple":
+			return "Пурпурный";
+		case "DarkMagenta":
+			return "Темная маджента";
+		case "Fuchsia":
+			return "Фуксия";
+		case "Magenta":
+			return "Маджента";
+		case "Orchid":
+			return "Орхидея";
+		case "MediumVioletRed":
+			return "Средний фиолетово-красный";
+		case "DeepPink":
+			return "Насыщенный розовый";
+		case "HotPink":
+			return "Ярко-розовый";
+		case "LavenderBlush":
+			return "Лавандовый румянец";
+		case "PaleVioletRed":
+			return "Бледный фиолетово-красный";
+		case "Crimson":
+			return "Малиновый";
+		case "Pink":
+			return "Розовый";
+		case "LightPink":
+			return "Светло-розовый";
+		}
+		return name;
 	}
 
 	private void Preview_Hotkey_KeyDown(object sender, KeyEventArgs e)

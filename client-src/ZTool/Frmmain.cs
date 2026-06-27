@@ -12394,7 +12394,7 @@ public class Frmmain : Form
 					}
 					else
 					{
-						DGV1.Rows[num3].DefaultCellStyle.BackColor = Color.FromName(MyProject.Forms.FrmOptions.rowcolor.Text);
+						DGV1.Rows[num3].DefaultCellStyle.BackColor = Color.FromName(MyProject.Forms.FrmOptions.GetSelectedRowColorName());
 					}
 					num++;
 				}
