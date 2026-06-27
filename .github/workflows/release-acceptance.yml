@@ -150,6 +150,12 @@ jobs:
       - name: Options dialog layout gate
         run: python tools/e2e/check_frmoptions_layout.py
 
+      - name: BOM scheme dialog layout self-test
+        run: python tools/e2e/check_frmexportbom_layout.py --self-test
+
+      - name: BOM scheme dialog layout gate
+        run: python tools/e2e/check_frmexportbom_layout.py
+
       - name: Grid paste dirty-state self-test
         run: python tools/e2e/check_grid_paste_dirty_state.py --self-test
 

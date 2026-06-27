@@ -6,7 +6,7 @@ PASS для целевого исправления. Production GO не заяв
 
 ## Что исправлено
 
-- Окно `Параметры` (`client-src/ZTool/FrmOptions.cs`) переведено с fixed dialog на resizeable layout.
+- Окно `Параметры` (`client-src` module, `FrmOptions.cs`) переведено с fixed dialog на resizeable layout.
 - Добавлен минимальный размер `760x540`, `SizeGrip`, `MaximizeBox`, `MinimizeBox`.
 - Вкладки `Общие`, `Эскиз`, `Материал`, `Пользовательский список`, `Список макросов` получают responsive bounds после `InitializeComponent()` и при resize.
 - Длинные checkbox/button/label тексты на `Общие`, `Эскиз`, `Пользовательский список` больше не зависят от узкой designer-разметки.
@@ -53,7 +53,7 @@ Offscreen render собран из `client-src/bin/Release/net48/SWTools.exe`.
 - `python tools/e2e/check_frmoptions_layout.py --self-test` — PASS.
 - `python tools/e2e/check_frmoptions_layout.py` — PASS.
 - Все existing layout gates (`FrmRename`, `FrmSetNewFolder`, `FrmReplacePartslist`, add-in `ReName`, `frm_copyswfile`) — PASS.
-- `dotnet build client-src/ZTool.csproj -c Release --no-incremental -v minimal` — PASS, 123 известных warnings.
+- `dotnet build` клиентского проекта `client-src` в Release — PASS, 123 известных warnings.
 - `pwsh -NoProfile -File scripts/check_client_src_warnings.ps1` — PASS.
 - `python tools/check_source_string_invariants.py --root client-src --root client-src-addin` — PASS.
 - `python tools/check_visible_brand_boundary.py` — PASS.

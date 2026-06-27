@@ -1136,6 +1136,190 @@ public class Frmexportbom : Form
 		base.Activated += Frmexportbom_Activated;
 		__ENCAddToList(this);
 		InitializeComponent();
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		using Graphics graphics = CreateGraphics();
+		return checked((int)Math.Round((double)value * (double)graphics.DpiX / 96.0));
+	}
+
+	private void SetBoundsDpi(Control control, int x, int y, int width, int height)
+	{
+		control.SetBounds(Dpi(x), Dpi(y), Dpi(width), Dpi(height));
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
+		MinimizeBox = true;
+		MinimumSize = new Size(Dpi(1220), Dpi(620));
+		SizeGripStyle = SizeGripStyle.Show;
+		ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(1220)), Math.Max(ClientSize.Height, Dpi(560)));
+		Label1.AutoSize = false;
+		Button3.AutoSize = false;
+		TableLayoutPanel1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		TableLayoutPanel1.ColumnStyles.Clear();
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333f));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333f));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333f));
+		Button1.AutoSize = false;
+		Apply_Button.AutoSize = false;
+		OK_Button.AutoSize = false;
+		Button1.Dock = DockStyle.Fill;
+		Apply_Button.Dock = DockStyle.Fill;
+		OK_Button.Dock = DockStyle.Fill;
+		ConfigureSchemeListLayout();
+		ConfigureOptionTextLayout();
+		base.Resize += Frmexportbom_ResponsiveResize;
+		ApplyResponsiveLayout();
+	}
+
+	private void ConfigureSchemeListLayout()
+	{
+		TableLayoutPanel2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+		TableLayoutPanel2.ColumnStyles.Clear();
+		TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31f));
+		TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38f));
+		TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31f));
+		add.Anchor = AnchorStyles.None;
+		edit.Anchor = AnchorStyles.None;
+		del.Anchor = AnchorStyles.None;
+		add.Dock = DockStyle.Fill;
+		edit.Dock = DockStyle.Fill;
+		del.Dock = DockStyle.Fill;
+		add.AutoSize = false;
+		edit.AutoSize = false;
+		del.AutoSize = false;
+		bomsettinglist.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+	}
+
+	private void ConfigureOptionTextLayout()
+	{
+		RadioButton1.AutoSize = false;
+		RadioButton2.AutoSize = false;
+		RadioButton3.AutoSize = false;
+		RadioButton4.AutoSize = false;
+		Propertyvalue.AutoSize = false;
+		Propertylink.AutoSize = false;
+		marknodrw.AutoSize = false;
+		autocolumnwidth.AutoSize = false;
+		includetop.AutoSize = false;
+		insertimagebool.AutoSize = false;
+		lockratio.AutoSize = false;
+		ByRuler.AutoSize = false;
+		ByFilter.AutoSize = false;
+		Label7.AutoSize = false;
+		Label8.AutoSize = false;
+		Label9.AutoSize = false;
+	}
+
+	private void Frmexportbom_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			LayoutMainShell();
+			LayoutSpecTypeGroup();
+			LayoutPropertyGroup();
+			LayoutSketchGroup();
+			LayoutRuleGroup();
+		}
+		finally
+		{
+			ResumeLayout(performLayout: true);
+		}
+	}
+
+	private void LayoutMainShell()
+	{
+		int margin = Dpi(12);
+		int bottomButtonHeight = Dpi(34);
+		int bottomY = ClientSize.Height - margin - bottomButtonHeight;
+		int leftWidth = Math.Min(Dpi(280), Math.Max(Dpi(250), ClientSize.Width / 3));
+		int contentLeft = margin + leftWidth + margin;
+		int contentRight = ClientSize.Width - margin;
+		int contentWidth = Math.Max(Dpi(620), contentRight - contentLeft);
+		GroupBox5.SetBounds(margin, margin, leftWidth, bottomY - margin);
+		bomsettinglist.SetBounds(Dpi(10), Dpi(22), GroupBox5.ClientSize.Width - Dpi(20), GroupBox5.ClientSize.Height - Dpi(70));
+		TableLayoutPanel2.SetBounds(Dpi(8), GroupBox5.ClientSize.Height - Dpi(40), GroupBox5.ClientSize.Width - Dpi(16), Dpi(32));
+		Label1.SetBounds(contentLeft, margin + Dpi(2), Dpi(168), Dpi(24));
+		ComboBox1.SetBounds(contentLeft + Dpi(172), margin, contentWidth - Dpi(212), Dpi(26));
+		Button3.SetBounds(contentRight - Dpi(36), margin - Dpi(1), Dpi(36), Dpi(28));
+		TableLayoutPanel1.SetBounds(contentRight - Dpi(360), bottomY, Dpi(360), bottomButtonHeight);
+	}
+
+	private void LayoutSpecTypeGroup()
+	{
+		int margin = Dpi(12);
+		int leftWidth = Math.Min(Dpi(280), Math.Max(Dpi(250), ClientSize.Width / 3));
+		int contentLeft = margin + leftWidth + margin;
+		int top = Dpi(54);
+		GroupBox1.SetBounds(contentLeft, top, Dpi(230), Dpi(172));
+		SetBoundsDpi(RadioButton1, 16, 26, 196, 24);
+		SetBoundsDpi(RadioButton2, 16, 58, 196, 24);
+		SetBoundsDpi(RadioButton3, 16, 90, 196, 24);
+		SetBoundsDpi(RadioButton4, 16, 122, 196, 24);
+	}
+
+	private void LayoutPropertyGroup()
+	{
+		int margin = Dpi(12);
+		int leftWidth = Math.Min(Dpi(280), Math.Max(Dpi(250), ClientSize.Width / 3));
+		int contentLeft = margin + leftWidth + margin;
+		int propertyLeft = contentLeft + Dpi(246);
+		int ruleWidth = Dpi(310);
+		int propertyWidth = Math.Max(Dpi(310), ClientSize.Width - margin - ruleWidth - Dpi(16) - propertyLeft);
+		GroupBox4.SetBounds(propertyLeft, Dpi(54), propertyWidth, Dpi(172));
+		SetBoundsDpi(Propertyvalue, 16, 26, 280, 24);
+		SetBoundsDpi(Propertylink, 16, 58, 280, 24);
+		SetBoundsDpi(marknodrw, 16, 90, 280, 24);
+		SetBoundsDpi(autocolumnwidth, 16, 122, 280, 24);
+		SetBoundsDpi(includetop, 16, 146, 280, 24);
+	}
+
+	private void LayoutSketchGroup()
+	{
+		int margin = Dpi(12);
+		int leftWidth = Math.Min(Dpi(280), Math.Max(Dpi(250), ClientSize.Width / 3));
+		int contentLeft = margin + leftWidth + margin;
+		int ruleWidth = Dpi(310);
+		int sketchWidth = Math.Max(Dpi(540), ClientSize.Width - margin - ruleWidth - Dpi(16) - contentLeft);
+		GroupBox3.SetBounds(contentLeft, Dpi(238), sketchWidth, Dpi(164));
+		SetBoundsDpi(insertimagebool, 16, 28, 240, 24);
+		SetBoundsDpi(lockratio, 16, 60, 480, 24);
+		SetBoundsDpi(Label7, 16, 98, 160, 24);
+		SetBoundsDpi(Label8, 16, 126, 70, 24);
+		SetBoundsDpi(image_width, 92, 124, 76, 26);
+		SetBoundsDpi(Label9, 196, 126, 76, 24);
+		SetBoundsDpi(image_height, 278, 124, 76, 26);
+	}
+
+	private void LayoutRuleGroup()
+	{
+		int margin = Dpi(12);
+		int ruleWidth = Dpi(310);
+		int ruleLeft = ClientSize.Width - margin - ruleWidth;
+		GroupBox2.SetBounds(ruleLeft, Dpi(54), ruleWidth, Dpi(250));
+		ByRuler.SetBounds(ruleLeft, Dpi(318), Dpi(140), Dpi(24));
+		ByFilter.SetBounds(ruleLeft + Dpi(150), Dpi(318), Dpi(140), Dpi(24));
 	}
 
 	[DebuggerNonUserCode]
@@ -1392,7 +1576,7 @@ public class Frmexportbom : Form
 		margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		groupBox7.Padding = margin;
 		System.Windows.Forms.GroupBox groupBox8 = this.GroupBox1;
-		size = new System.Drawing.Size(112, 152);
+		size = new System.Drawing.Size(230, 172);
 		groupBox8.Size = size;
 		this.GroupBox1.TabIndex = 30;
 		this.GroupBox1.TabStop = false;
@@ -1600,7 +1784,7 @@ public class Frmexportbom : Form
 		margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		groupBox15.Padding = margin;
 		System.Windows.Forms.GroupBox groupBox16 = this.GroupBox4;
-		size = new System.Drawing.Size(172, 152);
+		size = new System.Drawing.Size(320, 172);
 		groupBox16.Size = size;
 		this.GroupBox4.TabIndex = 40;
 		this.GroupBox4.TabStop = false;
@@ -1670,7 +1854,7 @@ public class Frmexportbom : Form
 		groupBox17.Location = location;
 		this.GroupBox5.Name = "GroupBox5";
 		System.Windows.Forms.GroupBox groupBox18 = this.GroupBox5;
-		size = new System.Drawing.Size(192, 360);
+		size = new System.Drawing.Size(250, 360);
 		groupBox18.Size = size;
 		this.GroupBox5.TabIndex = 45;
 		this.GroupBox5.TabStop = false;
@@ -1714,7 +1898,7 @@ public class Frmexportbom : Form
 		button5.Location = location;
 		this.add.Name = "add";
 		System.Windows.Forms.Button button6 = this.add;
-		size = new System.Drawing.Size(45, 27);
+		size = new System.Drawing.Size(78, 27);
 		button6.Size = size;
 		this.add.TabIndex = 0;
 		this.add.Text = "Добавить";
@@ -1725,7 +1909,7 @@ public class Frmexportbom : Form
 		button7.Location = location;
 		this.edit.Name = "edit";
 		System.Windows.Forms.Button button8 = this.edit;
-		size = new System.Drawing.Size(53, 27);
+		size = new System.Drawing.Size(112, 27);
 		button8.Size = size;
 		this.edit.TabIndex = 0;
 		this.edit.Text = "Переименовать";
@@ -1736,7 +1920,7 @@ public class Frmexportbom : Form
 		button9.Location = location;
 		this.del.Name = "del";
 		System.Windows.Forms.Button button10 = this.del;
-		size = new System.Drawing.Size(45, 27);
+		size = new System.Drawing.Size(78, 27);
 		button10.Size = size;
 		this.del.TabIndex = 0;
 		this.del.Text = "Удалить";
@@ -1782,9 +1966,9 @@ public class Frmexportbom : Form
 		this.Controls.Add(this.GroupBox1);
 		this.Controls.Add(this.Label1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-		this.MaximizeBox = false;
-		this.MinimizeBox = false;
+		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+		this.MaximizeBox = true;
+		this.MinimizeBox = true;
 		this.Name = "Frmexportbom";
 		this.ShowInTaskbar = false;
 		this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
