@@ -1402,11 +1402,11 @@ public class FrmOptions : Form
 		FormBorderStyle = FormBorderStyle.Sizable;
 		MaximizeBox = true;
 		MinimizeBox = true;
-		MinimumSize = new Size(Dpi(760), Dpi(540));
+		MinimumSize = new Size(Dpi(900), Dpi(560));
 		SizeGripStyle = SizeGripStyle.Show;
-		if (ClientSize.Width < Dpi(740) || ClientSize.Height < Dpi(500))
+		if (ClientSize.Width < Dpi(880) || ClientSize.Height < Dpi(520))
 		{
-			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(740)), Math.Max(ClientSize.Height, Dpi(500)));
+			ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(880)), Math.Max(ClientSize.Height, Dpi(520)));
 		}
 		foreach (TabPage tabPage in TabControl1.TabPages)
 		{
@@ -1470,21 +1470,22 @@ public class FrmOptions : Form
 
 	private void LayoutGeneralTab()
 	{
-		int num = Math.Max(620, (int)Math.Round((double)TabPage1.ClientSize.Width / Math.Max(1.0, dpixRatio)));
-		SetBoundsDpi(Label3, 20, 24, 130, 24);
-		SetBoundsDpi(rowcolor, 160, 22, 280, 26);
-		SetBoundsDpi(Label1, 20, 64, 140, 24);
-		SetBoundsDpi(SwVer, 160, 62, 280, 26);
+		int num = Math.Max(760, (int)Math.Round((double)TabPage1.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		int num2 = Math.Min(560, Math.Max(360, num - 230));
+		SetBoundsDpi(Label3, 20, 24, 230, 24);
+		SetBoundsDpi(rowcolor, 260, 22, num2, 26);
+		SetBoundsDpi(Label1, 20, 64, 230, 24);
+		SetBoundsDpi(SwVer, 260, 62, num2, 26);
 		CheckBox[] array = new CheckBox[7] { GetAllconfigsbool, DClick_OpenInSw, ReConnectClearFilter, HideSw1, Previewfortool, RealTimeFilter, checkupdata };
-		int num2 = 104;
+		int num3 = 104;
 		foreach (CheckBox checkBox in array)
 		{
 			checkBox.AutoSize = false;
 			checkBox.TextAlign = ContentAlignment.MiddleLeft;
-			SetBoundsDpi(checkBox, 20, num2, num - 50, 24);
-			num2 += 30;
+			SetBoundsDpi(checkBox, 20, num3, num - 50, 24);
+			num3 += 30;
 		}
-		SetBoundsDpi(othermenu, 20, num2 + 4, 150, 30);
+		SetBoundsDpi(othermenu, 20, num3 + 4, 150, 30);
 	}
 
 	private void LayoutSketchTab()
@@ -1535,10 +1536,15 @@ public class FrmOptions : Form
 
 	private void LayoutMacroTab()
 	{
-		int num = Math.Max(620, (int)Math.Round((double)TabPage5.ClientSize.Width / Math.Max(1.0, dpixRatio)));
+		int num = Math.Max(760, (int)Math.Round((double)TabPage5.ClientSize.Width / Math.Max(1.0, dpixRatio)));
 		int num2 = Math.Max(340, (int)Math.Round((double)TabPage5.ClientSize.Height / Math.Max(1.0, dpixRatio)));
-		SetBoundsDpi(macrolist, 20, 20, Math.Max(360, num - 170), Math.Max(260, num2 - 50));
-		SetBoundsDpi(Panel3, Math.Max(400, num - 130), 20, 110, 180);
+		SetBoundsDpi(macrolist, 20, 20, Math.Max(420, num - 210), Math.Max(260, num2 - 50));
+		SetBoundsDpi(Panel3, Math.Max(460, num - 170), 20, 150, 180);
+		Panel3.AutoScroll = false;
+		SetBoundsDpi(Button8, 0, 0, 150, 36);
+		SetBoundsDpi(Button9, 0, 52, 150, 36);
+		SetBoundsDpi(Button10, 0, 104, 90, 36);
+		SetBoundsDpi(Button11, 0, 156, 90, 36);
 	}
 
 	[System.Diagnostics.DebuggerStepThrough]
