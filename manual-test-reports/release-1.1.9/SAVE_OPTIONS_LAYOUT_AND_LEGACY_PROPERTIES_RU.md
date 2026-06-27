@@ -28,8 +28,8 @@
 
 ## Проверки
 
-- `dotnet build client-src\ZTool.csproj -c Release --no-incremental`
-- `dotnet build client-src-addin\ZTool.SwAddin.csproj -c Release --no-incremental`
+- `dotnet build` основного client-src проекта в `Release`
+- `dotnet build` add-in проекта в `Release`
 - `python tools\e2e\check_frmsaveoption_layout.py --self-test`
 - `python tools\e2e\check_frmsaveoption_layout.py`
 - `python tools\e2e\check_document_kind_filter_mapping.py --self-test`
