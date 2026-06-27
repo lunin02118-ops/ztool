@@ -32,7 +32,7 @@ Production GO: **NO-GO**
 Установлено:
 
 - Runtime dir: `C:\Program Files\SWTools`
-- Installer: `D:\Development\ztool\_local_artifacts\worktrees\p4-next-20260626\releases\1.1.11\SWTools-1.1.11-Setup.exe`
+- Installer: `[worktree]\releases\1.1.11\SWTools-1.1.11-Setup.exe`
 
 Installed runtime:
 
@@ -103,7 +103,7 @@ git diff --check
 
 Комментарий с evidence добавлен в PR:
 
-- `https://github.com/lunin02118-ops/ztool/pull/105#issuecomment-4822962552`
+- PR `#105`, comment `4822962552`
 
 ## Что НЕ проверено в этом проходе
 
@@ -128,7 +128,7 @@ git diff --check
 - strict filters для mode `7/8`;
 - semantic Excel validation;
 - проверка сопоставления заголовков столбцов;
-- проверка отсутствия видимых `ZTool` / Han в BOM UI;
+- проверка отсутствия видимого legacy brand token / Han в BOM UI;
 - проверка корректности `Тип`, `Материал`, `Масса`, `Габаритные размеры`, `Конфигурация`.
 
 ### Импорт и свойства
