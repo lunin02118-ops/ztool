@@ -24,6 +24,8 @@ param(
 
     [string]$PackageName,
 
+    [switch]$AllowNonCurrentVersion,
+
     [string]$MakensisPath = "C:\Program Files (x86)\NSIS\makensis.exe"
 )
 
@@ -70,6 +72,15 @@ if (-not $PackageName) {
 }
 if (-not $ProductVersion) {
     $ProductVersion = if ($manifest.version) { [string]$manifest.version } else { '1.0.0' }
+}
+$currentVersionPath = Join-Path $repoRoot 'VERSION'
+$currentVersion = if (Test-Path -LiteralPath $currentVersionPath -PathType Leaf) {
+    (Get-Content -LiteralPath $currentVersionPath -Encoding UTF8 -Raw).Trim()
+} else {
+    ''
+}
+if (-not $AllowNonCurrentVersion -and $currentVersion -and $ProductVersion -ne $currentVersion) {
+    Fail "package version '$ProductVersion' does not match current VERSION '$currentVersion'. Refusing to build a stale installer; pass -AllowNonCurrentVersion only for an intentional archival rebuild."
 }
 if (-not $OutputDir) {
     $packageParent = Split-Path -Parent $root
