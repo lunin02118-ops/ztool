@@ -376,8 +376,8 @@ internal static class Program
 
     // BOM export originally applies namemappinglist only to PropVal_ /
     // PropResolvedVal_ columns. Computed service columns such as Col_Weight and
-    // Col_bound use short Russian headers ("Масса", "Габарит") while their
-    // Excel anchors remain stable ("МассаЕдКг", "ГабаритныеРазмеры"), so they
+    // Col_bound use short Russian headers ("Масса", "Габарит") and matching
+    // Excel anchors ("Масса", "Габарит"), so they
     // need the same mapping fallback by
     // DataGridViewColumn.Name. The export fallback below re-runs the
     // namemappinglist lookup (matched by column Name + header text), so it is

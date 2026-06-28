@@ -11,11 +11,10 @@
 - `Масса ед._кг` -> `Масса`;
 - `Габаритные размеры` -> `Габарит`.
 
-При этом сохранить внутренние Excel-якоря шаблона, чтобы экспорт спецификации
-не потерял совместимость:
+Сделать видимые заголовки и Excel-якоря полностью консистентными:
 
-- `Масса` -> `МассаЕдКг`;
-- `Габарит` -> `ГабаритныеРазмеры`.
+- `Масса` -> named range `Масса`;
+- `Габарит` -> named range `Габарит`.
 
 ## Изменения
 
@@ -23,7 +22,7 @@
   и `client-core/dist/SWTools.settings`.
 - Обновлены ресурсы главной таблицы `Frmmain.resx`.
 - Обновлен шаблон `Шаблоны спецификации/bom_шаблон.xlsx`: строка заголовков
-  теперь содержит `Масса` и `Габарит`, named ranges оставлены прежними.
+  теперь содержит `Масса` и `Габарит`, named ranges переименованы в `Масса` и `Габарит`.
 - Обновлены BOM-check scripts и S8 E2E labels.
 - Добавлен regression gate `tools/e2e/check_calculated_column_labels.py`.
 - `release-acceptance.yml` теперь проверяет контракт расчетных колонок.
@@ -32,8 +31,8 @@
 
 PASS:
 
-- `dotnet build client-src/ZTool.csproj -c Release --no-incremental`;
-- `dotnet build client-src-addin/ZTool.SwAddin.csproj -c Release --no-incremental`;
+- source client build, Release, no incremental cache;
+- source add-in build, Release, no incremental cache;
 - `python tools/e2e/check_calculated_column_labels.py --self-test`;
 - `python tools/e2e/check_calculated_column_labels.py`;
 - `python client-core/tools/check_bom_template.py SWTools.settings`;
@@ -54,12 +53,11 @@ strict filters и branding/version/icon gate.
 
 Отчет:
 
-`_local_artifacts/reports/calculated-columns-live-20260628-230141`
+`_local_artifacts/reports/calculated-anchors-live-20260628-234505`
 
 Итог:
 
-- общий статус: `PASS_WITH_WARN`;
-- причина warning: `SLDWORKS.exe` уже был открыт до запуска doctor;
+- общий статус: `PASS`;
 - `production_go_allowed`: `false`;
 - `07-s7-connect`: PASS, 29 строк, 40 колонок;
 - `08-s8-bom-export`: PASS, 8/8 Excel-файлов;
@@ -87,30 +85,32 @@ strict filters и branding/version/icon gate.
 - заголовок `Габарит` присутствует;
 - старый заголовок `Масса ед._кг` отсутствует;
 - старый заголовок `Габаритные размеры` отсутствует;
+- старый Excel anchor `МассаЕдКг` отсутствует;
+- старый Excel anchor `ГабаритныеРазмеры` отсутствует;
 - значения в расчетных колонках заполнены.
 
 ## Артефакты
 
 Runtime:
 
-`_local_artifacts/reports/calculated-columns-live-20260628-230141/package/SWTools-1.1.13/runtime`
+`_local_artifacts/reports/calculated-anchors-live-20260628-234505/package/SWTools-1.1.13/runtime`
 
 SHA256:
 
-- `SWTools.exe`: `45727c454d69c7e80b8bc82764244f06622cf051bd9a06d39e46dd034ebdfbc5`;
-- `SWTools.dll`: `a515298545de8f49568415a07c582df9fd3db20fcdd0479b91e864ea68434df5`.
+- `SWTools.exe`: `ca3e9fd721bcfafcf44b06c5f4b536a38a13461ef48dc6ffea79db45ed79ce61`;
+- `SWTools.dll`: `898976f17be6014eb0571f9ff49f038ce67d9d81a05e42a6914ace1e02de74cf`.
 
 Installer:
 
-`_local_artifacts/reports/calculated-columns-live-20260628-230141/SWTools-1.1.13-Setup.exe`
+`_local_artifacts/reports/calculated-anchors-live-20260628-234505/SWTools-1.1.13-Setup.exe`
 
 SHA256:
 
-`e565dd7745fb5f76ad8c34bfef00051ca816407bbf1724bb7166f565dec0b7d3`
+`7902de10eb0b0af414c59498da34f976308995a33f20eff00066c8f9016f9813`
 
 ## Граница приемки
 
-Этот отчет подтверждает переименование расчетных колонок и live export S7/S8
+Этот отчет подтверждает переименование расчетных колонок, Excel-якорей и live export S7/S8
 на текущем source-built package.
 
 Это не финальный production GO. Остаются общие релизные блокеры:

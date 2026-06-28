@@ -6,10 +6,10 @@ The UI labels are deliberately short:
 * Col_Weight -> "Масса"
 * Col_bound  -> "Габарит"
 
-The Excel named ranges stay stable for export compatibility:
+The Excel named ranges match the visible Russian labels:
 
-* Col_Weight -> "МассаЕдКг"
-* Col_bound  -> "ГабаритныеРазмеры"
+* Col_Weight -> "Масса"
+* Col_bound  -> "Габарит"
 """
 
 from __future__ import annotations
@@ -23,13 +23,13 @@ from pathlib import Path
 
 
 EXPECTED = {
-    "Col_Weight": ("Масса", "МассаЕдКг", "J6"),
-    "Col_bound": ("Габарит", "ГабаритныеРазмеры", "P6"),
+    "Col_Weight": ("Масса", "Масса", "J6"),
+    "Col_bound": ("Габарит", "Габарит", "P6"),
 }
 
 LEGACY_VISIBLE = {
-    "Col_Weight": ("Масса ед._кг", "Масса ед. кг", "Масса ед. (кг)"),
-    "Col_bound": ("Габаритные размеры",),
+    "Col_Weight": ("Масса ед._кг", "Масса ед. кг", "Масса ед. (кг)", "МассаЕдКг"),
+    "Col_bound": ("Габаритные размеры", "ГабаритныеРазмеры"),
 }
 
 
@@ -142,8 +142,8 @@ def run_self_test() -> None:
         (root / "client-core" / "dist").mkdir(parents=True)
         (root / "Шаблоны спецификации").mkdir(parents=True)
         (root / "client-src" / "ZTool" / "CConfigMng.cs").write_text(
-            '\nEnsureBomMapping("Col_Weight", "Масса", "МассаЕдКг");'
-            '\nEnsureBomMapping("Col_bound", "Габарит", "ГабаритныеРазмеры");\n',
+            '\nEnsureBomMapping("Col_Weight", "Масса", "Масса");'
+            '\nEnsureBomMapping("Col_bound", "Габарит", "Габарит");\n',
             encoding="utf-8",
         )
         (root / "client-src" / "ZTool.Frmmain.resx").write_text(
@@ -155,8 +155,8 @@ def run_self_test() -> None:
             """\
             <CConfigDO>
               <namemappinglist>
-                <columnnamemapping><name>Col_Weight</name><text>Масса</text><mappingname>МассаЕдКг</mappingname></columnnamemapping>
-                <columnnamemapping><name>Col_bound</name><text>Габарит</text><mappingname>ГабаритныеРазмеры</mappingname></columnnamemapping>
+                <columnnamemapping><name>Col_Weight</name><text>Масса</text><mappingname>Масса</mappingname></columnnamemapping>
+                <columnnamemapping><name>Col_bound</name><text>Габарит</text><mappingname>Габарит</mappingname></columnnamemapping>
               </namemappinglist>
             </CConfigDO>
             """
@@ -171,8 +171,8 @@ def run_self_test() -> None:
         ws = wb.active
         ws["J6"] = "Масса"
         ws["P6"] = "Габарит"
-        wb.defined_names.add(DefinedName("МассаЕдКг", attr_text=f"'{ws.title}'!$J$6"))
-        wb.defined_names.add(DefinedName("ГабаритныеРазмеры", attr_text=f"'{ws.title}'!$P$6"))
+        wb.defined_names.add(DefinedName("Масса", attr_text=f"'{ws.title}'!$J$6"))
+        wb.defined_names.add(DefinedName("Габарит", attr_text=f"'{ws.title}'!$P$6"))
         wb.save(root / "Шаблоны спецификации" / "bom_шаблон.xlsx")
         wb.close()
 
@@ -203,7 +203,7 @@ def main() -> int:
         for issue in issues:
             print(f"FAIL: {issue}")
         return 1
-    print("PASS: calculated BOM columns use visible labels Масса/Габарит and stable Excel anchors")
+    print("PASS: calculated BOM columns use consistent labels/anchors Масса/Габарит")
     return 0
 
 

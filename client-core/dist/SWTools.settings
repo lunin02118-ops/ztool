@@ -624,13 +624,13 @@ True</string>
       <name>Col_Weight</name>
       <name2 />
       <text>Масса</text>
-      <mappingname>МассаЕдКг</mappingname>
+      <mappingname>Масса</mappingname>
     </columnnamemapping>
     <columnnamemapping>
       <name>Col_bound</name>
       <name2 />
       <text>Габарит</text>
-      <mappingname>ГабаритныеРазмеры</mappingname>
+      <mappingname>Габарит</mappingname>
     </columnnamemapping>
   </namemappinglist>
   <usenpoi>true</usenpoi>

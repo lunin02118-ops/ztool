@@ -145,15 +145,15 @@ def main():
         "Количество": f"'{NEW_SHEET}'!$G$6",
         "Путь": f"'{NEW_SHEET}'!$O$6",
         "Эскиз": f"'{NEW_SHEET}'!$M$6",
-        "МассаЕдКг": f"'{NEW_SHEET}'!$J$6",
-        "ГабаритныеРазмеры": f"'{NEW_SHEET}'!$P$6",
+        "Масса": f"'{NEW_SHEET}'!$J$6",
+        "Габарит": f"'{NEW_SHEET}'!$P$6",
         "ЕдИзм": f"'{NEW_SHEET}'!$F$6",
     }
     for name, ref in calculated_names.items():
         if name in wb.defined_names:
             del wb.defined_names[name]
         wb.defined_names.add(DefinedName(name=name, attr_text=ref))
-    print("[1c] Service/calculated anchors added: Номер, Количество, Путь, Эскиз, МассаЕдКг, ГабаритныеРазмеры, ЕдИзм")
+    print("[1c] Service/calculated anchors added: Номер, Количество, Путь, Эскиз, Масса, Габарит, ЕдИзм")
 
     # 3. Set column widths
     for col, width in COL_WIDTHS.items():

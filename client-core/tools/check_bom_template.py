@@ -367,11 +367,11 @@ SERVICE_HEADERS = [
 DEFERRED_SERVICE = {"Col_FileName"}
 
 # Calculated service columns mapped through namemappinglist by
-# DataGridViewColumn.Name. Keep the visible Russian label independent from the
-# stable Excel anchor so short UI names do not break export compatibility.
+# DataGridViewColumn.Name. Calculated columns use the same Russian text for the visible label and
+# Excel defined-name anchor, so UI, settings and template stay consistent.
 REQUIRED_CALCULATED_MAPPINGS = {
-    "Col_Weight": ("Масса", "МассаЕдКг"),
-    "Col_bound": ("Габарит", "ГабаритныеРазмеры"),
+    "Col_Weight": ("Масса", "Масса"),
+    "Col_bound": ("Габарит", "Габарит"),
 }
 
 
