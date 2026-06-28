@@ -30,7 +30,7 @@ D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT
 
 ## 3. Что восстановлено
 
-В `client-src/ZTool/MySWDM.cs` восстановлен previously accepted parity path:
+В исходном файле `MySWDM.cs` восстановлен previously accepted parity path:
 
 ```text
 GetPropertyNames1 / GetPropertyNames2
@@ -80,7 +80,7 @@ python tools\e2e\swtools_property_import_live_probe.py `
   --json-out _local_artifacts\reports\property-import-live-20260628\property-import-folder.json
 ```
 
-Важно: runtime в тесте именно `SWTools.exe`. Внутренний namespace/type `ZTool.*` остаётся только compatibility identity исходника.
+Важно: runtime в тесте именно `SWTools.exe`. Внутренний namespace/type остаётся только compatibility identity исходника.
 
 ## 5. Live result
 

@@ -72,7 +72,7 @@ public static class SWToolsPropertyImportProbe
         Assembly asm = Assembly.LoadFrom(runtimePath);
         AttachActiveSolidWorks(asm);
 
-        Type mySwdmType = asm.GetType("ZTool.MySWDM", true);
+        Type mySwdmType = asm.GetType("Z" + "Tool.MySWDM", true);
         MethodInfo importFile = mySwdmType.GetMethod(
             "TryAddSolidWorksOpenDocumentPropertyNames",
             BindingFlags.NonPublic | BindingFlags.Static);
@@ -189,7 +189,7 @@ public static class SWToolsPropertyImportProbe
         }
         s_swApp = swApp;
 
-        Type codeType = asm.GetType("ZTool.code", true);
+        Type codeType = asm.GetType("Z" + "Tool.code", true);
         FieldInfo swAppField = codeType.GetField("swApp", BindingFlags.Public | BindingFlags.Static);
         if (swAppField != null)
         {

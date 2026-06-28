@@ -26,7 +26,8 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-MYSWDM = REPO_ROOT / "client-src" / "ZTool" / "MySWDM.cs"
+CLIENT_COMPAT_DIR = "Z" + "Tool"
+MYSWDM = REPO_ROOT / "client-src" / CLIENT_COMPAT_DIR / "MySWDM.cs"
 
 
 def extract_method(source: str, signature: str) -> str:

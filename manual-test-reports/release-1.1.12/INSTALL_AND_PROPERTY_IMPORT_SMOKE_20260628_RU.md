@@ -93,7 +93,7 @@ Manual checks still required:
 1. `Задать имя свойства` -> `Импорт...` -> `Получить из файла` on `D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT`.
 2. `Задать имя свойства` -> `Импорт...` -> `Получить из папки` on `D:\1602.00.000 Шнек`.
 3. `Задать имя свойства` -> `Импорт...` -> `Получить из открытых в SolidWorks компонентов` after opening a fully loaded assembly.
-4. Confirm no visible `ZTool` branding appears in the tested dialogs.
+4. Confirm no visible legacy branding appears in the tested dialogs.
 
 ## 6. Remaining release blockers
 
