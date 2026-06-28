@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Guard the SW document property import control-flow.
+"""Guard the native SW Document Manager property import control-flow.
 
-The "Задать имя свойства -> Импорт... -> Получить из файла/папки" path must
-collect both document-level and configuration-level custom property names. A
-previous regression returned early when document-level names were absent, so
-configuration-only properties silently disappeared from the import result.
+The "Задать имя свойства -> Импорт... -> Получить из файла/папки" paths must
+match the original native design: read document-level and configuration-level
+custom property names through SolidWorks Document Manager only.
 
-It must also avoid the newer silent-empty regression: when SolidWorks Document
-Manager cannot read a selected file, but the same model is already open in
-SolidWorks, the import path must fall back to the live ModelDoc custom property
-managers instead of returning an empty list without diagnostics.
+Do not hide SWDM license/environment failures by opening the model through the
+live SolidWorks API. "Получить из открытых в SolidWorks компонентов" is a
+separate explicit command and may use SolidWorks; file/folder import must not.
 """
 
 from __future__ import annotations
@@ -22,6 +20,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MYSWDM = REPO_ROOT / "client-src" / "ZTool" / "MySWDM.cs"
+FRMSETPROPNAME = REPO_ROOT / "client-src" / "ZTool" / "Frmsetpropname.cs"
 
 
 def extract_method(source: str, signature: str) -> str:
@@ -72,95 +71,67 @@ def assert_configuration_properties_are_not_gated(method: str, name: str) -> Non
         raise AssertionError(f"{name}: configuration custom property names are not read")
 
 
-def assert_swdm_has_live_solidworks_fallback(source: str, method: str, name: str) -> None:
-    if "TryAddSolidWorksOpenDocumentPropertyNames" not in source:
-        raise AssertionError("live SolidWorks fallback helper is missing")
-    if "AddPropertyNamesFromModelDoc" not in source:
-        raise AssertionError("live ModelDoc property enumeration helper is missing")
-
-    if "swDocMgr" not in method or ".GetDocument(" not in method:
-        raise AssertionError(f"{name}: Document Manager path is missing")
-    if "TryAddSolidWorksOpenDocumentPropertyNames(" not in method:
-        raise AssertionError(f"{name}: missing fallback when Document Manager returns no properties")
-    if "logopathlist.WriteLog" not in method:
-        raise AssertionError(f"{name}: Document Manager failures must be logged, not swallowed")
-
-
-def assert_live_fallback_contract(source: str) -> None:
-    fallback = extract_method(
-        source,
-        "private static bool TryAddSolidWorksOpenDocumentPropertyNames(string fileName, List<string> list)",
-    )
-    model_doc = extract_method(
-        source,
-        "private static void AddPropertyNamesFromModelDoc(object modelDoc, List<string> list)",
-    )
-
-    required_fallback_tokens = [
-        "code.swApp",
-        "code.RunSW",
-        "OpenSolidWorksDocumentForPropertyImport",
-        "AddPropertyNamesFromModelDoc",
-        "CloseSolidWorksDocumentOpenedForPropertyImport",
+def assert_file_folder_import_is_native_only(method: str, name: str) -> None:
+    required_tokens = [
+        "swDocMgr",
+        ".GetDocument(",
+        "SwDmDocumentOpenError result",
+        "RecordDocumentManagerOpenError",
+        "swDMDocument.GetCustomPropertyNames()",
+        "configurationManager.GetConfigurationNames()",
+        "swDMConfiguration.GetCustomPropertyNames()",
+        "swDMDocument.CloseDoc()",
+        "logopathlist.WriteLog",
     ]
-    for token in required_fallback_tokens:
-        if token not in fallback:
-            raise AssertionError(f"live fallback helper does not use {token}")
+    for token in required_tokens:
+        if token not in method:
+            raise AssertionError(f"{name}: native SWDM import contract is missing {token!r}")
 
-    finder = extract_method(
-        source,
-        "private static object FindSolidWorksOpenDocumentByPath(string fileName)",
-    )
-    opener = extract_method(
-        source,
-        "private static object OpenSolidWorksDocumentForPropertyImport(string fileName, out bool openedForImport)",
-    )
-    closer = extract_method(
-        source,
-        "private static void CloseSolidWorksDocumentOpenedForPropertyImport(object modelDoc, string fileName)",
-    )
-
-    required_finder_tokens = [
+    forbidden_tokens = [
+        "TryAddSolidWorksOpenDocumentPropertyNames",
+        "OpenSolidWorksDocumentForPropertyImport",
+        "FindSolidWorksOpenDocumentByPath",
+        "AddPropertyNamesFromModelDoc",
+        "OpenDoc6",
         "GetOpenDocumentByName",
         "GetFirstDocument",
-        "GetPathName",
-        "GetNext",
-        "NormalizePathForCompare",
-    ]
-    for token in required_finder_tokens:
-        if token not in finder:
-            raise AssertionError(f"live document finder does not use {token}")
-
-    required_opener_tokens = [
-        "GetSolidWorksDocumentType",
-        "OpenDoc6",
-        "openedForImport = true",
-    ]
-    for token in required_opener_tokens:
-        if token not in opener:
-            raise AssertionError(f"live document opener does not use {token}")
-
-    required_closer_tokens = [
-        "GetTitle",
-        "CloseDoc",
-    ]
-    for token in required_closer_tokens:
-        if token not in closer:
-            raise AssertionError(f"live document closer does not use {token}")
-
-    required_model_tokens = [
-        "GetConfigurationNames",
         "CustomPropertyManager",
-        "GetNames",
-        "AddPropertyNamesFromEnumerable",
+        "code.RunSW",
+        "code.swApp",
     ]
-    for token in required_model_tokens:
-        if token not in model_doc:
-            raise AssertionError(f"live ModelDoc helper does not use {token}")
+    for token in forbidden_tokens:
+        if token in method:
+            raise AssertionError(f"{name}: file/folder import must not use live SolidWorks fallback {token!r}")
+
+
+def assert_no_fallback_helpers(source: str) -> None:
+    forbidden_helpers = [
+        "TryAddSolidWorksOpenDocumentPropertyNames",
+        "OpenSolidWorksDocumentForPropertyImport",
+        "FindSolidWorksOpenDocumentByPath",
+        "AddPropertyNamesFromModelDoc",
+    ]
+    for token in forbidden_helpers:
+        if token in source:
+            raise AssertionError(f"MySWDM must not contain fallback helper {token!r}")
+
+
+def assert_ui_surfaces_native_failure(frm_source: str) -> None:
+    for name, signature in {
+        "AddPropertyNamesFromfile_Click": "private void AddPropertyNamesFromfile_Click",
+        "AddPropertyNamesFromFolder_Click": "private void AddPropertyNamesFromFolder_Click",
+    }.items():
+        method = extract_method(frm_source, signature)
+        if "propertyNames.Count == 0" not in method or "MySWDM.err" not in method:
+            raise AssertionError(f"{name}: native SWDM failure must be shown to the user")
+        if "MessageBox.Show(MySWDM.err" not in method:
+            raise AssertionError(f"{name}: must show SWDM error instead of silent empty import")
 
 
 def check_source(path: Path = MYSWDM) -> None:
     source = path.read_text(encoding="utf-8-sig")
+    assert_no_fallback_helpers(source)
+
     methods = {
         "GetPropertyNames1": "internal List<string> GetPropertyNames1()",
         "GetPropertyNames2": "internal List<string> GetPropertyNames2()",
@@ -168,12 +139,14 @@ def check_source(path: Path = MYSWDM) -> None:
     for name, signature in methods.items():
         method = extract_method(source, signature)
         assert_configuration_properties_are_not_gated(method, name)
-        assert_swdm_has_live_solidworks_fallback(source, method, name)
-    assert_live_fallback_contract(source)
+        assert_file_folder_import_is_native_only(method, name)
+
+    frm_source = FRMSETPROPNAME.read_text(encoding="utf-8-sig")
+    assert_ui_surfaces_native_failure(frm_source)
 
 
 def self_test() -> None:
-    bad = """
+    early_continue = """
     internal List<string> GetPropertyNames1()
     {
         object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
@@ -184,98 +157,76 @@ def self_test() -> None:
         SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
         object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
         objectValue = RuntimeHelpers.GetObjectValue(swDMConfiguration.GetCustomPropertyNames());
+        swDMDocument.CloseDoc();
     }
     """
     try:
-        assert_configuration_properties_are_not_gated(bad, "bad")
+        assert_configuration_properties_are_not_gated(early_continue, "early_continue")
     except AssertionError:
         pass
     else:
         raise AssertionError("self-test failed: early continue was accepted")
 
-    good = """
-    internal List<string> GetPropertyNames1()
-    {
-        object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
-        if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
-        {
-            foreach (object item in (IEnumerable)objectValue) { }
-        }
-        SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
-        object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
-        objectValue = RuntimeHelpers.GetObjectValue(swDMConfiguration.GetCustomPropertyNames());
-    }
-    """
-    assert_configuration_properties_are_not_gated(good, "good")
-
-    no_fallback_source = """
-    private static void AddPropertyNamesFromModelDoc(object modelDoc, List<string> list) {}
-    internal List<string> GetPropertyNames1()
-    {
-        SwDMDocument swDMDocument = swDocMgr.GetDocument(path, type, true, out result);
-        logopathlist.WriteLog("failure");
-        return list;
-    }
-    """
-    no_fallback_method = extract_method(no_fallback_source, "internal List<string> GetPropertyNames1()")
-    try:
-        assert_swdm_has_live_solidworks_fallback(no_fallback_source, no_fallback_method, "no_fallback")
-    except AssertionError:
-        pass
-    else:
-        raise AssertionError("self-test failed: missing live fallback was accepted")
-
-    good_fallback_source = """
-    private static bool TryAddSolidWorksOpenDocumentPropertyNames(string fileName, List<string> list)
-    {
-        object app = code.swApp;
-        code.RunSW(HideWindow: false, startnew: false);
-        bool openedForImport = false;
-        object model = OpenSolidWorksDocumentForPropertyImport(fileName, out openedForImport);
-        AddPropertyNamesFromModelDoc(model, list);
-        CloseSolidWorksDocumentOpenedForPropertyImport(model, fileName);
-        return true;
-    }
-    private static object FindSolidWorksOpenDocumentByPath(string fileName)
-    {
-        object model = code.swApp.GetOpenDocumentByName(fileName);
-        model = app.GetFirstDocument();
-        string path = model.GetPathName();
-        model = model.GetNext();
-        NormalizePathForCompare(path);
-        return model;
-    }
-    private static object OpenSolidWorksDocumentForPropertyImport(string fileName, out bool openedForImport)
-    {
-        openedForImport = false;
-        GetSolidWorksDocumentType(fileName);
-        object model = code.swApp.OpenDoc6(fileName, 1, 1, "", 0, 0);
-        openedForImport = true;
-        return model;
-    }
-    private static void CloseSolidWorksDocumentOpenedForPropertyImport(object modelDoc, string fileName)
-    {
-        string title = modelDoc.GetTitle();
-        code.swApp.CloseDoc(title);
-    }
-    private static void AddPropertyNamesFromModelDoc(object modelDoc, List<string> list)
-    {
-        modelDoc.GetConfigurationNames();
-        object mgr = modelDoc.Extension.CustomPropertyManager("");
-        object names = mgr.GetNames();
-        AddPropertyNamesFromEnumerable(list, names);
-    }
+    fallback = """
     internal List<string> GetPropertyNames1()
     {
         SwDMDocument swDMDocument = swDocMgr.GetDocument(path, type, true, out result);
         TryAddSolidWorksOpenDocumentPropertyNames(path, list);
-        logopathlist.WriteLog("failure");
+        code.RunSW(false, false);
+        OpenDoc6(path, 1, 1, "", 0, 0);
+        object mgr = model.Extension.CustomPropertyManager("");
         return list;
     }
     """
-    good_fallback_method = extract_method(good_fallback_source, "internal List<string> GetPropertyNames1()")
-    assert_swdm_has_live_solidworks_fallback(good_fallback_source, good_fallback_method, "good_fallback")
-    assert_live_fallback_contract(good_fallback_source)
+    try:
+        assert_file_folder_import_is_native_only(fallback, "fallback")
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("self-test failed: live fallback was accepted")
+
+    no_diagnostics = """
+    internal List<string> GetPropertyNames1()
+    {
+        SwDmDocumentOpenError result = 0;
+        SwDMDocument swDMDocument = swDocMgr.GetDocument(path, type, true, out result);
+        object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
+        AddPropertyNamesFromEnumerable(list, objectValue);
+        SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
+        object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+        objectValue = RuntimeHelpers.GetObjectValue(swDMConfiguration.GetCustomPropertyNames());
+        swDMDocument.CloseDoc();
+        logopathlist.WriteLog("x");
+    }
+    """
+    try:
+        assert_file_folder_import_is_native_only(no_diagnostics, "no_diagnostics")
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("self-test failed: missing native diagnostics was accepted")
+
+    good_native = """
+    internal List<string> GetPropertyNames1()
+    {
+        SwDmDocumentOpenError result = 0;
+        SwDMDocument swDMDocument = swDocMgr.GetDocument(path, type, true, out result);
+        if (Information.IsNothing(swDMDocument))
+        {
+            RecordDocumentManagerOpenError("ctx", path, result);
+            continue;
+        }
+        object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
+        AddPropertyNamesFromEnumerable(list, objectValue);
+        SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
+        object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+        objectValue = RuntimeHelpers.GetObjectValue(swDMConfiguration.GetCustomPropertyNames());
+        swDMDocument.CloseDoc();
+        logopathlist.WriteLog("x");
+    }
+    """
+    assert_configuration_properties_are_not_gated(good_native, "good_native")
+    assert_file_folder_import_is_native_only(good_native, "good_native")
 
 
 def main(argv: list[str]) -> int:
@@ -286,7 +237,7 @@ def main(argv: list[str]) -> int:
         self_test()
     else:
         check_source()
-    print("property import contract: PASS")
+    print("property import native contract: PASS")
     return 0
 
 

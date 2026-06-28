@@ -714,43 +714,43 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 959,
+          "line": 719,
           "column": 7,
           "code": "CS0162"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1097,
+          "line": 857,
           "column": 9,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1099,
+          "line": 859,
           "column": 9,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1186,
+          "line": 946,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1187,
+          "line": 947,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1188,
+          "line": 948,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 1189,
+          "line": 949,
           "column": 10,
           "code": "CS0219"
         },

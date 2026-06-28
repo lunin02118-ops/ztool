@@ -86,7 +86,8 @@ git diff --check
 
 Результат:
 
-- property import contract: **PASS**
+- property import native-only contract: **PASS**
+- property import live native probe on SW2025 file: **NO-GO / swDmDocumentOpenErrorNoLicense**
 - visible brand boundary: **PASS**
 - secret scan: **PASS**
 - whitespace diff check: **PASS**
@@ -133,7 +134,9 @@ git diff --check
 
 ### Импорт и свойства
 
-Машинный contract по импорту свойств прошёл, но live UI scenario не закрыт:
+Машинный contract по импорту свойств прошёл только как native-only contract: файл/папка не имеют права уходить в fallback через живой SolidWorks. Live native probe на боевом SW2025-файле сейчас возвращает `swDmDocumentOpenErrorNoLicense`; это блокер ключа/окружения SWDM, а не повод добавлять обход.
+
+Live UI scenario не закрыт:
 
 - кнопка `Задать имя свойства` -> `Импорт...`;
 - импорт свойств из реальной детали;
