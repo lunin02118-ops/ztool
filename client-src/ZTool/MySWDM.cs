@@ -244,10 +244,49 @@ public class MySWDM
 		}
 	}
 
+	private static void AddPropertyName(List<string> list, string propertyName)
+	{
+		string text = Strings.Trim(propertyName);
+		if (Operators.CompareString(text, "", TextCompare: false) == 0)
+		{
+			return;
+		}
+		if (!list.Exists((string existing) => existing.Equals(text, StringComparison.OrdinalIgnoreCase)))
+		{
+			list.Add(text);
+		}
+	}
+
+	private static void AddPropertyNamesFromEnumerable(List<string> list, object names)
+	{
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(names)))
+		{
+			return;
+		}
+		foreach (object item in (IEnumerable)names)
+		{
+			AddPropertyName(list, Conversions.ToString(RuntimeHelpers.GetObjectValue(item)));
+		}
+	}
+
+	private void RecordDocumentManagerOpenError(string context, string fileName, SwDmDocumentOpenError result)
+	{
+		if (result == SwDmDocumentOpenError.swDmDocumentOpenErrorNone)
+		{
+			err = $"{context}\r\nФайл: {fileName}\r\nDocument Manager не вернул объект документа без явного кода ошибки.\r\nПроверьте установленный SOLIDWORKS Document Manager и лицензионный ключ SWDM.";
+		}
+		else
+		{
+			err = $"{context}\r\nФайл: {fileName}\r\nDocument Manager не открыл документ: {result} ({(int)result}).\r\nПроверьте установленный SOLIDWORKS Document Manager и лицензионный ключ SWDM.";
+		}
+		logopathlist.WriteLog(err);
+	}
+
 	internal List<string> GetPropertyNames1()
 	{
 		_Closure_0024__92 closure_0024__ = new _Closure_0024__92();
 		closure_0024__._0024VB_0024Local_pname = "";
+		err = "";
 		List<string> list = new List<string>();
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Multiselect = true;
@@ -294,24 +333,21 @@ public class MySWDM
 				SwDMDocument swDMDocument = document;
 				if (Information.IsNothing(swDMDocument))
 				{
+					RecordDocumentManagerOpenError("Импорт свойств из файла", text, result);
 					continue;
 				}
 				object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
-				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+				if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
 				{
-					continue;
-				}
-				foreach (object item in (IEnumerable)objectValue)
-				{
-					object objectValue2 = RuntimeHelpers.GetObjectValue(item);
-					closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
-					if (!list.Exists(closure_0024__._Lambda_0024__150))
-					{
-						list.Add(closure_0024__._0024VB_0024Local_pname);
-					}
+					AddPropertyNamesFromEnumerable(list, objectValue);
 				}
 				SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
 				object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
+				{
+					swDMDocument.CloseDoc();
+					continue;
+				}
 				foreach (object item2 in (IEnumerable)objectValue3)
 				{
 					object objectValue4 = RuntimeHelpers.GetObjectValue(item2);
@@ -325,15 +361,7 @@ public class MySWDM
 					{
 						continue;
 					}
-					foreach (object item3 in (IEnumerable)objectValue)
-					{
-						object objectValue2 = RuntimeHelpers.GetObjectValue(item3);
-						closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
-						if (!list.Exists(closure_0024__._Lambda_0024__151))
-						{
-							list.Add(closure_0024__._0024VB_0024Local_pname);
-						}
-					}
+					AddPropertyNamesFromEnumerable(list, objectValue);
 				}
 				swDMDocument.CloseDoc();
 			}
@@ -341,6 +369,8 @@ public class MySWDM
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
+				err = $"Document Manager не смог импортировать свойства из файла: {text}\r\n{ex2.Message}";
+				logopathlist.WriteLog(err);
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -351,6 +381,7 @@ public class MySWDM
 	{
 		_Closure_0024__93 closure_0024__ = new _Closure_0024__93();
 		closure_0024__._0024VB_0024Local_pname = "";
+		err = "";
 		List<string> list = new List<string>();
 		string text = "";
 		FileBorser fileBorser = new FileBorser();
@@ -428,22 +459,21 @@ public class MySWDM
 				SwDMDocument document = swDMApplication.GetDocument(fullPathName, (SwDmDocumentType)docType, allowReadOnly: true, out result);
 				num6 = (int)result;
 				SwDMDocument swDMDocument = document;
-				if (!Information.IsNothing(swDMDocument))
+				if (Information.IsNothing(swDMDocument))
+				{
+					RecordDocumentManagerOpenError("Импорт свойств из папки", list2[num2], result);
+				}
+				else
 				{
 					object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
 					if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
 					{
-						foreach (object item in (IEnumerable)objectValue)
-						{
-							object objectValue2 = RuntimeHelpers.GetObjectValue(item);
-							closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
-							if (!list.Exists(closure_0024__._Lambda_0024__152))
-							{
-								list.Add(closure_0024__._0024VB_0024Local_pname);
-							}
-						}
-						SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
-						object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+						AddPropertyNamesFromEnumerable(list, objectValue);
+					}
+					SwDMConfigurationMgr configurationManager = swDMDocument.ConfigurationManager;
+					object objectValue3 = RuntimeHelpers.GetObjectValue(configurationManager.GetConfigurationNames());
+					if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
+					{
 						foreach (object item2 in (IEnumerable)objectValue3)
 						{
 							object objectValue4 = RuntimeHelpers.GetObjectValue(item2);
@@ -457,24 +487,18 @@ public class MySWDM
 							{
 								continue;
 							}
-							foreach (object item3 in (IEnumerable)objectValue)
-							{
-								object objectValue2 = RuntimeHelpers.GetObjectValue(item3);
-								closure_0024__._0024VB_0024Local_pname = Conversions.ToString(objectValue2);
-								if (!list.Exists(closure_0024__._Lambda_0024__153))
-								{
-									list.Add(closure_0024__._0024VB_0024Local_pname);
-								}
-							}
+							AddPropertyNamesFromEnumerable(list, objectValue);
 						}
-						swDMDocument.CloseDoc();
 					}
+					swDMDocument.CloseDoc();
 				}
 			}
 			catch (Exception ex)
 			{
 				ProjectData.SetProjectError(ex);
 				Exception ex2 = ex;
+				err = $"Document Manager не смог импортировать свойства из папки: {list2[num2]}\r\n{ex2.Message}";
+				logopathlist.WriteLog(err);
 				ProjectData.ClearProjectError();
 			}
 			goto IL_0445;
