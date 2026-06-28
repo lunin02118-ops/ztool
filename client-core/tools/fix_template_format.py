@@ -71,7 +71,7 @@ COL_WIDTHS = {
     "M": 12.0,   # Эскиз (for thumbnails)
     "N": 14.0,   # Материал
     "O": 35.0,   # Путь
-    "P": 18.0,   # Габаритные размеры
+    "P": 18.0,   # Габарит
 }
 
 DATA_COLS = 16
@@ -138,8 +138,8 @@ def main():
     # 2b. Add/normalize release-specific calculated columns and aliases.
     # The original workbook has no column for ZTool's computed bounding-box
     # values. Appending it avoids shifting existing legacy anchors.
-    ws["J6"] = "Масса ед. кг"
-    ws["P6"] = "Габаритные размеры"
+    ws["J6"] = "Масса"
+    ws["P6"] = "Габарит"
     calculated_names = {
         "Номер": f"'{NEW_SHEET}'!$A$6",
         "Количество": f"'{NEW_SHEET}'!$G$6",
@@ -202,7 +202,7 @@ def main():
                 cell.alignment = ALIGN_CENTER
             elif col == 15:  # Путь — left, no wrap
                 cell.alignment = ALIGN_LEFT
-            elif col == 16:  # Габаритные размеры — center-ish but keep wrap
+            elif col == 16:  # Габарит — center-ish but keep wrap
                 cell.alignment = ALIGN_LEFT_WRAP
             else:
                 cell.alignment = ALIGN_LEFT_WRAP

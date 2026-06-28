@@ -8,8 +8,8 @@ Usage:
 
 The script looks for .xlsx files in the directory and validates:
 - Row count (data rows present)
-- Service/calculated columns: № п/п (A), Кол-во (G), Масса ед. кг (J),
-  Путь (O), Габаритные размеры (P)
+- Service/calculated columns: № п/п (A), Кол-во (G), Масса (J),
+  Путь (O), Габарит (P)
 - Property columns: C, D, E, H, I, N (if model has matching propnames)
 - Mode-specific behavior (type 0/1/2/3, images, filters)
 
@@ -61,9 +61,9 @@ MODES = [
 # Column mapping (1-indexed): A=1, B=2, ..., P=16
 COL_NUM = 1      # A - № п/п (service)
 COL_QTY = 7      # G - Кол-во (service)
-COL_WEIGHT = 10  # J - Масса ед. кг (calculated)
+COL_WEIGHT = 10  # J - Масса (calculated)
 COL_PATH = 15    # O - Путь (service)
-COL_DIMS = 16    # P - Габаритные размеры (calculated)
+COL_DIMS = 16    # P - Габарит (calculated)
 COL_IMAGE = 13   # M - Эскиз (service)
 # Property columns (C=3, D=4, E=5, H=8, I=9, N=14)
 PROP_COLS = [3, 4, 5, 8, 9, 14]
@@ -137,7 +137,7 @@ def analyze_xlsx(filepath):
         if v is not None and str(v).strip():
             qty_count += 1
 
-        # Масса ед. кг
+        # Масса
         v = ws.cell(row=row, column=COL_WEIGHT).value
         if v is not None and str(v).strip():
             weight_count += 1
@@ -147,7 +147,7 @@ def analyze_xlsx(filepath):
         if v is not None and str(v).strip():
             path_count += 1
 
-        # Габаритные размеры
+        # Габарит
         v = ws.cell(row=row, column=COL_DIMS).value
         if v is not None and str(v).strip():
             dims_count += 1
@@ -188,19 +188,19 @@ def analyze_xlsx(filepath):
             "Кол-во partially filled: %d/%d" % (qty_count, data_rows))
 
     if weight_count == 0:
-        results["issues"].append("Масса ед. кг (col J) is EMPTY")
+        results["issues"].append("Масса (col J) is EMPTY")
     elif weight_count < data_rows:
         results["issues"].append(
-            "Масса ед. кг partially filled: %d/%d" % (weight_count, data_rows))
+            "Масса partially filled: %d/%d" % (weight_count, data_rows))
 
     if path_count == 0:
         results["issues"].append("Путь (col O) is EMPTY")
 
     if dims_count == 0:
-        results["issues"].append("Габаритные размеры (col P) is EMPTY")
+        results["issues"].append("Габарит (col P) is EMPTY")
     elif dims_count < data_rows:
         results["issues"].append(
-            "Габаритные размеры partially filled: %d/%d" % (dims_count, data_rows))
+            "Габарит partially filled: %d/%d" % (dims_count, data_rows))
 
     wb.close()
     return results

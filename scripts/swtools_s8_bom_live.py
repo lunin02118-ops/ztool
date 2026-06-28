@@ -667,9 +667,9 @@ def analyze_workbook(path: Path, mode_id: int) -> dict[str, Any]:
         for key, label in (
             ("number", "№ п/п"),
             ("quantity", "Кол-во"),
-            ("weight", "Масса ед. кг"),
+            ("weight", "Масса"),
             ("path", "Путь"),
-            ("dimensions", "Габаритные размеры"),
+            ("dimensions", "Габарит"),
         ):
             if counts[key] < data_rows:
                 result["issues"].append(f"{label} partially filled: {counts[key]}/{data_rows}")

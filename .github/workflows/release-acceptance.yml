@@ -251,6 +251,12 @@ jobs:
       - name: BOM export pre-flight - client-core/dist/SWTools.settings
         run: python client-core/tools/check_bom_template.py client-core/dist/SWTools.settings
 
+      - name: Calculated BOM column label contract self-test
+        run: python tools/e2e/check_calculated_column_labels.py --self-test
+
+      - name: Calculated BOM column label contract
+        run: python tools/e2e/check_calculated_column_labels.py
+
       - name: BOM export asserter self-test
         run: python tools/bom_export_assert.py --self-test
 

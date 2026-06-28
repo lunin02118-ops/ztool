@@ -366,13 +366,12 @@ SERVICE_HEADERS = [
 # of a hard failure (the column simply stays empty until its header is renamed).
 DEFERRED_SERVICE = {"Col_FileName"}
 
-# Calculated service columns with user-visible headers that cannot be used as
-# Excel names directly. The localized exporter patches these through
-# namemappinglist by DataGridViewColumn.Name, so the release profile and template
-# must keep this contract in sync.
+# Calculated service columns mapped through namemappinglist by
+# DataGridViewColumn.Name. Keep the visible Russian label independent from the
+# stable Excel anchor so short UI names do not break export compatibility.
 REQUIRED_CALCULATED_MAPPINGS = {
-    "Col_Weight": ("Масса ед._кг", "МассаЕдКг"),
-    "Col_bound": ("Габаритные размеры", "ГабаритныеРазмеры"),
+    "Col_Weight": ("Масса", "МассаЕдКг"),
+    "Col_bound": ("Габарит", "ГабаритныеРазмеры"),
 }
 
 

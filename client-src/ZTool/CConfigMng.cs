@@ -77,8 +77,8 @@ public class CConfigMng
 			m_Config.namemappinglist = new List<columnnamemapping>();
 		}
 		EnsureStandardPropertyMappings();
-		EnsureBomMapping("Col_Weight", "Масса ед._кг", "МассаЕдКг");
-		EnsureBomMapping("Col_bound", "Габаритные размеры", "ГабаритныеРазмеры");
+		EnsureBomMapping("Col_Weight", "Масса", "МассаЕдКг");
+		EnsureBomMapping("Col_bound", "Габарит", "ГабаритныеРазмеры");
 	}
 
 	private static void EnsureStandardPropertyMappings()
