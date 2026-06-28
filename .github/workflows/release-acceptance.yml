@@ -156,6 +156,12 @@ jobs:
       - name: Options dialog layout gate
         run: python tools/e2e/check_frmoptions_layout.py
 
+      - name: Fill-column dialog layout self-test
+        run: python tools/e2e/check_frmfilling_layout.py --self-test
+
+      - name: Fill-column dialog layout gate
+        run: python tools/e2e/check_frmfilling_layout.py
+
       - name: Custom-sort dialog layout self-test
         run: python tools/e2e/check_frmcustomsort_layout.py --self-test
 

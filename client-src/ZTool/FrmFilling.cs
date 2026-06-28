@@ -2716,6 +2716,158 @@ public class FrmFilling : Form
 			ToolStrip1.Height = (int)Math.Round((double)ToolStrip1.Height * dpixRatio);
 			name_list.Width = (int)Math.Round((double)name_list.Width * dpixRatio);
 		}
+		ConfigureResponsiveLayout();
+		base.Resize += FrmFilling_ResponsiveResize;
+	}
+
+	private int Dpi(int value)
+	{
+		return checked((int)Math.Round((double)value * dpixRatio));
+	}
+
+	private void SetBoundsDpi(Control control, int x, int y, int width, int height)
+	{
+		control.SetBounds(Dpi(x), Dpi(y), Dpi(width), Dpi(height));
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		SuspendLayout();
+		try
+		{
+			ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+			FormBorderStyle = FormBorderStyle.Sizable;
+			MaximizeBox = true;
+			MinimizeBox = true;
+			MinimumSize = new Size(Dpi(700), Dpi(500));
+			if (ClientSize.Width < Dpi(680) || ClientSize.Height < Dpi(460))
+			{
+				ClientSize = new Size(Math.Max(ClientSize.Width, Dpi(680)), Math.Max(ClientSize.Height, Dpi(460)));
+			}
+			SizeGripStyle = SizeGripStyle.Show;
+			TabControl1.SizeMode = TabSizeMode.Normal;
+			TabControl1.ItemSize = new Size(Dpi(132), Dpi(24));
+			TabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			TabPage1.AutoScroll = true;
+			TabPage2.AutoScroll = true;
+			TabPage3.AutoScroll = true;
+			TabPage4.AutoScroll = true;
+			ConfigureSearchTabLayout();
+			ConfigureFooterLayout();
+			ApplyResponsiveLayout();
+		}
+		finally
+		{
+			ResumeLayout(performLayout: true);
+		}
+	}
+
+	private void ConfigureFooterLayout()
+	{
+		TableLayoutPanel2.AutoSize = false;
+		TableLayoutPanel2.ColumnStyles.Clear();
+		TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(96)));
+		TableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(96)));
+		TableLayoutPanel2.RowStyles.Clear();
+		TableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, Dpi(34)));
+		TableLayoutPanel2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+		TableLayoutPanel2.Size = new Size(Dpi(200), Dpi(34));
+		OK_Button.AutoSize = false;
+		Undo_Button.AutoSize = false;
+		OK_Button.Dock = DockStyle.Fill;
+		Undo_Button.Dock = DockStyle.Fill;
+		OK_Button.Margin = new Padding(Dpi(4));
+		Undo_Button.Margin = new Padding(Dpi(4));
+	}
+
+	private void ConfigureSearchTabLayout()
+	{
+		GroupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		GroupBox6.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		datasource.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+		ComboBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		ComboBox4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		Button2.AutoSize = false;
+		Label10.AutoSize = false;
+		Label11.AutoSize = false;
+		Label12.AutoSize = false;
+		Label13.AutoSize = false;
+		Label14.AutoSize = false;
+		Label15.AutoSize = false;
+		datacount.AutoSize = false;
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (TabControl1 == null || TableLayoutPanel2 == null)
+		{
+			return;
+		}
+		if (TabControl1.SelectedIndex == 3 && !TableLayoutPanel2.Visible)
+		{
+			TabControl1.Dock = DockStyle.Fill;
+			return;
+		}
+		TabControl1.Dock = DockStyle.None;
+		int num = Dpi(48);
+		TabControl1.SetBounds(0, 0, ClientSize.Width, Math.Max(Dpi(330), ClientSize.Height - num));
+		TableLayoutPanel2.SetBounds(ClientSize.Width - TableLayoutPanel2.Width - Dpi(12), ClientSize.Height - TableLayoutPanel2.Height - Dpi(10), TableLayoutPanel2.Width, TableLayoutPanel2.Height);
+		LayoutSearchTab();
+	}
+
+	private void LayoutSearchTab()
+	{
+		if (TabPage3 == null)
+		{
+			return;
+		}
+		TabPage3.SuspendLayout();
+		GroupBox4.SuspendLayout();
+		GroupBox6.SuspendLayout();
+		try
+		{
+			int num = Math.Max(Dpi(620), TabPage3.ClientSize.Width - Dpi(24));
+			SetBoundsDpi(GroupBox4, 12, 10, (int)Math.Round((double)num / dpixRatio), 132);
+			SetBoundsDpi(GroupBox6, 12, 156, (int)Math.Round((double)num / dpixRatio), 128);
+			int num2 = Math.Max(Dpi(360), GroupBox4.ClientSize.Width - Dpi(72));
+			SetBoundsDpi(datasource, 12, 28, (int)Math.Round((double)num2 / dpixRatio), 26);
+			SetBoundsDpi(Button3, (int)Math.Round((double)(num2 + Dpi(22)) / dpixRatio), 27, 36, 28);
+			SetBoundsDpi(Label11, 12, 68, 120, 24);
+			SetBoundsDpi(srownumer, 136, 65, 72, 26);
+			SetBoundsDpi(Button2, 224, 63, 152, 30);
+			SetBoundsDpi(Label15, 12, 100, 220, 24);
+			SetBoundsDpi(datacount, 238, 100, 90, 24);
+			int num3 = Math.Max(Dpi(240), GroupBox6.ClientSize.Width - Dpi(322));
+			SetBoundsDpi(Label10, 12, 34, 28, 24);
+			SetBoundsDpi(rcolnumer1, 48, 31, 72, 26);
+			SetBoundsDpi(Label12, 132, 34, 132, 24);
+			SetBoundsDpi(ComboBox3, 278, 30, (int)Math.Round((double)num3 / dpixRatio), 26);
+			SetBoundsDpi(Label13, 12, 76, 82, 24);
+			SetBoundsDpi(rcolnumer2, 100, 73, 72, 26);
+			SetBoundsDpi(Label14, 184, 76, 130, 24);
+			SetBoundsDpi(ComboBox4, 328, 72, (int)Math.Round((double)Math.Max(Dpi(220), GroupBox6.ClientSize.Width - Dpi(340)) / dpixRatio), 26);
+		}
+		finally
+		{
+			GroupBox6.ResumeLayout(performLayout: true);
+			GroupBox4.ResumeLayout(performLayout: true);
+			TabPage3.ResumeLayout(performLayout: true);
+		}
+	}
+
+	private void FrmFilling_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
 	}
 
 	private void OK_Button_Click(object sender, EventArgs e)
@@ -3706,26 +3858,19 @@ public class FrmFilling : Form
 			if (e.TabPageIndex == 0 || e.TabPageIndex == 2)
 			{
 				TableLayoutPanel2.Visible = true;
-				FormBorderStyle = FormBorderStyle.FixedDialog;
-				TabControl1.Dock = DockStyle.Top;
-				Size size = new Size((int)Math.Round(439.0 * dpixRatio), (int)Math.Round(397.0 * dpixRatio));
-				Size = size;
-				TabControl1.Height = (int)Math.Round((double)Height - 67.0 * dpixRatio);
+				ConfigureResponsiveLayout();
 			}
 			else if (e.TabPageIndex == 1)
 			{
 				TableLayoutPanel2.Visible = true;
-				FormBorderStyle = FormBorderStyle.FixedDialog;
-				TabControl1.Dock = DockStyle.Top;
-				Size size = new Size((int)Math.Round(439.0 * dpixRatio), (int)Math.Round(443.0 * dpixRatio));
-				Size = size;
-				TabControl1.Height = (int)Math.Round((double)Height - 67.0 * dpixRatio);
+				ConfigureResponsiveLayout();
 			}
 			else if (e.TabPageIndex == 3)
 			{
 				TableLayoutPanel2.Visible = false;
 				FormBorderStyle = FormBorderStyle.Sizable;
 				TabControl1.Dock = DockStyle.Fill;
+				MinimumSize = new Size(Dpi(700), Dpi(500));
 				Size size = new Size(Conversions.ToInteger(Interaction.IIf(formwidth == 0.0, 560.0 * dpixRatio, formwidth * dpixRatio)), Conversions.ToInteger(Interaction.IIf(formheight == 0.0, 397.0 * dpixRatio, formheight * dpixRatio)));
 				Size = size;
 			}

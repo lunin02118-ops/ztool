@@ -252,13 +252,13 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/FrmFilling.cs",
-          "line": 3670,
+          "line": 3822,
           "column": 8,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/FrmFilling.cs",
-          "line": 4476,
+          "line": 4621,
           "column": 4,
           "code": "CS0162"
         },
