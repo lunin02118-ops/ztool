@@ -13737,12 +13737,16 @@ public class Frmmain : Form
 							{
 								text2 = DGV1.Columns[num8].HeaderText;
 								text3 = Conversions.ToString(code.GetFieldType(DGV1.Columns[num8].ToolTipText));
-								text = ((Conversions.ToDouble(text3) != 11.0) ? code.ToHexString(Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[num8, index].Value))) : code.ToHexString(code.YesOrNo(Conversions.ToString(DGV1[num8, index].Value))));
+								string text6 = NormalizeSavePropertyValue(text2, num8, index);
+								text = ((Conversions.ToDouble(text3) != 11.0) ? code.ToHexString(text6) : code.ToHexString(code.YesOrNo(text6)));
 								text4 = Conversions.ToString(DGV1[num8, index].Tag);
 								stringBuilder.AppendLine("PropName\u001e\u001c" + text2 + "\u001e\u001c" + text3 + "\u001e\u001c" + text + "\u001e\u001c" + text4);
 							}
 							num8++;
 						}
+						AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Material, index);
+						AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Weight, index);
+						AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_bound, index);
 						stringBuilder.AppendLine("RowNumber\u001e\u001c" + Conversions.ToString(index));
 						if ((code.DataFromAsm && Operators.ConditionalCompareObjectEqual(DGV1[Col_Level.Index, index].Value, 0, TextCompare: false)) ? true : false)
 						{
@@ -13788,6 +13792,78 @@ public class Frmmain : Form
 				ProjectData.ClearProjectError();
 			}
 		}
+	}
+
+	private string NormalizeSavePropertyValue(string propertyName, int columnIndex, int rowIndex)
+	{
+		string text = Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[columnIndex, rowIndex].Value));
+		if (string.Equals(propertyName, "Материал", StringComparison.OrdinalIgnoreCase))
+		{
+			string nativeCalculatedValue = GetGridValue(Col_Material, rowIndex);
+			if (!string.IsNullOrWhiteSpace(nativeCalculatedValue) && ShouldUseNativeCalculatedPropertyValue(text))
+			{
+				return nativeCalculatedValue;
+			}
+		}
+		if (string.Equals(propertyName, "Масса", StringComparison.OrdinalIgnoreCase))
+		{
+			string nativeCalculatedValue2 = GetGridValue(Col_Weight, rowIndex);
+			if (!string.IsNullOrWhiteSpace(nativeCalculatedValue2) && ShouldUseNativeCalculatedPropertyValue(text))
+			{
+				return nativeCalculatedValue2;
+			}
+		}
+		if (string.Equals(propertyName, "Габарит", StringComparison.OrdinalIgnoreCase))
+		{
+			string nativeCalculatedValue3 = GetGridValue(Col_bound, rowIndex);
+			if (!string.IsNullOrWhiteSpace(nativeCalculatedValue3) && ShouldUseNativeCalculatedPropertyValue(text))
+			{
+				return nativeCalculatedValue3;
+			}
+		}
+		return text;
+	}
+
+	private static bool ShouldUseNativeCalculatedPropertyValue(string value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			return true;
+		}
+		string text = value.Trim().Trim('"', '\'');
+		return text.StartsWith("SW-Material", StringComparison.OrdinalIgnoreCase) || text.StartsWith("SW-Материал", StringComparison.OrdinalIgnoreCase) || text.StartsWith("SW-Mass", StringComparison.OrdinalIgnoreCase) || text.StartsWith("SW-Масса", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private void AppendCalculatedSavePropertyIfMissing(StringBuilder stringBuilder, DataGridViewColumn sourceColumn, int rowIndex)
+	{
+		string text = ResolveBomTemplateMappingName(sourceColumn.Index);
+		if (string.IsNullOrWhiteSpace(text) || HasSavePropertyColumn(text))
+		{
+			return;
+		}
+		string gridValue = GetGridValue(sourceColumn, rowIndex);
+		if (string.IsNullOrWhiteSpace(gridValue))
+		{
+			return;
+		}
+		stringBuilder.AppendLine("PropName\u001e\u001c" + text + "\u001e\u001c" + Conversions.ToString(code.GetFieldType("Текст")) + "\u001e\u001c" + code.ToHexString(gridValue) + "\u001e\u001c");
+	}
+
+	private bool HasSavePropertyColumn(string propertyName)
+	{
+		foreach (DataGridViewColumn column in DGV1.Columns)
+		{
+			if (column.Name.Contains("PropVal_") && string.Equals(column.HeaderText ?? "", propertyName ?? "", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private string GetGridValue(DataGridViewColumn column, int rowIndex)
+	{
+		return Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[column.Index, rowIndex].Value));
 	}
 
 	private string ResolveBomTemplateMappingName(int columnIndex)

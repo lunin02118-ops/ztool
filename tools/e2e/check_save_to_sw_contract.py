@@ -268,9 +268,13 @@ def check_main_save_pipeline(source: str) -> None:
             ('"Title\\u001e\\u001c"', "summary title payload"),
             ("Strings.InStr(1, DGV1.Columns[num8].Name, \"PropVal_\")", "dynamic property columns"),
             ("code.GetFieldType(DGV1.Columns[num8].ToolTipText)", "property type payload"),
+            ("NormalizeSavePropertyValue(text2, num8, index)", "native calculated property normalization"),
             ("code.ToHexString", "property value hex encoding"),
             ("code.YesOrNo", "boolean property encoding"),
             ('"PropName\\u001e\\u001c"', "property payload"),
+            ('AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Material, index);', "material calculated property bridge"),
+            ('AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Weight, index);', "mass calculated property bridge"),
+            ('AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_bound, index);', "boundary calculated property bridge"),
             ('"RowNumber\\u001e\\u001c"', "row number payload"),
             ('"End\\u001e\\u001cTrue"', "top assembly end marker"),
             ('"End\\u001e\\u001cFalse"', "detail/child marker"),
@@ -282,6 +286,64 @@ def check_main_save_pipeline(source: str) -> None:
             ("code.SendMessage((int)code.Receiver_hWnd, 74, 0, ref lParam);", "row-list dispatch"),
         ],
         "Frmmain save row IPC contract",
+    )
+    check_calculated_save_property_bridge(source)
+
+
+def check_calculated_save_property_bridge(source: str) -> None:
+    require_all(
+        source,
+        [
+            ("private string NormalizeSavePropertyValue", "normalization helper"),
+            ("private static bool ShouldUseNativeCalculatedPropertyValue", "unresolved native expression detector"),
+            ("private void AppendCalculatedSavePropertyIfMissing", "missing calculated property appender"),
+            ("private bool HasSavePropertyColumn", "duplicate property guard"),
+            ("private string GetGridValue", "grid value reader"),
+        ],
+        "calculated save property bridge",
+    )
+
+    normalize = extract_method(source, "private string NormalizeSavePropertyValue")
+    require_all(
+        normalize,
+        [
+            ('string.Equals(propertyName, "Материал"', "material property branch"),
+            ("GetGridValue(Col_Material, rowIndex)", "material reads native column"),
+            ('string.Equals(propertyName, "Масса"', "mass property branch"),
+            ("GetGridValue(Col_Weight, rowIndex)", "mass reads native column"),
+            ('string.Equals(propertyName, "Габарит"', "boundary property branch"),
+            ("GetGridValue(Col_bound, rowIndex)", "boundary reads native column"),
+            ("ShouldUseNativeCalculatedPropertyValue(text)", "unresolved expression check"),
+            ("return text;", "non-special properties remain unchanged"),
+        ],
+        "calculated save property bridge: NormalizeSavePropertyValue",
+    )
+
+    unresolved = extract_method(source, "private static bool ShouldUseNativeCalculatedPropertyValue")
+    require_all(
+        unresolved,
+        [
+            ("string.IsNullOrWhiteSpace(value)", "blank values use native calculated value"),
+            ('StartsWith("SW-Material"', "English material expression rejected"),
+            ('StartsWith("SW-Материал"', "Russian material expression rejected"),
+            ('StartsWith("SW-Mass"', "English mass expression rejected"),
+            ('StartsWith("SW-Масса"', "Russian mass expression rejected"),
+        ],
+        "calculated save property bridge: ShouldUseNativeCalculatedPropertyValue",
+    )
+
+    append = extract_method(source, "private void AppendCalculatedSavePropertyIfMissing")
+    require_all(
+        append,
+        [
+            ("ResolveBomTemplateMappingName(sourceColumn.Index)", "uses existing mapping contract"),
+            ("HasSavePropertyColumn(text)", "does not duplicate configured PropVal columns"),
+            ("GetGridValue(sourceColumn, rowIndex)", "reads calculated grid column"),
+            ('code.GetFieldType("Текст")', "calculated properties are written as text"),
+            ("code.ToHexString(gridValue)", "calculated value hex encoding"),
+            ('"PropName\\u001e\\u001c" + text', "writes through original PropName payload"),
+        ],
+        "calculated save property bridge: AppendCalculatedSavePropertyIfMissing",
     )
 
 
@@ -441,6 +503,49 @@ def self_test() -> None:
         pass
     else:
         raise ContractError("self-test failed: broken failed-only SaveOptions mapping passed")
+
+    good_bridge = r'''
+    public void sendsavelist()
+    {
+        string text2 = DGV1.Columns[num8].HeaderText;
+        string text3 = Conversions.ToString(code.GetFieldType(DGV1.Columns[num8].ToolTipText));
+        string text6 = NormalizeSavePropertyValue(text2, num8, index);
+        string text = code.ToHexString(text6);
+        stringBuilder.AppendLine("PropName\u001e\u001c" + text2);
+        AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Material, index);
+        AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_Weight, index);
+        AppendCalculatedSavePropertyIfMissing(stringBuilder, Col_bound, index);
+    }
+    private string NormalizeSavePropertyValue(string propertyName, int columnIndex, int rowIndex)
+    {
+        string text = Convert.ToString(RuntimeHelpers.GetObjectValue(DGV1[columnIndex, rowIndex].Value));
+        if (string.Equals(propertyName, "Материал", StringComparison.OrdinalIgnoreCase)) { string nativeCalculatedValue = GetGridValue(Col_Material, rowIndex); if (!string.IsNullOrWhiteSpace(nativeCalculatedValue) && ShouldUseNativeCalculatedPropertyValue(text)) return nativeCalculatedValue; }
+        if (string.Equals(propertyName, "Масса", StringComparison.OrdinalIgnoreCase)) { string nativeCalculatedValue2 = GetGridValue(Col_Weight, rowIndex); if (!string.IsNullOrWhiteSpace(nativeCalculatedValue2) && ShouldUseNativeCalculatedPropertyValue(text)) return nativeCalculatedValue2; }
+        if (string.Equals(propertyName, "Габарит", StringComparison.OrdinalIgnoreCase)) { string nativeCalculatedValue3 = GetGridValue(Col_bound, rowIndex); if (!string.IsNullOrWhiteSpace(nativeCalculatedValue3) && ShouldUseNativeCalculatedPropertyValue(text)) return nativeCalculatedValue3; }
+        return text;
+    }
+    private static bool ShouldUseNativeCalculatedPropertyValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        return value.StartsWith("SW-Material", StringComparison.OrdinalIgnoreCase) || value.StartsWith("SW-Материал", StringComparison.OrdinalIgnoreCase) || value.StartsWith("SW-Mass", StringComparison.OrdinalIgnoreCase) || value.StartsWith("SW-Масса", StringComparison.OrdinalIgnoreCase);
+    }
+    private void AppendCalculatedSavePropertyIfMissing(StringBuilder stringBuilder, DataGridViewColumn sourceColumn, int rowIndex)
+    {
+        string text = ResolveBomTemplateMappingName(sourceColumn.Index);
+        if (HasSavePropertyColumn(text)) return;
+        string gridValue = GetGridValue(sourceColumn, rowIndex);
+        stringBuilder.AppendLine("PropName\u001e\u001c" + text + "\u001e\u001c" + Conversions.ToString(code.GetFieldType("Текст")) + "\u001e\u001c" + code.ToHexString(gridValue) + "\u001e\u001c");
+    }
+    private bool HasSavePropertyColumn(string propertyName) { return true; }
+    private string GetGridValue(DataGridViewColumn column, int rowIndex) { return ""; }
+    '''
+    check_calculated_save_property_bridge(good_bridge)
+    try:
+        check_calculated_save_property_bridge(good_bridge.replace('if (string.Equals(propertyName, "Габарит", StringComparison.OrdinalIgnoreCase))', 'if (false)'))
+    except ContractError:
+        pass
+    else:
+        raise ContractError("self-test failed: missing Gabarit calculated save bridge passed")
 
     good_addin = f"""
     else if (f_ == (IntPtr)31) {{ string[] array3 = Strings.Split(type_2.f_67, "\\r\\n"); if (array3.Length == 18) {{
