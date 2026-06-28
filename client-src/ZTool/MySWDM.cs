@@ -269,6 +269,252 @@ public class MySWDM
 		}
 	}
 
+	private static string NormalizePathForCompare(string fileName)
+	{
+		try
+		{
+			return Path.GetFullPath(fileName);
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			logopathlist.WriteLog($"Не удалось нормализовать путь для импорта свойств: {fileName}\r\n{ex2.Message}");
+			ProjectData.ClearProjectError();
+			return fileName;
+		}
+	}
+
+	private static void AddPropertyNamesFromModelDoc(object modelDoc, List<string> list)
+	{
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(modelDoc)))
+		{
+			return;
+		}
+		object objectValue = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(modelDoc, null, "Extension", new object[0], null, null, null));
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+		{
+			return;
+		}
+		List<string> list2 = new List<string>();
+		list2.Add("");
+		try
+		{
+			object objectValue2 = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(modelDoc, null, "GetConfigurationNames", new object[0], null, null, null));
+			if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue2)))
+			{
+				foreach (object item in (IEnumerable)objectValue2)
+				{
+					string text = Conversions.ToString(RuntimeHelpers.GetObjectValue(item));
+					if (!list2.Exists((string existing) => existing.Equals(text, StringComparison.OrdinalIgnoreCase)))
+					{
+						list2.Add(text);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			logopathlist.WriteLog($"Не удалось получить список конфигураций при импорте свойств\r\n{ex2.Message}");
+			ProjectData.ClearProjectError();
+		}
+		foreach (string item2 in list2)
+		{
+			try
+			{
+				object[] array = new object[1] { item2 };
+				object[] arguments = array;
+				bool[] array2 = new bool[1] { true };
+				object obj = NewLateBinding.LateGet(objectValue, null, "CustomPropertyManager", arguments, null, null, array2);
+				object objectValue3 = RuntimeHelpers.GetObjectValue(obj);
+				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
+				{
+					continue;
+				}
+				object objectValue4 = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(objectValue3, null, "GetNames", new object[0], null, null, null));
+				AddPropertyNamesFromEnumerable(list, objectValue4);
+			}
+			catch (Exception ex3)
+			{
+				ProjectData.SetProjectError(ex3);
+				Exception ex4 = ex3;
+				logopathlist.WriteLog($"Не удалось получить свойства конфигурации \"{item2}\"\r\n{ex4.Message}");
+				ProjectData.ClearProjectError();
+			}
+		}
+	}
+
+	private static int GetSolidWorksDocumentType(string fileName)
+	{
+		if (fileName.EndsWith(".SLDPRT", StringComparison.OrdinalIgnoreCase))
+		{
+			return 1;
+		}
+		if (fileName.EndsWith(".SLDASM", StringComparison.OrdinalIgnoreCase))
+		{
+			return 2;
+		}
+		if (fileName.EndsWith(".SLDDRW", StringComparison.OrdinalIgnoreCase))
+		{
+			return 3;
+		}
+		return 0;
+	}
+
+	private static object FindSolidWorksOpenDocumentByPath(string fileName)
+	{
+		string text = NormalizePathForCompare(fileName);
+		try
+		{
+			object objectValue = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(code.swApp, null, "GetOpenDocumentByName", new object[1] { fileName }, null, null, null));
+			if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+			{
+				return objectValue;
+			}
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			ProjectData.ClearProjectError();
+		}
+		try
+		{
+			object objectValue2 = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(code.swApp, null, "GetFirstDocument", new object[0], null, null, null));
+			while (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue2)))
+			{
+				string text2 = Conversions.ToString(NewLateBinding.LateGet(objectValue2, null, "GetPathName", new object[0], null, null, null));
+				if (text2.EndsWith(".SLDPRT", StringComparison.OrdinalIgnoreCase) || text2.EndsWith(".SLDASM", StringComparison.OrdinalIgnoreCase) || text2.EndsWith(".SLDDRW", StringComparison.OrdinalIgnoreCase))
+				{
+					string b = NormalizePathForCompare(text2);
+					if (string.Equals(text, b, StringComparison.OrdinalIgnoreCase))
+					{
+						return objectValue2;
+					}
+				}
+				objectValue2 = RuntimeHelpers.GetObjectValue(NewLateBinding.LateGet(objectValue2, null, "GetNext", new object[0], null, null, null));
+			}
+		}
+		catch (Exception ex2)
+		{
+			ProjectData.SetProjectError(ex2);
+			Exception ex3 = ex2;
+			logopathlist.WriteLog($"Не удалось перечислить открытые документы SolidWorks при импорте свойств: {fileName}\r\n{ex3.Message}");
+			ProjectData.ClearProjectError();
+		}
+		return null;
+	}
+
+	private static object OpenSolidWorksDocumentForPropertyImport(string fileName, out bool openedForImport)
+	{
+		openedForImport = false;
+		object objectValue = FindSolidWorksOpenDocumentByPath(fileName);
+		if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+		{
+			return objectValue;
+		}
+		int solidWorksDocumentType = GetSolidWorksDocumentType(fileName);
+		if (solidWorksDocumentType == 0)
+		{
+			return null;
+		}
+		try
+		{
+			int num = 0;
+			int num2 = 0;
+			object[] array = new object[6] { fileName, solidWorksDocumentType, 1, "", num, num2 };
+			bool[] array2 = new bool[6] { true, false, false, true, true, true };
+			object obj = NewLateBinding.LateGet(code.swApp, null, "OpenDoc6", array, null, null, array2);
+			if (array2[4])
+			{
+				num = (int)Conversions.ChangeType(RuntimeHelpers.GetObjectValue(array[4]), typeof(int));
+			}
+			if (array2[5])
+			{
+				num2 = (int)Conversions.ChangeType(RuntimeHelpers.GetObjectValue(array[5]), typeof(int));
+			}
+			objectValue = RuntimeHelpers.GetObjectValue(obj);
+			if (!Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+			{
+				openedForImport = true;
+				return objectValue;
+			}
+			logopathlist.WriteLog($"SolidWorks не открыл файл для импорта свойств: {fileName}\r\nErrors={num}; Warnings={num2}");
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			logopathlist.WriteLog($"OpenDoc6 не смог открыть файл для импорта свойств: {fileName}\r\n{ex2.Message}");
+			ProjectData.ClearProjectError();
+		}
+		return null;
+	}
+
+	private static void CloseSolidWorksDocumentOpenedForPropertyImport(object modelDoc, string fileName)
+	{
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(code.swApp)) || Information.IsNothing(RuntimeHelpers.GetObjectValue(modelDoc)))
+		{
+			return;
+		}
+		try
+		{
+			string text = Conversions.ToString(NewLateBinding.LateGet(modelDoc, null, "GetTitle", new object[0], null, null, null));
+			if (Operators.CompareString(Strings.Trim(text), "", TextCompare: false) == 0)
+			{
+				text = Path.GetFileName(fileName);
+			}
+			NewLateBinding.LateCall(code.swApp, null, "CloseDoc", new object[1] { text }, null, null, null, IgnoreReturn: true);
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Exception ex2 = ex;
+			logopathlist.WriteLog($"Не удалось закрыть временно открытый документ после импорта свойств: {fileName}\r\n{ex2.Message}");
+			ProjectData.ClearProjectError();
+		}
+	}
+
+	private static bool TryAddSolidWorksOpenDocumentPropertyNames(string fileName, List<string> list)
+	{
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(code.swApp)))
+		{
+			code.RunSW(HideWindow: false, startnew: false);
+		}
+		if (Information.IsNothing(RuntimeHelpers.GetObjectValue(code.swApp)))
+		{
+			return false;
+		}
+		int count = list.Count;
+		bool openedForImport = false;
+		object objectValue = null;
+		try
+		{
+			objectValue = RuntimeHelpers.GetObjectValue(OpenSolidWorksDocumentForPropertyImport(fileName, out openedForImport));
+			if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue)))
+			{
+				return false;
+			}
+			AddPropertyNamesFromModelDoc(objectValue, list);
+		}
+		catch (Exception ex2)
+		{
+			ProjectData.SetProjectError(ex2);
+			Exception ex3 = ex2;
+			logopathlist.WriteLog($"Импорт свойств через открытый SolidWorks-документ не выполнен: {fileName}\r\n{ex3.Message}");
+			ProjectData.ClearProjectError();
+		}
+		finally
+		{
+			if (openedForImport)
+			{
+				CloseSolidWorksDocumentOpenedForPropertyImport(objectValue, fileName);
+			}
+		}
+		return list.Count > count;
+	}
+
 	private void RecordDocumentManagerOpenError(string context, string fileName, SwDmDocumentOpenError result)
 	{
 		if (result == SwDmDocumentOpenError.swDmDocumentOpenErrorNone)
@@ -302,6 +548,7 @@ public class MySWDM
 		int num2 = default(int);
 		foreach (string text in array)
 		{
+			int count = list.Count;
 			int num;
 			if (Strings.InStr(Strings.LCase(text), "sldprt") > 0)
 			{
@@ -333,7 +580,10 @@ public class MySWDM
 				SwDMDocument swDMDocument = document;
 				if (Information.IsNothing(swDMDocument))
 				{
-					RecordDocumentManagerOpenError("Импорт свойств из файла", text, result);
+					if (!TryAddSolidWorksOpenDocumentPropertyNames(text, list))
+					{
+						RecordDocumentManagerOpenError("Импорт свойств из файла", text, result);
+					}
 					continue;
 				}
 				object objectValue = RuntimeHelpers.GetObjectValue(swDMDocument.GetCustomPropertyNames());
@@ -346,6 +596,10 @@ public class MySWDM
 				if (Information.IsNothing(RuntimeHelpers.GetObjectValue(objectValue3)))
 				{
 					swDMDocument.CloseDoc();
+					if (list.Count == count)
+					{
+						TryAddSolidWorksOpenDocumentPropertyNames(text, list);
+					}
 					continue;
 				}
 				foreach (object item2 in (IEnumerable)objectValue3)
@@ -364,6 +618,10 @@ public class MySWDM
 					AddPropertyNamesFromEnumerable(list, objectValue);
 				}
 				swDMDocument.CloseDoc();
+				if (list.Count == count)
+				{
+					TryAddSolidWorksOpenDocumentPropertyNames(text, list);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -371,6 +629,7 @@ public class MySWDM
 				Exception ex2 = ex;
 				err = $"Document Manager не смог импортировать свойства из файла: {text}\r\n{ex2.Message}";
 				logopathlist.WriteLog(err);
+				TryAddSolidWorksOpenDocumentPropertyNames(text, list);
 				ProjectData.ClearProjectError();
 			}
 		}
@@ -430,6 +689,7 @@ public class MySWDM
 				break;
 			}
 			int num5;
+			int count = list.Count;
 			if (Strings.InStr(Strings.LCase(list2[num2]), "sldprt") > 0)
 			{
 				num5 = 1;
@@ -461,7 +721,10 @@ public class MySWDM
 				SwDMDocument swDMDocument = document;
 				if (Information.IsNothing(swDMDocument))
 				{
-					RecordDocumentManagerOpenError("Импорт свойств из папки", list2[num2], result);
+					if (!TryAddSolidWorksOpenDocumentPropertyNames(list2[num2], list))
+					{
+						RecordDocumentManagerOpenError("Импорт свойств из папки", list2[num2], result);
+					}
 				}
 				else
 				{
@@ -491,6 +754,10 @@ public class MySWDM
 						}
 					}
 					swDMDocument.CloseDoc();
+					if (list.Count == count)
+					{
+						TryAddSolidWorksOpenDocumentPropertyNames(list2[num2], list);
+					}
 				}
 			}
 			catch (Exception ex)
@@ -499,6 +766,7 @@ public class MySWDM
 				Exception ex2 = ex;
 				err = $"Document Manager не смог импортировать свойства из папки: {list2[num2]}\r\n{ex2.Message}";
 				logopathlist.WriteLog(err);
+				TryAddSolidWorksOpenDocumentPropertyNames(list2[num2], list);
 				ProjectData.ClearProjectError();
 			}
 			goto IL_0445;

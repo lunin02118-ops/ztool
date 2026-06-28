@@ -79,6 +79,16 @@ Evidence:
 ```powershell
 python tools\e2e\check_property_import_contract.py --self-test
 python tools\e2e\check_property_import_contract.py
+python tools\e2e\swtools_property_import_live_probe.py `
+  --runtime client-src\bin\Release\net48\SWTools.exe `
+  --file "D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT" `
+  --open-components `
+  --json-out _local_artifacts\reports\property-import-live-20260628\property-import-file-open.json
+python tools\e2e\swtools_property_import_live_probe.py `
+  --runtime client-src\bin\Release\net48\SWTools.exe `
+  --folder "D:\1602.00.000 Шнек" `
+  --folder-max-files 3 `
+  --json-out _local_artifacts\reports\property-import-live-20260628\property-import-folder.json
 python tools\check_visible_brand_boundary.py
 python tools\secret_scan.py
 git diff --check
@@ -86,8 +96,10 @@ git diff --check
 
 Результат:
 
-- property import native-only contract: **PASS**
-- property import live native probe on SW2025 file: **NO-GO / swDmDocumentOpenErrorNoLicense**
+- property import parity contract: **PASS**
+- property import live file probe on SW2025 file: **PASS / 46 names**
+- property import live open-components probe: **PASS / 46 names**
+- property import live folder probe: **PASS / 78 names from first 3 SW files**
 - visible brand boundary: **PASS**
 - secret scan: **PASS**
 - whitespace diff check: **PASS**
@@ -134,13 +146,25 @@ git diff --check
 
 ### Импорт и свойства
 
-Машинный contract по импорту свойств прошёл только как native-only contract: файл/папка не имеют права уходить в fallback через живой SolidWorks. Live native probe на боевом SW2025-файле сейчас возвращает `swDmDocumentOpenErrorNoLicense`; это блокер ключа/окружения SWDM, а не повод добавлять обход.
+Native-only решение отменено как регресс. В истории найден ранее принятый фикс `4cf4897` / `84902b6` / `de7bd3c`: файл/папка сначала пробуют `SolidWorks Document Manager`, а если SWDM не отдаёт свойства в текущей SW2025-среде, используется тот же SolidWorks `ModelDoc`/`CustomPropertyManager` путь, который уже работает для открытых компонентов.
+
+Новый machine/live evidence:
+
+- `Получить из файла` core path на `D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT`: **PASS / 46 names**;
+- `Получить из открытых в SolidWorks компонентов` core path: **PASS / 46 names**;
+- `Получить из папки` core path на первых 3 SW-файлах `D:\1602.00.000 Шнек`: **PASS / 78 names**.
+
+Evidence:
+
+- `manual-test-reports\release-1.1.11\PROPERTY_IMPORT_PARITY_FIX_20260628_RU.md`;
+- `_local_artifacts\reports\property-import-live-20260628\property-import-file-open.json`;
+- `_local_artifacts\reports\property-import-live-20260628\property-import-folder.json`.
 
 Live UI scenario не закрыт:
 
 - кнопка `Задать имя свойства` -> `Импорт...`;
-- импорт свойств из реальной детали;
-- импорт свойств из файла `D:\1602.00.003 Фланец.SLDPRT`;
+- UI-импорт свойств из реальной детали после пересборки/установки текущего head;
+- UI-импорт свойств из файла `D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT`;
 - ручное удаление свойств;
 - ручное добавление свойств;
 - сохранение свойств обратно в модель;
