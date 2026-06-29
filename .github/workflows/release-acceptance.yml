@@ -23,6 +23,7 @@ on:
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
+      - "scripts/swtools_property_import_save_reload_live.py"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
       - "scripts/e2e/**"
@@ -49,6 +50,7 @@ on:
       - "docs/localization/*.json"
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
+      - "scripts/swtools_property_import_save_reload_live.py"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
       - "scripts/e2e/**"
@@ -155,6 +157,15 @@ jobs:
 
       - name: Batch conversion configuration mapping gate
         run: python tools/e2e/check_batch_convert_configuration_mapping.py
+
+      - name: Native property import contract self-test
+        run: python tools/e2e/check_property_import_contract.py --self-test
+
+      - name: Native property import contract gate
+        run: python tools/e2e/check_property_import_contract.py
+
+      - name: Property import/save/reload assertion self-test
+        run: python tools/e2e/assert_property_import_save_reload.py --self-test
 
       - name: Visual surface profile gate
         run: |
