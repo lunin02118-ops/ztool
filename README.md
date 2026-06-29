@@ -17,7 +17,7 @@
 
 ## Рекомендуемая связка для развёртывания
 
-Актуально для текущей release-candidate ветки 1.1.6 (см. `VERSION`).
+Актуально для текущей vendor-import ветки 3.8.6 (см. `VERSION`).
 Единый источник правды по принятым runtime-хешам —
 [`scripts/expected_release_hashes.json`](scripts/expected_release_hashes.json)
 (его читают `verify_release_package.ps1` и `sw_test_preflight.ps1`); полный
@@ -26,14 +26,13 @@ production GO требует живого прогона по
 
 | Модуль      | Назначение                         | SHA256 (начало)        |
 |-------------|------------------------------------|------------------------|
-| `SWTools.exe` | главное приложение (`binderfix` + UI layout fixes + BOM calculated mappings) | см. `scripts/expected_release_hashes.json` |
-| `SWTools.dll` | надстройка SolidWorks (`pmpguard2`)| см. `scripts/expected_release_hashes.json` |
+| `SWTools.exe` | главное приложение, импортировано из vendor `ZTool.exe` 3.8.6 | см. `scripts/expected_release_hashes.json` |
+| `SWTools.dll` | надстройка SolidWorks, импортирована из vendor `ZTool.dll` 1.8.5.0 | см. `scripts/expected_release_hashes.json` |
 
-> Примечание: loose-бинари в корне (`SWTools.exe`/`SWTools.dll`) исторические и
-> могут отставать от принятого пакета `releases/1.1.6/`. Сверяйтесь с
-> `expected_release_hashes.json`. Переход на сборку из исходников (`client-src`,
-> `client-src-addin`) выводит loose-бинари из эксплуатации — см.
-> [`docs/audit/from-source-roadmap_RU.md`](docs/audit/from-source-roadmap_RU.md).
+> Примечание: loose-бинари в корне (`SWTools.exe`/`SWTools.dll`) сейчас являются
+> принятым vendor-import runtime 3.8.6. Сверяйтесь с
+> `expected_release_hashes.json`; `SWTools-base.exe` остаётся служебным build-input
+> 3.8.4 и не является runtime-файлом.
 
 Что внесено в PR #8:
 
