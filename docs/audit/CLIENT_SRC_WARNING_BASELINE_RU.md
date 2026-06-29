@@ -18,11 +18,11 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
   "generated_at": "2026-06-23T03:30:00Z",
   "projects": {
     "client-src": {
-      "total": 123,
+      "total": 122,
       "codes": {
         "CS0162": 24,
         "CS0169": 16,
-        "CS0219": 42,
+        "CS0219": 41,
         "CS0414": 4,
         "CS0649": 31,
         "CS1717": 6
@@ -708,49 +708,43 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 209,
-          "column": 10,
-          "code": "CS0219"
-        },
-        {
-          "file": "client-src/ZTool/MySWDM.cs",
-          "line": 695,
+          "line": 751,
           "column": 7,
           "code": "CS0162"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 833,
+          "line": 889,
           "column": 9,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 835,
+          "line": 891,
           "column": 9,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 922,
+          "line": 978,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 923,
+          "line": 979,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 924,
+          "line": 980,
           "column": 10,
           "code": "CS0219"
         },
         {
           "file": "client-src/ZTool/MySWDM.cs",
-          "line": 925,
+          "line": 981,
           "column": 10,
           "code": "CS0219"
         },

@@ -1071,6 +1071,11 @@ public class Frmsetpropname : Form
 			return;
 		}
 		List<string> propertyNames = MySWDM.GetPropertyNames1();
+		if (propertyNames.Count == 0 && Operators.CompareString(Strings.Trim(MySWDM.err), "", TextCompare: false) != 0)
+		{
+			MessageBox.Show(MySWDM.err, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			return;
+		}
 		checked
 		{
 			int num = DGV1.RowCount - 1;
@@ -1125,6 +1130,11 @@ public class Frmsetpropname : Form
 			return;
 		}
 		List<string> propertyNames = MySWDM.GetPropertyNames2();
+		if (propertyNames.Count == 0 && Operators.CompareString(Strings.Trim(MySWDM.err), "", TextCompare: false) != 0)
+		{
+			MessageBox.Show(MySWDM.err, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+			return;
+		}
 		checked
 		{
 			int num = DGV1.RowCount - 1;
