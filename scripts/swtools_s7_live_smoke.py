@@ -641,47 +641,38 @@ def blocking_dialog(swtools_pid: int | None, solidworks_pid: int) -> dict[str, A
     owners: list[tuple[int, str]] = [(solidworks_pid, "SolidWorks")]
     if swtools_pid is not None:
         owners.append((swtools_pid, "SWTools"))
-    for backend in ("win32", "uia"):
-        for pid, owner in owners:
-            if owner == "SolidWorks" and backend == "uia":
+    for pid, owner in owners:
+        for item in top_windows_for_pid(pid):
+            hwnd = int(item.get("hwnd") or 0)
+            title = str(item.get("title") or "").strip()
+            class_name = str(item.get("class_name") or "")
+            pre_is_dialog = class_name == "#32770" or title in {"Информация", "Ошибка", "Вопрос"}
+            if not pre_is_dialog:
                 continue
-            for win in desktop_windows(backend, process_id=pid):
-                try:
-                    title = win.window_text().strip()
-                    class_name = win.class_name()
-                except Exception:
-                    title = ""
-                    class_name = ""
-                pre_is_dialog = class_name == "#32770" or title in {"Информация", "Ошибка", "Вопрос"}
-                if not pre_is_dialog:
-                    continue
-                if backend == "win32":
-                    try:
-                        texts = win32_dialog_texts(int(win.handle))
-                    except Exception:
-                        texts = [title] if title else []
-                else:
-                    texts = dialog_texts(win)
-                joined = "\n".join(texts)
-                lowered = joined.lower()
-                if "лицензия не обнаружена" in lowered:
-                    continue
-                is_dialog = (
-                    class_name == "#32770"
-                    or title in {"Информация", "Ошибка", "Вопрос"}
-                    or "тайм-аут соединения" in lowered
-                    or "timeout" in lowered
-                )
-                if not is_dialog:
-                    continue
-                return {
-                    "owner": owner,
-                    "backend": backend,
-                    "process_id": pid,
-                    "title": title,
-                    "class_name": class_name,
-                    "text": joined[:2000],
-                }
+            try:
+                texts = win32_dialog_texts(hwnd)
+            except Exception:
+                texts = [title] if title else []
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "лицензия не обнаружена" in lowered:
+                continue
+            is_dialog = (
+                class_name == "#32770"
+                or title in {"Информация", "Ошибка", "Вопрос"}
+                or "тайм-аут соединения" in lowered
+                or "timeout" in lowered
+            )
+            if not is_dialog:
+                continue
+            return {
+                "owner": owner,
+                "backend": "win32",
+                "process_id": pid,
+                "title": title,
+                "class_name": class_name,
+                "text": joined[:2000],
+            }
     return None
 
 
@@ -953,11 +944,22 @@ def invoke_connect(main: Any) -> dict[str, Any]:
                     "bottom": rect.bottom,
                 },
             }
-            for action in ("invoke", "legacy_invoke"):
+            hwnd = int(getattr(child, "handle", 0) or getattr(child.element_info, "handle", 0) or 0)
+            if hwnd:
+                base["hwnd"] = hwnd
+            for action in ("post_bm_click", "send_bm_click", "invoke", "legacy_invoke"):
                 attempt = dict(base)
                 attempt["action"] = action
                 try:
-                    if action == "invoke":
+                    if action == "post_bm_click":
+                        if not hwnd:
+                            raise RuntimeError("control handle is not available for BM_CLICK")
+                        win32gui.PostMessage(hwnd, 0x00F5, 0, 0)  # BM_CLICK
+                    elif action == "send_bm_click":
+                        if not hwnd:
+                            raise RuntimeError("control handle is not available for BM_CLICK")
+                        win32gui.SendMessage(hwnd, 0x00F5, 0, 0)  # BM_CLICK
+                    elif action == "invoke":
                         child.invoke()
                     else:
                         child.iface_invoke.Invoke()
