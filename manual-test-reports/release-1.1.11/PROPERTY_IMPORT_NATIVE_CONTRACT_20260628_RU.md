@@ -45,14 +45,38 @@ SwDocumentMgr.SwDMClassFactory
 
 ## 3. Проверка ключей
 
-Проверены ключи в:
+Первичная проверка embedded-ключей в source/accepted runtime показала, что старый `key2022`
+не открывает боевой SW2025-файл:
 
-- установленном `C:\Program Files\SWTools\SWTools.exe`;
-- `D:\Development\ztool\SWTools-base.exe`;
-- `D:\Development\ztool\SWTools.exe`;
-- текущем source build.
+```text
+swDmDocumentOpenErrorNoLicense
+```
 
-Вывод: все используют тот же набор embedded SWDM keys и тот же native `GetSWDMLicenseKey()` путь через `key2022`. Отдельного “другого оригинального ключа” в найденных оригинальных/accepted бинарях нет.
+После этого ключ извлечён динамической RE-проверкой из рабочей оригинальной
+китайской версии:
+
+```text
+D:\Development\Workspace\archives\_archive ztool\_vendor\ZTool-original
+```
+
+Проверка кандидатов выполнялась только локально; полный ключ не публикуется и
+не коммитится. В evidence фиксируются только длина и SHA12:
+
+```text
+key_sha12=136fac075b44
+key_file_length=1461
+```
+
+Для установленного/ручного клиента ключ подключён как локальный secret:
+
+```text
+C:\ProgramData\SWTools\swdm.key
+```
+
+`MySWDM.GetSWDMLicenseKey()` теперь сначала читает локальный secret source
+(`SWTOOLS_SWDM_KEY`, `SWTOOLS_SWDM_KEY_FILE`, `%ProgramData%\SWTools\swdm.key`)
+и только затем использует legacy embedded `key2022`. Native SWDM механизм не
+меняется.
 
 Ключи в отчёт не публикуются. В evidence фиксировались только длины и короткие SHA256-префиксы.
 
@@ -64,7 +88,7 @@ SwDocumentMgr.SwDMClassFactory
 D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT
 ```
 
-Native SWDM probe через текущий embedded key возвращает:
+Native SWDM probe через legacy embedded key возвращал:
 
 ```text
 swDocMgr_null=False
@@ -73,7 +97,41 @@ open_error_int=5
 open_error_name=swDmDocumentOpenErrorNoLicense
 ```
 
-Это означает, что текущий ключ/окружение Document Manager не открывает этот SW2025-файл. Теперь это фиксируется как явная проблема ключа/окружения SWDM, а не маскируется чтением через запущенный SolidWorks.
+Native SWDM probe через ключ, извлечённый из оригинальной рабочей версии:
+
+```text
+python tools\e2e\check_swdm_property_import_live.py `
+  --key-file D:\Development\ztool\_local_artifacts\secrets\vendor-swdm-key-136fac075b44.txt `
+  --file "D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT"
+```
+
+Результат:
+
+```text
+status=PASS
+mode=file
+file_count=1
+property_count=46
+key_sha12=136fac075b44
+```
+
+Папка:
+
+```text
+python tools\e2e\check_swdm_property_import_live.py `
+  --key-file D:\Development\ztool\_local_artifacts\secrets\vendor-swdm-key-136fac075b44.txt `
+  --folder "D:\1602.00.000 Шнек"
+```
+
+Результат:
+
+```text
+status=PASS
+mode=folder
+file_count=9
+property_count=86
+key_sha12=136fac075b44
+```
 
 ## 5. Автоматизация
 
@@ -82,13 +140,16 @@ open_error_name=swDmDocumentOpenErrorNoLicense
 ```powershell
 python tools\e2e\check_property_import_contract.py --self-test
 python tools\e2e\check_property_import_contract.py
+python tools\e2e\check_swdm_property_import_live.py --key-file <local-secret> --file "D:\1602.00.000 Шнек\1602.00.003 Фланец.SLDPRT"
+python tools\e2e\check_swdm_property_import_live.py --key-file <local-secret> --folder "D:\1602.00.000 Шнек"
 ```
 
-Оба PASS.
+Все PASS.
 
 ## 6. Что остаётся для полного E2E
 
-Нужен production/live E2E после предоставления действующего SWDM ключа для SW2025:
+Native file/folder import на уровне SWDM закрыт автоматическим live gate.
+Остаётся UI-level E2E установленного клиента:
 
 1. `Импорт... -> Получить из файла` на `1602.00.003 Фланец.SLDPRT`.
 2. `Импорт... -> Получить из папки` на папке `D:\1602.00.000 Шнек`.
@@ -96,4 +157,4 @@ python tools\e2e\check_property_import_contract.py
 4. Проверка, что имена свойств появились в таблице `Задать имя свойства`.
 5. Проверка, что при SWDM `NoLicense` UI показывает ошибку, а не пустой успешный импорт.
 
-Production GO: NO-GO до live E2E с действующим SWDM ключом.
+Production GO: NO-GO до UI-level E2E и полного release acceptance.

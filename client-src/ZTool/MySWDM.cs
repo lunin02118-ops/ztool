@@ -206,8 +206,40 @@ public class MySWDM
 
 	public string GetSWDMLicenseKey()
 	{
-		string text = "";
+		string externalLicenseKey = GetExternalSWDMLicenseKey();
+		if (Operators.CompareString(externalLicenseKey, "", TextCompare: false) != 0)
+		{
+			return externalLicenseKey;
+		}
 		return code.FromHexString(key2022);
+	}
+
+	private static string GetExternalSWDMLicenseKey()
+	{
+		string environmentVariable = Environment.GetEnvironmentVariable("SWTOOLS_SWDM_KEY");
+		if (Operators.CompareString(Strings.Trim(environmentVariable), "", TextCompare: false) != 0)
+		{
+			return Strings.Trim(environmentVariable);
+		}
+		string text = Environment.GetEnvironmentVariable("SWTOOLS_SWDM_KEY_FILE");
+		if (Operators.CompareString(Strings.Trim(text), "", TextCompare: false) == 0)
+		{
+			text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "SWTools", "swdm.key");
+		}
+		try
+		{
+			if (File.Exists(text))
+			{
+				return Strings.Trim(File.ReadAllText(text, Encoding.UTF8));
+			}
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			logopathlist.WriteLog($"SWDM license key source error: {ex.GetType().Name}: {ex.Message}");
+			ProjectData.ClearProjectError();
+		}
+		return "";
 	}
 
 	public MySWDM()

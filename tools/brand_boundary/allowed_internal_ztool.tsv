@@ -380,7 +380,7 @@ docs/archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_DLL.md	content	22	2
 docs/archive/legacy-test-methods/МЕТОДИКА_ТЕСТА_ПРИЛОЖЕНИЯ.md	content	41	675e370a5880b595a184b562491b8173f39f55124a5b38e20cf031dc7f278bf5	historical audit or test evidence; not production-facing release UI
 docs/archive/legacy-test-methods/МЕТОДИКА_ТЕСТИРОВАНИЯ_BOM.md	content	26	cc83c3a09a4448b25211153e268317fd501c0dc7e417f6efe2a65cb2366ec8f1	historical audit or test evidence; not production-facing release UI
 docs/audit/BINARY_PROVENANCE_RU.md	content	1	c15031eca565e1391772a00b80557dd1e782254aceea2f6c350236d924cf3524	historical audit or test evidence; not production-facing release UI
-docs/audit/CLIENT_SRC_WARNING_BASELINE_RU.md	content	129	0fc16728dc0bd1c8f224784f34190e36a198e1cbedbb4243da2007cc6b7e8f18	historical audit or test evidence; not production-facing release UI
+docs/audit/CLIENT_SRC_WARNING_BASELINE_RU.md	content	128	c8a3f6cfd0e7b13cc276c944433be922e8d25ea865714a2e9d36f3cbf5fa6f42	historical audit or test evidence; not production-facing release UI
 docs/audit/CODEBASE_AUDIT_2026-06-16_RU.md	content	23	bb755b40a354228489537511c526ddde4aa49b3e7b7bf187185247e6b62f4060	historical audit or test evidence; not production-facing release UI
 docs/audit/DEEP_AUDIT_ADDENDUM_RU.md	content	1	a519964230d383f9c6e255faea803971b50e55cb2cf2d0c173cd1b1b3b997e59	historical audit or test evidence; not production-facing release UI
 docs/audit/REFACTORING_PLAN_2026-06-16_RU.md	content	92	41d36f484ae476f61ed36998cd4968d5fa4ef0b308d5471559d16dea81810365	historical audit or test evidence; not production-facing release UI
@@ -494,6 +494,7 @@ manual-test-reports/help-branding-20260625/REPORT_RU.md	content	4	026928671fe8b9
 manual-test-reports/help-entry-routes-20260625/REPORT_RU.md	content	4	b101abd0688f42aaf2106c80a730c7dae7935025ca71c1b9834e7c2be680fd49	historical audit or test evidence; not production-facing release UI
 manual-test-reports/help-entry-visual-20260625/REPORT_RU.md	content	1	15c9013b4ae71d1373619165fd88ca041c3492731e7f4160f8a60280fccd2691	historical audit or test evidence; not production-facing release UI
 manual-test-reports/localization-visual-capture-20260625/REPORT_RU.md	content	19	54ca23b5591af6791f97f5419f2d586e7606f7b302e26cf72ba599a9632c9c09	historical audit or test evidence; not production-facing release UI
+manual-test-reports/release-1.1.11/PROPERTY_IMPORT_NATIVE_CONTRACT_20260628_RU.md	content	1	6068345972290e20c6890a999039c0caf3dcf865dce753232e1cca70f759145e	historical audit or test evidence; not production-facing release UI
 manual-test-reports/source-pipeline-20260624/REPORT_RU.md	content	10	bcd2777caa2a03830e12e2d3afa17bfec003b1b444bd22310aa860c32236b0c7	historical audit or test evidence; not production-facing release UI
 manual-test-reports/visual-opener-runner-20260625/REPORT_RU.md	content	1	05ccde770b6d23dd4d2cf85c3110b9a398e69c08efee2166bcecabac394905f8	historical audit or test evidence; not production-facing release UI
 scripts/build_client_installer.ps1	content	2	92421135781b4ddd74b04c2e255ebcafe0c24b8e14ccac2866ee5403b0222d81	automation/test code references legacy compatibility name
@@ -519,6 +520,7 @@ tools/chm-i18n/build_ru.py	content	1	a1ebe75af3cf83a41984fb6bb59493521862a755858
 tools/chm-i18n/check_chm_brand.py	content	1	e8431d89150a22f0b4bf05f8c9ed7d072e6cca9de2bcad0539bbfed2ab45ba42	automation/test code references legacy compatibility name
 tools/chm-i18n/check_help_entry_routes.py	content	9	0760fddc676caa3743d9b9e0e6b685a6ffdaa0b3ccb702cd0427e66a51b500a2	automation/test code references legacy compatibility name
 tools/e2e/assert_e2e_result.py	content	1	7d65a6044f2deccbd6901b87d43488b1e1b31174048eea919812a1a635273f0e	automation/test code references legacy compatibility name
+tools/e2e/check_property_import_contract.py	content	2	9c29f906885d99d14b95c859e7b9b0e9394ae1a0cfcf4d9efe7d3c5a93c56aee	automation/test code references legacy compatibility name
 tools/e2e/check_visual_surface_profile.py	content	4	d15d525bda7efd3f2ef79d9b16824c6a8b7cd4d650b12b690787ec4aaf7ee461	automation/test code references legacy compatibility name
 tools/e2e/selftest_assert_visual_localization_manifest.py	content	2	7b2f6a135fa16447e36bcd3ef99729aa48666acdbb7a1109e5381eb9e08e33de	automation/test code references legacy compatibility name
 tools/golden/README.md	content	2	864a10005ead06edddbce9fcf66e11aeb7e7397118d288759a3dd88561b978e2	automation/test code references legacy compatibility name

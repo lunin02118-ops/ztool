@@ -116,6 +116,31 @@ def assert_no_fallback_helpers(source: str) -> None:
             raise AssertionError(f"MySWDM must not contain fallback helper {token!r}")
 
 
+def assert_swdm_key_source_is_secret_aware(source: str) -> None:
+    method = extract_method(source, "private static string GetExternalSWDMLicenseKey()")
+    required_tokens = [
+        'Environment.GetEnvironmentVariable("SWTOOLS_SWDM_KEY")',
+        'Environment.GetEnvironmentVariable("SWTOOLS_SWDM_KEY_FILE")',
+        'Environment.SpecialFolder.CommonApplicationData',
+        '"SWTools"',
+        '"swdm.key"',
+        "File.ReadAllText",
+    ]
+    for token in required_tokens:
+        if token not in method:
+            raise AssertionError(f"external SWDM key source contract is missing {token!r}")
+
+    get_key = extract_method(source, "public string GetSWDMLicenseKey()")
+    external_idx = get_key.find("GetExternalSWDMLicenseKey()")
+    embedded_idx = get_key.find("code.FromHexString(key2022)")
+    if external_idx < 0:
+        raise AssertionError("GetSWDMLicenseKey must check external secret source first")
+    if embedded_idx < 0:
+        raise AssertionError("GetSWDMLicenseKey must keep legacy embedded key fallback")
+    if embedded_idx < external_idx:
+        raise AssertionError("external SWDM key source must be checked before embedded fallback")
+
+
 def assert_ui_surfaces_native_failure(frm_source: str) -> None:
     for name, signature in {
         "AddPropertyNamesFromfile_Click": "private void AddPropertyNamesFromfile_Click",
@@ -131,6 +156,7 @@ def assert_ui_surfaces_native_failure(frm_source: str) -> None:
 def check_source(path: Path = MYSWDM) -> None:
     source = path.read_text(encoding="utf-8-sig")
     assert_no_fallback_helpers(source)
+    assert_swdm_key_source_is_secret_aware(source)
 
     methods = {
         "GetPropertyNames1": "internal List<string> GetPropertyNames1()",
