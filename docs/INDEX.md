@@ -64,6 +64,7 @@
 | [`production/LOCAL_ARTIFACTS_POLICY_RU.md`](production/LOCAL_ARTIFACTS_POLICY_RU.md) | Правила хранения готовых релизов в `releases/` и временных artifacts/secrets/evidence в `_local_artifacts/` | актуален |
 | [`production/REPO_HYGIENE_REPORT_RU.md`](production/REPO_HYGIENE_REPORT_RU.md) | Sprint L: repo hygiene report, prohibited tracked artifacts, legacy evidence cleanup | актуален |
 | [`production/P4_GO_NO_GO_RU.md`](production/P4_GO_NO_GO_RU.md) | Текущий P4 GO/NO-GO; merge только после пользовательского аудита | актуален |
+| [`production/P0_PRODUCTION_GO_MATRIX_RU.md`](production/P0_PRODUCTION_GO_MATRIX_RU.md) | P0-матрица оставшихся production blockers после #106; текущий статус Production GO: NO-GO | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`archive/legacy-test-methods/README.md`](archive/legacy-test-methods/README.md) | Архив старых методик тестирования; использовать только как историческую справку | архив |
 | [`archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md`](<archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md>) | Старая общая методика проверки | архив / не запускать напрямую |
