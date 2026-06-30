@@ -23,6 +23,10 @@ Production GO: NO-GO
 Историческую пересборку старого package можно выполнить только явно через
 `-AllowNonCurrentVersion`; в этом случае скрипт печатает предупреждение.
 
+Gate теперь включает functional negative test: создаётся временный package
+старой версии, запускается `scripts/build_client_installer.ps1`, и ожидается
+ошибка `non-current installer package blocked` до любых проверок runtime-файлов.
+
 ## Что не закрыто
 
 Этот PR не закрывает:
