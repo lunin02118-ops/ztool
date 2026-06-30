@@ -13,6 +13,7 @@ accepted hashes и не заменяет live E2E/visual/signing evidence.
 - #106 merged в `main`: native SWDM property import engine восстановлен.
 - #105 закрыт как superseded / split-required: PR был mixed-scope, содержал stale
   evidence и не годился как финальный production gate.
+- #107 merged: installer stale package/version guard добавлен в release-hardening.
 - Evidence до #106 нельзя использовать как final production proof.
 - Final proof должен быть снят только с exact current head или с immutable
   release package, собранного из exact current head.
@@ -21,7 +22,6 @@ accepted hashes и не заменяет live E2E/visual/signing evidence.
 
 | PR | Назначение | Scope | Production GO |
 |----|------------|-------|---------------|
-| #107 | Version/build hygiene: stale installer guard и build checks | build hygiene only | NO-GO |
 | #108 | P0 production matrix и release governance docs | docs/process only | NO-GO |
 | #109 | Exact-head live SolidWorks E2E evidence | live E2E only | NO-GO |
 | #110 | Property import/save/reload E2E | property E2E only | NO-GO |
@@ -31,6 +31,7 @@ accepted hashes и не заменяет live E2E/visual/signing evidence.
 
 - Native SWDM import engine: CLOSED by #106.
 - Mixed-scope #105 cleanup: CLOSED by closing #105 as superseded.
+- Installer stale package/version guard: CLOSED by #107.
 - P0 blockers are now tracked in `P0_PRODUCTION_GO_MATRIX_RU.md`.
 
 ## Что открыто
