@@ -14,6 +14,12 @@
 - Полный указатель документации: **[`docs/INDEX.md`](docs/INDEX.md)**.
 - Справка пользователя: `help.CHM` (китайский оригинал) и
   **`help_ru.chm`** (русский перевод).
+- Текущий production status после #106:
+  **[`docs/production/CURRENT_RELEASE_STATUS_RU.md`](docs/production/CURRENT_RELEASE_STATUS_RU.md)**.
+- P0-блокеры и порядок закрытия:
+  **[`docs/production/P0_PRODUCTION_GO_MATRIX_RU.md`](docs/production/P0_PRODUCTION_GO_MATRIX_RU.md)**.
+- Правила финального Production GO:
+  **[`docs/production/PRODUCTION_GO_CRITERIA_RU.md`](docs/production/PRODUCTION_GO_CRITERIA_RU.md)**.
 
 ## Рекомендуемая связка для развёртывания
 
@@ -94,3 +100,8 @@ python -m swtools_license_server
 Перед мержем hardening PR обязательны audit gates из
 [`docs/production/AUDIT_GATES_RU.md`](docs/production/AUDIT_GATES_RU.md) и
 implementation report в `docs/audit/`.
+
+После #106 финальный release stack ведётся маленькими single-scope PR. Mixed-scope
+release PR запрещены; evidence должно соответствовать exact PR head или exact
+immutable package. См.
+[`docs/production/RELEASE_STACK_POLICY_RU.md`](docs/production/RELEASE_STACK_POLICY_RU.md).
