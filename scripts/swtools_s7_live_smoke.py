@@ -40,6 +40,7 @@ pythoncom = require_module("pythoncom")
 psutil = require_module("psutil")
 Application = require_module("pywinauto.application").Application
 Desktop = require_module("pywinauto").Desktop
+keyboard = require_module("pywinauto.keyboard")
 
 
 def sha256(path: Path) -> str:
@@ -259,16 +260,41 @@ def find_swtools_main_window(process_id: int) -> int | None:
     return sorted(candidates, reverse=True)[0][1]
 
 
-def visible_texts(win: Any) -> list[str]:
-    result: list[str] = []
-    for child in win.descendants():
+def uia_descendant_texts(win: Any, timeout: float = 2.0) -> list[str]:
+    state: dict[str, Any] = {"done": False, "texts": [], "error": ""}
+
+    def worker() -> None:
+        result: list[str] = []
         try:
-            text = child.window_text()
-        except Exception:
-            continue
-        if text:
-            result.append(text)
-    return result
+            for child in win.descendants():
+                try:
+                    text = child.window_text()
+                except Exception:
+                    continue
+                if text:
+                    result.append(text)
+            state["texts"] = result
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["done"] = True
+
+    thread = threading.Thread(target=worker, name="swtools-uia-visible-texts", daemon=True)
+    thread.start()
+    thread.join(timeout)
+    if not state.get("done"):
+        return []
+    return list(state.get("texts") or [])
+
+
+def visible_texts(win: Any) -> list[str]:
+    texts: list[str] = []
+    hwnd = int(getattr(win, "handle", 0) or 0)
+    if hwnd:
+        texts.extend(str(item.get("text") or "") for item in win32_child_texts(hwnd))
+    if not texts:
+        texts.extend(uia_descendant_texts(win, timeout=2.0))
+    return [text for text in texts if text]
 
 
 def window_process_id(win: Any) -> int | None:
@@ -849,7 +875,7 @@ def parse_row_count(status: str, texts: list[str]) -> int:
     return len(part_like)
 
 
-def grid_dimensions(main: Any, fallback_rows: int) -> dict[str, Any]:
+def _grid_dimensions_uia(main: Any, fallback_rows: int) -> dict[str, Any]:
     candidates: list[dict[str, Any]] = []
     for child in main.descendants():
         try:
@@ -901,6 +927,30 @@ def grid_dimensions(main: Any, fallback_rows: int) -> dict[str, Any]:
     }
 
 
+def grid_dimensions(main: Any, fallback_rows: int, timeout: float = 8.0) -> dict[str, Any]:
+    state: dict[str, Any] = {"done": False, "result": None, "error": ""}
+
+    def worker() -> None:
+        try:
+            state["result"] = _grid_dimensions_uia(main, fallback_rows)
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["done"] = True
+
+    thread = threading.Thread(target=worker, name="swtools-s7-grid-dimensions", daemon=True)
+    thread.start()
+    thread.join(timeout)
+    if state.get("done") and isinstance(state.get("result"), dict):
+        return state["result"]
+    return {
+        "row_count": int(fallback_rows or 0),
+        "column_count": 0,
+        "candidates": [],
+        "error": state.get("error") or f"UIA grid scan timed out after {timeout:.1f}s",
+    }
+
+
 def invoke_text(app: Any, text: str, timeout: float) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -921,66 +971,37 @@ def invoke_text(app: Any, text: str, timeout: float) -> bool:
     return False
 
 
-def invoke_connect(main: Any) -> dict[str, Any]:
-    restore_window(main.handle)
-    main.set_focus()
+def invoke_connect(main_hwnd: int) -> dict[str, Any]:
+    restore_window(main_hwnd)
     attempts: list[dict[str, Any]] = []
-    for child in main.descendants(control_type="SplitButton"):
-        try:
-            if child.window_text().strip() != "Подключить SW":
-                continue
-            props = child.legacy_properties()
-            if props.get("DefaultAction") != "Нажать":
-                continue
-            rect = child.rectangle()
-            base = {
-                "control_type": child.element_info.control_type,
-                "default_action": props.get("DefaultAction"),
-                "value": props.get("Value"),
-                "rectangle": {
-                    "left": rect.left,
-                    "top": rect.top,
-                    "right": rect.right,
-                    "bottom": rect.bottom,
-                },
-            }
-            hwnd = int(getattr(child, "handle", 0) or getattr(child.element_info, "handle", 0) or 0)
-            if hwnd:
-                base["hwnd"] = hwnd
-            for action in ("post_bm_click", "send_bm_click", "invoke", "legacy_invoke"):
-                attempt = dict(base)
-                attempt["action"] = action
-                try:
-                    if action == "post_bm_click":
-                        if not hwnd:
-                            raise RuntimeError("control handle is not available for BM_CLICK")
-                        win32gui.PostMessage(hwnd, 0x00F5, 0, 0)  # BM_CLICK
-                    elif action == "send_bm_click":
-                        if not hwnd:
-                            raise RuntimeError("control handle is not available for BM_CLICK")
-                        win32gui.SendMessage(hwnd, 0x00F5, 0, 0)  # BM_CLICK
-                    elif action == "invoke":
-                        child.invoke()
-                    else:
-                        child.iface_invoke.Invoke()
-                    attempt["status"] = "PASS"
-                    attempts.append(attempt)
-                    return {"status": "PASS", "attempts": attempts}
-                except Exception as exc:
-                    attempt["status"] = "FAIL"
-                    attempt["error"] = str(exc)
-                    attempts.append(attempt)
-        except Exception:
-            continue
-    return {"status": "FAIL", "attempts": attempts, "error": "Cannot invoke top SplitButton 'Подключить SW'"}
+    shortcut_attempt: dict[str, Any] = {
+        "action": "shortcut_ctrl_l",
+        "hwnd": int(main_hwnd),
+        "source": "Frmmain_KeyDown Ctrl+L -> _ConnectSW_ExecuteEvent(null, null)",
+    }
+    try:
+        keyboard.send_keys("^l", pause=0.05)
+        shortcut_attempt["status"] = "PASS"
+        attempts.append(shortcut_attempt)
+        return {"status": "PASS", "attempts": attempts, "connect_action": "shortcut_ctrl_l"}
+    except Exception as exc:
+        shortcut_attempt["status"] = "FAIL"
+        shortcut_attempt["error"] = str(exc)
+        attempts.append(shortcut_attempt)
+        return {
+            "status": "FAIL",
+            "attempts": attempts,
+            "error": f"Cannot send object-focused Ctrl+L shortcut: {exc}",
+        }
+    return {"status": "FAIL", "attempts": attempts, "error": "Cannot invoke object-focused Ctrl+L shortcut"}
 
 
-def invoke_connect_async(main: Any) -> dict[str, Any]:
+def invoke_connect_async(main_hwnd: int) -> dict[str, Any]:
     state: dict[str, Any] = {"done": False, "error": ""}
 
     def worker() -> None:
         try:
-            state["result"] = invoke_connect(main)
+            state["result"] = invoke_connect(main_hwnd)
             if state["result"].get("status") != "PASS":
                 raise RuntimeError(str(state["result"].get("error") or "connect invoke failed"))
         except Exception as exc:
@@ -1142,9 +1163,9 @@ def run() -> int:
                 raise RuntimeError(f"Blocking dialog before connect: {blocker}")
         if result.get("dismissed_blocking_dialog"):
             result["checks"].append("SolidWorks connection timeout dialog dismissed after runtime launch")
-        connect_state = invoke_connect_async(main)
+        connect_state = invoke_connect_async(main_hwnd)
         result["connect_invoke"] = dict(connect_state)
-        result["checks"].append("connect invoked through UIA worker")
+        result["checks"].append("connect invoked through object-focused form shortcut worker")
         write_checkpoint(result_path, result)
 
         last_status = ""
