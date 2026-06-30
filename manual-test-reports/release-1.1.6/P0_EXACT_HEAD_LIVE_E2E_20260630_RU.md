@@ -13,19 +13,27 @@ Production GO: **NO-GO**.
 ## Exact Head
 
 - Branch: `codex/p0-exact-head-live-e2e-20260629`
-- Commit: `4868561010eabd602448acf6778e371f6537dc88`
-- Product version in live window: `SWTools 1.1.6+4868561.clean(x64)`
+- Commit: `c0fb388a6fbe6226f9403e427bdc160dcc43fbad`
+- Product version in live window: `SWTools 1.1.6+c0fb388.clean(x64)`
 - Git dirty in evidence: `false`
 
 ## Evidence
 
 Report directory:
 
-`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-001911-win32-blocker-scan`
+`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-c0fb388`
 
 Main result:
 
-`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-001911-win32-blocker-scan/release-e2e-solidworks-result.json`
+`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-c0fb388/release-e2e-solidworks-result.json`
+
+Preserved failed evidence:
+
+`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-d5b05f9/e2e-result.json`
+
+`_local_artifacts/reports/p0-exact-head-live-e2e-20260630-d5b05f9/logs/07-s7-live-smoke.log`
+
+Initial failure classification: **B INVOKE_HANG**. The failed run reached a ready SolidWorks model and had a receiver window, but the object-driven Ribbon UIA traversal/invoke path did not complete before the 180-second S7 timeout.
 
 ## Automated Result
 
@@ -36,8 +44,9 @@ Main result:
 
 ## Runtime Identity
 
-- `SWTools.exe` SHA256: `4E295D42B687DA52E9D1E358940A6CB7EA19BB1DC9DB2423D1EF7545A63CC068`
-- `SWTools.dll` SHA256: `402E485AA1883396E6FA555223D69044520FFD13602CC7FDC0E1C20840D645DF`
+- Runtime path: `_local_artifacts/reports/p0-exact-head-live-e2e-20260630-c0fb388/package/SWTools-1.1.6/runtime`
+- `SWTools.exe` SHA256: `067F9908D41DA2D99C3B25BAF2176076B65B7DBE133B3A1E1F1802CE4312AD39`
+- `SWTools.dll` SHA256: `5A36BFFD6AA08B122EF08F5C158E00284118D4223D782B3556FB77D4BA3083C1`
 - Runtime package: `SWTools-1.1.6`
 - `SolidWorksTools.dll`: present
 
@@ -47,9 +56,16 @@ Main result:
 
 - Status: PASS
 - Rows: 29
+- Row count source: `uia_grid_pattern`
 - Columns: 40
-- Status text: `Подключение завершено, затрачено 0,3 сек, всего 29 поз.`
+- Connect action: `shortcut_ctrl_l`
+- Connect source: `Frmmain_KeyDown Ctrl+L -> _ConnectSW_ExecuteEvent(null, null)`
+- Status text: not required for PASS; grid evidence reported 29 rows / 40 columns.
 - Model-ready gate: PASS
+- Receiver window after launch: present.
+- License dialog: absent.
+- Blocking dialog: absent.
+- Screen-coordinate click evidence: absent.
 
 ### S8 BOM Export
 
@@ -58,24 +74,25 @@ Main result:
 - Strict filters: PASS
 - Mode 7 rows: 18
 - Mode 8 rows: 6
-- Export modal handling: process-scoped; button `Нет`; `modal_process_id == modal_expected_process_id`
+- Export modal handling: process-scoped; `modal_process_id == modal_expected_process_id`.
 
 ### Branding / Version / Icon
 
 - Status: PASS
-- Product version: `1.1.6+4868561.clean`
-- File version: `1.1.6.446`
-- Live title prefix: `SWTools 1.1.6+4868561.clean`
+- Product version: `1.1.6+c0fb388.clean`
+- File version: `1.1.6.449`
+- Live title prefix: `SWTools 1.1.6+c0fb388.clean`
 - Live window icon SHA equals embedded EXE icon SHA: PASS
 
 ## Harness Fix In This PR
 
-The S7 live automation was failing before product code execution because UI automation could hang while probing large WinForms/SolidWorks window trees.
+The S7 live automation was failing before product code execution because UI automation could hang while traversing/invoking the large Ribbon/WinForms/SolidWorks window tree.
 
 The harness now:
 
-- opens SWTools using non-coordinate Win32 `BM_CLICK`/object actions where needed;
-- checks blocking dialogs through PID-scoped Win32 top-level windows instead of broad UIA descendant traversal;
+- invokes the existing product shortcut `Ctrl+L`, which is handled by `Frmmain_KeyDown` and calls `_ConnectSW_ExecuteEvent(null, null)`;
+- keeps the connect action object-driven and non-coordinate;
+- bounds UIA text/grid probes so evidence collection cannot hang after the product action completes;
 - keeps coordinate clicks out of production evidence.
 
 No product runtime code was changed in this PR.
@@ -96,4 +113,3 @@ No product runtime code was changed in this PR.
 - Accepted hash promotion.
 - Final release dossier.
 - Explicit owner GO.
-
