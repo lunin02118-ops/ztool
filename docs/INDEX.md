@@ -65,6 +65,9 @@
 | [`production/REPO_HYGIENE_REPORT_RU.md`](production/REPO_HYGIENE_REPORT_RU.md) | Sprint L: repo hygiene report, prohibited tracked artifacts, legacy evidence cleanup | актуален |
 | [`production/P4_GO_NO_GO_RU.md`](production/P4_GO_NO_GO_RU.md) | Текущий P4 GO/NO-GO; merge только после пользовательского аудита | актуален |
 | [`production/P0_PRODUCTION_GO_MATRIX_RU.md`](production/P0_PRODUCTION_GO_MATRIX_RU.md) | P0-матрица оставшихся production blockers после #106; текущий статус Production GO: NO-GO | актуален |
+| [`production/CURRENT_RELEASE_STATUS_RU.md`](production/CURRENT_RELEASE_STATUS_RU.md) | Текущий статус после #106: #105 закрыт как superseded, открытый стек #107-#111, Production GO: NO-GO | актуален |
+| [`production/PRODUCTION_GO_CRITERIA_RU.md`](production/PRODUCTION_GO_CRITERIA_RU.md) | Минимальные критерии Production GO: exact-head live E2E, visual, signing, accepted hashes, owner GO | актуален |
+| [`production/RELEASE_STACK_POLICY_RU.md`](production/RELEASE_STACK_POLICY_RU.md) | Release stack policy: one PR = one scope, exact-head evidence, запрет mixed-scope release PR | актуален |
 | [`../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md`](<../ЗАДАНИЕ_И_МЕТОДИКА_АУДИТА.md>) | Задание и методика аудита | актуален |
 | [`archive/legacy-test-methods/README.md`](archive/legacy-test-methods/README.md) | Архив старых методик тестирования; использовать только как историческую справку | архив |
 | [`archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md`](<archive/legacy-test-methods/МЕТОДИКА_ПРОВЕРКИ.md>) | Старая общая методика проверки | архив / не запускать напрямую |
