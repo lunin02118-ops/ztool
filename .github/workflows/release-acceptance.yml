@@ -25,6 +25,7 @@ on:
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
+      - "scripts/build_client_installer.ps1"
       - "scripts/e2e/**"
       - "docs/localization/**"
       - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
@@ -51,6 +52,7 @@ on:
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
+      - "scripts/build_client_installer.ps1"
       - "scripts/e2e/**"
       - "docs/localization/**"
       - "docs/testing/RELEASE_E2E_SOLIDWORKS_RUNNER_RU.md"
@@ -155,6 +157,12 @@ jobs:
 
       - name: Batch conversion configuration mapping gate
         run: python tools/e2e/check_batch_convert_configuration_mapping.py
+
+      - name: Client installer version guard self-test
+        run: python tools/e2e/check_client_installer_version_guard.py --self-test
+
+      - name: Client installer version guard
+        run: python tools/e2e/check_client_installer_version_guard.py
 
       - name: Visual surface profile gate
         run: |

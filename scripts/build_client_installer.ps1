@@ -24,7 +24,9 @@ param(
 
     [string]$PackageName,
 
-    [string]$MakensisPath = "C:\Program Files (x86)\NSIS\makensis.exe"
+    [string]$MakensisPath = "C:\Program Files (x86)\NSIS\makensis.exe",
+
+    [switch]$AllowNonCurrentVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,6 +51,43 @@ function ConvertTo-Version4([string]$Version) {
     return ($numbers -join '.')
 }
 
+function Get-CurrentRepoVersion {
+    $versionPath = Join-Path $repoRoot 'VERSION'
+    if (-not (Test-Path -LiteralPath $versionPath -PathType Leaf)) {
+        Fail "VERSION file missing: $versionPath"
+    }
+    $version = (Get-Content -LiteralPath $versionPath -Encoding UTF8 -Raw).Trim()
+    if (-not $version) { Fail "VERSION file is empty: $versionPath" }
+    return $version
+}
+
+function Assert-CurrentPackageVersion([string]$CurrentVersion, [object]$Manifest, [string]$PackageRootPath, [string]$ResolvedProductVersion, [string]$ResolvedPackageName) {
+    $manifestVersion = if ($Manifest.version) { [string]$Manifest.version } else { "" }
+    if (-not $manifestVersion) {
+        Fail "manifest.version is empty; cannot verify installer package version"
+    }
+
+    $packageLeaf = Split-Path -Leaf $PackageRootPath
+    $expectedPackageName = "SWTools-$CurrentVersion"
+    $messages = @()
+    if ($manifestVersion -ne $CurrentVersion) {
+        $messages += "manifest.version='$manifestVersion'"
+    }
+    if ($ResolvedProductVersion -ne $CurrentVersion) {
+        $messages += "ProductVersion='$ResolvedProductVersion'"
+    }
+    if ($packageLeaf -ne $expectedPackageName) {
+        $messages += "PackageRoot leaf='$packageLeaf'"
+    }
+    if ($ResolvedPackageName -ne $expectedPackageName) {
+        $messages += "PackageName='$ResolvedPackageName'"
+    }
+
+    if ($messages.Count -gt 0) {
+        Fail ("non-current installer package blocked; current VERSION is '$CurrentVersion', expected package '$expectedPackageName', got: " + ($messages -join ', ') + ". Pass -AllowNonCurrentVersion only for explicit historical rebuilds.")
+    }
+}
+
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 $root = (Resolve-Path -LiteralPath $PackageRoot).Path
 $runtimeDir = Join-Path $root 'runtime'
@@ -70,6 +109,16 @@ if (-not $PackageName) {
 }
 if (-not $ProductVersion) {
     $ProductVersion = if ($manifest.version) { [string]$manifest.version } else { '1.0.0' }
+}
+if (-not $AllowNonCurrentVersion) {
+    Assert-CurrentPackageVersion `
+        -CurrentVersion (Get-CurrentRepoVersion) `
+        -Manifest $manifest `
+        -PackageRootPath $root `
+        -ResolvedProductVersion $ProductVersion `
+        -ResolvedPackageName $PackageName
+} else {
+    Write-Warning "Building installer for a non-current package is explicitly allowed by -AllowNonCurrentVersion."
 }
 if (-not $OutputDir) {
     $packageParent = Split-Path -Parent $root
