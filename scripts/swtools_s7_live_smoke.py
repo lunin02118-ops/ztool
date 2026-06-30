@@ -1200,11 +1200,20 @@ def run() -> int:
         result["receiver_windows_after_connect"] = receiver_windows(solidworks_pid)
         write_checkpoint(result_path, result)
         dimensions = grid_dimensions(main, last_count)
+        grid_row_count = int(dimensions.get("row_count") or 0)
+        if grid_row_count > last_count:
+            result["row_count"] = grid_row_count
+            result["row_count_source"] = "uia_grid_pattern"
+        else:
+            result["row_count_source"] = "status_text"
         result["column_count"] = dimensions["column_count"]
         result["grid_dimensions"] = dimensions
         result["visible_text_sample"] = last_texts[:250]
-        if last_count < args.expected_min_rows:
-            raise RuntimeError(f"S7 returned {last_count} rows; expected at least {args.expected_min_rows}; status={last_status!r}")
+        if int(result["row_count"]) < args.expected_min_rows:
+            raise RuntimeError(
+                f"S7 returned {result['row_count']} rows; "
+                f"expected at least {args.expected_min_rows}; status={last_status!r}"
+            )
         if result["column_count"] < args.expected_min_columns:
             raise RuntimeError(
                 f"S7 grid has {result['column_count']} columns; "
