@@ -319,6 +319,32 @@ function Invoke-ActivationHelper {
     }
 }
 
+function Open-RegistrationFromNoLicense {
+    $proc = Get-Process SWTools -ErrorAction Stop | Sort-Object StartTime -Descending | Select-Object -First 1
+    $click = Invoke-SWToolsButtonByText -ProcessId $proc.Id -Text "Регистрация"
+    $deadline = (Get-Date).AddSeconds(10)
+    $registrationFound = $false
+    while ((Get-Date) -lt $deadline) {
+        $titles = @(Get-SWToolsWindowTitles -ProcessId $proc.Id)
+        if ($titles | Where-Object { $_ -like "*Регистрация*" }) {
+            $registrationFound = $true
+            break
+        }
+        Start-Sleep -Milliseconds 250
+    }
+    $treePath = Join-Path $ReportDir "registration-opened-window-tree.txt"
+    Export-SWToolsWindowTree -ProcessId $proc.Id -Path $treePath
+    if (-not $registrationFound) {
+        throw "Registration window did not open after clicking no-license registration button"
+    }
+    [ordered]@{
+        process_id = $proc.Id
+        process_path = $proc.Path
+        click = $click
+        tree_path = $treePath
+    }
+}
+
 if (-not ("SWToolsLifecycleEdit" -as [type])) {
 Add-Type @'
 using System;
@@ -578,6 +604,17 @@ try {
         Add-Stage -Name "02-no-license" -Status "SKIP" -Summary "No-license UI check not requested."
     }
 
+    if ($RequireNoLicenseWindow -and ($FillActivationForm -or $ClickActivate)) {
+        $opened = Open-RegistrationFromNoLicense
+        Add-Stage -Name "02b-open-registration" -Status "PASS" -Summary "Registration window opened from no-license UI." -Details @{
+            process_id = $opened.process_id
+            process_path = $opened.process_path
+            button_hwnd = $opened.click.hwnd
+            click_method = "BM_CLICK by button text"
+            tree_path = $opened.tree_path
+        }
+    }
+
     if ($ProvisionProductionKey) {
         Assert-MutationAllowed "ProvisionProductionKey"
         Invoke-ActivationHelper -ExtraArgs @("-ProvisionProductionKey", "-ServerOnly")
@@ -683,7 +720,24 @@ try {
     }
 
     if ($RepeatPostRevokeCheck) {
-        $proc = Get-Process SWTools -ErrorAction SilentlyContinue | Sort-Object StartTime -Descending | Select-Object -First 1
+        if (-not $RuntimeDir) {
+            throw "RuntimeDir is required for RepeatPostRevokeCheck"
+        }
+        $resolvedRuntime = (Resolve-Path -LiteralPath $RuntimeDir).Path
+        $exe = Join-Path $resolvedRuntime "SWTools.exe"
+        if (-not (Test-Path -LiteralPath $exe)) {
+            throw "SWTools.exe not found for RepeatPostRevokeCheck: $exe"
+        }
+        Get-Process SWTools -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 800
+        $proc = Start-Process -FilePath $exe -WorkingDirectory $resolvedRuntime -PassThru
+        Start-Sleep -Seconds 3
+        if (-not $proc.HasExited) {
+            $proc = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
+        }
+        if (-not $proc) {
+            $proc = Get-Process SWTools -ErrorAction SilentlyContinue | Sort-Object StartTime -Descending | Select-Object -First 1
+        }
         if ($proc) {
             $treePath = Join-Path $ReportDir "repeat-check-window-tree.txt"
             Export-SWToolsWindowTree -ProcessId $proc.Id -Path $treePath
@@ -692,6 +746,7 @@ try {
             Add-Stage -Name "08-repeat-check" -Status ($(if ($blocked) { "PASS" } else { "FAIL" })) -Summary "Client blocks usage after revoked/deleted server state." -Details @{
                 process_id = $proc.Id
                 process_path = $proc.Path
+                launch_mode = "fresh runtime after revoke/delete"
                 tree_path = $treePath
             }
         }

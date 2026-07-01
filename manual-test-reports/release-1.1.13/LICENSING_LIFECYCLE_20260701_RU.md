@@ -1,29 +1,35 @@
 # SWTools 1.1.13 - production licensing lifecycle evidence
 
-Дата: 2026-07-01
-Статус: PASS_WITH_WARN
+Дата: 2026-07-02
+Статус: PASS
 Production GO: NO-GO
 
 ## Scope
 
-Этот отчет фиксирует боевую проверку production license server для установленного SWTools 1.1.13.
+Этот отчет фиксирует полный автоматизированный P0-прогон production license
+server для установленного SWTools 1.1.13.
 
 Проверено:
-- production key существует и имеет корректную форму;
+- production key создан/обновлен на production server;
 - binding production key сброшен перед тестом;
+- no-license UI видим при старте без действующей локальной лицензии;
+- окно регистрации открывается из no-license UI объектным нажатием кнопки
+  `Регистрация`;
 - онлайн-активация на production server проходит;
 - server state после активации: лицензия активна и привязана к текущей машине;
 - перенос лицензии выполнен через пользовательский UI регистрации;
 - после переноса сервер освободил binding;
 - после переноса локальная регистрация больше не проходит `IsReg1`/`IsReg2`;
+- production key отозван на сервере;
+- отозванный production key физически удален;
+- свежий запуск клиента после revoke/delete снова блокируется no-license UI;
 - raw license code/password не записаны в отчет.
 
 Не закрыто этим отчетом:
-- полный no-license UI gate;
-- revoke/delete revoked key lifecycle в этом же автоматическом прогоне;
-- final production release approval;
+- visual L-01..L-15;
+- signing/final release dossier;
 - accepted hashes promotion;
-- signing/final release dossier.
+- explicit owner Production GO.
 
 ## Runtime
 
@@ -40,32 +46,36 @@ Production GO: NO-GO
 - Password length: `12`
 - Password SHA12: `5b1946b514f6`
 
-Raw key and password are stored only in local `_local_artifacts\secrets\licenses\...` and are not committed.
+Raw key and password are stored only in local
+`_local_artifacts\secrets\licenses\...` and are not committed.
 
 ## Automated Run
 
 Evidence root:
 
-`_local_artifacts\reports\p0-license-lifecycle-20260701\transfer-script-rerun`
+`_local_artifacts\reports\p0-license-lifecycle-20260702-full-run-3`
 
 Machine-readable result:
 
-`_local_artifacts\reports\p0-license-lifecycle-20260701\transfer-script-rerun\license-lifecycle-result.json`
+`_local_artifacts\reports\p0-license-lifecycle-20260702-full-run-3\license-lifecycle-result.json`
 
 Validator command:
 
 ```powershell
 python tools\e2e\assert_license_lifecycle_result.py `
-  _local_artifacts\reports\p0-license-lifecycle-20260701\transfer-script-rerun\license-lifecycle-result.json `
-  --allow-warn `
+  _local_artifacts\reports\p0-license-lifecycle-20260702-full-run-3\license-lifecycle-result.json `
+  --require-no-license `
   --require-activation `
-  --require-transfer
+  --require-transfer `
+  --require-revoke `
+  --require-delete `
+  --require-repeat-check
 ```
 
 Validator result:
 
 ```text
-license lifecycle assertion PASS: status=PASS_WITH_WARN, production_go_allowed=False, stages=11
+license lifecycle assertion PASS: status=PASS, production_go_allowed=False, stages=12
 ```
 
 ## Stage Results
@@ -74,41 +84,56 @@ license lifecycle assertion PASS: status=PASS_WITH_WARN, production_go_allowed=F
 | --- | --- | --- |
 | 00-contract | PASS | production_go_allowed=false |
 | 01-secret-shape | PASS | redacted code/password shape only |
-| 02-no-license | SKIP | not requested in transfer-focused run |
-| 03-server-provision | SKIP | key already provisioned |
+| 02-no-license | PASS | no-license UI visible before activation |
+| 02b-open-registration | PASS | `Регистрация` button clicked by text/HWND, no coordinates |
+| 03-server-provision | PASS | production key created/updated |
 | 03b-server-reset-binding | PASS | production key binding reset |
 | 04-activation | PASS | activation + restart confirmed |
 | 05-server-active-state | PASS | current_activations=1, machine_bound=true |
 | 05b-transfer-ui | PASS | success modal seen, server released, local unregistered |
-| 06-revoke | SKIP | not requested in this run |
-| 07-delete-revoked | SKIP | not requested in this run |
-| 08-repeat-check | SKIP | not requested in this run |
+| 06-revoke | PASS | is_revoked=1, is_active=0 |
+| 07-delete-revoked | PASS | deleted=true, exists_after=false |
+| 08-repeat-check | PASS | fresh client start blocked by no-license UI |
 
-## Transfer Evidence
+## UI And Server Evidence
 
-Transfer was executed through the registration UI, not through a direct database mutation.
+Activation and transfer were executed through the SWTools UI, not through a
+direct local-state write.
 
 Input method:
-- `EM_REPLACESEL` for edit controls;
+- registration window opened by `BM_CLICK` on the `Регистрация` button found by
+  Win32 text/HWND;
+- activation/transfer fields filled by `EM_REPLACESEL`;
 - `WM_GETTEXT` read-back;
 - `SetWindowText` is not used;
 - no fixed screen coordinates.
 
-Transfer result:
-- success modal: `Лицензия успешно перенесена`;
-- server `current_activations=0`;
-- server `machine_bound=false`;
-- server `is_active=1`;
-- server `is_revoked=0`;
-- local registration after transfer: unregistered.
+Server lifecycle:
+- provision/reset was executed against the configured production MySQL backend;
+- activation created a bound license state;
+- transfer released binding through UI;
+- revoke set `is_revoked=1` and `is_active=0`;
+- delete removed the revoked key after revoke.
 
-UI evidence files:
+Key evidence files:
+- `no-license-window-tree.txt`
+- `registration-opened-window-tree.txt`
+- `activation-form-readback-redacted.json`
+- `activation-restart-redacted.json`
+- `activation-server-state-redacted.out.log`
 - `transfer-registration-before-fill-tree.txt`
 - `transfer-form-readback-redacted.json`
 - `transfer-after-click-window-tree.txt`
+- `lifecycle-revoke-redacted.out.log`
+- `lifecycle-delete-revoked-redacted.out.log`
+- `repeat-check-window-tree.txt`
 
 ## Notes For Auditor
 
-The production server currently uses the MySQL backend and the older direct deactivate transfer path. The tested behavior is accepted for this layer: activation binds the key, UI transfer releases the binding, and the local client becomes unregistered.
+This report closes the P0 licensing lifecycle automation layer for SWTools
+1.1.13: no-license, activation, server active state, transfer, revoke, delete
+revoked key and repeat blocked client check.
 
-This report is not a Production GO. It is a focused licensing lifecycle evidence package for activation and transfer automation.
+This report is not a Production GO. Production remains NO-GO until visual
+L-01..L-15, signing/final dossier, accepted hashes and explicit owner GO are
+completed and accepted.
