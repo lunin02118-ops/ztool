@@ -117,7 +117,7 @@ Passed:
 - `python tools\e2e\assert_property_import_save_reload.py _local_artifacts\reports\p0-property-import-save-reload-20260630-751e4fe-rerun29-fresh-sw\property-import-save-reload-result.json`
 - `python tools\e2e\check_property_import_contract.py --self-test`
 - `python tools\e2e\check_property_import_contract.py`
-- `dotnet build client-src\ZTool.csproj -c Release --no-incremental`
+- `dotnet build client-src\<legacy client project>.csproj -c Release --no-incremental`
 - `python tools\check_source_string_invariants.py --root client-src --root client-src-addin`
 - `python tools\check_visible_brand_boundary.py`
 - `python tools\secret_scan.py`
