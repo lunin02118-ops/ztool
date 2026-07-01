@@ -24,6 +24,8 @@ on:
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_property_import_save_reload_live.py"
+      - "scripts/swtools_activation_acceptance.ps1"
+      - "scripts/swtools_license_lifecycle_acceptance.ps1"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
       - "scripts/build_client_installer.ps1"
@@ -52,6 +54,8 @@ on:
       - "tools/brand_boundary/**"
       - "scripts/swtools_s7_live_smoke.py"
       - "scripts/swtools_property_import_save_reload_live.py"
+      - "scripts/swtools_activation_acceptance.ps1"
+      - "scripts/swtools_license_lifecycle_acceptance.ps1"
       - "scripts/swtools_visual_localization_capture.py"
       - "scripts/swtools_visual_opener_capture.py"
       - "scripts/build_client_installer.ps1"
@@ -215,6 +219,13 @@ jobs:
       - name: Release E2E wrapper parser gate
         run: |
           [scriptblock]::Create((Get-Content -LiteralPath scripts/e2e/Invoke-SWToolsReleaseE2E.ps1 -Encoding UTF8 -Raw)) | Out-Null
+
+      - name: License lifecycle assertion self-test
+        run: python tools/e2e/assert_license_lifecycle_result.py --self-test
+
+      - name: License lifecycle wrapper parser gate
+        run: |
+          [scriptblock]::Create((Get-Content -LiteralPath scripts/swtools_license_lifecycle_acceptance.ps1 -Encoding UTF8 -Raw)) | Out-Null
 
       - name: IPC handshake parity self-test (EXE <-> add-in)
         run: python tools/check_ipc_handshake_parity.py --self-test

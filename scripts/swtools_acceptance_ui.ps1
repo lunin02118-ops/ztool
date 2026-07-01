@@ -190,7 +190,10 @@ public class SWToolsAcceptanceWin32 {
           if (childPid == targetPid && IsWindowVisible(child)) {
             string childText = TextOf(child);
             string childClass = ClassOf(child);
-            if (childText == text && childClass.Contains(classContains)) {
+            if (
+              childText == text &&
+              childClass.IndexOf(classContains, StringComparison.OrdinalIgnoreCase) >= 0
+            ) {
               found = child;
               return false;
             }
