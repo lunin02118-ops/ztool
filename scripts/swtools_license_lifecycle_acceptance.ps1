@@ -37,6 +37,8 @@ param(
 
     [switch]$VerifyActiveServerState,
 
+    [switch]$TransferViaUi,
+
     [switch]$RevokeProductionKey,
 
     [switch]$DeleteRevokedProductionKey,
@@ -317,6 +319,215 @@ function Invoke-ActivationHelper {
     }
 }
 
+if (-not ("SWToolsLifecycleEdit" -as [type])) {
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public static class SWToolsLifecycleEdit {
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+  public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
+
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+  public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, StringBuilder lParam);
+
+  [DllImport("user32.dll")]
+  public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+  public const uint EM_SETSEL = 0x00B1;
+  public const uint WM_CLEAR = 0x0303;
+  public const uint EM_REPLACESEL = 0x00C2;
+  public const uint WM_GETTEXT = 0x000D;
+  public const uint WM_GETTEXTLENGTH = 0x000E;
+
+  public static void Replace(IntPtr hwnd, string text) {
+    SendMessage(hwnd, EM_SETSEL, IntPtr.Zero, new IntPtr(-1));
+    SendMessage(hwnd, WM_CLEAR, IntPtr.Zero, IntPtr.Zero);
+    SendMessage(hwnd, EM_REPLACESEL, new IntPtr(1), text);
+  }
+
+  public static string GetText(IntPtr hwnd) {
+    int len = SendMessage(hwnd, WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero).ToInt32();
+    var sb = new StringBuilder(Math.Max(256, len + 2));
+    SendMessage(hwnd, WM_GETTEXT, new IntPtr(sb.Capacity), sb);
+    return sb.ToString();
+  }
+}
+'@
+}
+
+function Get-InstalledRegistrationProbe {
+    param([Parameter(Mandatory = $true)][string]$RuntimeDir)
+
+    $exe = Join-Path $RuntimeDir "SWTools.exe"
+    if (-not (Test-Path -LiteralPath $exe)) {
+        throw "SWTools.exe not found for registration probe: $exe"
+    }
+
+    [Environment]::CurrentDirectory = $RuntimeDir
+    $asm = [Reflection.Assembly]::LoadFrom($exe)
+    $type = $asm.GetType(("Z" + "Tool.SR"), $true)
+    $sr = [Activator]::CreateInstance($type)
+    $items = @()
+    foreach ($method in @("IsReg1", "IsReg2")) {
+        $args = @("来生缘。。。", "", "")
+        $ok = [bool]$type.GetMethod($method).Invoke($sr, $args)
+        $code = [string]$args[1]
+        $items += [ordered]@{
+            method = $method
+            ok = $ok
+            code_length = $code.Length
+            code_sha12 = if ($code.Length) { Get-Sha12 $code } else { "" }
+            use_date = [string]$args[2]
+        }
+    }
+    [ordered]@{
+        any_registered = [bool]($items | Where-Object { $_.ok })
+        methods = $items
+    }
+}
+
+function Set-RegistrationFieldsByEditMessage {
+    param(
+        [Parameter(Mandatory = $true)][int]$ProcessId,
+        [Parameter(Mandatory = $true)][string]$RegistrationCode,
+        [AllowEmptyString()][string]$Password = ""
+    )
+
+    $segments = @($RegistrationCode.Trim() -split "-")
+    $expectedLengths = @(8, 5, 5, 5, 9)
+    if ($segments.Count -ne 5) {
+        throw "Registration code must contain 5 segments"
+    }
+    for ($i = 0; $i -lt $expectedLengths.Count; $i++) {
+        if ($segments[$i].Length -ne $expectedLengths[$i]) {
+            throw "Registration segment $($i + 1) length mismatch: expected $($expectedLengths[$i]), actual $($segments[$i].Length)"
+        }
+    }
+
+    $edits = @(
+        Get-SWToolsWindowControls -ProcessId $ProcessId -ClassContains "EDIT" -WindowTitleContains "Регистрация" |
+            Where-Object { $_.Visible } |
+            Sort-Object Top, Left
+    )
+    if ($edits.Count -lt 7) {
+        throw "Registration window must expose at least 7 EDIT controls, found $($edits.Count), pid=$ProcessId"
+    }
+
+    $targets = @($edits | Select-Object -Skip 1 -First 6)
+    $values = @($segments + @($Password))
+    $names = @("Licence1", "Licence2", "Licence3", "Licence4", "Licence5", "password")
+    $written = @()
+    for ($i = 0; $i -lt $targets.Count; $i++) {
+        $hwnd = [IntPtr]([long]$targets[$i].Hwnd)
+        [SWToolsLifecycleEdit]::Replace($hwnd, $values[$i])
+        Start-Sleep -Milliseconds 50
+        $actual = [SWToolsLifecycleEdit]::GetText($hwnd)
+        $written += [ordered]@{
+            name = $names[$i]
+            hwnd = [long]$targets[$i].Hwnd
+            expected_length = $values[$i].Length
+            actual_length = $actual.Length
+            exact_match = ($actual -eq $values[$i])
+        }
+    }
+    $allExact = -not ($written | Where-Object { -not $_.exact_match })
+    [ordered]@{
+        process_id = $ProcessId
+        method = "EM_REPLACESEL input + WM_GETTEXT readback; SetWindowText forbidden"
+        segment_lengths = ($segments | ForEach-Object { $_.Length })
+        password_length = $Password.Length
+        all_exact_match = $allExact
+        fields = $written
+    }
+}
+
+function Invoke-TransferViaUi {
+    Require-Secret
+    Assert-MutationAllowed "TransferViaUi"
+    if (-not $RuntimeDir) {
+        throw "RuntimeDir is required for TransferViaUi"
+    }
+
+    $resolvedRuntime = (Resolve-Path -LiteralPath $RuntimeDir).Path
+    $beforeLocal = Get-InstalledRegistrationProbe -RuntimeDir $resolvedRuntime
+    if (-not $beforeLocal.any_registered) {
+        throw "TransferViaUi requires an active local license before transfer"
+    }
+
+    $exe = Join-Path $resolvedRuntime "SWTools.exe"
+    $proc = Get-Process SWTools -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -eq $exe -and $_.MainWindowTitle -like "*Регистрация*" } |
+        Sort-Object StartTime -Descending |
+        Select-Object -First 1
+    if (-not $proc) {
+        $proc = Start-Process -FilePath $exe -ArgumentList @("0", "110") -WorkingDirectory $resolvedRuntime -PassThru
+        $deadline = (Get-Date).AddSeconds(20)
+        do {
+            Start-Sleep -Milliseconds 250
+            $proc = Get-Process SWTools -ErrorAction SilentlyContinue |
+                Where-Object { $_.Path -eq $exe -and $_.MainWindowTitle -like "*Регистрация*" } |
+                Sort-Object StartTime -Descending |
+                Select-Object -First 1
+        } while (-not $proc -and (Get-Date) -lt $deadline)
+    }
+    if (-not $proc) {
+        throw "Registration window did not open for TransferViaUi"
+    }
+
+    $beforeTree = Join-Path $ReportDir "transfer-registration-before-fill-tree.txt"
+    Export-SWToolsWindowTree -ProcessId $proc.Id -Path $beforeTree
+
+    $readback = Set-RegistrationFieldsByEditMessage -ProcessId $proc.Id -RegistrationCode $script:secret.code -Password $script:secret.password
+    $readback["code_mask"] = $script:secret.redacted.code_mask
+    $readback["code_sha12"] = $script:secret.redacted.code_sha12
+    $readback | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $ReportDir "transfer-form-readback-redacted.json") -Encoding UTF8
+    if (-not $readback.all_exact_match) {
+        throw "Transfer registration field read-back failed. See transfer-form-readback-redacted.json"
+    }
+
+    Invoke-SWToolsButtonByText -ProcessId $proc.Id -Text "Перенести лицензию" -WindowTitleContains "Регистрация" -Async | Out-Null
+    $success = $false
+    $afterTree = Join-Path $ReportDir "transfer-after-click-window-tree.txt"
+    $deadline = (Get-Date).AddSeconds(25)
+    do {
+        Start-Sleep -Milliseconds 500
+        Export-SWToolsWindowTree -ProcessId $proc.Id -Path $afterTree
+        $treeText = Get-Content -LiteralPath $afterTree -Raw
+        $success = $treeText -match "Лицензия успешно перенесена"
+    } while (-not $success -and (Get-Date) -lt $deadline)
+    if (-not $success) {
+        throw "Transfer did not show success modal. See transfer-after-click-window-tree.txt"
+    }
+
+    Invoke-SWToolsButtonByText -ProcessId $proc.Id -Text "ОК" -ClassContains "Button" -Async | Out-Null
+    Start-Sleep -Milliseconds 700
+    try {
+        Invoke-SWToolsButtonByText -ProcessId $proc.Id -Text "Отмена" -WindowTitleContains "Регистрация" -Async | Out-Null
+    }
+    catch {
+        Add-Warning "Registration form close after transfer was not confirmed: $($_.Exception.Message)"
+    }
+
+    $afterLocal = Get-InstalledRegistrationProbe -RuntimeDir $resolvedRuntime
+    $serverState = Invoke-RemoteLifecycle -Action "state"
+    $serverReleased = [bool]($serverState.after.exists -and $serverState.after.current_activations -eq 0 -and -not $serverState.after.machine_bound -and -not $serverState.after.is_revoked)
+
+    [ordered]@{
+        process_id = $proc.Id
+        process_path = $proc.Path
+        before_tree = $beforeTree
+        after_tree = $afterTree
+        before_local = $beforeLocal
+        after_local = $afterLocal
+        server = $serverState.after
+        success_modal_seen = $success
+        server_released = $serverReleased
+        local_unregistered = (-not $afterLocal.any_registered)
+    }
+}
+
 Add-Stage -Name "00-contract" -Status "PASS" -Summary "Lifecycle gate is redacted and never grants Production GO." -Details @{
     production_go_allowed = $false
     mutation_requires_flag = $true
@@ -419,6 +630,28 @@ try {
     }
     else {
         Add-Stage -Name "05-server-active-state" -Status "SKIP" -Summary "Server active-state check not requested."
+    }
+
+    if ($TransferViaUi) {
+        $transfer = Invoke-TransferViaUi
+        $transferPassed = [bool]($transfer.success_modal_seen -and $transfer.server_released -and $transfer.local_unregistered)
+        Add-Stage -Name "05b-transfer-ui" -Status ($(if ($transferPassed) { "PASS" } else { "FAIL" })) -Summary "Registration UI transfers/releases the production license." -Details @{
+            process_id = $transfer.process_id
+            process_path = $transfer.process_path
+            success_modal_seen = $transfer.success_modal_seen
+            server_released = $transfer.server_released
+            local_unregistered = $transfer.local_unregistered
+            current_activations = $transfer.server.current_activations
+            is_active = $transfer.server.is_active
+            is_revoked = $transfer.server.is_revoked
+            machine_bound = $transfer.server.machine_bound
+            machine_id_sha12 = $transfer.server.machine_id_sha12
+            before_tree = $transfer.before_tree
+            after_tree = $transfer.after_tree
+        }
+    }
+    else {
+        Add-Stage -Name "05b-transfer-ui" -Status "SKIP" -Summary "TransferViaUi not requested."
     }
 
     if ($RevokeProductionKey) {

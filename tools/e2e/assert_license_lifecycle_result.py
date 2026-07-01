@@ -78,6 +78,7 @@ def assert_lifecycle(
     data: dict,
     require_no_license: bool,
     require_activation: bool,
+    require_transfer: bool,
     require_revoke: bool,
     require_delete: bool,
     require_repeat_check: bool,
@@ -94,6 +95,19 @@ def assert_lifecycle(
         activation = stages["04-activation"].get("details") or {}
         if activation.get("restart_confirmed") is not True:
             raise AssertionError("activation stage must prove old PID exit + new PID start")
+    if require_transfer:
+        require_pass(stages, "05b-transfer-ui")
+        details = stages["05b-transfer-ui"].get("details") or {}
+        if details.get("success_modal_seen") is not True:
+            raise AssertionError(f"transfer stage must prove success modal, got {details!r}")
+        if details.get("server_released") is not True:
+            raise AssertionError(f"transfer stage must prove server_released=true, got {details!r}")
+        if details.get("local_unregistered") is not True:
+            raise AssertionError(f"transfer stage must prove local_unregistered=true, got {details!r}")
+        if details.get("current_activations") != 0:
+            raise AssertionError(f"transfer stage must prove current_activations=0, got {details!r}")
+        if details.get("machine_bound") not in (False, 0):
+            raise AssertionError(f"transfer stage must prove machine_bound=false, got {details!r}")
     if require_revoke:
         require_pass(stages, "06-revoke")
         details = stages["06-revoke"].get("details") or {}
@@ -125,6 +139,17 @@ def run_self_test() -> int:
             {"name": "02-no-license", "status": "PASS"},
             {"name": "04-activation", "status": "PASS", "details": {"restart_confirmed": True}},
             {"name": "05-server-active-state", "status": "PASS"},
+            {
+                "name": "05b-transfer-ui",
+                "status": "PASS",
+                "details": {
+                    "success_modal_seen": True,
+                    "server_released": True,
+                    "local_unregistered": True,
+                    "current_activations": 0,
+                    "machine_bound": False,
+                },
+            },
             {"name": "06-revoke", "status": "PASS", "details": {"is_revoked": True}},
             {"name": "07-delete-revoked", "status": "PASS", "details": {"deleted": True}},
             {"name": "08-repeat-check", "status": "PASS"},
@@ -166,6 +191,7 @@ def run_self_test() -> int:
                 data,
                 require_no_license=True,
                 require_activation=True,
+                require_transfer=True,
                 require_revoke=True,
                 require_delete=True,
                 require_repeat_check=True,
@@ -184,6 +210,7 @@ def run_self_test() -> int:
                     data,
                     require_no_license=False,
                     require_activation=True,
+                    require_transfer=False,
                     require_revoke=False,
                     require_delete=False,
                     require_repeat_check=False,
@@ -204,6 +231,7 @@ def main() -> int:
     parser.add_argument("--allow-production-go", action="store_true")
     parser.add_argument("--require-no-license", action="store_true")
     parser.add_argument("--require-activation", action="store_true")
+    parser.add_argument("--require-transfer", action="store_true")
     parser.add_argument("--require-revoke", action="store_true")
     parser.add_argument("--require-delete", action="store_true")
     parser.add_argument("--require-repeat-check", action="store_true")
@@ -224,6 +252,7 @@ def main() -> int:
             data,
             require_no_license=args.require_no_license,
             require_activation=args.require_activation,
+            require_transfer=args.require_transfer,
             require_revoke=args.require_revoke,
             require_delete=args.require_delete,
             require_repeat_check=args.require_repeat_check,
