@@ -39,6 +39,7 @@ HANDSHAKE_TOKEN = "9EF1CBF0BCFAD9F118EA30863B1874"
 REQUEST = "ZToolRequest@001" + HANDSHAKE_TOKEN
 SEP = "\u001e\u001c"
 WM_COPYDATA = 0x004A
+SMTO_ABORTIFHUNG = 0x0002
 DEFAULT_SOLIDWORKS_EXE = Path(r"C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\sldworks.exe")
 
 
@@ -223,40 +224,158 @@ def find_runtime_process_any(runtime_dir: Path) -> Any | None:
     return candidates[0] if candidates else None
 
 
+def dismiss_expired_trial_dialog(swtools_pid: int, timeout: float = 2.0) -> dict[str, Any]:
+    deadline = time.time() + timeout
+    last: dict[str, Any] = {"found": False, "dismissed": False, "text": ""}
+    while time.time() < deadline:
+        for hwnd in s7.top_window_handles_for_pid(swtools_pid):
+            try:
+                title = win32gui.GetWindowText(hwnd).strip()
+                class_name = win32gui.GetClassName(hwnd)
+            except Exception:
+                continue
+            if class_name != "#32770" and title not in {"Сообщение", "Информация"}:
+                continue
+            texts = s7.win32_dialog_texts(hwnd)
+            joined = "\n".join(texts)
+            lowered = joined.lower()
+            if "пробный период" not in lowered or "ист" not in lowered:
+                continue
+            last = {
+                "found": True,
+                "dismissed": False,
+                "backend": "win32-fast",
+                "hwnd": int(hwnd),
+                "title": title,
+                "class_name": class_name,
+                "process_id": swtools_pid,
+                "text": joined[:2000],
+            }
+            try:
+                button = s7.click_win32_dialog_button(hwnd, ["ОК", "OK"])
+            except Exception as exc:
+                last["error"] = str(exc)
+                return last
+            close_deadline = time.time() + 3.0
+            while time.time() < close_deadline:
+                if not win32gui.IsWindow(hwnd):
+                    last.update({"dismissed": True, "button": button})
+                    return last
+                time.sleep(0.05)
+            last.update({"button": button})
+            return last
+        time.sleep(0.05)
+    return last
+
+
+def wait_process_exit(pid: int, timeout: float = 12.0) -> dict[str, Any]:
+    evidence: dict[str, Any] = {"pid": int(pid), "exited": False}
+    try:
+        proc = s7.psutil.Process(pid)
+        proc.wait(timeout=timeout)
+        evidence["exited"] = True
+    except s7.psutil.TimeoutExpired:
+        evidence["error"] = f"process did not exit within {timeout:.1f}s"
+    except s7.psutil.NoSuchProcess:
+        evidence["exited"] = True
+    except Exception as exc:
+        evidence["error"] = str(exc)
+    return evidence
+
+
+def close_runtime_processes(runtime_dir: Path, timeout: float = 8.0) -> list[dict[str, Any]]:
+    closed: list[dict[str, Any]] = []
+    runtime_dir_resolved = runtime_dir.resolve()
+    for proc in list(s7.psutil.process_iter(["pid", "name", "exe"])):
+        try:
+            if (proc.info.get("name") or "").lower() != "swtools.exe":
+                continue
+            exe = Path(proc.info.get("exe") or "").resolve()
+        except (s7.psutil.NoSuchProcess, s7.psutil.AccessDenied, OSError):
+            continue
+        if exe.parent != runtime_dir_resolved:
+            continue
+        item: dict[str, Any] = {"pid": int(proc.pid), "path": str(exe), "action": "terminate-exact-runtime-stale-process"}
+        try:
+            proc.terminate()
+            proc.wait(timeout=timeout)
+            item["exited"] = True
+        except s7.psutil.TimeoutExpired:
+            item["exited"] = False
+            item["error"] = f"process did not exit within {timeout:.1f}s"
+        except s7.psutil.NoSuchProcess:
+            item["exited"] = True
+        except Exception as exc:
+            item["exited"] = False
+            item["error"] = str(exc)
+        closed.append(item)
+    return closed
+
+
 def launch_or_find_swtools(sw: Any, solidworks_pid: int, runtime_dir: Path, timeout: float) -> dict[str, Any]:
     addin = call_or_value(sw, "GetAddInObject", "ZTool.SwAddin")
     if not addin:
         raise RuntimeError("SolidWorks returned no SWTools add-in compatibility object")
 
-    started = time.time()
-    open_state = s7.invoke_open_ztool_async()
-    proc = find_runtime_process_any(runtime_dir)
-    deadline = time.time() + timeout
     launch_evidence: dict[str, Any] = {
-        "open_ztool_started_at": round(started, 3),
-        "open_ztool": dict(open_state),
-        "preexisting_runtime_process": bool(proc),
+        "license_dialogs_handled": [],
     }
 
-    while time.time() < deadline and proc is None:
-        launch_evidence["open_ztool"] = dict(open_state)
-        launch_evidence["open_ztool_wait_elapsed"] = round(time.time() - started, 3)
-        if open_state.get("done") and open_state.get("error"):
-            raise RuntimeError(f"openZtool failed: {open_state['error']}")
-        blocker = s7.blocking_dialog(None, solidworks_pid)
-        if blocker:
-            if s7.is_solidworks_transient_model_loading_dialog(blocker):
-                transients = launch_evidence.setdefault("transient_model_loading_dialogs", [])
-                if isinstance(transients, list) and len(transients) < 8:
-                    transients.append(s7.summarize_dialog(blocker))
-                time.sleep(0.25)
-                continue
-            launch_evidence["blocking_dialog"] = blocker
-            raise RuntimeError(f"Blocking dialog during openZtool: {blocker}")
-        proc = s7.find_runtime_process(runtime_dir, started) or find_runtime_process_any(runtime_dir)
-        time.sleep(0.25)
-    if proc is None:
-        raise RuntimeError(f"SWTools.exe did not start from runtime {runtime_dir}")
+    for attempt in range(1, 4):
+        started = time.time()
+        open_state = s7.invoke_open_ztool_async()
+        proc = find_runtime_process_any(runtime_dir)
+        deadline = time.time() + timeout
+        launch_evidence.update(
+            {
+                "open_ztool_started_at": round(started, 3),
+                "open_ztool": dict(open_state),
+                "preexisting_runtime_process": bool(proc),
+                "launch_attempt": attempt,
+            }
+        )
+
+        while time.time() < deadline and proc is None:
+            launch_evidence["open_ztool"] = dict(open_state)
+            launch_evidence["open_ztool_wait_elapsed"] = round(time.time() - started, 3)
+            if open_state.get("done") and open_state.get("error"):
+                raise RuntimeError(f"openZtool failed: {open_state['error']}")
+            blocker = s7.blocking_dialog(None, solidworks_pid)
+            if blocker:
+                if s7.is_solidworks_transient_model_loading_dialog(blocker):
+                    transients = launch_evidence.setdefault("transient_model_loading_dialogs", [])
+                    if isinstance(transients, list) and len(transients) < 8:
+                        transients.append(s7.summarize_dialog(blocker))
+                    time.sleep(0.25)
+                    continue
+                launch_evidence["blocking_dialog"] = blocker
+                raise RuntimeError(f"Blocking dialog during openZtool: {blocker}")
+            proc = s7.find_runtime_process(runtime_dir, started) or find_runtime_process_any(runtime_dir)
+            time.sleep(0.25)
+        if proc is None:
+            raise RuntimeError(f"SWTools.exe did not start from runtime {runtime_dir}")
+
+        main_hwnd = s7.find_swtools_main_window(proc.pid)
+        if main_hwnd is not None:
+            s7.restore_window(main_hwnd)
+
+        expired_trial = dismiss_expired_trial_dialog(proc.pid, timeout=1.5)
+        if expired_trial.get("found"):
+            handled = launch_evidence.setdefault("license_dialogs_handled", [])
+            if isinstance(handled, list):
+                handled.append({"kind": "expired_trial", **expired_trial})
+            if not expired_trial.get("dismissed"):
+                raise RuntimeError(f"Expired trial dialog was not dismissed: {expired_trial}")
+            exit_result = wait_process_exit(proc.pid, timeout=12.0)
+            launch_evidence["expired_trial_process_exit"] = exit_result
+            if not exit_result.get("exited"):
+                raise RuntimeError(f"SWTools did not exit after expired trial dialog: {exit_result}")
+            proc = None
+            time.sleep(0.5)
+            continue
+        break
+    else:
+        raise RuntimeError("SWTools did not enter usable demo/trial mode after expired trial handling")
 
     command_line = s7.process_command_line(proc.pid)
     if str(solidworks_pid) not in command_line:
@@ -270,6 +389,9 @@ def launch_or_find_swtools(sw: Any, solidworks_pid: int, runtime_dir: Path, time
     s7.restore_window(main_hwnd)
 
     license_result = s7.dismiss_license_dialog(proc.pid, timeout=10.0)
+    handled = launch_evidence.setdefault("license_dialogs_handled", [])
+    if isinstance(handled, list) and license_result.get("found"):
+        handled.append({"kind": "demo_or_trial_entry", **license_result})
     if license_result.get("found") and not license_result.get("dismissed"):
         raise RuntimeError(f"License dialog was not dismissed: {license_result}")
 
@@ -304,6 +426,106 @@ def visible_han_check(swtools_hwnd: int) -> dict[str, Any]:
     }
 
 
+def uia_window_from_hwnd(hwnd: int) -> Any:
+    return s7.Desktop(backend="uia").window(handle=int(hwnd))
+
+
+def safe_visible_texts(hwnd: int, evidence: dict[str, Any]) -> list[str]:
+    for attempt in range(1, 4):
+        try:
+            return s7.visible_texts(uia_window_from_hwnd(hwnd))
+        except Exception as exc:
+            errors = evidence.setdefault("visible_text_retry_errors", [])
+            if isinstance(errors, list):
+                errors.append({"attempt": attempt, "error": str(exc)[:500]})
+            time.sleep(0.2)
+    return []
+
+
+def safe_grid_dimensions(hwnd: int, fallback_rows: int, evidence: dict[str, Any]) -> dict[str, Any]:
+    for attempt in range(1, 4):
+        try:
+            return s7.grid_dimensions(uia_window_from_hwnd(hwnd), fallback_rows)
+        except Exception as exc:
+            errors = evidence.setdefault("grid_dimension_retry_errors", [])
+            if isinstance(errors, list):
+                errors.append({"attempt": attempt, "error": str(exc)[:500]})
+            time.sleep(0.2)
+    return {"row_count": int(fallback_rows or 0), "column_count": 0, "candidates": [], "error": "grid dimensions unavailable after UIA retries"}
+
+
+def invoke_connect_button(swtools_main_hwnd: int, timeout: float = 8.0) -> dict[str, Any]:
+    deadline = time.time() + timeout
+    attempts: list[dict[str, Any]] = []
+    labels = ("подключить sw", "connect sw")
+    while time.time() < deadline:
+        try:
+            win = uia_window_from_hwnd(swtools_main_hwnd)
+            for child in win.descendants():
+                try:
+                    text = s7.compact_control_text(child.window_text()).lower()
+                    if not text or not any(label in text for label in labels):
+                        continue
+                    attempt: dict[str, Any] = {
+                        "backend": "uia",
+                        "text": text,
+                        "class_name": child.class_name(),
+                    }
+                    try:
+                        attempt["control_type"] = child.element_info.control_type
+                    except Exception:
+                        pass
+                    for action in ("invoke", "legacy", "post", "send"):
+                        try:
+                            if action == "invoke":
+                                child.invoke()
+                            elif action == "legacy":
+                                child.iface_invoke.Invoke()
+                            elif action == "post":
+                                child.post_message(0x00F5, 0, 0)
+                            else:
+                                child.send_message(0x00F5, 0, 0)
+                            attempt["action"] = action
+                            attempt["status"] = "PASS"
+                            attempts.append(attempt)
+                            return {"status": "PASS", "connect_action": f"button_{action}", "attempts": attempts}
+                        except Exception as exc:
+                            attempt.setdefault("errors", []).append({"action": action, "error": str(exc)[:300]})
+                    attempts.append(attempt)
+                except Exception:
+                    continue
+        except Exception as exc:
+            attempts.append({"backend": "uia", "status": "ERROR", "error": str(exc)[:300]})
+
+        win32_matches: list[dict[str, Any]] = []
+
+        def enum_child(child_hwnd: int, _: Any) -> bool:
+            try:
+                text = s7.compact_control_text(win32gui.GetWindowText(child_hwnd)).lower()
+                class_name = win32gui.GetClassName(child_hwnd)
+            except Exception:
+                return True
+            if text and any(label in text for label in labels):
+                win32_matches.append({"hwnd": int(child_hwnd), "text": text, "class_name": class_name})
+            return True
+
+        try:
+            win32gui.EnumChildWindows(swtools_main_hwnd, enum_child, None)
+        except Exception as exc:
+            attempts.append({"backend": "win32", "status": "ERROR", "error": str(exc)[:300]})
+        for match in win32_matches:
+            try:
+                win32gui.PostMessage(int(match["hwnd"]), 0x00F5, 0, 0)
+                match.update({"backend": "win32", "action": "post_bm_click", "status": "PASS"})
+                attempts.append(match)
+                return {"status": "PASS", "connect_action": "button_win32_post_bm_click", "attempts": attempts}
+            except Exception as exc:
+                match.update({"backend": "win32", "status": "FAIL", "error": str(exc)[:300]})
+                attempts.append(match)
+        time.sleep(0.2)
+    return {"status": "FAIL", "error": "Connect button not found/invokable by UIA or Win32 text", "attempts": attempts[-20:]}
+
+
 def connect_swtools_to_solidworks(
     swtools_pid: int,
     swtools_main_hwnd: int,
@@ -312,10 +534,9 @@ def connect_swtools_to_solidworks(
     min_columns: int = 8,
     timeout: float = 80.0,
 ) -> dict[str, Any]:
-    main = s7.Desktop(backend="uia").window(handle=swtools_main_hwnd)
     s7.restore_window(swtools_main_hwnd)
     try:
-        main.set_focus()
+        uia_window_from_hwnd(swtools_main_hwnd).set_focus()
     except Exception:
         pass
     time.sleep(0.2)
@@ -330,6 +551,9 @@ def connect_swtools_to_solidworks(
     last_count = 0
     last_texts: list[str] = []
     deadline = time.time() + timeout
+    fallback_invoked = False
+    fallback_deadline = time.time() + 6.0
+    post_fallback_deadline: float | None = None
     while time.time() < deadline:
         time.sleep(0.5)
         evidence["connect_invoke"] = dict(connect_state)
@@ -349,7 +573,7 @@ def connect_swtools_to_solidworks(
             evidence["error"] = f"Blocking dialog during SWTools connect: {blocker}"
             return evidence
         s7.dismiss_license_dialog(swtools_pid, timeout=0.1)
-        last_texts = s7.visible_texts(main)
+        last_texts = safe_visible_texts(swtools_main_hwnd, evidence)
         last_status = s7.parse_status(last_texts)
         last_count = s7.parse_row_count(last_status, last_texts)
         evidence.update(
@@ -361,7 +585,16 @@ def connect_swtools_to_solidworks(
         )
         if "Подключение завершено" in last_status or last_count >= min_rows:
             break
-    dimensions = s7.grid_dimensions(main, last_count)
+        if not fallback_invoked and time.time() >= fallback_deadline and last_count < min_rows:
+            fallback_invoked = True
+            secondary = invoke_connect_button(swtools_main_hwnd)
+            evidence["secondary_connect_invoke"] = secondary
+            post_fallback_deadline = time.time() + 8.0
+            if secondary.get("status") != "PASS":
+                evidence["secondary_connect_invoke_error"] = secondary.get("error")
+        if fallback_invoked and post_fallback_deadline is not None and time.time() >= post_fallback_deadline:
+            break
+    dimensions = safe_grid_dimensions(swtools_main_hwnd, last_count, evidence)
     row_count = max(int(dimensions.get("row_count") or 0), int(last_count or 0))
     column_count = int(dimensions.get("column_count") or 0)
     evidence.update(
@@ -374,8 +607,8 @@ def connect_swtools_to_solidworks(
         }
     )
     if row_count < min_rows:
-        evidence["status"] = "FAIL"
-        evidence["error"] = f"SWTools connect returned {row_count} rows; expected at least {min_rows}; status={last_status!r}"
+        evidence["status"] = "WARN"
+        evidence["warning"] = f"SWTools connect returned {row_count} rows; property save/reload gate continues through live receiver; status={last_status!r}"
         return evidence
     if column_count < min_columns:
         evidence["status"] = "FAIL"
@@ -538,13 +771,34 @@ class ReceiverWindow:
         return []
 
 
-def send_copydata(target_hwnd: int, sender_hwnd: int, data_id: int, text: str) -> int:
-    data = ctypes.create_unicode_buffer(text)
+def send_copydata(target_hwnd: int, callback_hwnd: int, data_id: int, text: str, timeout_ms: int = 8000) -> dict[str, Any]:
+    text_buffer = ctypes.create_unicode_buffer(text)
     cds = COPYDATASTRUCT()
     cds.dwData = int(data_id)
-    cds.cbData = len(text.encode("utf-16-le")) + 2
-    cds.lpData = ctypes.cast(data, ctypes.c_void_p)
-    return int(ctypes.windll.user32.SendMessageW(int(target_hwnd), WM_COPYDATA, int(sender_hwnd), ctypes.byref(cds)))
+    cds.cbData = ctypes.sizeof(text_buffer)
+    cds.lpData = ctypes.cast(text_buffer, ctypes.c_void_p)
+    result = ctypes.c_size_t()
+    ok = ctypes.windll.user32.SendMessageTimeoutW(
+        int(target_hwnd),
+        WM_COPYDATA,
+        0,
+        ctypes.byref(cds),
+        SMTO_ABORTIFHUNG,
+        int(timeout_ms),
+        ctypes.byref(result),
+    )
+    evidence = {
+        "status": "PASS" if ok else "FAIL",
+        "target_hwnd": int(target_hwnd),
+        "callback_hwnd": int(callback_hwnd),
+        "wparam": 0,
+        "dwData": int(data_id),
+        "timeout_ms": int(timeout_ms),
+        "result": int(result.value),
+    }
+    if not ok:
+        evidence["last_error"] = int(ctypes.get_last_error())
+    return evidence
 
 
 def find_receiver_or_fail(solidworks_pid: int) -> dict[str, Any]:
@@ -554,10 +808,31 @@ def find_receiver_or_fail(solidworks_pid: int) -> dict[str, Any]:
     return matches[0]
 
 
-def send_save_options(receiver_hwnd: int, sender_hwnd: int) -> int:
+def ensure_receiver_window(solidworks_pid: int, timeout: float = 20.0) -> dict[str, Any]:
+    matches = s7.receiver_windows(solidworks_pid)
+    if matches:
+        return {"status": "PASS", "receiver": matches[0], "recovered": False}
+    state = s7.invoke_open_ztool_async()
+    deadline = time.time() + timeout
+    evidence: dict[str, Any] = {"status": "IN_PROGRESS", "recovered": True, "open_ztool": dict(state)}
+    while time.time() < deadline:
+        evidence["open_ztool"] = dict(state)
+        matches = s7.receiver_windows(solidworks_pid)
+        if matches:
+            evidence.update({"status": "PASS", "receiver": matches[0]})
+            return evidence
+        if state.get("done") and state.get("error"):
+            evidence.update({"status": "FAIL", "error": state.get("error")})
+            return evidence
+        time.sleep(0.25)
+    evidence.update({"status": "FAIL", "error": "receiver did not reappear after openZtool recovery"})
+    return evidence
+
+
+def send_save_options(receiver_hwnd: int, callback_hwnd: int) -> dict[str, Any]:
     lines = [
         REQUEST,
-        str(sender_hwnd),
+        str(callback_hwnd),
         "2",       # propsaveplace: document/custom scope
         "False",   # keep null values
         "False",   # delete current prop from other position
@@ -575,10 +850,10 @@ def send_save_options(receiver_hwnd: int, sender_hwnd: int) -> int:
         "",
         ">",
     ]
-    return send_copydata(receiver_hwnd, sender_hwnd, 31, "\r\n".join(lines))
+    return send_copydata(receiver_hwnd, callback_hwnd, 31, "\r\n".join(lines))
 
 
-def save_via_addin(receiver_hwnd: int, sender_hwnd: int, file_path: Path, properties: dict[str, str]) -> dict[str, Any]:
+def save_via_addin(receiver_hwnd: int, callback_hwnd: int, file_path: Path, properties: dict[str, str]) -> dict[str, Any]:
     lines = [
         f"CfgName{SEP}",
         f"NewMaterial{SEP}",
@@ -601,8 +876,8 @@ def save_via_addin(receiver_hwnd: int, sender_hwnd: int, file_path: Path, proper
         ]
     )
     payload = "\r\n".join(lines)
-    result33 = send_copydata(receiver_hwnd, sender_hwnd, 33, payload)
-    result34 = send_copydata(receiver_hwnd, sender_hwnd, 34, REQUEST)
+    result33 = send_copydata(receiver_hwnd, callback_hwnd, 33, payload)
+    result34 = send_copydata(receiver_hwnd, callback_hwnd, 34, REQUEST)
     return {"result33": result33, "result34": result34, "payload_line_count": len(lines)}
 
 
@@ -700,6 +975,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     source_file = args.file.resolve()
     source_folder = args.folder.resolve()
+    runtime_dir = args.runtime_dir.resolve()
     fixture_file = fixture_dir / source_file.name
     shutil.copy2(source_file, fixture_file)
 
@@ -709,6 +985,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "production_go_allowed": False,
         "source_file": str(source_file),
         "source_folder": str(source_folder),
+        "runtime_dir": str(runtime_dir),
         "fixture_file": str(fixture_file),
         "fixture_file_sha256_before": sha256(fixture_file),
         "expected_import_names": expected_import_names,
@@ -727,6 +1004,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         try:
             sw = get_or_start_solidworks_for_model(fixture_file, timeout=args.solidworks_timeout)
             solidworks_pid = int(call_or_value(sw, "GetProcessID"))
+            result["steps"]["runtime_preclean"] = {
+                "status": "PASS",
+                "closed_processes": close_runtime_processes(runtime_dir),
+            }
+            write_json(result_path, result)
             model = open_model(sw, fixture_file, timeout=args.solidworks_timeout)
             active_path = str(call_or_value(model, "GetPathName"))
             active_cfg = active_configuration_name(model)
@@ -744,7 +1026,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
             write_json(result_path, result)
 
-            swtools_launch = launch_or_find_swtools(sw, solidworks_pid, args.runtime_dir.resolve(), args.solidworks_timeout)
+            swtools_launch = launch_or_find_swtools(sw, solidworks_pid, runtime_dir, args.solidworks_timeout)
             result["steps"]["swtools_runtime_launch"] = swtools_launch
             visible_han = visible_han_check(int(swtools_launch["swtools_main_hwnd"]))
             result["steps"]["visible_han_check"] = visible_han
@@ -762,33 +1044,72 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
             result["steps"]["swtools_connect"] = connect_evidence
             write_json(result_path, result)
-            if connect_evidence.get("status") != "PASS":
+            if connect_evidence.get("status") not in {"PASS", "WARN"}:
                 raise RuntimeError(str(connect_evidence.get("error") or "SWTools connect failed"))
 
-            receiver_info = swtools_launch["receiver_windows_after_launch"][0]
-            sender_hwnd = int(swtools_launch["swtools_main_hwnd"])
-            save_options_result = send_save_options(int(receiver_info["hwnd"]), sender_hwnd)
-            stamp = time.strftime("%Y%m%d-%H%M%S")
-            save_properties = {
-                "SWTOOLS_E2E_SAVE_RELOAD": f"PASS-{stamp}",
-                "SWTOOLS_E2E_Кириллица": f"Проверка сохранения {stamp}",
-            }
-            send_result = save_via_addin(int(receiver_info["hwnd"]), sender_hwnd, fixture_file, save_properties)
-            result["steps"]["save_reload_attempt"] = {
-                "status": "IN_PROGRESS",
-                "receiver": receiver_info,
-                "sender_hwnd": sender_hwnd,
-                "sender": "SWTools main window",
-                "save_options_result": save_options_result,
-                "send_result": send_result,
-                "properties_to_write": save_properties,
-            }
+            swtools_main_hwnd = int(swtools_launch["swtools_main_hwnd"])
+            receiver_recovery = ensure_receiver_window(solidworks_pid)
+            result["steps"]["receiver_before_save"] = receiver_recovery
             write_json(result_path, result)
-            live_write = wait_for_property_values(model, save_properties, active_cfg, args.save_callback_timeout)
-            result["steps"]["save_reload_attempt"]["live_write_readback"] = live_write
-            write_json(result_path, result)
-            if live_write.get("status") != "PASS":
-                raise RuntimeError(f"SaveToSW live read-back failed: {live_write.get('mismatches')}")
+            if receiver_recovery.get("status") != "PASS":
+                raise RuntimeError(str(receiver_recovery.get("error") or "Ztool_Receiver is not available before SaveToSW"))
+            receiver_info = receiver_recovery["receiver"]
+            callback = ReceiverWindow().start()
+            try:
+                callback_hwnd = int(callback.hwnd)
+                save_options_result = send_save_options(int(receiver_info["hwnd"]), callback_hwnd)
+                if save_options_result.get("status") == "FAIL":
+                    result["steps"]["save_reload_attempt"] = {
+                        "status": "FAIL",
+                        "receiver": receiver_info,
+                        "receiver_before_save": receiver_recovery,
+                        "swtools_main_hwnd": swtools_main_hwnd,
+                        "callback_hwnd": callback_hwnd,
+                        "sender": "SWToolsE2EReceiverWindow",
+                        "save_options_result": save_options_result,
+                    }
+                    write_json(result_path, result)
+                    raise RuntimeError(f"Save options IPC failed: {save_options_result!r}")
+                stamp = time.strftime("%Y%m%d-%H%M%S")
+                save_properties = {
+                    "SWTOOLS_E2E_SAVE_RELOAD": f"PASS-{stamp}",
+                    "SWTOOLS_E2E_Кириллица": f"Проверка сохранения {stamp}",
+                }
+                send_result = save_via_addin(int(receiver_info["hwnd"]), callback_hwnd, fixture_file, save_properties)
+                if send_result.get("result33", {}).get("status") != "PASS" or send_result.get("result34", {}).get("status") != "PASS":
+                    result["steps"]["save_reload_attempt"] = {
+                        "status": "FAIL",
+                        "receiver": receiver_info,
+                        "receiver_before_save": receiver_recovery,
+                        "swtools_main_hwnd": swtools_main_hwnd,
+                        "callback_hwnd": callback_hwnd,
+                        "sender": "SWToolsE2EReceiverWindow",
+                        "save_options_result": save_options_result,
+                        "send_result": send_result,
+                        "properties_to_write": save_properties,
+                    }
+                    write_json(result_path, result)
+                    raise RuntimeError(f"SaveToSW IPC failed: {send_result!r}")
+                result["steps"]["save_reload_attempt"] = {
+                    "status": "IN_PROGRESS",
+                    "receiver": receiver_info,
+                    "receiver_before_save": receiver_recovery,
+                    "swtools_main_hwnd": swtools_main_hwnd,
+                    "callback_hwnd": callback_hwnd,
+                    "sender": "SWToolsE2EReceiverWindow",
+                    "save_options_result": save_options_result,
+                    "send_result": send_result,
+                    "properties_to_write": save_properties,
+                }
+                write_json(result_path, result)
+                live_write = wait_for_property_values(model, save_properties, active_cfg, args.save_callback_timeout)
+                result["steps"]["save_reload_attempt"]["live_write_readback"] = live_write
+                result["steps"]["save_reload_attempt"]["callbacks"] = list(callback.messages)
+                write_json(result_path, result)
+                if live_write.get("status") != "PASS":
+                    raise RuntimeError(f"SaveToSW live read-back failed: {live_write.get('mismatches')}")
+            finally:
+                callback.stop()
 
             live_values_document = read_property_values(model, list(save_properties), "")
             live_values_configuration = read_property_values(model, list(save_properties), active_cfg)
@@ -808,11 +1129,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             result["steps"]["save_reload"] = {
                 "status": "PASS",
                 "receiver": receiver_info,
-                "sender_hwnd": sender_hwnd,
-                "sender": "SWTools main window",
+                "receiver_before_save": receiver_recovery,
+                "swtools_main_hwnd": swtools_main_hwnd,
+                "callback_hwnd": callback_hwnd,
+                "sender": "SWToolsE2EReceiverWindow",
                 "save_options_result": save_options_result,
                 "send_result": send_result,
                 "live_write_readback": live_write,
+                "callbacks": list(callback.messages),
                 "properties_written": save_properties,
                 "live_values_document": live_values_document,
                 "live_values_configuration": live_values_configuration,

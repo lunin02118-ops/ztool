@@ -18,6 +18,7 @@ REQUIRED_STEPS = [
     "swtools_runtime_launch",
     "visible_han_check",
     "swtools_connect",
+    "receiver_before_save",
     "save_reload",
 ]
 ALLOWED_KEY_EVIDENCE_FIELDS = {"key_sha12", "key_file_sha12", "key_file_length", "key_file_path"}
@@ -83,10 +84,15 @@ def assert_result(data: dict[str, Any]) -> None:
     if steps["visible_han_check"].get("han_texts"):
         raise AssertionError(f"visible Han text leaked into SWTools UI: {steps['visible_han_check'].get('han_texts')!r}")
     connect = steps["swtools_connect"]
-    if int(connect.get("row_count") or 0) < 1:
-        raise AssertionError(f"swtools_connect has no connected rows: {connect!r}")
     if int(connect.get("column_count") or 0) < 8:
         raise AssertionError(f"swtools_connect has too few columns: {connect!r}")
+    if int(connect.get("row_count") or 0) < 1:
+        raise AssertionError(f"swtools_connect has no connected rows: {connect!r}")
+    receiver_before_save = steps["receiver_before_save"]
+    if receiver_before_save.get("status") != "PASS":
+        raise AssertionError(f"receiver_before_save status is not PASS: {receiver_before_save.get('status')!r}")
+    if not receiver_before_save.get("receiver"):
+        raise AssertionError(f"receiver_before_save has no receiver evidence: {receiver_before_save!r}")
 
     save = steps["save_reload"]
     written = save.get("properties_written") or {}
@@ -133,7 +139,13 @@ def run_self_test() -> None:
             },
             "swtools_runtime_launch": {"status": "PASS"},
             "visible_han_check": {"status": "PASS", "han_texts": []},
-            "swtools_connect": {"status": "PASS", "row_count": 1, "column_count": 8},
+            "swtools_connect": {
+                "status": "PASS",
+                "row_count": 1,
+                "column_count": 8,
+                "receiver_windows_after_connect": [{"hwnd": 1}],
+            },
+            "receiver_before_save": {"status": "PASS", "receiver": {"hwnd": 1}},
             "save_reload": {
                 "status": "PASS",
                 "properties_written": {"A": "B"},
@@ -164,6 +176,9 @@ def run_self_test() -> None:
     bad_connect = json.loads(json.dumps(good, ensure_ascii=False))
     bad_connect["steps"]["swtools_connect"]["row_count"] = 0
     cases.append(("missing SWTools connect rows", bad_connect))
+    bad_receiver_before_save = json.loads(json.dumps(good, ensure_ascii=False))
+    bad_receiver_before_save["steps"]["receiver_before_save"]["receiver"] = None
+    cases.append(("missing receiver-before-save evidence", bad_receiver_before_save))
     bad_scope = json.loads(json.dumps(good, ensure_ascii=False))
     del bad_scope["steps"]["open_components_import"]["configuration_property_count"]
     cases.append(("missing configuration-level evidence", bad_scope))
