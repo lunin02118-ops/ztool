@@ -974,26 +974,79 @@ def invoke_text(app: Any, text: str, timeout: float) -> bool:
 def invoke_connect(main_hwnd: int) -> dict[str, Any]:
     restore_window(main_hwnd)
     attempts: list[dict[str, Any]] = []
-    shortcut_attempt: dict[str, Any] = {
-        "action": "shortcut_ctrl_l",
-        "hwnd": int(main_hwnd),
-        "source": "Frmmain_KeyDown Ctrl+L -> _ConnectSW_ExecuteEvent(null, null)",
+    labels = ("подключить sw", "connect sw")
+    deadline = time.time() + 8.0
+    while time.time() < deadline:
+        try:
+            win = Desktop(backend="uia").window(handle=main_hwnd)
+            for child in win.descendants():
+                try:
+                    text = compact_control_text(child.window_text()).lower()
+                    if not text or not any(label in text for label in labels):
+                        continue
+                    attempt: dict[str, Any] = {
+                        "backend": "uia",
+                        "text": text,
+                        "class_name": child.class_name(),
+                    }
+                    try:
+                        attempt["control_type"] = child.element_info.control_type
+                    except Exception:
+                        pass
+                    for action in ("invoke", "legacy", "post", "send"):
+                        try:
+                            if action == "invoke":
+                                child.invoke()
+                            elif action == "legacy":
+                                child.iface_invoke.Invoke()
+                            elif action == "post":
+                                child.post_message(0x00F5, 0, 0)  # BM_CLICK
+                            else:
+                                child.send_message(0x00F5, 0, 0)  # BM_CLICK
+                            attempt["action"] = action
+                            attempt["status"] = "PASS"
+                            attempts.append(attempt)
+                            return {"status": "PASS", "attempts": attempts, "connect_action": f"button_{action}"}
+                        except Exception as exc:
+                            attempt.setdefault("errors", []).append({"action": action, "error": str(exc)[:300]})
+                    attempts.append(attempt)
+                except Exception:
+                    continue
+        except Exception as exc:
+            attempts.append({"backend": "uia", "status": "ERROR", "error": str(exc)[:300]})
+
+        win32_matches: list[dict[str, Any]] = []
+
+        def enum_child(child_hwnd: int, _: Any) -> bool:
+            try:
+                text = compact_control_text(win32gui.GetWindowText(child_hwnd)).lower()
+                class_name = win32gui.GetClassName(child_hwnd)
+            except Exception:
+                return True
+            if text and any(label in text for label in labels):
+                win32_matches.append({"hwnd": int(child_hwnd), "text": text, "class_name": class_name})
+            return True
+
+        try:
+            win32gui.EnumChildWindows(main_hwnd, enum_child, None)
+        except Exception as exc:
+            attempts.append({"backend": "win32", "status": "ERROR", "error": str(exc)[:300]})
+        for match in win32_matches:
+            try:
+                win32gui.PostMessage(int(match["hwnd"]), 0x00F5, 0, 0)  # BM_CLICK
+                match.update({"backend": "win32", "action": "post_bm_click", "status": "PASS"})
+                attempts.append(match)
+                return {"status": "PASS", "connect_action": "button_win32_post_bm_click", "attempts": attempts}
+            except Exception as exc:
+                match.update({"backend": "win32", "status": "FAIL", "error": str(exc)[:300]})
+                attempts.append(match)
+        time.sleep(0.2)
+
+    return {
+        "status": "FAIL",
+        "attempts": attempts[-30:],
+        "error": "Connect button not found/invokable by UIA or Win32 text",
     }
-    try:
-        keyboard.send_keys("^l", pause=0.05)
-        shortcut_attempt["status"] = "PASS"
-        attempts.append(shortcut_attempt)
-        return {"status": "PASS", "attempts": attempts, "connect_action": "shortcut_ctrl_l"}
-    except Exception as exc:
-        shortcut_attempt["status"] = "FAIL"
-        shortcut_attempt["error"] = str(exc)
-        attempts.append(shortcut_attempt)
-        return {
-            "status": "FAIL",
-            "attempts": attempts,
-            "error": f"Cannot send object-focused Ctrl+L shortcut: {exc}",
-        }
-    return {"status": "FAIL", "attempts": attempts, "error": "Cannot invoke object-focused Ctrl+L shortcut"}
 
 
 def invoke_connect_async(main_hwnd: int) -> dict[str, Any]:

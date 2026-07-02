@@ -33,6 +33,7 @@ Desktop = require_module("pywinauto").Desktop
 Image = require_module("PIL.Image")
 ImageDraw = require_module("PIL.ImageDraw")
 ImageGrab = require_module("PIL.ImageGrab")
+win32gui = require_module("win32gui")
 
 
 HAN_RE = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")
@@ -113,6 +114,51 @@ def window_process_id(win: Any) -> int | None:
         return None
 
 
+def window_handle(win: Any) -> int | None:
+    try:
+        handle = int(win.handle)
+        return handle if handle else None
+    except Exception:
+        return None
+
+
+def window_visible(win: Any) -> bool:
+    try:
+        return bool(win.is_visible())
+    except Exception:
+        pass
+    handle = window_handle(win)
+    if handle is None:
+        return True
+    try:
+        return bool(win32gui.IsWindowVisible(handle))
+    except Exception:
+        return True
+
+
+def win32_child_texts(hwnd: int | None, limit: int = 500) -> list[str]:
+    if hwnd is None:
+        return []
+    texts: list[str] = []
+
+    def enum_child(child_hwnd: int, _: Any) -> bool:
+        if len(texts) >= limit:
+            return False
+        try:
+            text = win32gui.GetWindowText(child_hwnd).strip()
+        except Exception:
+            text = ""
+        if text:
+            texts.append(text)
+        return True
+
+    try:
+        win32gui.EnumChildWindows(hwnd, enum_child, None)
+    except Exception:
+        return texts
+    return texts
+
+
 def rect_to_dict(rect: Any) -> dict[str, int]:
     return {
         "left": int(rect.left),
@@ -141,6 +187,11 @@ def visible_texts(win: Any, limit: int = 500) -> list[str]:
             text = child.window_text().strip()
         except Exception:
             continue
+        if text and text not in texts:
+            texts.append(text)
+        if len(texts) >= limit:
+            break
+    for text in win32_child_texts(window_handle(win), limit=limit):
         if text and text not in texts:
             texts.append(text)
         if len(texts) >= limit:
@@ -180,6 +231,8 @@ def find_window(surface: Surface) -> Any | None:
         except Exception:
             continue
         for win in windows:
+            if not window_visible(win):
+                continue
             pid = window_process_id(win)
             if pid is None:
                 continue
