@@ -134,6 +134,12 @@ jobs:
       - name: Save-to-new-folder dialog layout gate
         run: python tools/e2e/check_frmsetnewfolder_layout.py
 
+      - name: Save-options dialog layout self-test
+        run: python tools/e2e/check_frmsaveoption_layout.py --self-test
+
+      - name: Save-options dialog layout gate
+        run: python tools/e2e/check_frmsaveoption_layout.py
+
       - name: Replace-links dialog layout self-test
         run: python tools/e2e/check_frmreplacepartslist_layout.py --self-test
 

@@ -21,6 +21,8 @@ public class FrmSaveOption : Form
 
 	private IContainer components;
 
+	private double _dpixRatio = 1.0;
+
 	[AccessedThroughProperty("TableLayoutPanel1")]
 	private TableLayoutPanel _TableLayoutPanel1;
 
@@ -727,6 +729,113 @@ public class FrmSaveOption : Form
 		base.HelpButtonClicked += FrmSaveOption_HelpButtonClicked;
 		__ENCAddToList(this);
 		InitializeComponent();
+		using (Graphics graphics = Graphics.FromHwnd(Handle))
+		{
+			_dpixRatio = graphics.DpiX / 96f;
+		}
+		ConfigureResponsiveLayout();
+	}
+
+	private int Dpi(int value)
+	{
+		return (int)Math.Round((double)value * _dpixRatio);
+	}
+
+	private void ConfigureResponsiveLayout()
+	{
+		ApplyFont(this, new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, 204));
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MaximizeBox = true;
+		MaximumSize = Size.Empty;
+		MinimumSize = new Size(Dpi(760), Dpi(430));
+		SizeGripStyle = SizeGripStyle.Show;
+		Button2.Size = new Size(Dpi(96), Dpi(28));
+		Cancel_Button.Size = new Size(Dpi(88), Dpi(28));
+		Save_All.Size = new Size(Dpi(130), Dpi(28));
+		Save_Failed.Size = new Size(Dpi(200), Dpi(28));
+		Save_Changed.Size = new Size(Dpi(220), Dpi(28));
+		base.Resize += FrmSaveOption_ResponsiveResize;
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyFont(Control control, Font font)
+	{
+		control.Font = font;
+		foreach (Control control2 in control.Controls)
+		{
+			ApplyFont(control2, font);
+		}
+	}
+
+	private void FrmSaveOption_ResponsiveResize(object sender, EventArgs e)
+	{
+		ApplyResponsiveLayout();
+	}
+
+	private void ApplyResponsiveLayout()
+	{
+		if (GroupBox1 == null || GroupBox2 == null || GroupBox3 == null || TableLayoutPanel1 == null)
+		{
+			return;
+		}
+		int margin = Dpi(12);
+		int gap = Dpi(12);
+		int bottomTop = Math.Max(Dpi(330), ClientSize.Height - Dpi(42));
+		int contentHeight = Math.Max(Dpi(300), bottomTop - margin * 2);
+		int leftWidth = Dpi(340);
+		int rightX = margin + leftWidth + gap;
+		int rightWidth = Math.Max(Dpi(360), ClientSize.Width - rightX - margin);
+		GroupBox1.SetBounds(margin, margin, leftWidth, contentHeight);
+		GroupBox2.SetBounds(rightX, margin, rightWidth, Dpi(166));
+		GroupBox3.SetBounds(rightX, GroupBox2.Bottom + gap, rightWidth, Math.Max(Dpi(122), bottomTop - GroupBox2.Bottom - gap - margin));
+		int leftInnerWidth = GroupBox1.ClientSize.Width - Dpi(24);
+		Label1.AutoSize = true;
+		ComboBox1.SetBounds(Dpi(12), Dpi(42), leftInnerWidth, Dpi(25));
+		SetCheckBoxBounds(CheckBox9, Dpi(12), Dpi(74), leftInnerWidth);
+		ComboBox3.SetBounds(Dpi(12), Dpi(98), leftInnerWidth, Dpi(25));
+		ComboBox4.SetBounds(Dpi(12), Dpi(98), leftInnerWidth, Dpi(25));
+		SetCheckBoxBounds(CheckBox1, Dpi(12), Dpi(130), leftInnerWidth);
+		ComboBox2.SetBounds(Dpi(12), Dpi(154), leftInnerWidth, Dpi(25));
+		SetCheckBoxBounds(CheckBox2, Dpi(12), Dpi(190), leftInnerWidth);
+		SetCheckBoxBounds(CheckBox3, Dpi(12), Dpi(216), Dpi(172));
+		LinkLabel2.SetBounds(Dpi(190), Dpi(217), leftInnerWidth - Dpi(178), Dpi(24));
+		SetCheckBoxBounds(CheckBox10, Dpi(12), Dpi(242), leftInnerWidth);
+		int rightInnerWidth = GroupBox2.ClientSize.Width - Dpi(22);
+		SetCheckBoxBounds(CheckBox4, Dpi(10), Dpi(25), rightInnerWidth);
+		SetCheckBoxBounds(CheckBox7, Dpi(10), Dpi(50), rightInnerWidth);
+		Label2.AutoSize = false;
+		Label2.SetBounds(Dpi(10), Dpi(80), rightInnerWidth, Dpi(22));
+		SetRadioButtonBounds(RadioButton1, Dpi(10), Dpi(104), Dpi(110));
+		SetRadioButtonBounds(RadioButton2, Dpi(136), Dpi(104), rightInnerWidth - Dpi(126));
+		SetRadioButtonBounds(RadioButton3, Dpi(10), Dpi(130), Dpi(22));
+		LinkLabel1.SetBounds(Dpi(36), Dpi(130), rightInnerWidth - Dpi(26), Dpi(24));
+		int group3InnerWidth = GroupBox3.ClientSize.Width - Dpi(22);
+		SetCheckBoxBounds(CheckBox6, Dpi(10), Dpi(25), Dpi(190));
+		SetCheckBoxBounds(CheckBox8, Math.Max(Dpi(220), group3InnerWidth - Dpi(150)), Dpi(25), Dpi(150));
+		Label3.AutoSize = false;
+		Label3.SetBounds(Dpi(10), Dpi(58), group3InnerWidth, Dpi(22));
+		Button1.SetBounds(GroupBox3.ClientSize.Width - Dpi(40), Dpi(82), Dpi(30), Dpi(27));
+		TextBox1.SetBounds(Dpi(10), Dpi(83), Button1.Left - Dpi(16), Dpi(25));
+		TableLayoutPanel1.AutoSize = false;
+		TableLayoutPanel1.ColumnStyles.Clear();
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(94)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(204)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(134)));
+		TableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Dpi(224)));
+		TableLayoutPanel1.SetBounds(ClientSize.Width - Dpi(668), bottomTop, Dpi(656), Dpi(34));
+		Button2.SetBounds(margin, bottomTop + Dpi(2), Dpi(96), Dpi(28));
+	}
+
+	private void SetCheckBoxBounds(CheckBox checkBox, int x, int y, int width)
+	{
+		checkBox.AutoSize = false;
+		checkBox.SetBounds(x, y, Math.Max(Dpi(80), width), Dpi(24));
+	}
+
+	private void SetRadioButtonBounds(RadioButton radioButton, int x, int y, int width)
+	{
+		radioButton.AutoSize = false;
+		radioButton.SetBounds(x, y, Math.Max(Dpi(22), width), Dpi(24));
 	}
 
 	[DebuggerNonUserCode]
@@ -1313,7 +1422,7 @@ public class FrmSaveOption : Form
 		this.AutoScaleDimensions = sizeF;
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 		this.CancelButton = this.Cancel_Button;
-		size = new System.Drawing.Size(575, 333);
+		size = new System.Drawing.Size(760, 410);
 		this.ClientSize = size;
 		this.Controls.Add(this.GroupBox3);
 		this.Controls.Add(this.Button2);
@@ -1322,11 +1431,11 @@ public class FrmSaveOption : Form
 		this.Controls.Add(this.TableLayoutPanel1);
 		this.Cursor = System.Windows.Forms.Cursors.Default;
 		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+		this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
 		this.HelpButton = true;
 		margin = new System.Windows.Forms.Padding(2);
 		this.Margin = margin;
-		this.MaximizeBox = false;
+		this.MaximizeBox = true;
 		this.MinimizeBox = false;
 		this.Name = "FrmSaveOption";
 		this.ShowInTaskbar = false;

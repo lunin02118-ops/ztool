@@ -558,7 +558,7 @@ Scope: `client-src` + `client-src-addin`, `Release`, .NET SDK Windows runner/loc
         },
         {
           "file": "client-src/ZTool/FrmSaveOption.cs",
-          "line": 1874,
+          "line": 1983,
           "column": 4,
           "code": "CS0162"
         },
