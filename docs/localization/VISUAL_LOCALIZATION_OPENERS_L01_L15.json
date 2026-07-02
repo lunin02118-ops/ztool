@@ -166,7 +166,8 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_text": "Параметры"
+            "control_text": "Параметры",
+            "control_type_any": ["Button"]
           }
         },
         {
@@ -192,6 +193,7 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
+            "control_type_any": ["SplitButton"],
             "control_text_any": ["Сохранить в SW", "Параметры сохранения"]
           }
         },
@@ -217,6 +219,7 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
+            "control_type_any": ["Button"],
             "control_text": "Столбец заполнения"
           }
         },
@@ -242,6 +245,7 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
+            "control_type_any": ["Button"],
             "control_text": "Единица"
           }
         },
@@ -258,17 +262,38 @@
     {
       "id": "L-11",
       "object_driven": true,
-      "preconditions": ["SWTools main grid has at least one populated row"],
-      "capture_after": "Context menu is open on the grid/header and contains placeholder entries.",
+      "preconditions": ["SWTools main window is open"],
+      "capture_after": "Insert-link placeholder menu is open from the Filling Column dialog.",
       "actions": [
         {
-          "type": "context_menu",
-          "description": "Open context menu by grid/header UIA element, not by screen coordinate.",
+          "type": "uia_invoke",
+          "description": "Invoke Filling Column ribbon button.",
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_type_any": ["DataGrid", "Table", "Header"],
-            "expected_menu_text": ["<Материал>"]
+            "control_type_any": ["Button"],
+            "control_text": "Столбец заполнения"
+          }
+        },
+        {
+          "type": "wait_window",
+          "description": "Wait for filling dialog.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Столбец заполнения"
+          }
+        },
+        {
+          "type": "uia_invoke",
+          "description": "Open placeholder insert-link menu.",
+          "locator": {
+            "process": "SWTools.exe",
+            "window_contains": "Столбец заполнения",
+            "control_type_any": ["Button"],
+            "control_text": "Вставить ссылку....",
+            "expected_menu_text": ["Столбец таблицы", "Свойства SW"],
+            "submenu_control_text": "Столбец таблицы",
+            "submenu_expected_menu_text": ["<Материал>"]
           }
         }
       ]
@@ -285,6 +310,7 @@
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
+            "control_type_any": ["Button", "SplitButton"],
             "control_text": "Справка",
             "expected_window_text": "SWTools"
           }
@@ -332,19 +358,11 @@
       "capture_after": "Material/color UI or result surface is visible.",
       "actions": [
         {
-          "type": "ribbon_command",
-          "description": "Invoke material/color flow from object-located ribbon command.",
+          "type": "wait_window",
+          "description": "Capture S7 result surface with material/color data.",
           "locator": {
             "process": "SWTools.exe",
             "window_contains": "SWTools",
-            "control_text_any": ["Материал", "Случайная окраска"]
-          }
-        },
-        {
-          "type": "wait_window",
-          "description": "Wait until material/color evidence text is visible in SWTools surface.",
-          "locator": {
-            "process": "SWTools.exe",
             "text_contains": ["Материал"]
           }
         }

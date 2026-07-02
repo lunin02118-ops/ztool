@@ -31,10 +31,17 @@ psutil = require_module("psutil")
 pywinauto = require_module("pywinauto")
 Desktop = pywinauto.Desktop
 keyboard = require_module("pywinauto.keyboard")
+win32gui = require_module("win32gui")
 
 WM_LBUTTONDOWN = 0x0201
 WM_LBUTTONUP = 0x0202
+WM_RBUTTONDOWN = 0x0204
+WM_RBUTTONUP = 0x0205
+WM_CONTEXTMENU = 0x007B
+BM_CLICK = 0x00F5
 MK_LBUTTON = 0x0001
+MK_RBUTTON = 0x0002
+SW_MAXIMIZE = 3
 
 
 def norm(text: str) -> str:
@@ -93,12 +100,64 @@ def window_handle(win: Any) -> int | None:
         return None
 
 
+def window_visible(win: Any) -> bool:
+    try:
+        return bool(win.is_visible())
+    except Exception:
+        pass
+    handle = window_handle(win)
+    if handle is None:
+        return True
+    try:
+        return bool(win32gui.IsWindowVisible(handle))
+    except Exception:
+        return True
+
+
+def win32_child_texts(hwnd: int | None, limit: int = 400) -> list[str]:
+    if hwnd is None:
+        return []
+    texts: list[str] = []
+
+    def enum_child(child_hwnd: int, _: Any) -> bool:
+        if len(texts) >= limit:
+            return False
+        try:
+            text = norm(win32gui.GetWindowText(child_hwnd))
+        except Exception:
+            text = ""
+        if text:
+            texts.append(text)
+        return True
+
+    try:
+        win32gui.EnumChildWindows(hwnd, enum_child, None)
+    except Exception:
+        return texts
+    return texts
+
+
 def control_handle(control: Any) -> int | None:
     try:
         handle = int(control.handle)
         return handle if handle else None
     except Exception:
         return None
+
+
+def control_visible(control: Any) -> bool:
+    try:
+        if hasattr(control, "is_visible") and not control.is_visible():
+            return False
+    except Exception:
+        pass
+    try:
+        rect = control.rectangle()
+        if int(rect.width()) <= 0 or int(rect.height()) <= 0:
+            return False
+    except Exception:
+        pass
+    return True
 
 
 def control_click_point(width: int, height: int, locator: dict[str, Any] | None = None) -> tuple[int, int]:
@@ -131,6 +190,48 @@ def win32_message_click(control: Any, locator: dict[str, Any] | None = None) -> 
     user32.SendMessageW(handle, WM_LBUTTONDOWN, MK_LBUTTON, lparam)
     user32.SendMessageW(handle, WM_LBUTTONUP, 0, lparam)
     return True
+
+
+def win32_button_click(control: Any) -> bool:
+    """Invoke an object-located WinForms button by HWND command message."""
+    handle = control_handle(control)
+    if handle is None:
+        return False
+    ctypes.windll.user32.SendMessageW(handle, BM_CLICK, 0, 0)
+    return True
+
+
+def win32_message_context_menu(control: Any, locator: dict[str, Any] | None = None) -> str | None:
+    """Open a context menu on an object-located WinForms control by HWND."""
+    handle = control_handle(control)
+    if handle is None:
+        return None
+    try:
+        rect = control.rectangle()
+        width = max(1, int(rect.width()))
+        height = max(1, int(rect.height()))
+    except Exception:
+        width = 8
+        height = 8
+    x, y = control_click_point(width, height, locator)
+    client_lparam = (y << 16) | (x & 0xFFFF)
+    user32 = ctypes.windll.user32
+
+    class POINT(ctypes.Structure):
+        _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+
+    point = POINT(x, y)
+    try:
+        if user32.ClientToScreen(handle, ctypes.byref(point)):
+            screen_lparam = (int(point.y) << 16) | (int(point.x) & 0xFFFF)
+            user32.SendMessageW(handle, WM_CONTEXTMENU, handle, screen_lparam)
+            return "win32_context_menu"
+    except Exception:
+        pass
+
+    user32.SendMessageW(handle, WM_RBUTTONDOWN, MK_RBUTTON, client_lparam)
+    user32.SendMessageW(handle, WM_RBUTTONUP, 0, client_lparam)
+    return "win32_right_button_message"
 
 
 def backend_peers(win: Any) -> list[Any]:
@@ -176,6 +277,12 @@ def visible_texts(win: Any, limit: int = 400) -> list[str]:
             continue
         if text:
             texts.append(text)
+    handle = window_handle(win)
+    for text in win32_child_texts(handle, limit=limit):
+        if len(texts) >= limit:
+            break
+        if text:
+            texts.append(text)
     return texts
 
 
@@ -206,6 +313,8 @@ def pid_matches(pid: int | None, locator: dict[str, Any]) -> bool:
 
 
 def locator_matches_window(win: Any, locator: dict[str, Any], include_text: bool = True) -> bool:
+    if not window_visible(win):
+        return False
     pid = window_process_id(win)
     if not pid_matches(pid, locator):
         return False
@@ -266,6 +375,34 @@ def wait_window(locator: dict[str, Any], timeout: float) -> Any:
     raise RuntimeError(f"Window not found for locator {locator!r}; seen: {sample}")
 
 
+def should_maximize_for_locator(locator: dict[str, Any]) -> bool:
+    window_contains = norm(str(locator.get("window_contains", ""))).lower()
+    return "swtools" in window_contains and "swtools.exe" in process_names(locator)
+
+
+def maximize_window(win: Any) -> bool:
+    try:
+        win.maximize()
+        return True
+    except Exception:
+        pass
+    try:
+        transform = win.iface_transform
+        if transform.CurrentCanMaximize:
+            transform.Maximize()
+            return True
+    except Exception:
+        pass
+    handle = window_handle(win)
+    if handle is not None:
+        try:
+            ctypes.windll.user32.ShowWindow(handle, SW_MAXIMIZE)
+            return True
+        except Exception:
+            pass
+    return False
+
+
 def control_text_candidates(locator: dict[str, Any]) -> list[str]:
     values: list[str] = []
     if locator.get("control_text"):
@@ -285,6 +422,13 @@ def control_type_matches(child: Any, locator: dict[str, Any]) -> bool:
     return control_type in wanted
 
 
+def control_type_name(child: Any) -> str:
+    try:
+        return str(child.element_info.control_type)
+    except Exception:
+        return ""
+
+
 def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
     wanted_texts = control_text_candidates(locator)
     deadline = time.time() + timeout
@@ -296,6 +440,8 @@ def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
             except Exception:
                 descendants = []
             for child in descendants:
+                if not control_visible(child):
+                    continue
                 try:
                     text = norm(child.window_text())
                 except Exception:
@@ -319,6 +465,18 @@ def find_control(root: Any, locator: dict[str, Any], timeout: float) -> Any:
 def invoke_control(control: Any, prefer_expand: bool = False, locator: dict[str, Any] | None = None) -> str:
     actions = ("expand", "invoke", "legacy", "select") if prefer_expand else ("invoke", "expand", "legacy", "select")
     errors: list[str] = []
+    expects_menu = bool(locator and locator.get("expected_menu_text"))
+
+    def expected_menu_opened() -> bool:
+        if not expects_menu:
+            return True
+        try:
+            wait_expected_menu(locator or {}, 0.8)
+            return True
+        except Exception as exc:
+            errors.append(f"expected_menu: {exc}")
+            return False
+
     try:
         control.set_focus()
     except Exception:
@@ -326,11 +484,18 @@ def invoke_control(control: Any, prefer_expand: bool = False, locator: dict[str,
     key_activate = norm(str((locator or {}).get("control_key_activate", "")))
     if key_activate:
         keyboard.send_keys(key_activate)
-        return f"keyboard:{key_activate}"
+        if expected_menu_opened():
+            return f"keyboard:{key_activate}"
     if locator and locator.get("control_click_anchor"):
-        if win32_message_click(control, locator):
+        if win32_message_click(control, locator) and expected_menu_opened():
             return f"win32_message_click:{locator.get('control_click_anchor')}"
         errors.append("win32_message_click: no HWND")
+    if expects_menu:
+        if win32_button_click(control) and expected_menu_opened():
+            return "win32_button_click"
+        if win32_message_click(control, locator) and expected_menu_opened():
+            return "win32_message_click"
+        errors.append("win32_menu_open_click: no HWND")
     for action in actions:
         try:
             if action == "invoke":
@@ -341,10 +506,20 @@ def invoke_control(control: Any, prefer_expand: bool = False, locator: dict[str,
                 control.iface_legacy_iaccessible.DoDefaultAction()
             else:
                 control.select()
-            return action
+            if expected_menu_opened():
+                return action
         except Exception as exc:
             errors.append(f"{action}: {exc}")
-    if win32_message_click(control, locator):
+    keys = ("{RIGHT}", "{ENTER}", "{SPACE}") if locator and locator.get("expected_menu_text") else ("{ENTER}", "{SPACE}")
+    for key in keys:
+        try:
+            control.set_focus()
+            keyboard.send_keys(key)
+            if expected_menu_opened():
+                return f"keyboard:{key}"
+        except Exception as exc:
+            errors.append(f"keyboard {key}: {exc}")
+    if win32_message_click(control, locator) and expected_menu_opened():
         return "win32_message_click"
     raise RuntimeError(f"Control cannot be invoked without coordinate click: {'; '.join(errors)}")
 
@@ -366,6 +541,47 @@ def wait_expected_menu(locator: dict[str, Any], timeout: float) -> list[str]:
         time.sleep(0.2)
     sample = ", ".join(sorted(set(last_texts))[:80])
     raise RuntimeError(f"Expected menu text not visible: {expected!r}; seen: {sample}")
+
+
+def find_control_across_windows(
+    locator: dict[str, Any],
+    timeout: float,
+    control_text: str,
+    control_types: list[str] | None = None,
+) -> Any:
+    """Find a transient menu/control across all visible windows for the target process."""
+    transient_locator = dict(locator)
+    transient_locator.pop("window_contains", None)
+    transient_locator.pop("text_contains", None)
+    transient_locator["control_text"] = control_text
+    if control_types:
+        transient_locator["control_type_any"] = control_types
+    deadline = time.time() + timeout
+    seen: list[str] = []
+    while time.time() < deadline:
+        for backend in ("uia", "win32"):
+            for win in desktop_windows(backend, transient_locator):
+                if not locator_matches_window(win, transient_locator, include_text=False):
+                    continue
+                try:
+                    descendants = win.descendants()
+                except Exception:
+                    descendants = []
+                for child in descendants:
+                    child_type = control_type_name(child)
+                    if child_type != "MenuItem" and not control_visible(child):
+                        continue
+                    text = norm(child.window_text())
+                    if text:
+                        seen.append(text)
+                    if text != control_text:
+                        continue
+                    if not control_type_matches(child, transient_locator):
+                        continue
+                    return child
+        time.sleep(0.1)
+    sample = ", ".join(sorted(set(seen))[:80])
+    raise RuntimeError(f"Transient control not found: {control_text!r}; seen: {sample}")
 
 
 def execute_action(action: dict[str, Any], timeout: float, installer_path: Path | None = None) -> dict[str, Any]:
@@ -422,34 +638,89 @@ def execute_action(action: dict[str, Any], timeout: float, installer_path: Path 
         return evidence
     if action_type in {"uia_invoke", "win32_invoke", "ribbon_command", "help_button", "menu_item"}:
         win = wait_window(locator, timeout)
+        maximized = maximize_window(win) if should_maximize_for_locator(locator) else False
         control = find_control(win, locator, timeout)
-        used_action = invoke_control(control, prefer_expand=action_type == "ribbon_command", locator=locator)
+        used_action = invoke_control(control, prefer_expand=action_type in {"ribbon_command", "menu_item"}, locator=locator)
         evidence.update(
             {
                 "status": "PASS",
                 "window_title": window_title(win),
                 "process_info": process_info(window_process_id(win) or -1),
+                "window_maximized": maximized,
                 "invoke_action": used_action,
                 "control_text": norm(control.window_text()),
             }
         )
-        wait_expected_menu(locator, min(timeout, 5.0))
+        visible_menu = wait_expected_menu(locator, min(timeout, 5.0))
+        submenu_text = norm(str(locator.get("submenu_control_text", "")))
+        submenu_expected = [
+            norm(str(value)) for value in locator.get("submenu_expected_menu_text", []) or [] if norm(str(value))
+        ]
+        if submenu_text and submenu_expected:
+            submenu_locator = dict(locator)
+            submenu_locator["expected_menu_text"] = submenu_expected
+            submenu_errors: list[str] = []
+            submenu_action = ""
+            visible_submenu: list[str] = []
+            for attempt in range(3):
+                if attempt:
+                    try:
+                        keyboard.send_keys("{ESC}")
+                    except Exception:
+                        pass
+                    time.sleep(0.2)
+                    reopened = win32_button_click(control) or win32_message_click(control, locator)
+                    if not reopened:
+                        submenu_errors.append("reopen: no HWND action succeeded")
+                        continue
+                    try:
+                        wait_expected_menu(locator, min(timeout, 3.0))
+                    except Exception as exc:
+                        submenu_errors.append(f"reopen expected menu: {exc}")
+                        continue
+                try:
+                    submenu = find_control_across_windows(locator, min(timeout, 5.0), submenu_text, ["MenuItem"])
+                    submenu_action = invoke_control(submenu, prefer_expand=True, locator=submenu_locator)
+                    visible_submenu = wait_expected_menu(submenu_locator, min(timeout, 5.0))
+                    break
+                except Exception as exc:
+                    submenu_errors.append(str(exc))
+            else:
+                raise RuntimeError(
+                    f"Cannot open submenu {submenu_text!r} without coordinate click: {'; '.join(submenu_errors)}"
+                )
+            evidence.update(
+                {
+                    "submenu_control_text": submenu_text,
+                    "submenu_invoke_action": submenu_action,
+                    "submenu_expected_menu_text": visible_submenu,
+                }
+            )
+        evidence["expected_menu_text"] = visible_menu
         return evidence
     if action_type == "context_menu":
         win = wait_window(locator, timeout)
+        maximized = maximize_window(win) if should_maximize_for_locator(locator) else False
         control = find_control(win, locator, timeout)
+        context_action = "keyboard:+{F10}"
         try:
             control.set_focus()
             keyboard.send_keys("+{F10}")
-        except Exception as exc:
-            raise RuntimeError(f"Cannot open context menu through focused UIA element: {exc}") from exc
-        visible = wait_expected_menu(locator, min(timeout, 5.0))
+            visible = wait_expected_menu(locator, min(timeout, 3.0))
+        except Exception as first_exc:
+            fallback = win32_message_context_menu(control, locator)
+            if fallback is None:
+                raise RuntimeError(f"Cannot open context menu through object-located control: {first_exc}") from first_exc
+            context_action = fallback
+            visible = wait_expected_menu(locator, min(timeout, 5.0))
         evidence.update(
             {
                 "status": "PASS",
                 "window_title": window_title(win),
                 "process_info": process_info(window_process_id(win) or -1),
                 "control_text": norm(control.window_text()),
+                "context_action": context_action,
+                "window_maximized": maximized,
                 "expected_menu_text": visible,
             }
         )
@@ -530,6 +801,11 @@ def run() -> int:
     parser.add_argument("--surface-id", action="append", dest="surface_ids")
     parser.add_argument("--expected-runtime-dir", type=Path)
     parser.add_argument("--installer-path", type=Path)
+    parser.add_argument(
+        "--merge-manifest",
+        type=Path,
+        help="Continue from an existing visual-localization manifest from the same runtime.",
+    )
     parser.add_argument("--timeout", type=float, default=10.0)
     args = parser.parse_args()
 
@@ -555,7 +831,7 @@ def run() -> int:
         "surfaces": [],
     }
     result_path = output_dir / "visual-opener-capture-result.json"
-    current_manifest: Path | None = None
+    current_manifest: Path | None = args.merge_manifest.resolve() if args.merge_manifest else None
     try:
         for opener in selected:
             surface_id = str(opener.get("id", "")).strip()
@@ -577,9 +853,28 @@ def run() -> int:
             surface_result["capture_returncode"] = capture.returncode
             surface_result["capture_stdout_tail"] = capture.stdout[-4000:]
             surface_result["capture_stderr_tail"] = capture.stderr[-4000:]
-            if capture.returncode != 0:
+            candidate_manifest = surface_dir / "visual-localization-manifest.json"
+            if capture.returncode != 0 and not candidate_manifest.exists():
                 raise RuntimeError(f"{surface_id}: capture failed with {capture.returncode}: {capture.stderr[-1000:]}")
-            current_manifest = surface_dir / "visual-localization-manifest.json"
+            current_manifest = candidate_manifest
+            try:
+                captured_manifest = load_json(current_manifest)
+            except Exception as exc:
+                raise RuntimeError(f"{surface_id}: cannot read capture manifest {current_manifest}: {exc}") from exc
+            surface_result["capture_manifest_status"] = captured_manifest.get("status")
+            captured_surface = next(
+                (item for item in captured_manifest.get("surfaces", []) if item.get("id") == surface_id),
+                None,
+            )
+            if not isinstance(captured_surface, dict) or captured_surface.get("status") != "CAPTURED":
+                status = captured_surface.get("status") if isinstance(captured_surface, dict) else "missing"
+                error = captured_surface.get("error") if isinstance(captured_surface, dict) else "surface not in manifest"
+                raise RuntimeError(f"{surface_id}: capture did not produce CAPTURED evidence ({status}: {error})")
+            if capture.returncode != 0:
+                surface_result["capture_note"] = (
+                    "Target surface was captured; merged manifest remains non-PASS because of "
+                    "pre-existing evidence outside this opener."
+                )
             surface_result["manifest"] = str(current_manifest)
             surface_result["status"] = "PASS"
             result["surfaces"].append(surface_result)
